@@ -128,7 +128,7 @@ const signOut = () => {
         <v-btn icon class="mx-3">
           <v-avatar size="35">
             <img
-              src="https://scontent.fvte5-1.fna.fbcdn.net/v/t39.30808-6/336459776_153661590945312_5540260982228972360_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeHbCc56PQxjS3k_XhIx7vTwmmmVo4VN6lSaaZWjhU3qVPR9MVFFf8V3lFpkg0d_D1qcp0HH4YSSCKVX2MQXLeQM&_nc_ohc=4bpEgBP5EE0Q7kNvgFUy8xe&_nc_ht=scontent.fvte5-1.fna&oh=00_AfBnTmVNQHS-Qk62HxFyioKt-H-3NfkGEhKaj0h6TiZizQ&oe=6634FDD4"
+              src="https://img.freepik.com/free-photo/abstract-autumn-beauty-multi-colored-leaf-vein-pattern-generated-by-ai_188544-9871.jpg?size=626&ext=jpg&ga=GA1.1.2082370165.1716249600&semt=ais_user"
               width="35"
               alt="sone"
             />
@@ -139,7 +139,7 @@ const signOut = () => {
               <h4 class="font-weight-medium fs-18">ໂປຟາຍຂອງຂອ້ຍ</h4>
               <div class="d-flex align-center my-4">
                 <img
-                  src="https://scontent.fvte5-1.fna.fbcdn.net/v/t39.30808-6/336459776_153661590945312_5540260982228972360_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=5f2048&_nc_eui2=AeHbCc56PQxjS3k_XhIx7vTwmmmVo4VN6lSaaZWjhU3qVPR9MVFFf8V3lFpkg0d_D1qcp0HH4YSSCKVX2MQXLeQM&_nc_ohc=4bpEgBP5EE0Q7kNvgFUy8xe&_nc_ht=scontent.fvte5-1.fna&oh=00_AfBnTmVNQHS-Qk62HxFyioKt-H-3NfkGEhKaj0h6TiZizQ&oe=6634FDD4"
+                  src="https://img.freepik.com/free-photo/abstract-autumn-beauty-multi-colored-leaf-vein-pattern-generated-by-ai_188544-9871.jpg?size=626&ext=jpg&ga=GA1.1.2082370165.1716249600&semt=ais_user"
                   alt="Sone SEEDAVANH"
                   class="rounded-circle"
                   width="100"

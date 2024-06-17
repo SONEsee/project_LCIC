@@ -1,89 +1,151 @@
-<!-- Search.vue -->
 <template>
   <div>
-    <v-form>
-      <v-text-field
-        v-model="searchQuery1"
-        label="Search Query 1"
-        class="mb-4"
-      ></v-text-field>
-      <v-text-field
-        v-model="searchQuery2"
-        label="Search Query 2"
-        class="mb-4"
-      ></v-text-field>
-      <v-btn @click="performSearch" class="mb-4">Search</v-btn>
-    </v-form>
+    <v-container>
+      <v-card class="bg-indigo-lighten-5 text-start">
+        <div class="text-center">
+          <p style="font-size: 20px" class="mt-10">ຄົ້ນຫານິຕິບຸກຄົນ</p>
+        </div>
 
-    <v-row v-if="filteredItems.length > 0">
-      <v-col
-        v-for="(item, index) in filteredItems"
-        :key="index"
-        cols="12"
-        md="6"
-        class="h"
-      >
-        <nuxt-link :to="`/details/${item.id}`" style="text-decoration: none">
-          <v-card
-            height="200px"
-            class="d-flex align-center justify-center border hovering-zoom"
-          >
-            {{ item.title }}
-          </v-card>
-        </nuxt-link>
-      </v-col>
-    </v-row>
-
-    <p v-else>No information found....</p>
+        <div class="d-flex justify-center mt-10">
+          <v-col cols="12">
+            <v-row>
+              <v-col cols="12" md="3"></v-col>
+              <v-col cols="12" md="6">
+                <v-card class="mb-13">
+                  <v-form @submit.prevent="submit" class="mt-7">
+                    <v-container>
+                      <div class="mt-1">
+                        <label class="label text-grey-darken-2" for="idcompany">
+                          <p>ລະຫັດວິສາຫະກິດ*</p>
+                        </label>
+                        <v-text-field
+                          v-model="id1"
+                          :rules="[ruleRequired]"
+                          prepend-inner-icon="fluent:password-20-regular"
+                          id="idcompany"
+                          name="idcompany"
+                          type="number"
+                          placeholder="ປອ້ນລະຫັດວິສາຫະກິດ....."
+                        />
+                      </div>
+                      <div class="mt-1">
+                        <label class="label text-grey-darken-2" for="idLCIC">
+                          <p>ລະຫັດ ຂສລ*</p>
+                        </label>
+                        <v-text-field
+                          v-model="id2"
+                          :rules="[ruleRequired]"
+                          prepend-inner-icon="fluent:password-20-regular"
+                          id="idLCIC"
+                          name="idLCIC"
+                          type="number"
+                          placeholder="ປອ້ນລະຫັດ ຂສລ....."
+                        />
+                      </div>
+                      <div class="mt-5">
+                        <v-btn
+                          type="submit"
+                          block
+                          min-height="44"
+                          class="gradient primary"
+                        >
+                          ຄົ້ນຫາ
+                        </v-btn>
+                      </div>
+                    </v-container>
+                  </v-form>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-col>
+        </div>
+        <div v-if="loading"><p>ກຳລັງໂຫຼດ.........</p></div>
+      </v-card>
+    </v-container>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-// import { useHead } from '@nuxtjs/composition-api';
-
-interface Item {
-  id: number;
-  title: string;
-  number1: string;
-  number2: string;
-}
-
-const items: Item[] = [
-  { id: 1, title: "Item 1", number1: "123", number2: "456" },
-  { id: 2, title: "Item 2", number1: "789", number2: "012" },
-  { id: 3, title: "Item 3", number1: "345", number2: "678" },
-  { id: 4, title: "Item 4", number1: "901", number2: "234" },
-];
-
-const searchQuery1 = ref("");
-const searchQuery2 = ref("");
-const filteredItems = ref<Item[]>(items);
-
-const performSearch = () => {
-  const query1 = searchQuery1.value.trim();
-  const query2 = searchQuery2.value.trim();
-
-  filteredItems.value = items.filter(
-    (item) => item.number1.includes(query1) && item.number2.includes(query2)
-  );
-};
-
+definePageMeta({
+  layout: "backend",
+});
 useHead({
-  title: "Search",
+  title: "Sign In",
   meta: [
     {
       name: "description",
-      content: "Search Page",
+      content: "Sign In Nuxt 3, IT Genius Engineering",
     },
     {
       name: "keywords",
-      content: "Search, Nuxt.js, TypeScript",
+      content: "Sign In, Nuxt 3, Learning Nuxt 3",
     },
   ],
 });
+
+import { ref } from "vue";
+import Swal from "sweetalert2";
+
+const id1 = ref<string>("");
+const id2 = ref<string>("");
+const result1 = ref<any>(null);
+const result2 = ref<any>(null);
+const loading = ref<boolean>(false);
+
+const search = async () => {
+  loading.value = true;
+  try {
+    const [res1, res2] = await Promise.all([
+      fetch(`http://localhost:3000/api/v1/report/${id1.value}`).then((res) =>
+        res.json()
+      ),
+      fetch(`http://localhost:3000/api/v1/report/${id2.value}`).then((res) =>
+        res.json()
+      ),
+    ]);
+    result1.value = res1;
+    result2.value = res2;
+  } catch (error) {
+    console.error("Error fetching data: " + error);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "There was an error fetching the data.",
+    });
+  } finally {
+    loading.value = false;
+  }
+};
+
+const ruleRequired = (v: any) => !!v || "Required.";
+
+const submit = async () => {
+  if (id1.value && id2.value) {
+    await search();
+    if (result1.value && result2.value) {
+      // Redirect if data is successfully fetched
+      window.location.href = "../datasearch/report";
+    }
+  } else {
+    Swal.fire({
+      icon: "error",
+      title: "ເກີດຂໍ້ຜິດພາດໃນການຄົ້ນຫາ",
+      text: "ກາລຸນາໃສ່ ID ໃຫ້ຄົບທັງສອງ.",
+    });
+  }
+};
 </script>
 
 <style scoped>
-/* Add your scoped styles here */
+input {
+  margin: 5px;
+}
+
+button {
+  margin: 10px;
+}
+
+h2 {
+  margin-top: 20px;
+}
 </style>

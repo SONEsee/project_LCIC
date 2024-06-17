@@ -1,3 +1,4 @@
+
 <script setup lang="ts">
 
 	useHead({
@@ -23,12 +24,12 @@
 		// expires: new Date(Date.now() + 60 * 60 * 24 * 7), // 1 week
 	})
 
-	// ref const for email and password
-	const email = ref('')
+	// ref const for username and password
+	const username = ref('')
 	const password = ref('')
 
-	// useFormRules() for email and password
-	const { ruleEmail, rulePassLen, ruleRequired } = useFormRules()
+	// useFormRules() for username and password
+	const { ruleRequired, rulePassLen } = useFormRules()
 
 	// useRoute() for redirect
 	const router = useRouter()
@@ -36,25 +37,21 @@
 	// submit form
 	const submit = async () => {
 
-		// console.log(ruleEmail(email.value))
-		
 		// check form is valid
-		if (ruleRequired(email.value) == true && ruleEmail(email.value) == true && rulePassLen(password.value) == true) {
-
-			// console.log(email.value, password.value)
+		if (ruleRequired(username.value) == true && rulePassLen(password.value) == true) {
 
 			// useRuntimeConfig() for get env
 			const config = useRuntimeConfig()
 			const STRAPI_URL: string = config.strapi.url
 
 			// login strapi with usefetch()
-			const { data, error } = await useFetch(`${STRAPI_URL}/auth/local`, {
+			const { data, error } = await useFetch(`${STRAPI_URL}/login/`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
-					"identifier": email.value,
+					"username": username.value,
 					"password": password.value
 				}),
 			})
@@ -63,12 +60,11 @@
 			if (error.value != null) { // error
 				
 				if(error.value.status === 400){
-					// console.log('Login failed! Please check your email and password.')
 					$swal.fire({
 						icon: 'error',
-						title: 'ເຂົ້າສູ່ລະບົບລົ້ມເຫລວ',
-						text: 'ກະລຸນາກວດເບິ່ງອີເມວ ແລະລະຫັດຜ່ານຂອງທ່ານ.',
-						confirmButtonText: 'ປິດໜ້າຕ່າງ'
+						title: 'Login Failed',
+						text: 'Please check your username and password.',
+						confirmButtonText: 'Close'
 					})
 				}else{
 					console.log('Request failed:', error.value.message)
@@ -78,8 +74,8 @@
 
 				let timerInterval: any
 				$swal.fire({
-					title: 'ເຂົ້າສູ່ລະບົບ',
-					html: 'ກະລຸນາລໍຖ້າຈັກໜ່ອຍ <b></b> ວິນາທີ',
+					title: 'ກຳລັງເຂົ້າສູ່ລະບົບ',
+					html: 'ກາລຸນາລໍຖ້າອີກ <b></b> ວິນາທີ',
 					timer: 3000,
 					timerProgressBar: true,
 					didOpen: () => {
@@ -89,7 +85,7 @@
 						if (content) {
 							const b = content.querySelector('b')
 							if (b) {
-								b.textContent =$swal.getTimerLeft() / 1000
+								b.textContent = $swal.getTimerLeft() / 1000
 							}
 						}
 						}, 100)
@@ -97,7 +93,7 @@
 					willClose: () => {
 						clearInterval(timerInterval)
 					}
-				}).then( async (result: any) => {
+				}).then(async (result: any) => {
 					if(result.dismiss === $swal.DismissReason.timer) {
 
 						// set token to cookie
@@ -113,8 +109,6 @@
 		}
 
 	}
-
-	
 </script>
 
 <template>
@@ -140,22 +134,22 @@
 					<VCol cols="12" md="6" class="pa-3">
 						<h1>
 ເຂົ້າ​ສູ່​ລະ​ບົບ</h1>
-						<p  style="font-family: Noto Sans Lao;">ໃສ່ອີເມວ ແລະລະຫັດຜ່ານຂອງທ່ານເພື່ອເຂົ້າສູ່ລະບົບ.</p>
+						<p style="font-family: Noto Sans Lao;">ໃສ່ຊື່ຜູ້ໃຊ້ ແລະລະຫັດຜ່ານຂອງທ່ານເພື່ອເຂົ້າສູ່ລະບົບ.</p>
 
 						<VForm @submit.prevent="submit" class="mt-7">
 							<div class="mt-1">
-								<label class="label text-grey-darken-2" for="email">Email</label>
+								<label class="label text-grey-darken-2" for="username">ຊື່ຜູ້ໃຊ້ງານ</label>
 								<VTextField
-									v-model="email"
-									:rules="[ruleRequired, ruleEmail]"
+									v-model="username"
+									:rules="[ruleRequired]"
 									prepend-inner-icon="fluent:mail-24-regular"
-									id="email"
-									name="email"
-									type="email"
+									id="username"
+									name="username"
+									type="text"
 								/>
 							</div>
 							<div class="mt-1">
-								<label class="label text-grey-darken-2" for="password">Password</label>
+								<label class="label text-grey-darken-2" for="password">ລະຫັດຜ່ານ</label>
 								<VTextField
 									v-model="password"
 									:rules="[ruleRequired, rulePassLen]"
@@ -183,7 +177,3 @@
 		</VRow>
 	</VContainer>
 </template>
-
-<style scoped>
-
-</style>

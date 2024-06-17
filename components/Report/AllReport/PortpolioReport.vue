@@ -1,24 +1,45 @@
 <script setup lang="ts">
 const items = [
-  { message: "ການຈັດຊັ້ນໜີ້ຕາມເປົ້າໝາຍເງິນກູ້ຂອງບັນດາທະນາຄານ", url: "#" },
-  { message: "ການຈັດຊັ້ນໜີ້ຕາມເປົ້າໝາຍເງິນກູ້ຂອງທົ່ວລະບົບທະນາຄານ", url: "#" },
-  { message: "ການຈັດຊັ້ນໜີ້ຕາມແຕ່ລະແຂວງຂອງບັນດາທະນາຄານ", url: "#" },
-  { message: "ການຈັດຊັ້ນໜີ້ຕາມແຕ່ລະແຂວງຂອງທົວລະບົບທະນາຄານ", url: "#" },
-  { message: "ການວິເຄາະລວມຂອງຈຳນວເງິນກູ້ຕາມການຈັດຊັ້ນໜີ້", url: "#" },
+  {
+    message: "ການຈັດຊັ້ນໜີ້ຕາມເປົ້າໝາຍເງິນກູ້ຂອງບັນດາທະນາຄານ",
+    url: "../backend/reportprint/Distribution_of_Loan_Class_By_Loan_Purpose_By_Bank",
+  },
+  {
+    message: "ການຈັດຊັ້ນໜີ້ຕາມເປົ້າໝາຍເງິນກູ້ຂອງທົ່ວລະບົບທະນາຄານ",
+    url: "../backend/Distribtion_Of_Loan_Class_By_Loan_Purpose_For_All_Banks",
+  },
+  {
+    message: "ການຈັດຊັ້ນໜີ້ຕາມແຕ່ລະແຂວງຂອງບັນດາທະນາຄານ",
+    url: "../backend/reportprint/Distribution_Of_Loan_Class_By_Province_By_Bank",
+  },
+  {
+    message: "ການຈັດຊັ້ນໜີ້ຕາມແຕ່ລະແຂວງຂອງທົວລະບົບທະນາຄານ",
+    url: "..//backend/reportprint/Distribution_Of_Loan_Class_By_Province_For_All_Banks",
+  },
+  {
+    message: "ການວິເຄາະລວມຂອງຈຳນວເງິນກູ້ຕາມການຈັດຊັ້ນໜີ້",
+    url: "../backend/reportprint/Portfolio_Analysis_Total_Loan_Count_Per_Loan_Class",
+  },
   {
     message: "ການວິເຄາະລວມຂອງຈຳນວນລວມເງິນຄ່າເງິນກູ້ຕາມການຈັດຊັ້ນໜີ້",
-    url: "#",
+    url: "../backend/reportprint/Portfolio_Analysis_Total_Loan_Value_Per_Loan_Class",
   },
   {
     message: "ບົດລາຍງານແຮຄ່າເສື່ອມມູນຄ່າໜີ້ຕອ້ງຮັບທວງຍາກຂອງແຕ່ລະທະນາຄານ",
-    url: "#",
+    url: "../backend/reportprint/Provision_Requirement_By_Bank",
   },
   {
     message: "ບົດລາຍງານເງິນແຮຄ່າເສື່ອມມູນຄ່າໜີ້ຕອ້ງຮັບທວງຍາກຂອງທົວລະບົບທະນາຄານ",
-    url: "#",
+    url: "../backend/reportprint/Provision_Requirement_Report_For_All_Banks",
   },
-  { message: "ຈຳນວນເງິນແຮເພື່ອການສູນເສຍເງິນກູ້ຂອງແຕ່ລະທະນາຄານ", url: "#" },
-  { message: "ຈຳນວນເງິນແຮເພື່ອການສູນເສຍເງິນກູ້ຂອງທົວລະບົບທະນາຄານ", url: "#" },
+  {
+    message: "ຈຳນວນເງິນແຮເພື່ອການສູນເສຍເງິນກູ້ຂອງແຕ່ລະທະນາຄານ",
+    url: "../backend/reportprint/General_Provisions_by_Bank",
+  },
+  {
+    message: "ຈຳນວນເງິນແຮເພື່ອການສູນເສຍເງິນກູ້ຂອງທົວລະບົບທະນາຄານ",
+    url: "../backend/reportprint/General_Provisions_For_All_Banks",
+  },
 ];
 </script>
 <template>
