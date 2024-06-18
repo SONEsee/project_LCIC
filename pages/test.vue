@@ -1,36 +1,89 @@
-<!-- <template>
+<template>
   <div>
-    <v-col cols="12">
-      <v-row>
-        <v-col cols="12">
-          <v-table>
-            <thead>
-              <tr>
-                <th><p>ລ/ດ</p></th>
-                <th><p>ຊື່ (ພາສາລາວ)</p></th>
-                <th><p>ຊື່ (ອັງກິດ)</p></th>
-                <th><p>ລະຫັດວິສາຫະກິດ</p></th>
-                <th><p>ທີ່ຢູ່</p></th>
-                <th><p>ໂຕເລກຜູ້ເສຍອາກອນ</p></th>
-                <th><p>ວັນທີເຂົ້າ</p></th>
-                <th><p>ວັນທີ່ອອກ</p></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <p>{{fetchDta}}</p>
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
-        </v-col>
-      </v-row>
-    </v-col>
+    <v-container>
+      <v-card class="bg-indigo-lighten-5 text-start">
+        <div class="text-center">
+          <p style="font-size: 20px" class="mt-10">ລາຍລະອຽດນິຕິບຸກຄົນ</p>
+        </div>
+        <div v-if="loading"><p>ກຳລັງໂຫຼດ.........</p></div>
+        <div v-else>
+          <div v-if="data && data.length">
+            <v-col cols="12">
+              <v-row>
+                <v-col cols="12" md="6">
+                  <h1>ລາຍການລູກຄ້າທີ່ໄດ້ຜ່ານການສອບຖາມ:</h1>
+                </v-col>
+                <v-col
+                  cols="12"
+                  md="6"
+                  v-for="item in data"
+                  :key="item.LCICID"
+                  class="text-end mt-3 mp-3"
+                >
+                  <p class="text-red">
+                    ລະຫັດວິສາຫະກິດ:
+                    <b class="ml-1 mr-3" style="color: black">{{ item.EnterpriseID }}</b>
+                    ລະຫັດຂສລ:
+                    <b class="ml-1 mr-3" style="color: black">{{ item.LCICID }}</b>
+                  </p>
+                </v-col>
+              </v-row>
+            </v-col>
+            <v-table>
+              <thead>
+                <tr>
+                  <th><p>ລະຫັດວິສາຫະກິດ</p></th>
+                  <th><p>ຊື່ບໍລິສັດ(ພາສາລາວ)</p></th>
+                  <th><p>ຊື່ບໍລິສັດ(ພາສາອັງກິດ)</p></th>
+                  <th><p>ທີ່ຢູ່ເປັນພາສາອັງກິດ</p></th>
+                  <th><p>ທີ່ຢູ່ເປັນ(ພາສາລາວ)</p></th>
+                  <th><p>ທີ່ທໍາອິດຂອງຜູ້ຖືຮຸ້ນລາຍໃຫຍ່/ເຈົ້າຂອງບໍລິສັດ</p></th>
+                  <th><p>ຜູ້ຈັດການທົ່ວໄປ</p></th>
+                  <th><p>ໝາຍເລກໂທລະສັບ</p></th>
+                  <th><p>ລາຍລະອຽດ</p></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in data" :key="item.LCICID">
+                  <td><p>{{ item.EnterpriseID }}</p></td>
+                  <td><p>{{ item.enterpriseNameLao }}</p></td>
+                  <td><p>{{ item.eneterpriseNameEnglish }}</p></td>
+                  <td><p>{{ item.enLocation }}</p></td>
+                  <td><p>{{ item.enLocation }}</p></td>
+                  <td><p>{{ item.investmentAmount }}</p></td>
+                  <td><p>{{ item.foreigninvestorFlag }}</p></td>
+                  <td><p>{{ item.enLegalStrature }}</p></td>
+                  <td>
+                    <v-btn class="bg-light-blue-darken-4" @click="showDetails(item)">
+                      ເລືອກ
+                    </v-btn>
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </div>
+          <div v-else>
+            <p>ບໍ່ພົບຂໍ້ມູນ</p>
+          </div>
+        </div>
+      </v-card>
+    </v-container>
+    <v-container>
+      <v-card>
+        <div class="ml-2 mt-2">
+          <h2>ປະເພດບົດລາຍງານ:</h2>
+          <productinfo/>
+        </div>
+      </v-card>
+    </v-container>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import Swal from "sweetalert2";
+
 definePageMeta({
   layout: "backend",
 });
@@ -44,100 +97,96 @@ useHead({
     },
     {
       name: "Description",
-      content: "Report Nuxt 3,  IT Genius Engineering",
+      content: "Report Nuxt 3, IT Genius Engineering",
     },
   ],
 });
 
-export default defineComponent({
+const route = useRoute();
+const data = ref([]);
+const loading = ref(true);
 
-    setup() {
-        const fetchDta = async () =>{
-            try {
-                const response = await fetch("http://127.0.0.1:35729/api/api2/enterpriseinfo/");
-                const data = await response.json();
-                console.log(data);
-            }
-        }
-        return fetchDta();
-    },
-    
-});
-</script> -->
+const fetchData = async () => {
+  const { LCICID, EnterpriseID } = route.query;
 
+  try {
+    const res = await fetch(
+      "http://127.0.0.1:35729/api/api/v1/enterprise-info/search/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          LCICID: LCICID,
+          EnterpriseID: EnterpriseID,
+        }),
+      }
+    );
 
-<template>
-    <!-- <div>
-        {{ enterprises }}
-    </div> -->
-    <div>
-      <v-col cols="12">
-        <v-row>
-          <v-col cols="12">
-            <v-table>
-              <thead>
-                <tr>
-                  <th><p>ລ/ດ</p></th>
-                  <th><p>ຊື່ (ພາສາລາວ)</p></th>
-                  <th><p>ຊື່ (ອັງກິດ)</p></th>
-                  <th><p>ລະຫັດວິສາຫະກິດ</p></th>
-                  <th><p>ທີ່ຢູ່</p></th>
-                  <th><p>ໂຕເລກຜູ້ເສຍອາກອນ</p></th>
-                  <th><p>ວັນທີເຂົ້າ</p></th>
-                  <th><p>ວັນທີ່ອອກ</p></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(enterprise, index) in enterprises" :key="enterprise.LCICID">
-                  <td>{{ index + 1 }}</td>
-                  <td>{{ enterprise.enterpriseNameLao }}</td>
-                  <td>{{ enterprise.enterpriseNameEnglish }}</td>
-                  <td>{{ enterprise.EnterpriseID }}</td>
-                  <td>{{ enterprise.enLocation }}</td>
-                  <td>{{ enterprise.regisCertificateNumber }}</td>
-                  <td>{{ formatDate(enterprise.regisDate) }}</td>
-                  <td>{{ formatDate(enterprise.CancellationDate) }}</td>
-                </tr>
-              </tbody>
-            </v-table>
-          </v-col>
-        </v-row>
-      </v-col>
-    </div>
-  </template>
-  
-  <script lang="ts">
-  import { defineComponent, ref, onMounted } from 'vue';
-  
-  export default defineComponent({
-    setup() {
-      const enterprises = ref<any[]>([]);
-  
-      const fetchDta = async () => {
-        try {
-          const response = await fetch("http://127.0.0.1:35729/api/api2/enterpriseinfo/");
-          const data = await response.json();
-          enterprises.value = data;
-        } catch (error) {
-          console.error(error);
-        }
-      };
-  
-      const formatDate = (dateString: string | null) => {
-        if (!dateString) return '-';
-        const date = new Date(dateString);
-        return date.toLocaleDateString();
-      };
-  
-      onMounted(fetchDta);
-   console.log(enterprises);
-      return {
-        enterprises,
-        formatDate
-      };
+    const result = await res.json();
+
+    if (res.ok) {
+      data.value = result;
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: result.error || "Error fetching data",
+        confirmButtonText: "OK",
+      });
     }
-   
-    
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "ເກີດຂໍ້ຜິດພາດໃນການດືງຂໍ້ມູນ, ລອງໃໝ່ອີກຄັ້ງ",
+      confirmButtonText: "ຕົກລົງ",
+    });
+  } finally {
+    loading.value = false;
+  }
+};
+
+const showDetails = (item: any) => {
+  Swal.fire({
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    confirmButtonText: "ຕົກລົງ",
+    cancelButtonColor: "#d33",
+    cancelButtonText: "ຍົກເລີກ",
+    title: `<strong style="font-size:80%;">ທ່ານຕອ້ງການສະແດງບົດລາຍງານນີ້ແທ້ ຫຼື ບໍ່...?</strong>`,
+    html: `
+      <div class="text-start">
+        <p class="text-center"><strong><b>ລາຍລະອຽດບົດລາຍງານ</b></strong></p>
+        <p><strong>ຊື່ວິສາຫະກິດ (ລາວ):</strong> ${item.enterpriseNameLao}</p>
+        <p><strong>ຊື່ວິສາຫະກິດ (ອັງກິດ):</strong> ${item.eneterpriseNameEnglish}</p>
+        <p><strong>ທີ່ຢູ່:</strong> ${item.enLocation}</p>
+        <p><strong>ລະຫັດຂສລ:</strong> ${item.LCICID}</p>
+        <p><strong>ລະຫັດວິສາຫະກິດ:</strong> ${item.EnterpriseID}</p>
+      </div>
+    `,
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        icon: "success",
+        title: "ດືງຂໍ້ມູນສໍາເລັດ",
+        text: "ທ່ານດືງຂໍ້ມູນສໍາເລັດແລ້ວ",
+        confirmButtonText: "OK",
+      });
+    }
   });
-  </script>
-  
+};
+
+onMounted(() => {
+  fetchData();
+});
+</script>
+
+<style>
+.text-red {
+  color: red;
+}
+</style>
