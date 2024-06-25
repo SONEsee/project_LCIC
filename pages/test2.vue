@@ -1,59 +1,48 @@
 <template>
-    <v-container>
-      <v-data-table :headers="headers" :items="items" class="elevation-1">
-        <template v-slot:top>
-          <v-toolbar flat>
-            <v-toolbar-title>ຂໍ້ມູນການຄົ້ນຫາ</v-toolbar-title>
-            <v-divider class="mx-4" inset vertical></v-divider>
-          </v-toolbar>
-        </template>
-      </v-data-table>
-    </v-container>
-  </template>
-  
-  <script lang="ts">
-  import { defineComponent, ref, onMounted } from 'vue';
-  
-  export default defineComponent({
-    setup() {
-      const items = ref([]);
-      const headers = ref([
-        { text: 'ID', value: 'LCICID' },
-        { text: 'Enterprise ID', value: 'EnterpriseID' },
-        { text: 'Name Lao', value: 'enterpriseNameLao' },
-        { text: 'Name English', value: 'eneterpriseNameEnglish' },
-        { text: 'Registration Certificate', value: 'regisCertificateNumber' },
-        { text: 'Registration Date', value: 'regisDate' },
-        { text: 'Location', value: 'enLocation' },
-        { text: 'Legal Structure', value: 'enLegalStrature' },
-        { text: 'Investment Amount', value: 'investmentAmount' },
-        { text: 'Investment Currency', value: 'investmentCurrency' },
-        { text: 'Nationality', value: 'representativeNationality' },
-        { text: 'Last Update', value: 'LastUpdate' },
-        { text: 'Cancellation Date', value: 'CancellationDate' },
-        { text: 'Insert Date', value: 'InsertDate' },
-        { text: 'Update Date', value: 'UpdateDate' },
-      ]);
-  
-      onMounted(async () => {
-        try {
-          const response = await fetch('http://127.0.0.1:35729/api/api2/enterpriseinfo/');
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          const data = await response.json();
-          items.value = data;
-        } catch (error) {
-          console.error('Failed to fetch data:', error);
-        }
-      });
-  
-      return { items, headers };
+  <div>
+    <h1>Upload JSON File</h1>
+    <form @submit.prevent="handleFileUpload">
+      <input type="file" @change="handleFileChange" />
+      <button type="submit">Upload</button>
+    </form>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { uploadFile } from '@/services/uploadService';
+
+export default defineComponent({
+  data() {
+    return {
+      file: null as File | null,
+    };
+  },
+  methods: {
+    handleFileChange(event: Event) {
+      const target = event.target as HTMLInputElement;
+      if (target.files && target.files.length > 0) {
+        this.file = target.files[0];
+      }
     },
-  });
-  </script>
-  
-  <style scoped>
-  /* Add your styles here */
-  </style>
-  
+    async handleFileUpload() {
+      if (!this.file) return;
+
+      const formData = new FormData();
+      formData.append('file', this.file);
+      formData.append('name', this.file.name);
+
+      try {
+        await uploadFile(formData);
+        alert('File uploaded successfully');
+      } catch (error) {
+        alert(`Failed to upload file: ${error.message}`);
+      }
+    },
+  },
+});
+</script>
+
+<style scoped>
+/* Add some styles if needed */
+</style>

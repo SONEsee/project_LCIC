@@ -58,21 +58,21 @@ html {
   }
 
   .bg-info-grediant {
-    background: #316ce8;
+    background: #214ba5;
     background: -webkit-linear-gradient(
       legacy-direction(to right),
       #316ce8,
-      #607df9
+      #1a33a3
     );
     background: -webkit-gradient(
       linear,
       left top,
       right top,
-      from(#316ce8),
-      to(#607df9)
+      from(#1246b6),
+      to(#11288d)
     );
-    background: -webkit-linear-gradient(left, #316ce8, #607df9);
-    background: linear-gradient(90deg, #316ce8 0, #607df9);
+    background: -webkit-linear-gradient(left, #1b49ad, #142b91);
+    background: linear-gradient(90deg, #194cb9 0, #2a44b6);
   }
 
   .blog-card {
@@ -99,7 +99,7 @@ html {
       color: #263238 !important;
       line-height: 22px;
       &:hover {
-        color: #607df9 !important;
+        color: #2a3e94 !important;
       }
     }
   }

@@ -53,11 +53,7 @@
                   <td><p>{{ item.investmentAmount }}</p></td>
                   <td><p>{{ item.foreigninvestorFlag }}</p></td>
                   <td><p>{{ item.enLegalStrature }}</p></td>
-                  <td>
-                    <v-btn class="bg-light-blue-darken-4" @click="showDetails(item)">
-                      ເລືອກ
-                    </v-btn>
-                  </td>
+                  <td><v-btn class="bg-light-blue-darken-4" @click="showDetails(item)">ເລືອກ</v-btn></td>
                 </tr>
               </tbody>
             </v-table>
@@ -163,18 +159,21 @@ const showDetails = (item: any) => {
         <p class="text-center"><strong><b>ລາຍລະອຽດບົດລາຍງານ</b></strong></p>
         <p><strong>ຊື່ວິສາຫະກິດ (ລາວ):</strong> ${item.enterpriseNameLao}</p>
         <p><strong>ຊື່ວິສາຫະກິດ (ອັງກິດ):</strong> ${item.eneterpriseNameEnglish}</p>
+        <p><strong>ປະເພດບົດລາຍງານ:</strong> ${item.LCICID}</p>
+        <p><strong>ຈຳນວນຜູ້ລົງທືນ:</strong> ${item.foreigninvestorFlag}</p>
         <p><strong>ທີ່ຢູ່:</strong> ${item.enLocation}</p>
-        <p><strong>ລະຫັດຂສລ:</strong> ${item.LCICID}</p>
-        <p><strong>ລະຫັດວິສາຫະກິດ:</strong> ${item.EnterpriseID}</p>
       </div>
     `,
   }).then((result) => {
     if (result.isConfirmed) {
       Swal.fire({
         icon: "success",
-        title: "ດືງຂໍ້ມູນສໍາເລັດ",
-        text: "ທ່ານດືງຂໍ້ມູນສໍາເລັດແລ້ວ",
+        title: "Success",
+        text: "You will now be redirected to the print page.",
         confirmButtonText: "OK",
+      }).then(() => {
+        // Navigate to the print page
+        window.location.href = `/test5/${item.EnterpriseID}`;
       });
     }
   });
@@ -185,7 +184,7 @@ onMounted(() => {
 });
 </script>
 
-<style>
+<style scoped>
 .text-red {
   color: red;
 }
