@@ -9,34 +9,35 @@
       outlined
     ></v-file-input>
     <v-btn @click="uploadFile" color="primary">ອັບໂຫຼດຟາຍ</v-btn>
-
-    
-
-    <v-data-table :headers="headers" :items="items" class="elevation-1">
-      <template v-slot:top>
-        <v-toolbar flat>
-<!-- <v-table>
+<v-table class="mt-4">
   <thead>
-    <tr>
-      <th>FID</th>
-      <th>Path</th>
-      <th>Upload Date</th>
-      <th>Actions</th>
+    <tr style="background-color: #5C6BC0; color: aliceblue;" >
+      <td><b>ID</b></td>
+      <td><b>file Name</b></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td class="text-center ml-2"><b>status</b></td>
+      <td class="mr-5"><b>percentage</b></td>
+      <td><b>action</b>  </td>
+
     </tr>
   </thead>
-  <tbody>
-
-  </tbody>
-</v-table> -->
+</v-table>
+    <v-data-table :headers="headers" :items="items" class="elevation-1">
+      <!-- <template v-slot:top>
+        <v-toolbar flat>
           <v-divider class="mx-4" inset vertical></v-divider>
         </v-toolbar>
-      </template>
+      </template> -->
       <template v-slot:item.path="{ item }">
-        <a :href="getFullPath(item.path)" target="_blank">{{ getFileName(item.path) }}</a>
+        <a :href="getFullPath(item.path)" target="_blank">{{
+          getFileName(item.path)
+        }}</a>
       </template>
       <template v-slot:item.percentage="{ item }">
         <span :style="{ color: getPercentageColor(item.percentage) }"
-          >{{  item.percentage.toFixed(2) }}%</span
+          >{{ item.percentage.toFixed(2) }}%</span
         >
       </template>
       <template v-slot:item.statussubmit="{ item }">
@@ -64,7 +65,6 @@ export default defineComponent({
   setup() {
     definePageMeta({
       layout: "backend",
-      middleware: ["auth"]
     });
 
     useHead({
@@ -89,7 +89,10 @@ export default defineComponent({
       { text: "ສະຖານະ", value: "statussubmit" },
       { text: "ວັນທີອັບໂຫຼດ", value: "percentage" },
       { text: "Actions", value: "actions", sortable: false },
+      
     ]);
+   
+    
 
     // onMounted(async () => {
     //   try {
@@ -114,28 +117,31 @@ export default defineComponent({
 
     const fetchData = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:35729/api/api/upload-files2/');
+        const response = await fetch(
+          "http://127.0.0.1:35729/api/api/upload-files2/"
+        );
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error("Network response was not ok");
         }
         const data = await response.json();
         items.value = data.map((item: any) => ({
           ...item,
           FID: item.FID,
-          status: 'ສຳເລັດການນຳສົ່ງຂໍ້ມູນ',
+          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
           confirmed: false,
         }));
         sortItemsByUploadDate();
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error("Failed to fetch data:", error);
       }
     };
 
-
     const sortItemsByUploadDate = () => {
-      items.value.sort((a: any, b: any) => new Date(b.insertDate).getTime() - new Date(a.insertDate).getTime());
+      items.value.sort(
+        (a: any, b: any) =>
+          new Date(b.insertDate).getTime() - new Date(a.insertDate).getTime()
+      );
     };
-
 
     const onFileChange = (e: Event) => {
       const target = e.target as HTMLInputElement;
@@ -209,7 +215,7 @@ export default defineComponent({
         Swal.fire({
           icon: "error",
           title: "ການອັບໂຫຼດລົ້ມເຫລວ",
-          text: "ລົ້ມເຫລວໃນການອັບໂຫຼດໄຟລ໌",
+          text: "ມີການສໍ້າກັນຂອງຊື້ໄຟລ໌",
         });
       }
     };
@@ -233,11 +239,15 @@ export default defineComponent({
             params: {
               FID: item.FID,
             },
+            
           }
         );
-
+       
         const data = response.data;
-        router.push({ name: "detailupload", query: { data: JSON.stringify(data) } });
+        router.push({
+          name: "detailupload",
+          query: { data: JSON.stringify(data) },
+        });
       } catch (error) {
         Swal.fire({
           icon: "error",
@@ -248,12 +258,12 @@ export default defineComponent({
     };
 
     const getFullPath = (path: string) => {
-      const baseUrl = 'http://127.0.0.1:35729/';
+      const baseUrl = "http://127.0.0.1:35729/";
       return `${baseUrl}${path}`;
     };
 
     const getFileName = (path: string) => {
-      const parts = path.split('/');
+      const parts = path.split("/");
       return parts[parts.length - 1];
     };
 

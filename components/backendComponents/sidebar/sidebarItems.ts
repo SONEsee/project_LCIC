@@ -20,8 +20,28 @@ export default [
     to: "/backend/report",
   },
   {
+    title: "ການອັບໂຫຼດ File",
+    icon: "mdi-upload-box-outline",
+    to: "/backend/upload",
+  },
+  {
     title: "ຈັດການ User",
     icon: "mdi-cog-outline",
     to: "/backend/setting",
+  },
+  {
+    title: "Tets ຂສລ",
+    icon: "mdi-history",
+    to: "/backend/upload/lcictest",
+  },
+  {
+    title: "ອັບໂຫຼດທະບຽນວິສາຫະກິດ",
+    icon: "mdi-image-area",
+    to: "/backend/upload/upload_image",
+  },
+  {
+    title: "ຂສລ ສ້າງຂໍ້ມູນ LCIC",
+    icon: "mdi-form-select",
+    to: "/backend/upload/lcictest/insertcollaterals",
   },
 ];

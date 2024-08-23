@@ -24,7 +24,7 @@
                           prepend-inner-icon="fluent:password-20-regular"
                           id="idcompany"
                           name="idcompany"
-                          type="number"
+                          type="text"
                           placeholder="ປອ້ນລະຫັດວິສາຫະກິດ....."
                         />
                       </div>
@@ -38,7 +38,7 @@
                           prepend-inner-icon="fluent:password-20-regular"
                           id="idLCIC"
                           name="idLCIC"
-                          type="number"
+                          type="text"
                           placeholder="ປອ້ນລະຫັດ ຂສລ....."
                         />
                       </div>

@@ -8,6 +8,9 @@ export default defineNuxtConfig({
     routeRules: {
         '/backend/**': { ssr: false },
     },
+    router: {
+        middleware: 'auth'
+      },
 
     // import vuetify css
     css: [
@@ -42,7 +45,7 @@ export default defineNuxtConfig({
         // ],
         
         // this adds the vuetify vite plugin
-		// also produces type errors in the current beta release
+        // also produces type errors in the current beta release
         async (options, nuxt) => {
             // @ts-ignore
             nuxt.hooks.hook("vite:extendConfig", (config) => config.plugins.push(vuetify()))
@@ -63,7 +66,7 @@ export default defineNuxtConfig({
             link: [
                 {
                     rel: "stylesheet",
-					href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@200;300;400;500;600;700&family=Inter:wght@200;300;400;500;600;700;800;900&display=swap",
+                    href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@200;300;400;500;600;700&family=Inter:wght@200;300;400;500;600;700;800;900&display=swap",
                 },
                 {
                     rel: "icon", 

@@ -17,6 +17,7 @@
 
   definePageMeta({
     layout: "backend",
+    middleware: ["auth"],
   })
 
   useHead({

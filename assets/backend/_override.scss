@@ -105,39 +105,39 @@ html {
   }
 
   .btn-danger-gradient {
-    background: #ff4d7e;
+    background: #37128d;
     background: -webkit-linear-gradient(
       legacy-direction(to right),
-      #ff4d7e,
-      #ff6a5b
+      #2b2183,
+      #421497
     );
     background: -webkit-gradient(
       linear,
       left top,
       right top,
-      from(#ff4d7e),
-      to(#ff6a5b)
+      from(#2f13ad),
+      to(#3d1183)
     );
-    background: -webkit-linear-gradient(left, #ff4d7e, #ff6a5b);
-    background: linear-gradient(90deg, #ff4d7e 0, #ff6a5b);
+    background: -webkit-linear-gradient(left, #210e8d, #350986);
+    background: linear-gradient(90deg, #2d0980 0, #1e0b74);
     border: 0px;
   
     &:hover {
-      background: #ff6a5b;
+      background: #350b85;
       background: -webkit-linear-gradient(
         legacy-direction(to right),
-        #ff6a5b,
-        #ff4d7e
+        #290b96,
+        #340291
       );
       background: -webkit-gradient(
         linear,
         left top,
         right top,
-        from(#ff6a5b),
-        to(#ff4d7e)
+        from(#3619a1),
+        to(#2f0c81)
       );
-      background: -webkit-linear-gradient(left, #ff6a5b, #ff4d7e);
-      background: linear-gradient(90deg, #ff6a5b 0, #ff4d7e);
+      background: -webkit-linear-gradient(left, #380672, #2a0daa);
+      background: linear-gradient(90deg, #21069c 0, #560be0);
     }
   
     &.active,

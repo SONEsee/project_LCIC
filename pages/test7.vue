@@ -1,7 +1,18 @@
 <script setup lang="ts">
-import sidebarItems from "./sidebarItems";
 
-const sidebarMenu = ref(sidebarItems);
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+
+const userProfile = ref({});
+
+onMounted(async () => {
+  try {
+    const response = await axios.get('http://127.0.0.1:35729/api/api/user-profile/');
+    userProfile.value = response.data;
+  } catch (error) {
+    console.error('Failed to fetch user profile:', error);
+  }
+});
 
 </script>
 
@@ -13,7 +24,6 @@ const sidebarMenu = ref(sidebarItems);
     <div class="scrollnavbar">
       <div class="profile"> 
         <div class="profile-pic">
-         
           <v-avatar size="45">
             <img
               src="https://img.freepik.com/free-photo/abstract-autumn-beauty-multi-colored-leaf-vein-pattern-generated-by-ai_188544-9871.jpg?size=626&ext=jpg&ga=GA1.1.2082370165.1716249600&semt=ais_user"
@@ -23,17 +33,13 @@ const sidebarMenu = ref(sidebarItems);
           </v-avatar>
         </div>
         <div class="profile-name">
-          <h3 style="color: aliceblue;">Sone SEEDAVANH</h3>
+          <h3 style="color: aliceblue;">
+            {{ userProfile.nameL }} {{ userProfile.surnameL }}
+          </h3>
         </div>
       </div>
       <v-list class="pa-4">
-        <!-- ---------------------------------------------- -->
-        <!---Menu Loop -->
-        <!-- ---------------------------------------------- -->
         <template v-for="(item, i) in sidebarMenu" :key="i">
-          <!-- ---------------------------------------------- -->
-          <!---Single Item-->
-          <!-- ---------------------------------------------- -->
           <v-list-item :to="item.to" rounded="lg" class="mb-1">
             <template v-slot:prepend>
               <v-icon :icon="item.icon"></v-icon>

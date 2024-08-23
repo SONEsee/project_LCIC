@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 
 	useHead({
@@ -19,96 +18,87 @@
 	const { $swal } = useNuxtApp()
 
 	// create const for useCookie()
-	const token = useCookie('token', {
-		maxAge: 60 * 60, // 1 hour
-		// expires: new Date(Date.now() + 60 * 60 * 24 * 7), // 1 week
-	})
+	// const token = useCookie('token', {
+	// 	maxAge: 60 * 60, // 1 hour
+	// 	// expires: new Date(Date.now() + 60 * 60 * 24 * 7), // 1 week
+	// })
 
 	// ref const for username and password
 	const username = ref('')
 	const password = ref('')
 
-	// useFormRules() for username and password
+	
 	const { ruleRequired, rulePassLen } = useFormRules()
 
-	// useRoute() for redirect
+	
 	const router = useRouter()
 
-	// submit form
+	
 	const submit = async () => {
+    
+    if (ruleRequired(username.value) && rulePassLen(password.value)) {
 
-		// check form is valid
-		if (ruleRequired(username.value) == true && rulePassLen(password.value) == true) {
+        
+        const config = useRuntimeConfig()
+        const STRAPI_URL = config.strapi.url
 
-			// useRuntimeConfig() for get env
-			const config = useRuntimeConfig()
-			const STRAPI_URL: string = config.strapi.url
+        
+        const { data, error } = await useFetch('http://127.0.0.1:35729/api/login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                "username": username.value,
+                "password": password.value
+            }),
+        })
 
-			// login strapi with usefetch()
-			const { data, error } = await useFetch(`${STRAPI_URL}/login/`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					"username": username.value,
-					"password": password.value
-				}),
-			})
+       
+        if (data.value && data.value.access && data.value.refresh) {
+            localStorage.setItem('access_token', data.value.access)
+            localStorage.setItem('refresh_token', data.value.refresh)
 
-			// check error
-			if (error.value != null) { // error
-				
-				if(error.value.status === 400){
-					$swal.fire({
-						icon: 'error',
-						title: 'Login Failed',
-						text: 'Please check your username and password.',
-						confirmButtonText: 'Close'
-					})
-				}else{
-					console.log('Request failed:', error.value.message)
-				}
+            
+            let timerInterval
+            $swal.fire({
+                title: 'ກຳລັງເຂົ້າສູ່ລະບົບ',
+                html: 'ກາລຸນາລໍຖ້າອີກ <b></b> ວິນາທີ',
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: () => {
+                    $swal.showLoading()
+                    timerInterval = setInterval(() => {
+                        const content = $swal.getHtmlContainer()
+                        if (content) {
+                            const b = content.querySelector('b')
+                            if (b) {
+                                b.textContent = $swal.getTimerLeft() / 1000
+                            }
+                        }
+                    }, 100)
+                },
+                willClose: () => {
+                    clearInterval(timerInterval)
+                }
+            }).then(async (result) => {
+                if (result.dismiss === $swal.DismissReason.timer) {
+                    
+                    await router.push({ path: '/backend/dashboard' })
+                }
+            })
 
-			}else{ // success
-
-				let timerInterval: any
-				$swal.fire({
-					title: 'ກຳລັງເຂົ້າສູ່ລະບົບ',
-					html: 'ກາລຸນາລໍຖ້າອີກ <b></b> ວິນາທີ',
-					timer: 3000,
-					timerProgressBar: true,
-					didOpen: () => {
-						$swal.showLoading()
-						timerInterval = setInterval(() => {
-						const content = $swal.getHtmlContainer()
-						if (content) {
-							const b = content.querySelector('b')
-							if (b) {
-								b.textContent = $swal.getTimerLeft() / 1000
-							}
-						}
-						}, 100)
-					},
-					willClose: () => {
-						clearInterval(timerInterval)
-					}
-				}).then(async (result: any) => {
-					if(result.dismiss === $swal.DismissReason.timer) {
-
-						// set token to cookie
-						token.value = (data as { value: { jwt: string } }).value.jwt
-
-						// redirect to dashboard
-						await router.push({path:'/backend/dashboard'})
-					}
-				})
-
-			}
-
-		}
-
-	}
+        } else {
+            
+            $swal.fire({
+                icon: 'error',
+                title: 'ບໍ່ສາມາດເຂົ້າສູ່ລະບົບໄດ້',
+                text:  'ຂໍ້ມູນຜູ້ໃຊ້ງານ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ.',
+                confirmButtonText: 'Close'
+            })
+        }
+    }
+}
 </script>
 
 <template>

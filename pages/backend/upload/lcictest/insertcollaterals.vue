@@ -102,7 +102,6 @@ export default defineComponent({
 });
 </script> -->
 
-
 <template>
   <v-container>
     <v-data-table :items="collaterals" :header="headers">
@@ -111,37 +110,38 @@ export default defineComponent({
           <td>{{ item.id }}</td>
           <td>{{ item.filename }}</td>
           <td>{{ item.pathfile }}</td>
-         
+
           <td>
-            <v-btn small @click="goToTest1(item.pathfile)" class="bg-indigo-darken-4">
-              ເບິ່ງຮູບພາບອັບໂຫຼດ
+            <v-btn
+              small
+              @click="goToTest1(item.pathfile, item.id)"
+              class="bg-indigo-darken-4"
+            >
+              ບັນທືກຂໍ້ມູນວິສາຫະກິດ
             </v-btn>
-          </td> <td>
-            <v-btn small @click="confirmImage(item.id)" class="bg-success">
+          </td>
+          <td>
+            <!-- <v-btn small @click="confirmImage(item.id)" class="bg-success">
               ຢືນຢັນ
-            </v-btn>
+            </v-btn> -->
+            <P style="color: blue;">ຍັງບໍ່ທັນກວດສອບ</P>
           </td>
         </tr>
       </template>
     </v-data-table>
-  
   </v-container>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router";
 import axios from "axios";
-import Swal from 'sweetalert2'; // Import Swal
+import Swal from "sweetalert2"; // Import Swal
 
 export default defineComponent({
   setup() {
-
-
-    
     definePageMeta({
       layout: "backend",
-      middleware: ["auth"]
     });
 
     useHead({
@@ -166,25 +166,40 @@ export default defineComponent({
     ]);
 
     const fetchCollaterals = async () => {
-  try {
-    const response = await axios.get(
-      "http://127.0.0.1:35729/api/api/get_collaterals/",
-      { params: { status: 1 } } 
-    );
-    collaterals.value = response.data;
-  } catch (error) {
-    console.error(error.response ? error.response.data : error.message);
-  }
-};
-
-
-    const goToTest1 = (imagePath: string) => {
-      router.push({ name: 'test', query: { image: imagePath } });
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:35729/api/api/get_collaterals/",
+          { params: { status: 1 } }
+        );
+        collaterals.value = response.data;
+      } catch (error) {
+        console.error(error.response ? error.response.data : error.message);
+      }
+      console.log(collaterals.value);
     };
+
+    // const viewImage = (imagePath: string, id: string) => {
+    // const fullPath = `http://127.0.0.1:35729/${imagePath}?id=${id}`;
+    // window.open(fullPath, '_blank');
+    // console.log("id image", id);
+    const goToTest1 = (imagePath: string, id: number, status: number) => {
+      router.push({
+        name: "formcollaterals",
+        query: { image: imagePath, id: Number(id), status: Number(status) },
+      });
+    };
+
+    //       const goToTest1 = (imagePath: string, id: number) => {
+    //   console.log('Image Path:', imagePath);
+    //   console.log('ID:', id);
+    //   router.push({ name: 'formcollaterals', query: { image: imagePath, id: id.toString() } });
+    // };
 
     const confirmImage = async (id: number) => {
       try {
-        const csrfResponse = await axios.get('http://127.0.0.1:35729/api/api/get_csrf_token/');
+        const csrfResponse = await axios.get(
+          "http://127.0.0.1:35729/api/api/get_csrf_token/"
+        );
         const csrfToken = csrfResponse.data.csrfToken;
 
         await axios.post(
@@ -192,21 +207,20 @@ export default defineComponent({
           {},
           {
             headers: {
-              'X-CSRFToken': csrfToken,
-              'Content-Type': 'application/json',
+              "X-CSRFToken": csrfToken,
+              "Content-Type": "application/json",
             },
           }
         );
 
         Swal.fire({
-          title: 'ເຮັດສຳເລັດ!',
-          text: 'ການຢືນຢັນຮູບພາບສຳເລັດແລ້ວ.',
-          icon: 'success',
-          confirmButtonText: 'OK'
+          title: "ເຮັດສຳເລັດ!",
+          text: "ການຢືນຢັນຮູບພາບສຳເລັດແລ້ວ.",
+          icon: "success",
+          confirmButtonText: "OK",
         }).then(() => {
-          fetchCollaterals(); // Fetch the updated collaterals after confirming
+          fetchCollaterals();
         });
-
       } catch (error) {
         console.error(error.response ? error.response.data : error.message);
       }

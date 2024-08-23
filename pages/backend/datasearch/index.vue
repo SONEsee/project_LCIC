@@ -192,11 +192,11 @@ onMounted(fetchData);
                   :key="item.LCICID"
                   class="text-end mt-3 mp-3"
                 >
-                  <p class="text-red">
+                  <p class="text-red">ລະຫັດຂສລ:
+                    <b class="ml-1 mr-3" style="color: black">{{ item.LCICID }}</b>
                     ລະຫັດວິສາຫະກິດ:
                     <b class="ml-1 mr-3" style="color: black">{{ item.EnterpriseID }}</b>
-                    ລະຫັດຂສລ:
-                    <b class="ml-1 mr-3" style="color: black">{{ item.LCICID }}</b>
+                    
                   </p>
                 </v-col>
               </v-row>
@@ -273,6 +273,7 @@ useHead({
 const route = useRoute();
 const data = ref([]);
 const loading = ref(true);
+const details = ref(false);
 
 const fetchData = async () => {
   const { LCICID, EnterpriseID } = route.query;
