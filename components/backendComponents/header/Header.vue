@@ -5,7 +5,17 @@ const href = ref(undefined);
 const messages = ref(message);
 const notifications = ref(notification);
 const userprofile = ref(profile);
+// const userId = ref('');
+const user = ref({});
 
+onMounted(() => {
+  // userId.value = localStorage.getItem('user_id');
+  const userData = localStorage.getItem('user_data');
+  if (userData) {
+    user.value = JSON.parse(userData);
+    console.log('User data:', user.value)
+  }
+});
 // sign out method
 const signOut = () => {
   // get token from cookie
@@ -146,9 +156,9 @@ const signOut = () => {
                   height="100"
                 />
                 <div class="ml-4">
-                  <h4 class="font-weight-medium fs-18">Sone SEEDAVANH</h4>
+                  <h4 class="font-weight-medium fs-18">{{ user.username}}</h4>
                   <span class="subtitle-2 font-weight-light"
-                    >Administrator</span
+                    >{{ user.MID?.code }}</span
                   >
                   <div class="d-flex align-center">
                     <v-icon

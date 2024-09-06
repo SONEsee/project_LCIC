@@ -1,134 +1,205 @@
 <template>
-  <v-col cols="12">
-    <v-row>
-      <v-col cols="12" md="4">
-        <v-select
-          v-model="selectedOption"
-          :items="options"
-          density="compact"
-          label="ເລືອກປະເພດຂໍ້ມູນຫຼັກຊັບ"
-          variant="outlined"
-        ></v-select>
-      </v-col>
-      <v-col cols="12" md="12">
-        <div v-if="selectedOption === options[0]">
-          <UploadFileDetailUploadFileColRealEstates :cidData="cidData" />
-        </div>
-        <div v-if="selectedOption === options[1]">
-          <UploadFileDetailUploadFileColMoneyMia :cidData="cidData" />
-        </div>
-        <div v-if="selectedOption === options[2]">
-          <UploadFileDetailUploadFileColEquipmentEqi :cidData="cidData" />
-        </div>
-        <div v-if="selectedOption === options[3]">
-          <UploadFileDetailUploadFileColProjectPrj :cidData="cidData" />
-        </div>
-        <div v-if="selectedOption === options[4]">
-          <UploadFileDetailUploadFileColVechicleVeh :cidData="cidData" />
-        </div>
-        <div v-if="selectedOption === options[5]">
-          <UploadFileDetailUploadFileColGuarantorGua :cidData="cidData" />
-        </div>
-        <div v-if="selectedOption === options[6]">
-          <UploadFileDetailUploadFileColGoldsilverGold :cidData="cidData" />
-        </div>
-        <div v-if="selectedOption === options[7]">
-          <upload-file-detail-upload-file-to-tal :cidData="cidData" />
-        </div>
-      </v-col>
-    </v-row>
-  </v-col>
+  <div>
+    <h1>Roles</h1>
+    <v-container>
+      <v-row>
+        <v-col>
+          <v-table>
+            <thead>
+              <tr>
+                <th>Sidebar Item</th>
+                <th v-for="role in roles" :key="role.id">{{ role.name }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in sidebarItems" :key="item.id">
+                <td>{{ item.name }}</td>
+                <td v-for="role in roles" :key="role.id">
+                  <v-checkbox
+                    v-model="selectedSidebarItems"
+                    :value="{ roleId: role.id, itemId: item.id }"
+                    :label="item.name"
+                  ></v-checkbox>
+                </td>
+                <td>
+                  <ul>
+                    <li v-for="subItem in item.sidebarSubItems" :key="subItem.id">
+                      {{ subItem.name }}
+                      <v-checkbox
+                        v-model="selectedSidebarSubItems"
+                        :value="{ roleId: role.id, itemId: item.id, subItemId: subItem.id }"
+                        :label="subItem.name"
+                      ></v-checkbox>
+                    </li>
+                  </ul>
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-col>
+      </v-row>
+      <v-btn @click="submitForm" color="primary">Submit</v-btn>
+    </v-container>
+  </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
-import {
-  UploadFileDetailUploadFileColMoneyMia,
-  UploadFileDetailUploadFileColRealEstates,
-} from "~~/.nuxt/components";
+<script>
+import { reactive, onMounted, toRefs } from 'vue';
+definePageMeta({
+  middleware:['auth'],
+  layout: "backend",
+});
 
-export default defineComponent({
+export default {
   setup() {
-    const route = useRoute();
-    const cidData = ref(null);
-
-    onMounted(() => {
-      const data = route.query.data;
-      if (typeof data === "string") {
-        cidData.value = JSON.parse(data);
-      } else if (Array.isArray(data)) {
-        cidData.value = JSON.parse(JSON.stringify(data));
-        console.log("feegerger", cidData.value);
-      }
+    const state = reactive({
+      roles: [],
+      sidebarItems: [],
+      selectedSidebarItems: [],
+      selectedSidebarSubItems: []
     });
-
-    definePageMeta({
-      layout: "backend",
-    });
-
-    useHead({
-      title: "Upload File",
-      meta: [
-        { name: "keywords", content: "Report, Nuxt 3, Backend" },
-        {
-          name: "Description",
-          content: "Report Nuxt 3, IT Genius Engineering",
-        },
-      ],
-    });
-    const options = [
-      "ອາຄານ + ທີ່ດິນ",
-      "ເອກະສານມີຄ່າ",
-      "ເຄື່ອງຈັກ ແລະ ອຸປະກອນຕ່າງໆ",
-      "ໂຄງການ",
-      "ຍານພາຫະນະ",
-      "ຜູ້​ຄ້ຳປະກັນ",
-      "GOLD AND SILVER",
-      "ທັງຫມົດ",
-    ] as string[];
-
-    const selectedOption = ref<string>("ທັງໝົດ");
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      switch (event.key.toLowerCase()) {
-        case "a":
-          selectedOption.value = options[0];
-          break;
-        case "b":
-          selectedOption.value = options[1];
-          break;
-        case "c":
-          selectedOption.value = options[2];
-          break;
-        case "d":
-          selectedOption.value = options[3];
-          break;
-        case "e":
-          selectedOption.value = options[4];
-          break;
-        case "f":
-          selectedOption.value = options[5];
-          break;
-        case "g":
-          selectedOption.value = options[6];
-          break;
-        case "h":
-          selectedOption.value = options[7];
-          break;
+    
+    const fetchRoles = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:35729/api/roles/');
+        const data = await response.json();
+        state.roles = data;
+      } catch (error) {
+        console.error('Error fetching roles:', error);
       }
     };
 
+    const fetchSidebarItems = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:35729/api/sidebar-items/');
+        const data = await response.json();
+        state.sidebarItems = data;
+      } catch (error) {
+        console.error('Error fetching sidebar items:', error);
+      }
+    };
+
+    // const submitForm = async () => {
+    //   // const userData = localStorage.getItem('user_data');
+    //   // const user = userData ? JSON.parse(userData) : null;
+    //   // const userGID = user ? user.GID : null;
+
+    //   const formData = {
+
+    //     selectedSidebarItems: state.selectedSidebarItems,
+    //     selectedSidebarSubItems: state.selectedSidebarSubItems
+    //   };
+
+    //   try {
+    //     const response = await fetch('http://127.0.0.1:35729/api/assign-role/', {
+    //       method: 'POST',
+    //       headers: { 'Content-Type': 'application/json' },
+    //       body: JSON.stringify(formData)
+    //     });
+    //     const result = await response.json();
+    //     console.log('Role assigned successfully:', result);
+    //   } catch (error) {
+    //     console.error('Error submitting form:', error);
+    //   }
+    // };
+
+    const submitForm = async () => {
+  // Object to hold the roles and their corresponding sidebar items/sub-items
+  const formDataList = [];
+
+  // Create a structure to group sidebar items and sub-items by role
+  const roleItems = {};
+
+  // Process selected sidebar items
+  state.selectedSidebarItems.forEach(({ roleId, itemId }) => {
+    if (!roleItems[roleId]) {
+      roleItems[roleId] = {
+        role_id: roleId,
+        sidebar_items: [],
+        sidebar_sub_items: []
+      };
+    }
+    roleItems[roleId].sidebar_items.push(itemId);
+  });
+
+  // Process selected sidebar sub-items
+  state.selectedSidebarSubItems.forEach(({ roleId, subItemId }) => {
+    if (!roleItems[roleId]) {
+      roleItems[roleId] = {
+        role_id: roleId,
+        sidebar_items: [],
+        sidebar_sub_items: []
+      };
+    }
+    roleItems[roleId].sidebar_sub_items.push(subItemId);
+  });
+
+  // Convert the roleItems object to an array of formData for each role
+  for (const roleId in roleItems) {
+    formDataList.push(roleItems[roleId]);
+  }
+
+  // Send the POST requests for each role
+  for (const formData of formDataList) {
+    try {
+      const response = await fetch('http://127.0.0.1:35729/api/assign-role/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const result = await response.json();
+      console.log('Role assigned successfully:', result);
+    } catch (error) {
+      console.error('Error assigning role:', error);
+    }
+  }
+};
+
+
     onMounted(() => {
-      document.addEventListener("keydown", handleKeyDown);
+      fetchRoles();
+      fetchSidebarItems();
     });
 
     return {
-      options,
-      selectedOption,
-      cidData,
-      handleKeyDown,
+      ...toRefs(state),
+      submitForm
     };
-  },
-});
+  }
+};
 </script>
+
+<style scoped>
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+th {
+  background-color: #f0f0f0;
+}
+
+td {
+  background-color: #fff;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+li:last-child {
+  border-bottom: none;
+}
+</style>

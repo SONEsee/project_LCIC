@@ -1,55 +1,6 @@
 <template>
     <v-card>
-      <!-- <v-col cols="12">
-          <v-row>
-            <v-col cols="12" md="10">
-              <div class="pa-4">
-                <p class="ml-3">
-                  <b style="color: #01579b">- ລາຍລະອຽດການອັບໂຫຼດຂໍ້ມູນ</b>
-                </p>
-    
-               
-    
-                <div
-                  :items="combinedData"
-                  :headers="headers"
-                  class="ml-5"
-                  style="color: black"
-                >
-                  <template v-if="combinedData.length > 0">
-                    <p>
-                      ປະຈຳເດືອນ:
-                      <b
-                        >{{ combinedData[0].period[5]
-                        }}{{ combinedData[0].period[6] }} /
-                        {{ combinedData[0].period[7] }}{{ combinedData[0].period[8]
-                        }}{{ combinedData[0].period[9]
-                        }}{{ combinedData[0].period[10] }}</b
-                      >
-                    </p>
-                    <p>
-                      ຂອງທະນາຄານ: <b>{{ combinedData[0].bnk_code }}</b
-                      >, ສາຂາ: <b>{{ combinedData[0].branch_id }}</b>
-                    </p>
-                    <p>
-                      ລາຍການຂໍ້ມູນທີ່ອັບໂຫຼດທັງໝົດ:
-                      <b> {{ combinedData.length }}</b> ລາຍການ
-                    </p>
-                  </template>
-                </div>
-              </div>
-            </v-col>
-            <v-col cols="12" md="2" class="mt-5">
-              <div :items="uploadfile" :headers="headers" style="color: black">
-                <template v-if="uploadfile.length">
-                  <p>
-                    ຊື່ເອກະສານ: <b>{{ uploadfile[0].fileName }}</b>
-                  </p>
-                </template>
-              </div>
-            </v-col>
-          </v-row>
-        </v-col> -->
+
       <div>
         {{ cidData }}
       </div>
