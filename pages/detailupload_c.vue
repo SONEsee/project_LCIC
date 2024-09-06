@@ -1,6 +1,14 @@
 <template>
   <v-col cols="12">
-    <v-row>
+    <v-row><v-col cols="12">
+  <v-row>
+    <v-col cols="12">
+      <div>
+        <UploadFileDetailData :cidData="cidData" />
+      </div>
+    </v-col>
+  </v-row>
+</v-col>
       <v-col cols="12" md="4">
         <v-select
           v-model="selectedOption"
@@ -10,32 +18,34 @@
           variant="outlined"
         ></v-select>
       </v-col>
+
       <v-col cols="12" md="12">
-        <div v-if="selectedOption === options[0]">
+        <template v-if="selectedOption === options[0]">
+          <upload-file-detail-upload-file-to-tal :cidData="cidData" />
+        </template>
+        <div v-if="selectedOption === options[1]">
           <UploadFileDetailUploadFileColRealEstates :cidData="cidData" />
         </div>
-        <div v-if="selectedOption === options[1]">
+        <div v-if="selectedOption === options[2]">
           <UploadFileDetailUploadFileColMoneyMia :cidData="cidData" />
         </div>
-        <div v-if="selectedOption === options[2]">
+        <div v-if="selectedOption === options[3]">
           <UploadFileDetailUploadFileColEquipmentEqi :cidData="cidData" />
         </div>
-        <div v-if="selectedOption === options[3]">
+        <div v-if="selectedOption === options[4]">
           <UploadFileDetailUploadFileColProjectPrj :cidData="cidData" />
         </div>
-        <div v-if="selectedOption === options[4]">
+        <div v-if="selectedOption === options[5]">
           <UploadFileDetailUploadFileColVechicleVeh :cidData="cidData" />
         </div>
-        <div v-if="selectedOption === options[5]">
+        <div v-if="selectedOption === options[6]">
           <UploadFileDetailUploadFileColGuarantorGua :cidData="cidData" />
         </div>
-        <div v-if="selectedOption === options[6]">
+        <div v-if="selectedOption === options[7]">
           <UploadFileDetailUploadFileColGoldsilverGold :cidData="cidData" />
         </div>
-        <div v-if="selectedOption === options[7]">
-          <upload-file-detail-upload-file-to-tal :cidData="cidData" />
-        </div>
       </v-col>
+     
     </v-row>
   </v-col>
 </template>
@@ -65,6 +75,7 @@ export default defineComponent({
 
     definePageMeta({
       layout: "backend",
+      middleware: ["auth"]
     });
 
     useHead({
@@ -78,6 +89,7 @@ export default defineComponent({
       ],
     });
     const options = [
+      "ທັງໝົດ",
       "ອາຄານ + ທີ່ດິນ",
       "ເອກະສານມີຄ່າ",
       "ເຄື່ອງຈັກ ແລະ ອຸປະກອນຕ່າງໆ",
@@ -85,7 +97,6 @@ export default defineComponent({
       "ຍານພາຫະນະ",
       "ຜູ້​ຄ້ຳປະກັນ",
       "GOLD AND SILVER",
-      "ທັງຫມົດ",
     ] as string[];
 
     const selectedOption = ref<string>("ທັງໝົດ");

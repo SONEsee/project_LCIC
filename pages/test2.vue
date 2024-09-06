@@ -1,227 +1,29 @@
-<!-- <template>
-  <v-container>
-    <v-data-table :items="collaterals" :headers="headers">
-      <template v-slot:item="{ item }">
-        <tr>
-          <td>{{ item.id }}</td>
-          <td>{{ item.filename }}</td>
-          <td>{{ item.pathfile }}</td>
-          <td>
-            <v-btn
-              small
-              @click="confirmImage(item.id)"
-              class="bg-success"
-            >
-              ຢືນຢັນ
-            </v-btn>
-          </td>
-          <td>
-            <v-btn
-              small
-              @click="goToTest1(item.pathfile)"
-              class="bg-indigo-darken-4"
-            >
-              ເບິ່ງຮູບພາບອັບໂຫຼດ
-            </v-btn>
-          </td>
-        </tr>
-      </template>
-    </v-data-table>
-  </v-container>
-</template>
-
-<script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
-import { useRouter } from 'vue-router';
-import axios from "axios";
-import Cookies from 'js-cookie';
-
+<script lang = "ts">
+import { defineComponent ,ref , onMounted , computed } from 'vue'
 export default defineComponent({
   setup() {
-    const router = useRouter();
-    const collaterals = ref([]);
-    const headers = ref([
-      { text: "ລຳດັບ", value: "id" },
-      { text: "ຊື່ຮູບພາບ", value: "filename" },
-      { text: "ທີ່ຢູ່ຮູບພາບ", value: "pathfile" },
-      { text: "ຢືນຢັນ", value: "confirm" },
-      { text: "ລາຍລະອຽດ", value: "actions" },
-    ]);
-
-    const fetchCollaterals = async () => {
-      try {
-        const response = await axios.get(
-          "http://127.0.0.1:35729/api/api/get_collaterals/"
-        );
-        collaterals.value = response.data;
-      } catch (error) {
-        console.error(error.response ? error.response.data : error.message);
-      }
-    };
-
-    const goToTest1 = (imagePath: string) => {
-      router.push({ name: 'test', query: { image: imagePath } });
-    };
-
-    const confirmImage = async (id: number) => {
-  try {
-    // Fetch CSRF token
-    const csrfResponse = await axios.get('http://127.0.0.1:35729/api/api/get_csrf_token/');
-    const csrfToken = csrfResponse.data.csrfToken;
-
-    // Send POST request with CSRF token
-    await axios.post(
-      `http://127.0.0.1:35729/api/api/confirm_image/${id}/`,
-      {},
-      {
-        headers: {
-          'X-CSRFToken': csrfToken,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    await fetchCollaterals(); // Fetch the updated collaterals after confirming
-  } catch (error) {
-    console.error(error.response ? error.response.data : error.message);
-  }
-};
-
-
-    onMounted(() => {
-      fetchCollaterals();
-    });
+    const tab = ref(0)
+    const b = ref('b')
+    const c = ref('c')
 
     return {
-      collaterals,
-      headers,
-      goToTest1,
-      confirmImage,
-    };
-  },
-});
-</script> -->
-
-
-<template>
-  <v-container>
-    <v-data-table :items="collaterals" :header="headers">
-      <template v-slot:item="{ item }">
-        <tr>
-          <td>{{ item.id }}</td>
-          <td>{{ item.filename }}</td>
-          <td>{{ item.pathfile }}</td>
-         
-          <td>
-            <v-btn small @click="goToTest1(item.pathfile)" class="bg-indigo-darken-4">
-              ເບິ່ງຮູບພາບອັບໂຫຼດ
-            </v-btn>
-          </td> <td>
-            <v-btn small @click="confirmImage(item.id)" class="bg-success">
-              ຢືນຢັນ
-            </v-btn>
-          </td>
-        </tr>
-      </template>
-    </v-data-table>
-  
-  </v-container>
-</template>
-
-<script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
-import { useRouter } from 'vue-router';
-import axios from "axios";
-import Swal from 'sweetalert2'; // Import Swal
-
-export default defineComponent({
-  setup() {
-
-
-    
-    definePageMeta({
-      layout: "backend",
-      middleware: ["auth"]
-    });
-
-    useHead({
-      title: "Upload File",
-      meta: [
-        { name: "keywords", content: "Report, Nuxt 3, Backend" },
-        {
-          name: "Description",
-          content: "Report Nuxt 3, IT Genius Engineering",
-        },
-      ],
-    });
-
-    const router = useRouter();
-    const collaterals = ref([]);
-    const headers = ref([
-      { text: "ລຳດັບ", value: "id" },
-      { text: "ຊື່ຮູບພາບ", value: "filename" },
-      { text: "ທີ່ຢູ່ຮູບພາບ", value: "pathfile" },
-      { text: "ຢືນຢັນ", value: "confirm" },
-      { text: "ລາຍລະອຽດ", value: "actions" },
-    ]);
-
-    const fetchCollaterals = async () => {
-  try {
-    const response = await axios.get(
-      "http://127.0.0.1:35729/api/api/get_collaterals/",
-      { params: { status: 1 } } 
-    );
-    collaterals.value = response.data;
-  } catch (error) {
-    console.error(error.response ? error.response.data : error.message);
+      b,
+      c
+    }
   }
-};
-
-
-    const goToTest1 = (imagePath: string) => {
-      router.push({ name: 'test', query: { image: imagePath } });
-    };
-
-    const confirmImage = async (id: number) => {
-      try {
-        const csrfResponse = await axios.get('http://127.0.0.1:35729/api/api/get_csrf_token/');
-        const csrfToken = csrfResponse.data.csrfToken;
-
-        await axios.post(
-          `http://127.0.0.1:35729/api/api/confirm_image/${id}/`,
-          {},
-          {
-            headers: {
-              'X-CSRFToken': csrfToken,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        Swal.fire({
-          title: 'ເຮັດສຳເລັດ!',
-          text: 'ການຢືນຢັນຮູບພາບສຳເລັດແລ້ວ.',
-          icon: 'success',
-          confirmButtonText: 'OK'
-        }).then(() => {
-          fetchCollaterals(); // Fetch the updated collaterals after confirming
-        });
-
-      } catch (error) {
-        console.error(error.response ? error.response.data : error.message);
-      }
-    };
-
-    onMounted(() => {
-      fetchCollaterals();
-    });
-
-    return {
-      collaterals,
-      headers,
-      goToTest1,
-      confirmImage,
-    };
-  },
-});
+})
 </script>
+<template>
+<v-container>
+  <v-tabs v-model="tab" fixed-tabs color="primary">
+    <v-tab v-model="b"></v-tab>
+    <v-tab v-model="c"></v-tab>
+  </v-tabs>
+  <v-card-text>
+    <v-window v-model="tab">
+<v-window-item value="b"></v-window-item>
+    </v-window>
+    <p>test2</p>
+  </v-card-text>
+</v-container>
+</template>

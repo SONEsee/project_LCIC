@@ -9,7 +9,7 @@ const userprofile = ref(profile);
 // sign out method
 const signOut = () => {
   // get token from cookie
-  const token = useCookie("token");
+  const token = useCookie("access_token");
 
   // remove token from cookie
   token.value = null;
@@ -20,7 +20,7 @@ const signOut = () => {
 </script>
 
 <template>
-  <v-menu anchor="bottom end" origin="auto" min-width="300">
+  <v-menu anchor="bottom end" origin="auto" min-width="300"  style="background-color: blue ;" >
     <template v-slot:activator="{ props }">
       <div class="d-flex">
         <!-- ---------------------------------------------- -->

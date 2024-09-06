@@ -1,412 +1,324 @@
 <template>
-  <v-card>
-    <v-col cols="12">
-      <v-row>
-        <v-col cols="12" md="8">
-          <v-card>
-            <div class="border">
-              <div class="text-center mt-5 ml-5 mb-5 mr-5">
-                <!-- <img
-                  src="../assets/images/com01.jpeg"
-                  alt="Image"
-                  width="100%"
-                  height="100%"
-                /> -->
-                <v-container>
-                  <img width="100%"
-                  height="100%"  :src="fullImagePath" alt="Uploaded Image" />
-                </v-container>
-                <h2 class="text-center">ເອກະສານອັບໂຫຼດ</h2>
-              </div>
-            </div></v-card
-          >
-        </v-col>
-        <v-col cols="12" md="4">
-          <div
-            class="border d-flex align-center justify-center"
-            style="height: 300px"
-          >
-            <p style="font-size: 200%">ລົງຂໍ້ມູນວິສາຫະກິດ</p>
-          </div>
-          <v-card>
-            <div>
-              <v-col cols="12">
-                <v-row>
-                  <v-sheet class="mx-auto" max-width="">
-                    <v-form validate-on="submit lazy" @submit.prevent="submit">
-                      <v-col cols="12">
-                        <v-row>
-                          <!-- <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="LCICID"
-                              :rules="rules"
-                              hint="ປອ້ນຂໍ້ມູນ LCICID"
-                              label="ປອ້ນຂໍ້ມູນ LCICID"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col> -->
-                          <v-col cols="12" md="6">
-                            <v-text-field
-                              v-model="LCICID"
-                              :rules="rules"
-                              hint="ປອ້ນຂໍ້ມູນ LCICID"
-                              label="ປອ້ນຂໍ້ມູນ LCICID"
-                              variant="outlined"
-                              persistent-hint
-                              readonly
-                            ></v-text-field>
-                          </v-col>
+  <p class="ml-3 text-primary"> * ອັບໂຫຼດຂໍ້ມູນຫຼັກຊັບ</p>
+  <v-container>
+    <v-file-input
+      variant="outlined"
+      prepend-icon="mdi-paperclip"
+      label="ອັບໂຫຼດ JSON และ XML ເທົ່ານັ້ນ"
+      accept=".json, .xml"
+      @change="onFileChange"
+      outlined
+    ></v-file-input>
+    <v-btn @click="uploadFile" color="primary">ອັບໂຫຼດຟາຍ</v-btn>
+<v-table class="mt-4">
+  <thead>
+    <tr style="background-color: #5C6BC0; color: aliceblue;" >
+      <td><b>ID</b></td>
+      <td><b>file Name</b></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      
+      
+      <td class="text-center ml-2"><b>status</b></td>
+      <td class="mr-5"><b>percentage</b></td>
+      <td><b>action</b>  </td>
 
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="EnterpriseID"
-                              :rules="rules"
-                              
-                              label="ປອ້ນຂໍ້ມູນ EnterpriseID"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="enterpriseNameLao"
-                              :rules="rules"
-                              
-                              label="ປອ້ນຂໍ້ມູນ Enterprise lao Name"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="eneterpriseNameEnglish"
-                              :rules="rules"
-                              
-                              label="ປອ້ນຂໍ້ມູນ Enterprise English Name"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="regisCertificateNumber"
-                              :rules="rules"
-                              
-                              label="ປອ້ນຂໍ້ມູນ RegisCertificateNumber"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="regisDate"
-                              :rules="rules"
-                              type="date"
-                              
-                              label="ປອ້ນຂໍ້ມູນ RegisDate"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="enLocation"
-                              :rules="rules"
-                              
-                              label="ປອ້ນຂໍ້ມູນ Enlocation"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="regisStrationOfficeType"
-                              :rules="rules"
-                              
-                              label="ປອ້ນຂໍ້ມູນ Regis Stration Office Type"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="regisStationOfficeCode"
-                              :rules="rules"
-                              
-                              label="ປອ້ນຂໍ້ມູນ Regis Stration Office Code"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="enLegalStrature"
-                              :rules="rules"
-                              
-                              label="ປອ້ນຂໍ້ມູນ EnLegal Strature"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="foreigninvestorFlag"
-                              :rules="rules"
-                              
-                              label="ປອ້ນຂໍ້ມູນ Foreigninbvestor Flag"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="investmentAmount"
-                              :rules="rules"
-                              
-                              label="ປອ້ນຂໍ້ມູນ Investment Amount"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="investmentCurrency"
-                              :rules="rules"
-                              
-                              label="ປອ້ນຂໍ້ມູນ Investment Currency"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-                          <v-col cols="12" md="6"
-                            ><v-text-field
-                              v-model="representativeNationality"
-                              :rules="rules"
-                              
-                              label="ປອ້ນຂໍ້ມູນ Representative Nationaly"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-text-field
-                          ></v-col>
-
-                          <v-col cols="12" md="6"></v-col>
-                        </v-row>
-                      </v-col>
-                      <v-vol class="text-center">
-                        <v-row>
-                          <v-col cols="6" md="6"
-                            ><v-btn
-                            style="width:100px ;"
-                              :loading="loading"
-                              class="bg-green"
-                              text="ບັນທຶກ"
-                              type="submit"
-                              block
-                              :disabled="!isFormValid"
-                            ></v-btn
-                          ></v-col>
-                          <v-col cols="6" md="6"
-                            ><v-btn
-                            style="width:100px ;"
-                              :loading="loading"
-                              class="bg-red"
-                              text="ຍົກເລີກ"
-                              type="reset"
-                              block
-                            ></v-btn
-                          ></v-col
-                          >
-                          
-                         
-                        </v-row>
-                      </v-vol>
-                    </v-form>
-                  </v-sheet>
-                </v-row>
-              </v-col>
-            </div>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-col>
-  </v-card>
+    </tr>
+  </thead>
+</v-table>
+    <v-data-table :headers="headers" :items="items" class="elevation-1">
+     
+      <template v-slot:item.path="{ item }">
+        <a :href="getFullPath(item.path)" target="_blank">{{
+          getFileName(item.path)
+        }}</a>
+      </template>
+      <template v-slot:item.percentage="{ item }">
+        <span :style="{ color: getPercentageColor(item.percentage) }"
+          >{{ item.percentage.toFixed(2) }}%</span
+        >
+      </template>
+      <template v-slot:item.statussubmit="{ item }">
+        <v-chip :color="getStatusColor(item.statussubmit)" dark>{{
+          getStatusText(item.statussubmit)
+        }}</v-chip>
+      </template>
+      <template v-slot:item.actions="{ item }">
+        <v-btn @click="viewDetails(item)" color="info">ເບິ່ງລາຍລະອຽດ</v-btn>
+      </template>
+      <template v-slot:no-data>
+        <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
+      </template>
+    </v-data-table>
+  </v-container>
 </template>
+
 <script lang="ts">
-import Swal from "sweetalert2";
+import { defineComponent, ref, onMounted } from "vue";
 import axios from "axios";
-import Cookies from "js-cookie";
-import { defineComponent, computed } from "vue";
-import { useRoute } from "vue-router";
+import Swal from "sweetalert2";
+import { useRouter } from "vue-router";
+
 export default defineComponent({
   setup() {
+    definePageMeta({
+      layout: "backend",
+    });
+
     useHead({
       title: "Upload File",
       meta: [
-        { name: "keywords", content: "Report, Nuxt 3, Backend" },
+        {
+          name: "keywords",
+          content: "Report, Nuxt 3, Backend",
+        },
         {
           name: "Description",
           content: "Report Nuxt 3, IT Genius Engineering",
         },
       ],
     });
-    definePageMeta({
-      layout: "backend",
+
+    const file = ref<File | null>(null);
+    const items = ref([]);
+    const headers = ref([
+      { text: "ໄອດີ", value: "FID" },
+      { text: "ຊື່ພາດ", value: "path" },
+      { text: "ສະຖານະ", value: "statussubmit" },
+      { text: "ວັນທີອັບໂຫຼດ", value: "percentage" },
+      { text: "Actions", value: "actions", sortable: false },
+      
+    ]);
+   
+    
+
+    // onMounted(async () => {
+    //   try {
+    //     const response = await fetch(
+    //       "http://127.0.0.1:35729/api/api/upload-files2/"
+    //     );
+    //     if (!response.ok) {
+    //       throw new Error("Network response was not ok");
+    //     }
+    //     const data = await response.json();
+    //     items.value = data.map((item: any) => ({
+    //       ...item,
+    //       FID: item.FID,
+    //     }));
+    //   } catch (error) {
+    //     console.error("Failed to fetch data:", error);
+    //   }
+    // });
+    onMounted(async () => {
+      await fetchData();
     });
-    const loading = ref(false);
 
-    const enterpriseNameLao = ref<string>("");
-    const eneterpriseNameEnglish = ref<string>("");
-    const regisStationOfficeCode = ref<string>("");
-
-    const enLegalStrature = ref<string>("");
-    const foreigninvestorFlag = ref<string>("");
-    const investmentAmount = ref<string>("");
-    const investmentCurrency = ref<string>("");
-    const representativeNationality = ref<string>("");
-    const regisCertificateNumber = ref<string>("");
-    const regisDate = ref<string>("");
-    const enLocation = ref<string>("");
-
-    const regisStrationOfficeType = ref<string>("");
-    const EnterpriseID = ref<string>("");
-    const LCICID = ref<string>("");
-
-    const rules = [
-      (value: string) => !!value || "Required.",
-      (value: string) => (value && value.length >= 3) || "Min 3 characters",
-    ];
-
-    const submit = async () => {
-      loading.value = true;
+    const fetchData = async () => {
       try {
-        const csrfToken = Cookies.get("csrftoken");
-
-        let regisDateFormatted = null;
-        if (regisDate.value) {
-          const dateObject = new Date(regisDate.value);
-          if (!isNaN(dateObject.getTime())) {
-            regisDateFormatted = dateObject.toISOString();
-          } else {
-            throw new Error("Invalid date format for regisDate");
-          }
-        }
-
-        const investmentAmountFormatted = parseFloat(investmentAmount.value);
-
-        const response = await axios.post(
-          "http://127.0.0.1:35729/api/api/enterprise-info/",
-          {
-            enterpriseNameLao: enterpriseNameLao.value,
-            eneterpriseNameEnglish: eneterpriseNameEnglish.value,
-            enLegalStrature: enLegalStrature.value,
-            foreigninvestorFlag: foreigninvestorFlag.value,
-            investmentAmount: investmentAmountFormatted,
-            investmentCurrency: investmentCurrency.value,
-            representativeNationality: representativeNationality.value,
-            regisCertificateNumber: regisCertificateNumber.value,
-            regisDate: regisDateFormatted,
-            enLocation: enLocation.value,
-            regisStationOfficeCode: regisStationOfficeCode.value,
-            regisStrationOfficeType: regisStrationOfficeType.value,
-            EnterpriseID: EnterpriseID.value,
-            LCICID: LCICID.value,
-          },
-          {
-            headers: {
-              "X-CSRFToken": csrfToken || "",
-            },
-          }
+        const response = await fetch(
+          "http://127.0.0.1:35729/api/api/upload-filesc2/"
         );
-
-        Swal.fire({
-          title: "ສຳເລັດ!",
-          text: "ສ້າງຂໍ້ມູນວິສາຫະກິດສຳເລັດແລ້ວ!",
-          icon: "success",
-          confirmButtonText: "OK",
-        });
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        items.value = data.map((item: any) => ({
+          ...item,
+          CID: item.CID,
+          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+          confirmed: false,
+        }));
+        sortItemsByUploadDate();
       } catch (error) {
-        console.error("Error creating enterprise info:", error);
-        Swal.fire({
-          title: "ຜິດພາດ!",
-          text: error.message || "ລົ້ມເຫລວໃນການສ້າງຂໍ້ມູນວິສາຫະກິດ.",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-      } finally {
-        loading.value = false;
+        console.error("Failed to fetch data:", error);
       }
     };
-    const route = useRoute();
-    const isFormValid = computed(() => {
-  return (
-    enterpriseNameLao.value.trim() !== "" &&
-    eneterpriseNameEnglish.value.trim() !== "" &&
-    regisCertificateNumber.value.trim() !== "" &&
-    regisDate.value.trim() !== "" &&
-    enLocation.value.trim() !== "" &&
-    regisStrationOfficeType.value.trim() !== "" &&
-    regisStationOfficeCode.value.trim() !== "" &&
-    enLegalStrature.value.trim() !== "" &&
-    foreigninvestorFlag.value.trim() !== "" &&
-    investmentAmount.value.trim() !== "" &&
-    investmentCurrency.value.trim() !== "" &&
-    representativeNationality.value.trim() !== "" &&
-    EnterpriseID.value.trim() !== "" &&
-    LCICID.value.trim() !== ""
-  );
-});
 
+    const sortItemsByUploadDate = () => {
+      items.value.sort(
+        (a: any, b: any) =>
+          new Date(b.insertDate).getTime() - new Date(a.insertDate).getTime()
+      );
+    };
 
-    const fullImagePath = computed(() => {
-      return `http://127.0.0.1:35729/${route.query.image}`;
-    });
+    const onFileChange = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files && target.files.length > 0) {
+        file.value = target.files[0];
+      }
+    };
 
-    // const fetchLastLCICID = async () => {
-    //   try {
-    //     const response = await axios.get<{ last_lcicid: string }>(
-    //       "http://127.0.0.1:35729/api/api/last-lcicid/"
-    //     );
-    //     LCICID.value = (parseInt(response.data.last_lcicid) + 1).toString();
-    //   } catch (error) {
-    //     console.error("Error fetching last LCICID:", error);
-    //   }
-    // };
-    // onMounted(fetchLastLCICID);
-    const fetchLastLCICID = async () => {
-  try {
-    const response = await axios.get<{ last_lcicid: string }>(
-      "http://127.0.0.1:35729/api/api/last-lcicid/"
-    );
-    LCICID.value = (parseInt(response.data.last_lcicid) + 1).toString();
-  } catch (error) {
-    console.error("Error fetching last LCICID:", error);
-  }
-};
+    const uploadFile = async () => {
+      if (!file.value) {
+        Swal.fire({
+          icon: "warning",
+          title: "ບໍ່ໄດ້ເລືອກໄຟລ໌",
+          text: "ກະລຸນາເລືອກໄຟລ໌ກ່ອນ",
+        });
+        return;
+      }
 
-    onMounted(fetchLastLCICID);
+      const formData = new FormData();
+      formData.append("file", file.value);
+      formData.append("title", file.value.name);
+
+      const newItem = {
+        fileName: file.value.name,
+        fileSize: file.value.size,
+        path: "",
+        insertDate: new Date().toLocaleString(),
+        updateDate: new Date().toLocaleString(),
+        status: "ກຳລັງນຳສົ່ງຂໍ້ມູນ",
+      };
+      items.value.push(newItem);
+
+      try {
+        const response = await axios.post(
+          "http://127.0.0.1:35729/api/upload-filesC/",
+          formData
+        );
+
+        const updatedItem = items.value.find(
+          (item) => item.fileName === file.value!.name
+        );
+        if (updatedItem) {
+          updatedItem.status = "ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ";
+          updatedItem.path = response.data.path;
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+          text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ",
+        });
+
+        const response2 = await fetch(
+          "http://127.0.0.1:35729/api/api/upload-filesc2/"
+        );
+        const data = await response2.json();
+        items.value = data.map((item: any) => ({
+          ...item,
+          CID: item.CID,
+        }));
+      } catch (error) {
+        console.error(error);
+
+        const updatedItem = items.value.find(
+          (item) => item.fileName === file.value!.name
+        );
+        if (updatedItem) {
+          updatedItem.status = "ການນຳສົ່ງບໍ່ສົມບູນ";
+        }
+
+        Swal.fire({
+          icon: "error",
+          title: "ການອັບໂຫຼດລົ້ມເຫລວ",
+          text: "ມີການສໍ້າກັນຂອງຊື້ໄຟລ໌",
+        });
+      }
+    };
+
+    const router = useRouter();
+
+    const viewDetails = async (item: any) => {
+      if (!item.FID) {
+        Swal.fire({
+          icon: "error",
+          title: "ລົ້ມເຫລວ",
+          text: "ບໍມີຂໍ້ມູນທີ່ກົງກັບ FID ນີ້",
+        });
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:35729/api/api/productinfo3/",
+          {
+            params: {
+              FID: item.FID,
+            },
+            
+          }
+        );
+       
+        const data = response.data;
+        router.push({
+          name: "detailupload",
+          query: { data: JSON.stringify(data) },
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "ລົ້ມເຫລວ",
+          text: "ລົ້ມເຫລວໃນການສະແດບຂໍ້ມູນ",
+        });
+      }
+    };
+
+    const getFullPath = (path: string) => {
+      const baseUrl = "http://127.0.0.1:35729/";
+      return `${baseUrl}${path}`;
+    };
+
+    const getFileName = (path: string) => {
+      const parts = path.split("/");
+      return parts[parts.length - 1];
+    };
+
+    const getStatusColor = (statussubmit: string) => {
+      switch (statussubmit) {
+        case "Pending":
+          return "orange";
+        case "1":
+          return "green";
+        case "2":
+          return "red";
+        case "0":
+        case "default":
+          return "blue";
+      }
+    };
+
+    const getStatusText = (statussubmit: string) => {
+      switch (statussubmit) {
+        case "Pending":
+          return "ກຳລັງນຳສົ່ຂໍ້ມູນ";
+        case "1":
+          return "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ";
+        case "2":
+          return "ປະຕິເສດ";
+        case "0":
+        case "default":
+          return "ສຳເລັດການໂຫຼດ";
+      }
+    };
+
+    const getPercentageColor = (percentage: string) => {
+      const percentageValue = parseFloat(percentage);
+
+      if (percentageValue >= 15) {
+        return "red";
+      } else if (percentageValue < 15) {
+        return "green";
+      }
+      return "black";
+    };
+
     return {
-      loading,
-      EnterpriseID,
-      LCICID,
-      enterpriseNameLao,
-      eneterpriseNameEnglish,
-      regisCertificateNumber,
-      regisDate,
-      enLocation,
-      regisStrationOfficeType,
-      regisStationOfficeCode,
-
-      enLegalStrature,
-      foreigninvestorFlag,
-      investmentAmount,
-      investmentCurrency,
-      representativeNationality,
-      fullImagePath,
-
-      isFormValid,
-      rules,
-      submit,
+      onFileChange,
+      uploadFile,
+      file,
+      items,
+      headers,
+      getFullPath,
+      getPercentageColor,
+      viewDetails,
+      getStatusColor,
+      getStatusText,
+      getFileName,
     };
   },
 });

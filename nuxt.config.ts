@@ -88,10 +88,12 @@ export default defineNuxtConfig({
     },
 
     // runtime config
+    
     runtimeConfig: {
         public: {
            strapi: {
              url: process.env.STRAPI_URL || "http://127.0.0.1:35729/api",
+             
            },
         }
     },
