@@ -4,9 +4,9 @@
       <p>
         ປະຈຳເດືອນ:
         <b
-          >{{ datedetail[0].period[5] }}{{ datedetail[0].period[6] }} /
-          {{ datedetail[0].period[7] }}{{ datedetail[0].period[8]
-          }}{{ datedetail[0].period[9] }}{{ datedetail[0].period[10] }}</b
+          >{{ datedetail[0].period[1] }}{{ datedetail[0].period[2] }} /
+          {{ datedetail[0].period[3] }}{{ datedetail[0].period[4]
+          }}{{ datedetail[0].period[5] }}{{ datedetail[0].period[6] }}</b
         >
       </p>
       <p>

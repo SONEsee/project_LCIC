@@ -1,58 +1,5 @@
 <template>
   <v-card>
-    <!-- <v-col cols="12">
-        <v-row>
-          <v-col cols="12" md="10">
-            <div class="pa-4">
-              <p class="ml-3">
-                <b style="color: #01579b">- ລາຍລະອຽດການອັບໂຫຼດຂໍ້ມູນ</b>
-              </p>
-  
-             
-  
-              <div
-                :items="combinedData"
-                :headers="headers"
-                class="ml-5"
-                style="color: black"
-              >
-                <template v-if="combinedData.length > 0">
-                  <p>
-                    ປະຈຳເດືອນ:
-                    <b
-                      >{{ combinedData[0].period[5]
-                      }}{{ combinedData[0].period[6] }} /
-                      {{ combinedData[0].period[7] }}{{ combinedData[0].period[8]
-                      }}{{ combinedData[0].period[9]
-                      }}{{ combinedData[0].period[10] }}</b
-                    >
-                  </p>
-                  <p>
-                    ຂອງທະນາຄານ: <b>{{ combinedData[0].bnk_code }}</b
-                    >, ສາຂາ: <b>{{ combinedData[0].branch_id }}</b>
-                  </p>
-                  <p>
-                    ລາຍການຂໍ້ມູນທີ່ອັບໂຫຼດທັງໝົດ:
-                    <b> {{ combinedData.length }}</b> ລາຍການ
-                  </p>
-                </template>
-              </div>
-            </div>
-          </v-col>
-          <v-col cols="12" md="2" class="mt-5">
-            <div :items="uploadfile" :headers="headers" style="color: black">
-              <template v-if="uploadfile.length">
-                <p>
-                  ຊື່ເອກະສານ: <b>{{ uploadfile[0].fileName }}</b>
-                </p>
-              </template>
-            </div>
-          </v-col>
-        </v-row>
-      </v-col> -->
-    <div>
-      {{ cidData }}
-    </div>
     <v-tabs v-model="tab" fixed-tabs color="primary" stacked>
       <v-tab value="one">ຂໍ້ມູນທີ່ອັບໂຫຼດທັງໝົດ</v-tab>
       <v-tab value="two">ຂໍ້ມູນທີ່ບໍ່ຖືກຕອ້ງ</v-tab>
@@ -75,7 +22,7 @@
                 <td class="text-center">enterprise_code</td>
                 <td></td>
                 <td>customer_id</td>
-                <td>collateral_type</td>
+                <td>col_type</td>
               </tr>
             </thead>
           </v-table>
@@ -91,7 +38,7 @@
                 <td>{{ item.com_enterprise_code }}</td>
                 <td>{{ item.bank_customer_ID }}</td>
                 <td>{{ item.loan_id }}</td>
-                <td>{{ item.collateral_type }}</td>
+                <td>{{ item.col_type }}</td>
               </tr>
             </template>
           </v-data-table>
@@ -258,7 +205,7 @@
                 </thead>
               </v-table>
               <v-data-table :items="lcicerror" :headers="headers">
-                <template v-slot:header>
+                <template v-slot:headers>
                   <tr style="color: black; background-color: blue"></tr>
                 </template>
                 <template v-slot:item="{ item }">
@@ -297,7 +244,7 @@
                 LCICID ແລະ com_enterprise_code_error ຜິດ ຫຼື ບໍ່ມີ
               </h3>
 
-              <v-table>
+              <!-- <v-table>
                 <thead>
                   <tr style="background-color: #5c6bc0; color: aliceblue">
                     <th>ID</th>
@@ -309,23 +256,18 @@
                     <th>status</th>
                   </tr>
                 </thead>
-              </v-table>
-              <v-data-table :items="lcicenterpriseerror" :headers="headers">
+              </v-table> -->
+              <v-data-table :items="lcicenterpriseerror" :header="headers">
                 <template v-slot:item="{ item }">
                   <tr>
                     <td>{{ item.id }}</td>
-                    <td></td>
+
                     <td class="text-center">{{ item.lcicid }}</td>
-                    <td></td>
-                    <td></td>
+
                     <td class="text-center">{{ item.com_enterprise_code }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+
                     <td class="text-center">{{ item.bank_customer_ID }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td class="text-center">{{ item.branch_id_code }}</td>
 
                     <td style="color: crimson" class="text-center">
                       {{
@@ -335,6 +277,8 @@
                           ? "lcicID ແລະ com_enterprise_code ວ່າງ"
                           : item.collateral_status === "30"
                           ? "lcicIDບໍ່ຖືກ ແລະ com_enterprise_code ວ່າງ"
+                          : item.collateral_status === "44"
+                          ? "lcicID ແລະ com_enterprise_code ບໍ່ແມັດກັນ "
                           : item.collateral_status === "03"
                           ? "lcicIDວ່າງ ແລະ com_enterprise_code ບໍ່ຖືກ"
                           : item.item.collateral_status
@@ -350,7 +294,7 @@
                 bnk_code, branch_id, customer_id, loan_id ແຕ່ມີ LCICID ແລະ
                 com_enterprise_code ບໍ່ຖືກ
               </h3>
-              
+
               <v-data-table :items="Cdisputes" :header="headers">
                 <template v-slot:header>
                   <tr style="color: black; background-color: blue"></tr>
@@ -460,7 +404,7 @@ export default defineComponent({
 
     const combinedData = computed(() => {
       const filteredCerror = (cerror.value || []).filter(
-        (item) => item.collateral_type === "estates"
+        (item) => item.col_type === "C2.1" || item.col_type === "c2.1"
       );
 
       return [...filteredCerror, ...(colrealestates.value || [])].map(
@@ -471,7 +415,7 @@ export default defineComponent({
             com_enterprise_code: item?.com_enterprise_code || null,
             bank_customer_ID: item?.bank_customer_ID || null,
             branch_id: item?.branch_id || null,
-            collateral_type: item?.collateral_type || null,
+            col_type: item?.col_type || null,
             bnk_code: item?.bnk_code || null,
           };
         }
@@ -480,17 +424,16 @@ export default defineComponent({
 
     const Cdisputes = computed(() => {
       const filteredCerror = (disputese.value || []).filter(
-        (item) => item.collateral_type === "estates"
+        (item) => item.col_type === "C2.1" || item.col_type === "c2.1"
       );
 
-      return [...filteredCerror, ...colrealestates.value].map((item) => {
+      return [...filteredCerror].map((item) => {
         return {
           id_file: item?.id_file || null,
           lcicid: item?.lcicID || null,
           com_enterprise_code: item?.com_enterprise_code || null,
           bank_customer_ID: item?.bank_customer_ID || null,
-         
-          
+
           branch_id_code: item?.branch_id_code || null,
         };
       });
@@ -498,12 +441,12 @@ export default defineComponent({
 
     const eststaes = computed(() => {
       const filteredCerror = (c1.value || []).filter(
-        (item) => item.collateral_type === "estates"
+        (item) => item.col_type === "C2.1" || item.col_type === "c2.1"
       );
 
-      return [...filteredCerror, ...colrealestates.value].map((item) => {
+      return [...colrealestates.value].map((item) => {
         return {
-          id_file: item?.id_file || null,
+          id_file: item?.id || null,
           lcicid: item?.lcicID || null,
           com_enterprise_code: item?.com_enterprise_code || null,
           bank_customer_ID: item?.bank_customer_ID || null,
@@ -519,16 +462,17 @@ export default defineComponent({
       return cerror.value
         .filter(
           (item) =>
-            (item.collateral_status === "31" ||
+            ((item.collateral_status === "31" ||
               item.collateral_status === "10") &&
-            item.collateral_type === "estates"
+              item.col_type === "C2.1") ||
+            item.col_type === "c2.1"
         )
         .map((item) => ({
           id: item?.id || null,
           lcicid: item?.lcicID || null,
           com_enterprise_code: item?.com_enterprise_code || null,
           bank_customer_ID: item?.bank_customer_ID || null,
-          branch_id: item?.branch_id || null,
+          branch_id_code: item?.branch_id_code || null,
           collateral_status: item?.collateral_status || null,
           datamatch: item?.datamatch || null,
         }));
@@ -538,36 +482,40 @@ export default defineComponent({
       return cerror.value
         .filter(
           (item) =>
-            (item.collateral_status === "13" ||
+            ((item.collateral_status === "13" ||
               item.collateral_status === "01") &&
-            item.collateral_type === "estates"
+              item.col_type === "C2.1") ||
+            item.col_type === "c2.1"
         )
         .map((item) => ({
           id: item?.id || null,
           lcicid: item?.lcicID || null,
           com_enterprise_code: item?.com_enterprise_code || null,
           bank_customer_ID: item?.bank_customer_ID || null,
-          branch_id: item?.branch_id || null,
+          branch_id_code: item?.branch_id_code || null,
           collateral_status: item?.collateral_status || null,
           datamatch: item?.datamatch || null,
         }));
     });
+
     const lcicenterpriseerror = computed(() => {
       return cerror.value
         .filter(
           (item) =>
-            (item.collateral_status === "11" ||
+            ((item.collateral_status === "11" ||
               item.collateral_status === "33" ||
               item.collateral_status === "30" ||
+              item.collateral_status === "44" ||
               item.collateral_status === "03") &&
-            item.collateral_type === "estates"
+              item.col_type === "C2.1") ||
+            item.col_type === "c2.1"
         )
         .map((item) => ({
           id: item?.id || null,
           lcicid: item?.lcicID || null,
           com_enterprise_code: item?.com_enterprise_code || null,
           bank_customer_ID: item?.bank_customer_ID || null,
-          branch_id: item?.branch_id || null,
+          branch_id_code: item?.branch_id_code || null,
           collateral_status: item?.collateral_status || null,
         }));
     });
@@ -604,13 +552,11 @@ export default defineComponent({
     return {
       tab,
       subTab,
-
       headers,
       combinedData,
       enterpriseodeerror,
       lcicerror,
       lcicenterpriseerror,
-
       exportToJson,
       cidData,
       eststaes,

@@ -1,6 +1,15 @@
 <script setup lang="ts">
 import sidebarItems from "./sidebarItems";
 const sidebarMenu = ref(sidebarItems);
+const user = ref<User | null>(null);
+
+onMounted(() => {
+  const userData = localStorage.getItem('user_data');
+  if (userData) {
+    user.value = JSON.parse(userData);
+    console.log('User data:', user.value);
+  }
+});
 
 </script>
 
@@ -17,8 +26,8 @@ const sidebarMenu = ref(sidebarItems);
             />
           </v-avatar>
         </div>
-        <div class="profile-name">
-          <h3 style="color: aliceblue;">Sone SEEDAVANH</h3>
+        <div class="profile-name text-center" v-if="user">
+          <h3 style="color: aliceblue;">{{ user.username }}</h3>
         </div>
       </div>
       <v-list class="pa-4">

@@ -333,6 +333,8 @@
                           ? "lcicIDບໍ່ຖືກ ແລະ com_enterprise_code ວ່າງ"
                           : item.collateral_status === "03"
                           ? "lcicIDວ່າງ ແລະ com_enterprise_code ບໍ່ຖືກ"
+                          : item.collateral_status === "44"
+                          ? "lcicID ແລະ com_enterprise_code ບໍ່ແມັດກັນ "
                           : item.item.collateral_status
                       }}
                     </td>
@@ -554,6 +556,7 @@ export default defineComponent({
             item.collateral_status === "11" ||
             item.collateral_status === "33" ||
             item.collateral_status === "30" ||
+            item.collateral_status === "44" ||
             item.collateral_status === "03"
         )
         .map((item) => ({

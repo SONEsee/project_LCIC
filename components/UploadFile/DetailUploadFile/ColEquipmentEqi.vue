@@ -329,6 +329,8 @@
                           ? "lcicID ແລະ com_enterprise_code ບໍຖືກ"
                           : item.collateral_status === "33"
                           ? "lcicID ແລະ com_enterprise_code ວ່າງ"
+                          : item.collateral_status === "44"
+                          ? "lcicID ແລະ com_enterprise_code ບໍ່ແມັດກັນ "
                           : item.collateral_status === "30"
                           ? "lcicIDບໍ່ຖືກ ແລະ com_enterprise_code ວ່າງ"
                           : item.collateral_status === "03"
@@ -456,7 +458,7 @@ export default defineComponent({
 
     const combinedData = computed(() => {
       const filteredCerror = (cerror.value || []).filter(
-        (item) => item.collateral_type === "eqi"
+        (item) =>item.col_type === "C2.3" ||item.col_type === "c2.3"
       );
 
       return [...filteredCerror, ...(colrealestates.value || [])].map(
@@ -476,7 +478,7 @@ export default defineComponent({
 
     const Cdisputes = computed(() => {
       const filteredCerror = (disputese.value || []).filter(
-        (item) => item.collateral_type === "eqi"
+        (item) =>item.col_type === "C2.3" ||item.col_type === "c2.3"
       );
 
       return [...filteredCerror, ...colrealestates.value].map((item) => {
@@ -493,7 +495,7 @@ export default defineComponent({
 
     const eqi = computed(() => {
       const filteredCerror = (c1.value || []).filter(
-        (item) => item.collateral_type === "eqi"
+        (item) =>item.col_type === "C2.3" ||item.col_type === "c2.3"
       );
 
       return [...filteredCerror, ...colrealestates.value].map((item) => {
@@ -516,7 +518,7 @@ export default defineComponent({
           (item) =>
             (item.collateral_status === "31" ||
               item.collateral_status === "10") &&
-            item.collateral_type === "eqi"
+           item.col_type === "C2.3" ||item.col_type === "c2.3"
         )
         .map((item) => ({
           id: item?.id || null,
@@ -535,7 +537,7 @@ export default defineComponent({
           (item) =>
             (item.collateral_status === "13" ||
               item.collateral_status === "01") &&
-            item.collateral_type === "eqi"
+           item.col_type === "C2.3" ||item.col_type === "c2.3"
         )
         .map((item) => ({
           id: item?.id || null,
@@ -554,8 +556,9 @@ export default defineComponent({
             (item.collateral_status === "11" ||
               item.collateral_status === "33" ||
               item.collateral_status === "30" ||
+              item.collateral_status === "44" ||
               item.collateral_status === "03") &&
-            item.collateral_type === "eqi"
+           item.col_type === "C2.3" ||item.col_type === "c2.3"
         )
         .map((item) => ({
           id: item?.id || null,
