@@ -1,4 +1,4 @@
-<!-- <script setup lang="ts">
+<script setup lang="ts">
 useHead({
   title: "Sign In",
   meta: [
@@ -16,12 +16,6 @@ useHead({
 // sweetalert2
 const { $swal } = useNuxtApp();
 
-// create const for useCookie()
-// const token = useCookie('token', {
-// 	maxAge: 60 * 60, // 1 hour
-// 	// expires: new Date(Date.now() + 60 * 60 * 24 * 7), // 1 week
-// })
-
 // ref const for username and password
 const username = ref("");
 const password = ref("");
@@ -31,67 +25,74 @@ const { ruleRequired, rulePassLen } = useFormRules();
 const router = useRouter();
 
 const submit = async () => {
-  if (ruleRequired(username.value) && rulePassLen(password.value)) {
-    const config = useRuntimeConfig();
-    const STRAPI_URL = config.strapi.url;
+  try {
+    if (ruleRequired(username.value) && rulePassLen(password.value)) {
+      const config = useRuntimeConfig();
+      const { data, error } = await useFetch(
+        `${config.public.strapi.url}login/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: username.value,
+            password: password.value,
+          }),
+        }
+      );
 
-    const { data, error } = await useFetch(
-      `${config.public.strapi.url}login/`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: username.value,
-          password: password.value,
-        }),
-      }
-    );
+      if (data.value && data.value.access && data.value.refresh) {
+        // Save tokens and user data
+        localStorage.setItem("access_token", data.value.access);
+        localStorage.setItem("refresh_token", data.value.refresh);
+        localStorage.setItem("user_data", JSON.stringify(data.value.user));
 
-    if (data.value && data.value.access && data.value.refresh) {
-      localStorage.setItem("access_token", data.value.access);
-      localStorage.setItem("refresh_token", data.value.refresh);
-
-      let timerInterval;
-      $swal
-        .fire({
-          title: "ກຳລັງເຂົ້າສູ່ລະບົບ",
-          html: "ກາລຸນາລໍຖ້າອີກ <b></b> ວິນາທີ",
-          timer: 3000,
-          timerProgressBar: true,
-          didOpen: () => {
-            $swal.showLoading();
-            timerInterval = setInterval(() => {
-              const content = $swal.getHtmlContainer();
-              if (content) {
-                const b = content.querySelector("b");
-                if (b) {
-                  b.textContent = $swal.getTimerLeft() / 1000;
+        // SweetAlert for success login
+        let timerInterval;
+        $swal
+          .fire({
+            title: "ກຳລັງເຂົ້າສູ່ລະບົບ",
+            html: "ກາລຸນາລໍຖ້າອີກ <b></b> ວິນາທີ",
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: () => {
+              $swal.showLoading();
+              timerInterval = setInterval(() => {
+                const content = $swal.getHtmlContainer();
+                if (content) {
+                  const b = content.querySelector("b");
+                  if (b) {
+                    b.textContent = `${Math.round($swal.getTimerLeft() / 1000)}`;
+                  }
                 }
-              }
-            }, 100);
-          },
-          willClose: () => {
-            clearInterval(timerInterval);
-          },
-        })
-        .then(async (result) => {
-          if (result.dismiss === $swal.DismissReason.timer) {
-            await router.push({ path: "/backend/dashboard" });
-          }
+              }, 100);
+            },
+            willClose: () => {
+              clearInterval(timerInterval);
+            },
+          })
+          .then(async (result) => {
+            if (result.dismiss === $swal.DismissReason.timer) {
+              await router.push("/backend/dashboard");
+            }
+          });
+      } else {
+        $swal.fire({
+          icon: "error",
+          title: "ບໍ່ສາມາດເຂົ້າສູ່ລະບົບໄດ້",
+          text: "ຂໍ້ມູນຜູ້ໃຊ້ງານ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ.",
+          confirmButtonText: "Close",
         });
-    } else {
-      $swal.fire({
-        icon: "error",
-        title: "ບໍ່ສາມາດເຂົ້າສູ່ລະບົບໄດ້",
-        text: "ຂໍ້ມູນຜູ້ໃຊ້ງານ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ.",
-        confirmButtonText: "Close",
-      });
+      }
     }
+  } catch (err) {
+    alert('Login failed. Please check your credentials.');
+    console.error('Login error:', err);
   }
 };
 </script>
+
 
 <template>
   <VContainer fluid class="fill-height pa-0">
@@ -169,10 +170,10 @@ const submit = async () => {
       </VCol>
     </VRow>
   </VContainer>
-</template> -->
+</template>
 
 
-<template>
+<!-- <template>
 	<VContainer fluid class="fill-height pa-0">
 	  <VRow no-gutters align="center" justify="center" class="fill-height">
 		<VCol class="hidden-sm-and-down fill-height" md="6" lg="6">
@@ -271,4 +272,4 @@ const submit = async () => {
 	  console.error('Login error:', err);
 	}
   };
-  </script>
+  </script> -->

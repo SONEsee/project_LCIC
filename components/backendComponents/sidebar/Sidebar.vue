@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import sidebarItems from "./sidebarItems";
+import { ref, onMounted } from 'vue';
 const sidebarMenu = ref(sidebarItems);
 const user = ref<User | null>(null);
 
@@ -27,7 +28,7 @@ onMounted(() => {
           </v-avatar>
         </div>
         <div class="profile-name text-center" v-if="user">
-          <h3 style="color: aliceblue;">{{ user.username }}</h3>
+          <h3 style="color: aliceblue;">{{ user.username }}:programer </h3>
         </div>
       </div>
       <v-list class="pa-4">

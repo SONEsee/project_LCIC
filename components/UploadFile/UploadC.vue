@@ -20,8 +20,6 @@
         <td></td>
         <td></td>
         <td></td>
-        
-        
         <td class="text-center ml-2"><b>status</b></td>
         <td class="mr-5"><b>percentage</b></td>
         <td><b>action</b>  </td>
