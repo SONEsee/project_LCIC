@@ -1,9 +1,9 @@
 <template>
- 
-  <p class="ml-3 text-primary">* ອັບໂຫຼດຂໍ້ມູນເງິນກູ້</p>
-<div v-if="user">
-  {{ user.MID.id }}
-</div>
+  <div></div>
+  <div v-if="user">
+    {{ user.MID.id }}
+  </div>
+
   <v-container>
     <v-file-input
       variant="outlined"
@@ -14,46 +14,45 @@
       outlined
     ></v-file-input>
     <v-btn @click="uploadFile" color="primary">ອັບໂຫຼດຟາຍ</v-btn>
-    <v-table class="mt-4">
-      <thead>
-        <tr style="background-color: #5c6bc0; color: aliceblue">
-          <td><b>ID</b></td>
-          <td><b>file Name</b></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
+    
+    <v-data-table :headers="headers" :items="items" class="custom-header elevation-1">
+      <template v-slot:header.FID>
+    <th style=" color: #0D47A1;">ໄອດີ</th>
+  </template>
+      <template v-slot:header.path>
+    <th style=" color: #0D47A1;">ຊື່ພາດ</th>
+  </template>
+      <template v-slot:header.statussubmit>
+    <th style=" color: #0D47A1;">ສະຖານະ</th>
+  </template>
+      <template v-slot:header.percentage>
+    <th style=" color: #0D47A1;">ວັນທີອັບໂຫຼດ</th>
+  </template>
 
-          <td class="text-center ml-2"><b>status</b></td>
-          <td class="mr-5"><b>percentage</b></td>
-          <td><b>action</b></td>
-        </tr>
-      </thead>
-    </v-table>
-    <v-data-table :headers="headers" :items="items" class="elevation-1">
-      <template v-slot:item.path="{ item }">
-        <a :href="getFullPath(item.path)" target="_blank">{{
-          getFileName(item.path)
-        }}</a>
-      </template>
-      <template v-slot:item.percentage="{ item }">
-        <span :style="{ color: getPercentageColor(item.percentage) }"
-          >{{ item.percentage.toFixed(2) }}%</span
-        >
-      </template>
-      <template v-slot:item.statussubmit="{ item }">
-        <v-chip :color="getStatusColor(item.statussubmit)" dark>{{
-          getStatusText(item.statussubmit)
-        }}</v-chip>
-      </template>
-      <template v-slot:item.actions="{ item }">
-        <v-btn @click="viewDetails(item)" color="info">ເບິ່ງລາຍລະອຽດ</v-btn>
-      </template>
-      <template v-slot:no-data>
-        <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
-      </template>
-    </v-data-table>
+      <template v-slot:header.actions>
+    <th style=" color: #0D47A1;">Actions</th>
+  </template>
+  <template v-slot:item.path="{ item }">
+    <a :href="getFullPath(item.path)" target="_blank">{{ getFileName(item.path) }}</a>
+  </template>
+  
+  <template v-slot:item.percentage="{ item }">
+    <span :style="{ color: getPercentageColor(item.percentage) }">{{ item.percentage.toFixed(2) }}%</span>
+  </template>
+  
+  <template v-slot:item.statussubmit="{ item }">
+    <v-chip :color="getStatusColor(item.statussubmit)" dark>{{ getStatusText(item.statussubmit) }}</v-chip>
+  </template>
+  
+  <template v-slot:item.actions="{ item }">
+    <v-btn @click="viewDetails(item)" color="info">ເບິ່ງລາຍລະອຽດ</v-btn>
+  </template>
+  
+  <template v-slot:no-data>
+    <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
+  </template>
+</v-data-table>
+
   </v-container>
 </template>
 
@@ -87,24 +86,59 @@ export default defineComponent({
     const file = ref<File | null>(null);
     const items = ref([]);
     const headers = ref([
-      { text: "ໄອດີ", value: "FID" },
-      { text: "ຊື່ພາດ", value: "path" },
-      { text: "ສະຖານະ", value: "statussubmit" },
-      { text: "ວັນທີອັບໂຫຼດ", value: "percentage" },
-      { text: "Actions", value: "actions", sortable: false },
+      { title: "ໄອດີ", value: "FID" },
+      { title: "ຊື່ພາດ", value: "path" },
+      { title: "ສະຖານະ", value: "statussubmit" },
+      { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
+      { title: "Actions", value: "actions", sortable: false },
     ]);
 
+    // onMounted(async () => {
+    //   try {
+    //     await fetchData();
+
+    //     const userData = localStorage.getItem("user_data");
+
+    //     if (userData) {
+    //       try {
+    //         user.value = JSON.parse(userData);
+    //         console.log("User data:", user.value);
+    //       } catch (error) {
+    //         console.error("Error parsing user data:", error);
+    //       }
+    //     }
+    //   } catch (error) {
+    //     console.error("Error in onMounted:", error);
+    //   }
+    // });
 
     onMounted(async () => {
       try {
+        // ດຶງຂໍ້ມູນເພື່ອປະຕິບັດ
         await fetchData();
 
+        // ດຶງຂໍ້ມູນຜູ້ໃຊ້ຈາກ localStorage
         const userData = localStorage.getItem("user_data");
+        console.log("User data:", userData);
 
         if (userData) {
           try {
+            // ແປໄພເປັນ JSON ເພື່ອໃຊ້ງານ
             user.value = JSON.parse(userData);
-            console.log("User data:", user.value);
+            console.log("Parsed user data:", user.value);
+
+            // ດຶງ MID ຈາກ user.value
+            const MID = user.value.MID;
+
+            // ກວດສອບວ່າ MID ແລະ MID.id ມີຄ່າຫຼືບໍ່
+            if (MID && MID.id) {
+              // ຕື່ມ '0' ດ້ານໜ້າຖ້າຄ່າ MID.id ນ້ອຍກວ່າ 10
+              const paddedMID = MID.id.toString().padStart(2, "0");
+              console.log("Padded MID.id:", paddedMID);
+
+              // ດຶງຂໍ້ມູນຕາມ UserID ໃຊ້ MID.id
+              await fetchDataByUserID(paddedMID);
+            }
           } catch (error) {
             console.error("Error parsing user data:", error);
           }
@@ -114,8 +148,30 @@ export default defineComponent({
       }
     });
 
+    const fetchDataByUserID = async (userID) => {
+      try {
+        const url = `http://127.0.0.1:35729/api/api/upload-files2/?user_id=${userID}`;
+        const response = await fetch(url);
+        console.log("Response:", response);
 
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
 
+        const data = await response.json();
+        console.log("Data for user:", data);
+
+        items.value = data.map((item) => ({
+          ...item,
+          FID: item.FID,
+          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+          confirmed: false,
+        }));
+        sortItemsByUploadDate();
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
+    };
 
     const fetchData = async () => {
       try {
@@ -151,149 +207,196 @@ export default defineComponent({
         file.value = target.files[0];
       }
     };
-//     const uploadFile = async () => {
-//   if (!file.value) {
-//     Swal.fire({
-//       icon: "warning",
-//       title: "ບໍ່ໄດ້ເລືອກໄຟລ໌",
-//       text: "ກະລຸນາເລືອກໄຟລ໌ກ່ອນ",
-//     });
-//     return;
-//   }
+    //     const uploadFile = async () => {
+    //   if (!file.value) {
+    //     Swal.fire({
+    //       icon: "warning",
+    //       title: "ບໍ່ໄດ້ເລືອກໄຟລ໌",
+    //       text: "ກະລຸນາເລືອກໄຟລ໌ກ່ອນ",
+    //     });
+    //     return;
+    //   }
 
-//   const formData = new FormData();
-//   formData.append("file", file.value);
-//   // formData.append("title", file.value.name);
-  
-//   if (user.value) {
-//     formData.append("user_id", user.value.MID.id); 
-//     console.log("User ID:", user.value.MID.id);
-//   } else {
-//     Swal.fire({
-//       icon: "warning",
-//       title: "ຂໍ້ມູນຜູ້ໃຊ້ບໍ່ສາມາດສົ່ງໄດ້",
-//       text: "ກະລຸນາກວດສອບຂໍ້ມູນຜູ້ໃຊ້",
-//     });
-//     return;
-//   }
+    //   const formData = new FormData();
+    //   formData.append("file", file.value);
+    //   // formData.append("title", file.value.name);
 
-//   try {
-//     const response = await axios.post(
-//       "http://127.0.0.1:35729/api/upload-files/",
-//       formData
-//     );
+    //   if (user.value) {
+    //     formData.append("user_id", user.value.MID.id);
+    //     console.log("User ID:", user.value.MID.id);
+    //   } else {
+    //     Swal.fire({
+    //       icon: "warning",
+    //       title: "ຂໍ້ມູນຜູ້ໃຊ້ບໍ່ສາມາດສົ່ງໄດ້",
+    //       text: "ກະລຸນາກວດສອບຂໍ້ມູນຜູ້ໃຊ້",
+    //     });
+    //     return;
+    //   }
 
-//     Swal.fire({
-//       icon: "success",
-//       title: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-//       text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ",
-//     });
+    //   try {
+    //     const response = await axios.post(
+    //       "http://127.0.0.1:35729/api/upload-files/",
+    //       formData
+    //     );
 
-//     const response2 = await fetch(
-//       "http://127.0.0.1:35729/api/api/upload-files2/"
-//     );
-//     const data = await response2.json();
-//     items.value = data.map((item) => ({
-//       ...item,
-//       FID: item.FID,
-//     }));
-//   } catch (error) {
-//     console.error(error);
-//     Swal.fire({
-//       icon: "error",
-//       title: "ການອັບໂຫຼດລົ້ມເຫລວ",
-//       text: "ມີການສໍ້າກັນຂອງຊື້ໄຟລ໌",
-//     });
-//   }
-// };
+    //     Swal.fire({
+    //       icon: "success",
+    //       title: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+    //       text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ",
+    //     });
 
-const uploadFile = async () => {
-  if (!file.value) {
-    Swal.fire({
-      icon: "warning",
-      title: "ບໍ່ໄດ້ເລືອກໄຟລ໌",
-      text: "ກະລຸນາເລືອກໄຟລ໌ກ່ອນ",
-    });
-    return;
-  }
+    //     const response2 = await fetch(
+    //       "http://127.0.0.1:35729/api/api/upload-files2/"
+    //     );
+    //     const data = await response2.json();
+    //     items.value = data.map((item) => ({
+    //       ...item,
+    //       FID: item.FID,
+    //     }));
+    //   } catch (error) {
+    //     console.error(error);
+    //     Swal.fire({
+    //       icon: "error",
+    //       title: "ການອັບໂຫຼດລົ້ມເຫລວ",
+    //       text: "ມີການສໍ້າກັນຂອງຊື້ໄຟລ໌",
+    //     });
+    //   }
+    // };
 
-  const formData = new FormData();
-  formData.append("file", file.value);
-  formData.append("title", file.value.name);
-
-  
-  if (user.value) {
-    formData.append("user_id", user.value.MID.id); 
-    console.log("User ID:", user.value.MID.id);
- 
-  } else {
-    Swal.fire({
-      icon: "warning",
-      title: "ຂໍ້ມູນຜູ້ໃຊ້ບໍ່ສາມາດສົ່ງໄດ້",
-      text: "ກະລຸນາກວດສອບຂໍ້ມູນຜູ້ໃຊ້",
-    });
-    return;
-  }
-
-  const newItem = {
-    fileName: file.value.name,
-    fileSize: file.value.size,
-    path: "",
-    insertDate: new Date().toLocaleString(),
-    updateDate: new Date().toLocaleString(),
-    status: "ກຳລັງນຳສົ່ງຂໍ້ມູນ",
-  };
-  items.value.push(newItem);
-
-  try {
-    const response = await axios.post(
-      "http://127.0.0.1:35729/api/upload-files/",
-      formData,
-      {
-     
+    const uploadFile = async () => {
+      if (!file.value) {
+        Swal.fire({
+          icon: "warning",
+          title: "ບໍ່ໄດ້ເລືອກໄຟລ໌",
+          text: "ກະລຸນາເລືອກໄຟລ໌ກ່ອນ",
+        });
+        return;
       }
-    );
 
-    const updatedItem = items.value.find(
-      (item) => item.fileName === file.value!.name
-    );
-    if (updatedItem) {
-      updatedItem.status = "ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ";
-      updatedItem.path = response.data.path;
-    }
+      // const formData = new FormData();
+      // formData.append("file", file.value);
+      // formData.append("title", file.value.name);
 
-    Swal.fire({
-      icon: "success",
-      title: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-      text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ",
-    });
+      // if (user.value) {
+      //   formData.append("user_id", user.value.MID.id);
+      //   console.log("User ID:", user.value.MID.id);
+      // } else {
+      //   Swal.fire({
+      //     icon: "warning",
+      //     title: "ຂໍ້ມູນຜູ້ໃຊ້ບໍ່ສາມາດສົ່ງໄດ້",
+      //     text: "ກະລຸນາກວດສອບຂໍ້ມູນຜູ້ໃຊ້",
+      //   });
+      //   return;
+      // }
+      const formData = new FormData();
+      formData.append("file", file.value);
+      formData.append("title", file.value.name);
 
-    const response2 = await fetch(
-      "http://127.0.0.1:35729/api/api/upload-files2/"
-    );
-    const data = await response2.json();
-    items.value = data.map((item: any) => ({
-      ...item,
-      FID: item.FID,
-    }));
-  } catch (error) {
-    console.error(error);
+      if (user.value) {
+        let userId = user.value.MID.id;
 
-    const updatedItem = items.value.find(
-      (item) => item.fileName === file.value!.name
-    );
-    if (updatedItem) {
-      updatedItem.status = "ການນຳສົ່ງບໍ່ສົມບູນ";
-    }
+        if (userId < 10) {
+          userId = "0" + userId;
+        }
 
-    Swal.fire({
-      icon: "error",
-      title: "ການອັບໂຫຼດລົ້ມເຫລວ",
-      text: "ມີການສໍ້າກັນຂອງຊື້ໄຟລ໌",
-    });
-  }
-};
+        formData.append("user_id", userId);
+        console.log("Formatted User ID:", userId);
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: "ຂໍ້ມູນຜູ້ໃຊ້ບໍ່ສາມາດສົ່ງໄດ້",
+          text: "ກະລຸນາກວດສອບຂໍ້ມູນຜູ້ໃຊ້",
+        });
+        return;
+      }
 
+      const newItem = {
+        fileName: file.value.name,
+        fileSize: file.value.size,
+        path: "",
+        insertDate: new Date().toLocaleString(),
+        updateDate: new Date().toLocaleString(),
+        status: "ກຳລັງນຳສົ່ງຂໍ້ມູນ",
+      };
+      items.value.push(newItem);
+
+      try {
+        const response = await axios.post(
+          "http://127.0.0.1:35729/api/upload-files/",
+          formData
+        );
+
+        const updatedItem = items.value.find(
+          (item) => item.fileName === file.value!.name
+        );
+        if (updatedItem) {
+          updatedItem.status = "ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ";
+          updatedItem.path = response.data.path;
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+          text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ",
+        });
+
+        const response2 = await fetch(
+          "http://127.0.0.1:35729/api/api/upload-files2/"
+        );
+        const data = await response2.json();
+        items.value = data.map((item: any) => ({
+          ...item,
+          FID: item.FID,
+        }));
+      } catch (error) {
+        console.error(error);
+
+        const updatedItem = items.value.find(
+          (item) => item.fileName === file.value!.name
+        );
+        if (updatedItem) {
+          updatedItem.status = "ການນຳສົ່ງບໍ່ສົມບູນ";
+        }
+
+        if (error.response && error.response.status === 401) {
+          Swal.fire({
+            icon: "error",
+            title: "ການນຳສົ່ງບໍ່ສົມບູນ",
+            text: "ຂໍ້ມູນບໍ່ຖືກກັບທະນາຄານ ກາລຸນາກວດສອບຄືນ",
+          });
+        } else if (error.response && error.response.status === 402) {
+          Swal.fire({
+            icon: "error",
+            title: "ການນຳສົ່ງບໍ່ສົມບູນ",
+            text: "ບໍ່ມີຂໍ້ມູນ Bnk_code ກາລຸນາກວດຄືນໃຫມ່",
+          });
+        } else if (error.response && error.response.status === 403) {
+          Swal.fire({
+            icon: "error",
+            title: "ການນຳສົ່ງບໍ່ສົມບູນ",
+            text: "ຊື່ໄຟລ໌ຂອງທ່ານມີການສໍ້າກັນ ກາລຸນາກວດຄືນໃຫມ່",
+          });
+        } else if (error.response && error.response.status === 404) {
+          Swal.fire({
+            icon: "error",
+            title: "ການນຳສົ່ງບໍ່ສົມບູນ",
+            text: "ຮູບແບບຂອງ period ຢູ່ໃນຖານຂໍ້ມູນບໍ່ຖືກຕ້ອງ",
+          });
+        } else if (error.response && error.response.status === 405) {
+          Swal.fire({
+            icon: "error",
+            title: "ການນຳສົ່ງບໍ່ສົມບູນ",
+            text: "ທ່ານບໍ່ສາມາດອັບໂຫຼດຂໍ້ມູນຍອ້ນຫຼັງໄດ້ ກາລຸນາກວດຄືນໃຫມ່",
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "ການອັບໂຫຼດລົ້ມເຫລວ",
+            text: "ບໍ່ສາມາດອັບໂຫຼດຂໍ້ມູນການນຳສົ່ງຂໍ້ມູນບໍ່ສົມບູນ",
+          });
+        }
+      }
+    };
 
     const router = useRouter();
 
@@ -393,7 +496,9 @@ const uploadFile = async () => {
       getStatusColor,
       getStatusText,
       getFileName,
+      fetchDataByUserID,
     };
   },
 });
 </script>
+

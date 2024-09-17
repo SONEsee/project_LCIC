@@ -20,10 +20,10 @@
         </template>
         <template v-slot:item.statussubmit="{ item }" >
           <div class="d-flex align-center">
-            <template v-if="item.statussubmit === '0' && item.percentage <= 15">
+            <template v-if="item.statussubmit === '0' && item.percentage <= 50">
               <span style="color: green;">ຢືນຢັນສຳເລັດແລ້ວ</span>
             </template>
-            <template v-else-if="item.percentage > 15">
+            <template v-else-if="item.percentage > 50">
               <span style="color: red;">ຂໍ້ຜິດພາດສູງເກີນກຳນົດ</span>
             </template>
             <template v-else>

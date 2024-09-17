@@ -1,5 +1,8 @@
 <template>
     <p class="ml-3 text-primary"> * ອັບໂຫຼດຂໍ້ມູນຫຼັກຊັບ</p>
+    <div v-if="user">
+    {{ user.MID.id }}
+  </div>
     <v-container>
       <v-file-input
         variant="outlined"
@@ -81,6 +84,7 @@
       });
   
       const file = ref<File | null>(null);
+      const user = ref<User | null>(null);
       const items = ref([]);
       const headers = ref([
         { text: "ໄອດີ", value: "CID" },
@@ -95,8 +99,40 @@
   
     
       onMounted(async () => {
+      try {
+        // ດຶງຂໍ້ມູນເພື່ອປະຕິບັດ
         await fetchData();
-      });
+
+        // ດຶງຂໍ້ມູນຜູ້ໃຊ້ຈາກ localStorage
+        const userData = localStorage.getItem("user_data");
+        console.log("User data:", userData);
+
+        if (userData) {
+          try {
+            // ແປໄພເປັນ JSON ເພື່ອໃຊ້ງານ
+            user.value = JSON.parse(userData);
+            console.log("Parsed user data:", user.value);
+
+            // ດຶງ MID ຈາກ user.value
+            const MID = user.value.MID;
+
+            // ກວດສອບວ່າ MID ແລະ MID.id ມີຄ່າຫຼືບໍ່
+            if (MID && MID.id) {
+              // ຕື່ມ '0' ດ້ານໜ້າຖ້າຄ່າ MID.id ນ້ອຍກວ່າ 10
+              const paddedMID = MID.id.toString().padStart(2, "0");
+              console.log("Padded MID.id:", paddedMID);
+
+              // ດຶງຂໍ້ມູນຕາມ UserID ໃຊ້ MID.id
+              // await fetchDataByUserID(paddedMID);
+            }
+          } catch (error) {
+            console.error("Error parsing user data:", error);
+          }
+        }
+      } catch (error) {
+        console.error("Error in onMounted:", error);
+      }
+    });
   
       const fetchData = async () => {
         try {
@@ -146,6 +182,7 @@
         const formData = new FormData();
         formData.append("file", file.value);
         formData.append("title", file.value.name);
+        
   
         const newItem = {
           fileName: file.value.name,
@@ -296,6 +333,7 @@
         onFileChange,
         uploadFile,
         file,
+        user,
         items,
         headers,
         getFullPath,

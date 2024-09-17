@@ -26,11 +26,11 @@
                 <p>
                   ປະຈຳເດືອນ:
                   <b
-                    >{{ combinedData[0].period[5]
-                    }}{{ combinedData[0].period[6] }} /
-                    {{ combinedData[0].period[7] }}{{ combinedData[0].period[8]
-                    }}{{ combinedData[0].period[9]
-                    }}{{ combinedData[0].period[10] }}</b
+                    >{{ combinedData[0].period[0]
+                    }}{{ combinedData[0].period[1] }} /
+                    {{ combinedData[0].period[2] }}{{ combinedData[0].period[3]
+                    }}{{ combinedData[0].period[4]
+                    }}{{ combinedData[0].period[5] }}</b
                   >
                 </p>
                 <p>
