@@ -1,6 +1,5 @@
 <template>
   <v-card>
-    
     <!-- <v-col cols="12">
       <v-row>
         <v-col cols="12" md="10">
@@ -64,7 +63,7 @@
           <p>
             - ມີທັງໝົດ: <b>{{ combinedData.length }}</b> ລາຍການ
           </p>
-          <v-table>
+          <!-- <v-table>
             <thead>
               <tr style="background-color: #5c6bc0; color: aliceblue">
                 <td>ID</td>
@@ -77,14 +76,34 @@
                 <td>collateral_type</td>
               </tr>
             </thead>
-          </v-table>
+          </v-table> -->
 
           <v-data-table :items="combinedData" :headers="headers">
+            <template v-slot:header.id_file>
+              <th style="color: #0d47a1">ໄອດີ</th>
+            </template>
+            <template v-slot:header.lcicID>
+              <th style="color: #0d47a1">LcicID</th>
+            </template>
+            <template v-slot:header.com_enterprise_code>
+              <th style="color: #0d47a1">com_enterprise_code</th>
+            </template>
+            <template v-slot:header.customer_id>
+              <th style="color: #0d47a1">bank_customer_ID</th>
+            </template>
+
+            <template v-slot:header.branch_id>
+              <th style="color: #0d47a1">loan_id</th>
+            </template>
+            <template v-slot:header.collateral_type>
+              <th style="color: #0d47a1">collateral_type</th>
+            </template>
+
             <template v-slot:top> </template>
             <template v-slot:item="{ item }">
               <tr>
                 <td>{{ item.id_file }}</td>
-                <td class="text-center">{{ item.lcicid }}</td>
+                <td>{{ item.lcicid }}</td>
                 <td></td>
                 <td></td>
                 <td>{{ item.com_enterprise_code }}</td>
@@ -383,7 +402,7 @@
             ຂໍ້ມູນທີ່ອັບໂຫຼດສົມບຸນ ເປັນຂໍ້ມູນທີ່ຜ່ານການກວດສອບ ແລະ
             ຖືກບັນທຶກລົງຖານຂໍ້ມູນແລ້ວ
           </h1>
-          <v-table>
+          <!-- <v-table>
             <thead>
               <tr class="text-center " style="background-color: #5c6bc0; color: aliceblue">
                 <th>id</th>
@@ -393,7 +412,7 @@
                 <th>Branch_id_code</th>
               </tr>
             </thead>
-          </v-table>
+          </v-table> -->
           <v-data-table :items="t1" :headers="headers">
             <template v-slot:header>
               <tr style="color: black; background-color: blue"></tr>
@@ -452,12 +471,13 @@ export default defineComponent({
     const cidData = ref(null);
 
     const headers = [
-      { text: "id_file", value: "id_file" },
-      { text: "lcicID", value: "lcicID" },
-      { text: "com_enterprise_code", value: "com_enterprise_code" },
-      { text: "customer_id", value: "customer_id" },
-      { text: "branch_id", value: "branch_id" },
-      { text: "lcicID_error", value: "lcicID_error" },
+      { title: "id_file", value: "id_file" },
+      { title: "lcicID", value: "lcicID" },
+      { title: "com_enterprise_code", value: "com_enterprise_code" },
+      { title: "customer_id", value: "customer_id" },
+      { title: "branch_id", value: "branch_id" },
+      { title: "collateral_type", value: "collateral_type" },
+      { title: "lcicID_error", value: "lcicID_error" },
     ];
 
     onMounted(() => {

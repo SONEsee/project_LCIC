@@ -182,7 +182,22 @@
         const formData = new FormData();
         formData.append("file", file.value);
         formData.append("title", file.value.name);
-        
+        if (user.value) {
+          let userId = user.value.MID.id;
+          if (userId < 10) {
+            userId = "0" + userId;
+          }
+          formData.append("user_id", userId);
+          console.log("Formatted User ID:", userId);
+        } else {
+          Swal.fire({
+            icon: "warning",
+          title: "ຂໍ້ມູນຜູ້ໃຊ້ບໍ່ສາມາດສົ່ງໄດ້",
+          text: "ກະລຸນາກວດສອບຂໍ້ມູນຜູ້ໃຊ້",
+        }
+        );
+          return;
+        }
   
         const newItem = {
           fileName: file.value.name,
@@ -231,12 +246,42 @@
           if (updatedItem) {
             updatedItem.status = "ການນຳສົ່ງບໍ່ສົມບູນ";
           }
-  
+          if (error.response && error.response.status === 405) {
+          Swal.fire({
+            icon: "error",
+            title: "ການນຳສົ່ງບໍ່ສົມບູນ",
+            text: "ຂໍ້ມູນບໍ່ຖືກກັບທະນາຄານ ກາລຸນາກວດສອບຄືນ",
+          });
+        } else if(error.response && error.response.status === 404) {
+          Swal.fire({
+            icon: "warning",
+            title: "ມີຊືຟາຍຊໍ້າກັນ",
+            text: "ຊື່ຟາຍນີ້ມີຢູ່ໃນລະບົບແລ້ວ ກາລຸນາກວດຄືນໃໝ່",
+          })
+        } else if(error.response && error.response.status === 406) {
+          Swal.fire({
+            icon: "error",
+            title: "ອັບໂຫຼດລົ້ມເຫຼວ",
+            text: "ຮູບແບບຂໍ້ມູນຂອງ period ຢູ່ໃນຖານຂໍ້ມູນບໍ່ຖືກຮູບແບບ",
+          })
+        } else if(error.response && error.response.status === 407) {
+          Swal.fire({
+            icon: "error",
+            title: "ການອັບໂຫຼດລົ້ມເຫຼວ",
+            text: "ທ່ານບໍ່ສາມາດອັບໂຫຼດຂໍ້ມູນຍອ້ນຫຼັງໄດ້",
+          })
+        }else{
           Swal.fire({
             icon: "error",
             title: "ການອັບໂຫຼດລົ້ມເຫລວ",
-            text: "ມີການສໍ້າກັນຂອງຊື້ໄຟລ໌",
+            text: "ກາລຸນາກວດສອບຄືນ",
           });
+        }
+          // Swal.fire({
+          //   icon: "error",
+          //   title: "ການອັບໂຫຼດລົ້ມເຫລວ",
+          //   text: "ມີການສໍ້າກັນຂອງຊື້ໄຟລ໌",
+          // });
         }
       };
   
