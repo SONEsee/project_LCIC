@@ -8,14 +8,6 @@
               <b style="color: #01579b">- ລາຍລະອຽດການອັບໂຫຼດຂໍ້ມູນ</b>
             </p>
 
-            <!-- <div >
-          <template v-for="(uploadfile, index) in uploadfile" :key="index" >
-            <p>ຊື່ເອກະສານ: <b>{{ uploadfile.fileName }}</b>    </p>
-            
-          </template>
-  
-        </div> -->
-
             <div
               :items="combinedData"
               :headers="headers"
@@ -23,24 +15,38 @@
               style="color: black"
             >
               <template v-if="combinedData.length > 0">
-                <p>
-                  ປະຈຳເດືອນ:
-                  <b
-                    >{{ combinedData[0].period[0]
-                    }}{{ combinedData[0].period[1] }} /
-                    {{ combinedData[0].period[2] }}{{ combinedData[0].period[3]
-                    }}{{ combinedData[0].period[4]
-                    }}{{ combinedData[0].period[5] }}</b
-                  >
-                </p>
-                <p>
-                  ຂອງທະນາຄານ: <b>{{ combinedData[0].bnk_code }}</b
-                  >, ສາຂາ: <b>{{ combinedData[0].branch_id }}</b>
-                </p>
-                <p>
-                  ລາຍການຂໍ້ມູນທີ່ອັບໂຫຼດທັງໝົດ:
-                  <b> {{ combinedData.length }}</b> ລາຍການ
-                </p>
+                <v-col cols="12">
+                  <v-row>
+                    <v-col cols="12" md="6">
+                      <v-row>
+                        <v-col cols="12"
+                          ><p>
+                            ລາຍການຂໍ້ມູນທີ່ອັບໂຫຼດທັງໝົດ:
+                            <b> {{ combinedData.length }}</b> ລາຍການ
+                          </p></v-col
+                        >
+                        <v-col cols="12" md="6"></v-col>
+                      </v-row>
+                    </v-col>
+                    <v-col cols="12" md="6" class="text-end">
+                      <p>
+                        ປະຈຳເດືອນ:
+                        <b
+                          >{{ combinedData[0].period[0]
+                          }}{{ combinedData[0].period[1] }} /
+                          {{ combinedData[0].period[2]
+                          }}{{ combinedData[0].period[3]
+                          }}{{ combinedData[0].period[4]
+                          }}{{ combinedData[0].period[5] }}</b
+                        >
+                      </p>
+                      <p>
+                        ຂອງທະນາຄານ: <b>{{ combinedData[0].bnk_code }}</b
+                        >, ສາຂາ: <b>{{ combinedData[0].branch_id }}</b>
+                      </p>
+                    </v-col>
+                  </v-row>
+                </v-col>
               </template>
             </div>
           </div>
@@ -66,59 +72,46 @@
       <v-window v-model="tab">
         <v-window-item value="one">
           <h1>ຂໍ້ມູນທີ່ອັບໂຫຼດທັງໝົດ</h1>
-          <v-table>
-            <thead>
-              <tr style="background-color: #5c6bc0; color: aliceblue">
-                <td>ID</td>
-                <td></td>
-                <td class="text-center">LCICID</td>
-                <td></td>
-                <td class="text-center">enterprise_code</td>
-                <td></td>
-                <td>customer_id</td>
-              </tr>
-            </thead>
-          </v-table>
 
           <v-data-table :items="dataedit" :headers="headers">
             <template v-slot:top> </template>
-            <template v-slot:item="{ item }">
+            <template v-slot:header.id>
+              <th style="color: #0d47a1">ID</th>
+            </template>
+            <template v-slot:header.lcicID>
+              <th style="color: #0d47a1">LcicID</th>
+            </template>
+            <template v-slot:header.com_enterprise_code>
+              <th style="color: #0d47a1">Com_Enterprise_Code</th>
+            </template>
+            <template v-slot:header.bnk_code>
+              <th style="color: #0d47a1">bnk_code</th>
+            </template>
+            <template v-slot:header.customer_id>
+              <th style="color: #0d47a1">customer_id</th>
+            </template>
+            <template v-slot:header.branch_id>
+              <th style="color: #0d47a1">branch_id</th>
+            </template>
+            <template v-slot:header.loan_id>
+              <th style="color: #0d47a1">Loan_id</th>
+            </template>
+            <template v-slot:header.col_id>
+              <th style="color: #0d47a1">Col_id</th>
+            </template>
+
+            <template v-slot:item="{ item, index }">
               <tr>
-                <!-- <td>{{ item.id }}</td> -->
-                <td>{{ item.id_file }}</td>
-                <td class="text-center">{{ item.lcicID }}</td>
-                <td></td>
-                <td></td>
+                <td>{{ index + 1 }}</td>
+                <td>{{ item.lcicID }}</td>
                 <td>{{ item.com_enterprise_code }}</td>
+                <td>{{ item.bnk_code }}</td>
                 <td>{{ item.customer_id }}</td>
-                <!-- <td>{{ item.branch_id }}</td> -->
-                <!-- <td>{{ item.period }}</td> -->
-                <!-- <td>{{ item.bnk_code }}</td> -->
+                <td>{{ item.branch_id }}</td>
+                <td>{{ item.loan_id }}</td>
               </tr>
             </template>
           </v-data-table>
-          <!-- <v-data-table
-  :headers="headers"
-  :items="combinedData"
-  :items-per-page="15"
->
-
-  <template v-slot:header>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>ID File</th>
-      </tr>
-    </thead>
-  </template>
-
-  <template v-slot:item="{ item }">
-    <tr>
-      <td>{{ item.id }}</td>
-      <td>{{ item.id_file }}</td>
-    </tr>
-  </template>
-</v-data-table> -->
         </v-window-item>
 
         <v-window-item value="two">
@@ -131,106 +124,91 @@
           <v-window v-model="subTab">
             <v-window-item value="two-one">
               <h3>ຂໍ້ມູນທີ່ບໍ່ມີ ແລະ ຜິດ Enterprise Code</h3>
-              <!-- <v-data-table :items="filteredBDataIsDamaged" :headers="headers">
-                <template v-slot:header>
-                  <tr style="color: black; background-color: blue"></tr>
-                </template>
-                <template v-slot:item="{ item }">
-                  <tr>
-                    <td>{{ item.id }}</td>
-                    <td>{{ item.id_file }}</td>
-                    <td>{{ item.lcicID }}</td>
-                    <td style="color: brown">{{ item.com_enterprise_code }}</td>
-                    <td>{{ item.customer_id }}</td>
-                    <td>{{ item.branch_id }}</td>
-                    <td style="color: green">{{ item.lcicID_get }}</td>
 
-                    <td style="color: crimson">
-                      {{
-                        item.lcicID_error === "10"
-                          ? "com_enterprise_code ບໍຖືກ"
-                          : item.lcicID_error === "13"
-                          ? "com_enterprise_code ວ່າງ"
-                          : item.item.lcicID_error
-                      }}
-                    </td>
-                  </tr>
-                </template>
-              </v-data-table> -->
               <v-col cols="12">
-                    <v-row>
-                      <v-col cols="6" class="text-center">
-                        <v-toolbar class="text-center bg-indigo-lighten-3">
-                          <v-col cols="12">
-                            <v-row>
-                              <v-col cols="4"></v-col>
-                              <v-col cols="4">
-                                <v-divider class="text-center" inset vertical>
-                                  <div class="text-center">
-                                    <p><b>ຂໍ້ມູນອັບໂຫຼດຂອງສະມາຊິກ</b></p>
-                                  </div>
-                                </v-divider>
-                              </v-col>
-                              <v-col cols="4"></v-col>
-                            </v-row>
+                <v-row>
+                  <v-col cols="6" class="text-center">
+                    <v-toolbar class="text-center bg-indigo-lighten-3">
+                      <v-col cols="12">
+                        <v-row>
+                          <v-col cols="4"></v-col>
+                          <v-col cols="4">
+                            <v-divider class="text-center" inset vertical>
+                              <div class="text-center">
+                                <p><b>ຂໍ້ມູນອັບໂຫຼດຂອງສະມາຊິກ</b></p>
+                              </div>
+                            </v-divider>
                           </v-col>
-                        </v-toolbar>
+                          <v-col cols="4"></v-col>
+                        </v-row>
                       </v-col>
-                      <v-col cols="6">
-                        <v-toolbar flat class="text-center bg-indigo-lighten-4">
-                          <v-col cols="12">
-                            <v-row>
-                              <v-col cols="4"></v-col>
-                              <v-col cols="4">
-                                <v-divider class="text-center" inset vertical>
-                                  <div class="text-center">
-                                    <p><b>ຂໍ້ມູນອັບຈາກ LCICDB</b></p>
-                                  </div>
-                                </v-divider>
-                              </v-col>
-                              <v-col cols="4"></v-col>
-                            </v-row>
-                          </v-col>
-                        </v-toolbar>
-                      </v-col>
-                    </v-row>
+                    </v-toolbar>
                   </v-col>
-              <v-table>
-                <thead>
-                  <tr style="background-color: #5c6bc0; color: aliceblue">
-                    <td>ID</td>
-                    <td>LCICID</td>
-                    <td>enterprise_code</td>
-                    <td>customer_id</td>
-                    <td>enterprise_code</td>
-                    <td>status</td>
-                  </tr>
-                </thead>
-              </v-table>
+                  <v-col cols="6">
+                    <v-toolbar flat class="text-center bg-indigo-lighten-4">
+                      <v-col cols="12">
+                        <v-row>
+                          <v-col cols="4"></v-col>
+                          <v-col cols="4">
+                            <v-divider class="text-center" inset vertical>
+                              <div class="text-center">
+                                <p><b>ຂໍ້ມູນອັບຈາກ LCICDB</b></p>
+                              </div>
+                            </v-divider>
+                          </v-col>
+                          <v-col cols="4"></v-col>
+                        </v-row>
+                      </v-col>
+                    </v-toolbar>
+                  </v-col>
+                </v-row>
+              </v-col>
 
-              <v-data-table :items="filteredBDataIsDamaged" :headers="headers">
-                
+              <v-data-table :items="filteredBDataIsDamaged" :headers="headers2">
+                <template v-slot:header.id>
+                  <th style="color: #0d47a1">ID</th>
+                </template>
+                <template v-slot:header.lcicID>
+                  <th style="color: #0d47a1">LcicID</th>
+                </template>
+                <template v-slot:header.com_enterprise_code>
+                  <th style="color: #0d47a1">Com_Enterprise_Code</th>
+                </template>
+                <template v-slot:header.bnk_code>
+                  <th style="color: #0d47a1">bnk_code</th>
+                </template>
+                <template v-slot:header.customer_id>
+                  <th style="color: #0d47a1">customer_id</th>
+                </template>
+                <template v-slot:header.branch_id>
+                  <th style="color: #0d47a1">branch_id</th>
+                </template>
+                <template v-slot:header.loan_id>
+                  <th style="color: #0d47a1">Loan_id</th>
+                </template>
+                <template v-slot:header.lcicID_get>
+                  <th style="color: #0d47a1">com_enterprise_code</th>
+                </template>
+                <template v-slot:header.status>
+                  <th style="color: #0d47a1">Status</th>
+                </template>
 
-                <template v-slot:item="{ item }">
+                <template v-slot:item="{ item, index }">
                   <tr>
-                    <!-- <td>{{ item.id }}</td> -->
-                    <td>{{ item.id }}</td>
+                    <td>{{ index + 1 }}</td>
                     <td>{{ item.lcicid }}</td>
-                    <td></td>
-                    <td></td>
-                    <td style="color: brown;">{{ item.com_enterprise_code }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td class="text-center">{{ item.customer_id }}</td>
-                    <td></td>
-                    <td></td>
-                    <!-- <td>{{ item.branch_id }}</td> -->
-                    <td style="color: green" class="text-center">
+                    <td style="color: brown">{{ item.com_enterprise_code }}</td>
+                    <td>{{ item.bnk_code }}</td>
+
+                    <td>{{ item.customer_id }}</td>
+
+                    <td>{{ item.branch_id }}</td>
+                    <td>{{ item.loan_id }}</td>
+
+                    <td style="color: green">
                       {{ item.lcicID_get }}
                     </td>
-
-                    <td style="color: crimson" class="text-center">
+                    <td style="color: crimson">
                       {{
                         item.lcicID_error === "10"
                           ? "com_enterprise_code ບໍຖືກ"
@@ -244,11 +222,15 @@
               </v-data-table>
             </v-window-item>
             <v-window-item value="two-two">
-              <v-btn @click="exportToJson" class="bg-red"
-                ><v-icon icon="mdi-code-json" class="mr-2"></v-icon> Export
-                JSON</v-btn
+              <v-fab
+                @click="exportToJson"
+                icon="mdi-cloud-braces"
+                class="mt-5 d-flex justify-end mr-6"
+             
+                color="red-lighten-1"
               >
-              <v-col cols="12">
+              </v-fab>
+              <v-col cols="12" class="mt-6">
                 <v-row>
                   <v-col cols="8" class="text-center">
                     <v-toolbar class="text-center bg-indigo-lighten-3">
@@ -286,46 +268,56 @@
                   </v-col>
                 </v-row>
               </v-col>
-              <v-table>
-                <thead>
-                  <tr style="background-color: #5c6bc0; color: aliceblue">
-                    <th>ID</th>
-                    <th></th>
-                    <th>LCICID</th>
-                    <th>com_enterprise_code</th>
-                    <th>customer_id</th>
 
-                    <th>lcicID</th>
-                    <th>status</th>
-                  </tr>
-                </thead>
-              </v-table>
               <v-data-table
                 :items="filteredBDataIsDamagedLcicIDError01"
-                :headers="headers"
+                :headers="headers3"
               >
                 <template v-slot:header>
                   <tr style="color: black; background-color: blue"></tr>
                 </template>
-                <template v-slot:item="{ item }">
+                <template v-slot:header.id>
+                  <th style="color: #0d47a1">ID</th>
+                </template>
+                <template v-slot:header.lcicID>
+                  <th style="color: #0d47a1">LcicID</th>
+                </template>
+                <template v-slot:header.com_enterprise_code>
+                  <th style="color: #0d47a1">Com_Enterprise_Code</th>
+                </template>
+                <template v-slot:header.bnk_code>
+                  <th style="color: #0d47a1">bnk_code</th>
+                </template>
+                <template v-slot:header.customer_id>
+                  <th style="color: #0d47a1">customer_id</th>
+                </template>
+                <template v-slot:header.branch_id>
+                  <th style="color: #0d47a1">branch_id</th>
+                </template>
+                <template v-slot:header.loan_id>
+                  <th style="color: #0d47a1">Loan_id</th>
+                </template>
+                <template v-slot:header.lcicID_get>
+                  <th style="color: #0d47a1">LcicID</th>
+                </template>
+                <template v-slot:header.status>
+                  <th style="color: #0d47a1">Status</th>
+                </template>
+                <template v-slot:item="{ item, index }">
                   <tr>
-                    <!-- <td>{{ item.id }}</td> -->
-                    <td>{{ item.id }}</td>
-                    <td style="color: brown" class="text-center">
+                    <td>{{ index + 1 }}</td>
+                    <td style="color: brown">
                       {{ item.lcicID }}
                     </td>
-                    <td></td>
-                    <td></td>
                     <td>{{ item.com_enterprise_code }}</td>
-                    <td></td>
-                    <td></td>
+                    <td>{{ item.bnk_code }}</td>
+                    <td>{{ item.branch_id }}</td>
                     <td>{{ item.customer_id }}</td>
-
-                    <!-- <td>{{ item.branch_id }}</td> -->
-                    <td style="color: green" class="text-center">
+                    <td>{{ item.loan_id }}</td>
+                    <td style="color: green">
                       {{ item.lcicID_get }}
                     </td>
-                    <td style="color: crimson" class="text-center">
+                    <td style="color: crimson">
                       {{
                         item.lcicID_error === "01"
                           ? "lcicID ບໍຖືກ"
@@ -342,73 +334,47 @@
               <h3>
                 ຂໍ້ມູນທີ່ມີ LCICID ແລະ com_enterprise_code_error ຜິດ ຫຼື ບໍ່ມີ
               </h3>
-              <!-- <v-data-table
-                :items="filteredBDataIsDamagedLcicIDError33"
-                :headers="headers"
-              >
-                <template v-slot:header>
-                  <tr style="color: black; background-color: blue"></tr>
-                </template>
-                <template v-slot:item="{ item }">
-                  <tr>
-                    <td>{{ item.id_file }}</td>
-                    <td>{{ item.lcicID }}</td>
-                    <td>{{ item.com_enterprise_code }}</td>
-                    <td>{{ item.customer_id }}</td>
-                    <td>{{ item.branch_id }}</td>
-                    <td style="color: red">
-                      ຂໍ້ມູນທີ່ມີ LCICID ແລະ com_enterprise_code_error ຜິດ ຫຼື
-                      ບໍ່ມີ
-                    </td>
-                  </tr>
-                </template>
-              </v-data-table> -->
-<v-table>
-  <thead>
-    <tr style="background-color: #5c6bc0; color: aliceblue">
-      <th>ID</th>
-      <th></th>
-      <th>LCICID</th>
-      <th>com_enterprise_code</th>
-      <th>customer_id</th>
-      
-      <th>status</th>
-    </tr>
-  </thead>
-</v-table>
+
               <v-data-table
                 :items="filteredBDataIsDamagedLcicIDError33"
-                :headers="headers"
+                :headers="headers4"
               >
-                <template v-slot:item="{ item }">
-                  <tr>
-                    <!-- <td>{{ item.id }}</td> -->
-                    <td>{{ item.id }}</td>
-                    <td></td>
-                    <td class="text-center">{{ item.lcicid }}</td>
-                    <td></td>
-                    <td></td>
-                    <td class="text-center">{{ item.com_enterprise_code }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td class="text-center">{{ item.customer_id }}</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    
-                    <!-- <td style="color: green">{{ item.lcicID_get }}</td> -->
-                    <td style="color: crimson"><p>ຂໍ້ມູນຜິດ ຫຼື ບໍ່ມີ</p></td>
+                <template v-slot:header.id>
+                  <th style="color: #0d47a1">ID</th>
+                </template>
+                <template v-slot:header.lcicID>
+                  <th style="color: #0d47a1">LcicID</th>
+                </template>
+                <template v-slot:header.com_enterprise_code>
+                  <th style="color: #0d47a1">Com_Enterprise_Code</th>
+                </template>
+                <template v-slot:header.bnk_code>
+                  <th style="color: #0d47a1">bnk_code</th>
+                </template>
+                <template v-slot:header.customer_id>
+                  <th style="color: #0d47a1">customer_id</th>
+                </template>
+                <template v-slot:header.branch_id>
+                  <th style="color: #0d47a1">branch_id</th>
+                </template>
+                <template v-slot:header.loan_id>
+                  <th style="color: #0d47a1">Loan_id</th>
+                </template>
 
-                    <!-- <td style="color: crimson">
-                      {{
-                        item.lcicID_error === "10"
-                          ? "com_enterprise_code ບໍຖືກ"
-                          : item.lcicID_error === "13"
-                          ? "com_enterprise_code ວ່າງ"
-                          : item.item.lcicID_error
-                      }}
-                    </td> -->
+                <template v-slot:header.status>
+                  <th style="color: #0d47a1">Status</th>
+                </template>
+                <template v-slot:item="{ item, index }">
+                  <tr>
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ item.lcicid }}</td>
+                    <td>{{ item.com_enterprise_code }}</td>
+                    <td>{{ item.bnk_code }}</td>
+                    <td>{{ item.branch_id }}</td>
+                    <td>{{ item.customer_id }}</td>
+
+                    <td>{{ item.loan_id }}</td>
+                    <td style="color: crimson"><p>ຂໍ້ມູນຜິດ ຫຼື ບໍ່ມີ</p></td>
                   </tr>
                 </template>
               </v-data-table>
@@ -418,29 +384,42 @@
                 ຂໍ້ມູນທີ່ມີ bnk_code, branch_id, customer_id, loan_id ແຕ່ມີ
                 LCICID ແລະ com_enterprise_code ບໍ່ຖືກ
               </h3>
-              <v-table>
-                <thead>
-                  <tr>
-                    <th>id_file</th>
-                    <th>lcicID</th>
-                    <th>com_enterprise_code</th>
-                    <th>customer_id</th>
-                    <th>branch_id</th>
-                    <td></td>
-                  </tr>
-                </thead>
-              </v-table>
-              <v-data-table :items="disputese" :headers="headers">
+
+              <v-data-table :items="disputese" :headers="headers5">
                 <template v-slot:header>
                   <tr style="color: black; background-color: blue"></tr>
                 </template>
-                <template v-slot:item="{ item }">
+                <template v-slot:header.id>
+                  <th style="color: #0d47a1">ID</th>
+                </template>
+                <template v-slot:header.lcicID>
+                  <th style="color: #0d47a1">LcicID</th>
+                </template>
+                <template v-slot:header.com_enterprise_code>
+                  <th style="color: #0d47a1">Com_Enterprise_Code</th>
+                </template>
+                <template v-slot:header.bnk_code>
+                  <th style="color: #0d47a1">bnk_code</th>
+                </template>
+                <template v-slot:header.customer_id>
+                  <th style="color: #0d47a1">customer_id</th>
+                </template>
+                <template v-slot:header.branch_id>
+                  <th style="color: #0d47a1">branch_id</th>
+                </template>
+                <template v-slot:header.loan_id>
+                  <th style="color: #0d47a1">Loan_id</th>
+                </template>
+                <template v-slot:item="{ item, index }">
                   <tr>
-                    <td>{{ item.id_file }}</td>
+                    <td>{{ index + 1 }}</td>
                     <td>{{ item.lcicID }}</td>
                     <td>{{ item.com_enterprise_code }}</td>
-                    <td>{{ item.customer_id }}</td>
+                    <td>{{ item.bnk_code }}</td>
                     <td>{{ item.branch_id }}</td>
+                    <td>{{ item.customer_id }}</td>
+
+                    <td>{{ item.loan_id }}</td>
                   </tr>
                 </template>
               </v-data-table>
@@ -453,17 +432,42 @@
             ຂໍ້ມູນທີ່ອັບໂຫຼດສົມບຸນ ເປັນຂໍ້ມູນທີ່ຜ່ານການກວດສອບ ແລະ
             ຖືກບັນທຶກລົງຖານຂໍ້ມູນແລ້ວ
           </h1>
-          <v-data-table :items="b1Monthly" :headers="headers">
+          <v-data-table :items="b1Monthly" :headers="headers5">
             <template v-slot:header>
               <tr style="color: black; background-color: blue"></tr>
             </template>
-            <template v-slot:item="{ item }">
+            <template v-slot:header.id>
+              <th style="color: #0d47a1">ID</th>
+            </template>
+            <template v-slot:header.lcicID>
+              <th style="color: #0d47a1">LcicID</th>
+            </template>
+            <template v-slot:header.com_enterprise_code>
+              <th style="color: #0d47a1">Com_Enterprise_Code</th>
+            </template>
+            <template v-slot:header.bnk_code>
+              <th style="color: #0d47a1">bnk_code</th>
+            </template>
+            <template v-slot:header.customer_id>
+              <th style="color: #0d47a1">customer_id</th>
+            </template>
+            <template v-slot:header.branch_id>
+              <th style="color: #0d47a1">branch_id</th>
+            </template>
+            <template v-slot:header.loan_id>
+              <th style="color: #0d47a1">Loan_id</th>
+            </template>
+
+            <template v-slot:item="{ item, index }">
               <tr>
-                <td>{{ item.id_file }}</td>
+                <td>{{ index + 1 }}</td>
                 <td>{{ item.lcicID }}</td>
                 <td>{{ item.com_enterprise_code }}</td>
-                <td>{{ item.customer_id }}</td>
+                <td>{{ item.bnk_code }}</td>
                 <td>{{ item.branch_id }}</td>
+                <td>{{ item.customer_id }}</td>
+
+                <td>{{ item.loan_id }}</td>
               </tr>
             </template>
           </v-data-table>
@@ -506,12 +510,75 @@ export default defineComponent({
     const route = useRoute();
 
     const headers = [
-      { text: "id_file", value: "id_file" },
-      { text: "lcicID", value: "lcicID" },
-      { text: "com_enterprise_code", value: "com_enterprise_code" },
-      { text: "customer_id", value: "customer_id" },
-      { text: "branch_id", value: "branch_id" },
-      { text: "lcicID_error", value: "lcicID_error" },
+      { title: "id", value: "id" },
+      { title: "lcicID", value: "lcicID" },
+      { title: "com_enterprise_code", value: "com_enterprise_code" },
+      { title: "bnk_code", value: "bnk_code" },
+      { title: "customer_id", value: "customer_id" },
+      { title: "branch_id", value: "branch_id" },
+      { title: "loan_id", value: "loan_id" },
+    ];
+    // const headers1 = [
+    //   { title: "id", value: "id" },
+    //   { title: "lcicID", value: "lcicID" },
+    //   { title: "com_enterprise_code", value: "com_enterprise_code" },
+    //   { title: "bnk_code", value: "bnk_code" },
+    //   { title: "bank_customer_ID", value: "bank_customer_ID" },
+    //   { title: "branch_id_code", value: "branch_id_code" },
+    //   { title: "loan_id", value: "loan_id" },
+    //   { title: "col_id", value: "col_id" },
+    //   { title: "account_no", value: "account_no" },
+    // ];
+    const headers2 = [
+      { title: "id", value: "id" },
+      { title: "lcicID", value: "lcicID" },
+      { title: "com_enterprise_code", value: "com_enterprise_code" },
+      { title: "bnk_code", value: "bnk_code" },
+      { title: "branch_id", value: "branch_id" },
+      { title: "customer_id", value: "customer_id" },
+      { title: "loan_id", value: "loan_id" },
+      { title: "com_enterprise_code", value: "lcicID_get" },
+      { title: "satus", value: "status" },
+    ];
+    const headers3 = [
+      { title: "id", value: "id" },
+      { title: "lcicID", value: "lcicID" },
+      { title: "com_enterprise_code", value: "com_enterprise_code" },
+      { title: "bnk_code", value: "bnk_code" },
+      { title: "branch_id", value: "branch_id" },
+      { title: "customer_id", value: "customer_id" },
+      { title: "loan_id", value: "loan_id" },
+      { title: "com_enterprise_code", value: "lcicID_get" },
+      { title: "satus", value: "status" },
+    ];
+    const headers4 = [
+      { title: "id", value: "id" },
+      { title: "lcicID", value: "lcicID" },
+      { title: "com_enterprise_code", value: "com_enterprise_code" },
+      { title: "bnk_code", value: "bnk_code" },
+      { title: "branch_id", value: "branch_id" },
+      { title: "customer_id", value: "customer_id" },
+      { title: "loan_id", value: "loan_id" },
+
+      { title: "satus", value: "status" },
+    ];
+    const headers5 = [
+      { title: "id", value: "id" },
+      { title: "lcicID", value: "lcicID" },
+      { title: "com_enterprise_code", value: "com_enterprise_code" },
+      { title: "bnk_code", value: "bnk_code" },
+      { title: "branch_id", value: "branch_id" },
+      { title: "customer_id", value: "customer_id" },
+      { title: "loan_id", value: "loan_id" },
+    ];
+    const headers6 = [
+      { title: "id", value: "id" },
+      { title: "lcicID", value: "lcicID" },
+      { title: "com_enterprise_code", value: "com_enterprise_code" },
+      { title: "bank_customer_ID", value: "bank_customer_ID" },
+      { title: "branch_id_code", value: "branch_id_code" },
+      { title: "loan_id", value: "loan_id" },
+      { title: "col_id", value: "col_id" },
     ];
 
     onMounted(() => {
@@ -531,25 +598,9 @@ export default defineComponent({
       }
     });
 
-    // const combinedData = computed(() => {
-    //   return [...bDataIsDamaged.value, ...dataedit.value];
-
     // });
     const combinedData = computed(() => {
-      return [...(bDataIsDamaged.value || []), ...(dataedit.value || [])].map(
-        (item) => {
-          return {
-            // id: item?.id || null,
-            id_file: item?.id_file || null,
-            lcicid: item?.lcicID || null,
-            com_enterprise_code: item?.com_enterprise_code || null,
-            customer_id: item?.customer_id || null,
-            branch_id: item?.branch_id || null,
-            period: item?.period || null,
-            bnk_code: item?.bnk_code || null,
-          };
-        }
-      );
+      return [...(bDataIsDamaged.value || []), ...(dataedit.value || [])];
     });
 
     const b1WithStatusCustomer1 = computed(() => {
@@ -558,26 +609,10 @@ export default defineComponent({
       return filtered;
     });
 
-    // const filteredBDataIsDamaged = computed(() => {
-    //   return bDataIsDamaged.value.filter(
-    //     (item) => item.lcicID_error === "10" || item.lcicID_error === "13"
-    //   );
-    // });
-
     const filteredBDataIsDamaged = computed(() => {
-      return bDataIsDamaged.value
-        .filter(
-          (item) => item.lcicID_error === "10" || item.lcicID_error === "13"
-        )
-        .map((item) => ({
-          id: item?.id || null,
-          lcicid: item?.lcicID || null,
-          com_enterprise_code: item?.com_enterprise_code || null,
-          customer_id: item?.customer_id || null,
-          branch_id: item?.branch_id || null,
-          lcicID_error: item?.lcicID_error || null,
-          lcicID_get: item?.lcicID_get || null,
-        }));
+      return bDataIsDamaged.value.filter(
+        (item) => item.lcicID_error === "10" || item.lcicID_error === "13"
+      );
     });
 
     const filteredBDataIsDamagedLcicIDError01 = computed(() => {
@@ -587,29 +622,12 @@ export default defineComponent({
     });
 
     const filteredBDataIsDamagedLcicIDError33 = computed(() => {
-      return bDataIsDamaged.value
-        .filter((item) => item.lcicID_error === "33")
-        .map((item) => ({
-          id: item?.id || null,
-          lcicid: item?.lcicID || null,
-          com_enterprise_code: item?.com_enterprise_code || null,
-          customer_id: item?.customer_id || null,
-          branch_id: item?.branch_id || null,
-          lcicID_error: item?.lcicID_error || null,
-          lcicID_get: item?.lcicID_get || null,
-
-        }));
+      return bDataIsDamaged.value.filter((item) => item.lcicID_error === "33");
     });
 
-    //     const exportToJson = () => {
-    //   const dataToExport = {
-    //     filteredBDataIsDamagedLcicIDError01: filteredBDataIsDamagedLcicIDError01.value,
-
     const exportToJson = () => {
-      // ສຳຣອງຂໍ້ມູນໃສ່ໃນຕົວແປ dataToExport
       const dataToExport = filteredBDataIsDamagedLcicIDError01.value.map(
         (item) => {
-          // ສຳເນົາຄ່າ lcicID_get ໄປໃສ່ lcicID ແລ້ວລົບ lcicID_get ອອກ
           const {
             lcicID_get,
             com_enterprise_code_get,
@@ -645,6 +663,12 @@ export default defineComponent({
       bDataIsDamaged,
       b1Monthly,
       headers,
+
+      headers2,
+      headers3,
+      headers4,
+      headers5,
+      headers6,
       combinedData,
       b1WithStatusCustomer1,
       filteredBDataIsDamaged,

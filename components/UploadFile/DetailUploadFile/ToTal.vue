@@ -173,10 +173,14 @@
               </v-data-table>
             </v-window-item>
             <v-window-item value="two-two">
-              <v-btn @click="exportToJson" class="bg-red"
-                ><v-icon icon="mdi-code-json" class="mr-2"></v-icon> Export
-                JSON</v-btn
+              <v-fab
+                @click="exportToJson"
+                icon="mdi-cloud-braces"
+                class="mt-5 d-flex justify-end mr-6"
+             
+                color="red-lighten-1"
               >
+              </v-fab>
               <v-col cols="12">
                 <v-row>
                   <v-col cols="8" class="text-center">

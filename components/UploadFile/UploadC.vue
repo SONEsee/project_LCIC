@@ -265,7 +265,7 @@
             title: "ອັບໂຫຼດລົ້ມເຫຼວ",
             text: "ຮູບແບບຂໍ້ມູນຂອງ period ຢູ່ໃນຖານຂໍ້ມູນບໍ່ຖືກຮູບແບບ",
           })
-        } else if(error.response && error.response.status === 407) {
+        } else if(error.response && error.response.status === 408) {
           Swal.fire({
             icon: "error",
             title: "ການອັບໂຫຼດລົ້ມເຫຼວ",
@@ -278,11 +278,7 @@
             text: "ກາລຸນາກວດສອບຄືນ",
           });
         }
-          // Swal.fire({
-          //   icon: "error",
-          //   title: "ການອັບໂຫຼດລົ້ມເຫລວ",
-          //   text: "ມີການສໍ້າກັນຂອງຊື້ໄຟລ໌",
-          // });
+
         }
       };
   

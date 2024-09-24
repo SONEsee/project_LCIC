@@ -14,45 +14,56 @@
       outlined
     ></v-file-input>
     <v-btn @click="uploadFile" color="primary">ອັບໂຫຼດຟາຍ</v-btn>
-    
-    <v-data-table :headers="headers" :items="items" class="custom-header elevation-1">
+
+    <v-data-table
+      :headers="headers"
+      :items="items"
+      class="custom-header elevation-1"
+    >
       <template v-slot:header.FID>
-    <th style=" color: #0D47A1;">ໄອດີ</th>
-  </template>
+        <th style="color: #0d47a1">ໄອດີ</th>
+      </template>
       <template v-slot:header.path>
-    <th style=" color: #0D47A1;">ຊື່ພາດ</th>
-  </template>
+        <th style="color: #0d47a1">ຊື່ພາດ</th>
+      </template>
       <template v-slot:header.statussubmit>
-    <th style=" color: #0D47A1;">ສະຖານະ</th>
-  </template>
+        <th style="color: #0d47a1">ສະຖານະ</th>
+      </template>
       <template v-slot:header.percentage>
-    <th style=" color: #0D47A1;">ວັນທີອັບໂຫຼດ</th>
-  </template>
+        <th style="color: #0d47a1">ສວນຕ່າງຂໍ້ມູນຜິດພາດ</th>
+      </template>
 
       <template v-slot:header.actions>
-    <th style=" color: #0D47A1;">Actions</th>
-  </template>
-  <template v-slot:item.path="{ item }">
-    <a :href="getFullPath(item.path)" target="_blank">{{ getFileName(item.path) }}</a>
-  </template>
-  
-  <template v-slot:item.percentage="{ item }">
-    <span :style="{ color: getPercentageColor(item.percentage) }">{{ item.percentage.toFixed(2) }}%</span>
-  </template>
-  
-  <template v-slot:item.statussubmit="{ item }">
-    <v-chip :color="getStatusColor(item.statussubmit)" dark>{{ getStatusText(item.statussubmit) }}</v-chip>
-  </template>
-  
-  <template v-slot:item.actions="{ item }">
-    <v-btn @click="viewDetails(item)" color="info">ເບິ່ງລາຍລະອຽດ</v-btn>
-  </template>
-  
-  <template v-slot:no-data>
-    <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
-  </template>
-</v-data-table>
+        <th style="color: #0d47a1">Actions</th>
+      </template>
 
+      
+      <template v-slot:item.path="{ item }">
+        <a :href="getFullPath(item.path)" target="_blank">{{
+          getFileName(item.path)
+        }}</a>
+      </template>
+
+      <template v-slot:item.percentage="{ item }">
+        <span :style="{ color: getPercentageColor(item.percentage) }"
+          >{{ item.percentage.toFixed(2) }}%</span
+        >
+      </template>
+
+      <template v-slot:item.statussubmit="{ item }">
+        <v-chip :color="getStatusColor(item.statussubmit)" dark>{{
+          getStatusText(item.statussubmit)
+        }}</v-chip>
+      </template>
+
+      <template v-slot:item.actions="{ item }">
+        <v-btn @click="viewDetails(item)" color="info">ເບິ່ງລາຍລະອຽດ</v-btn>
+      </template>
+
+      <template v-slot:no-data>
+        <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
+      </template>
+    </v-data-table>
   </v-container>
 </template>
 
@@ -92,25 +103,6 @@ export default defineComponent({
       { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
       { title: "Actions", value: "actions", sortable: false },
     ]);
-
-    // onMounted(async () => {
-    //   try {
-    //     await fetchData();
-
-    //     const userData = localStorage.getItem("user_data");
-
-    //     if (userData) {
-    //       try {
-    //         user.value = JSON.parse(userData);
-    //         console.log("User data:", user.value);
-    //       } catch (error) {
-    //         console.error("Error parsing user data:", error);
-    //       }
-    //     }
-    //   } catch (error) {
-    //     console.error("Error in onMounted:", error);
-    //   }
-    // });
 
     onMounted(async () => {
       try {
@@ -501,4 +493,3 @@ export default defineComponent({
   },
 });
 </script>
-

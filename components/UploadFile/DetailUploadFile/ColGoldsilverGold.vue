@@ -165,10 +165,14 @@
               </v-data-table>
             </v-window-item>
             <v-window-item value="two-two">
-              <v-btn @click="exportToJson" class="bg-red"
-                ><v-icon icon="mdi-code-json" class="mr-2"></v-icon> Export
-                JSON</v-btn
+              <v-fab
+                @click="exportToJson"
+                icon="mdi-cloud-braces"
+                class="mt-5 d-flex justify-end mr-6"
+             
+                color="red-lighten-1"
               >
+              </v-fab>
               <h3 class="mt-5">
                 ຂໍ້ມູນ <b> GOLD AND SILVER.</b>ບໍຖືກ ແລະບໍ່ມີ LcicID
               </h3>

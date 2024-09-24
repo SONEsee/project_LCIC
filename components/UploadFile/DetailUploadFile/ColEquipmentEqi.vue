@@ -170,10 +170,14 @@
               </v-data-table>
             </v-window-item>
             <v-window-item value="two-two">
-              <v-btn @click="exportToJson" class="bg-red"
-                ><v-icon icon="mdi-code-json" class="mr-2"></v-icon> Export
-                JSON</v-btn
+              <v-fab
+                @click="exportToJson"
+                icon="mdi-cloud-braces"
+                class="mt-5 d-flex justify-end mr-6"
+             
+                color="red-lighten-1"
               >
+              </v-fab>
               <h3 class="mt-5">
                 ຂໍ້ມູນ <b> ເຄື່ອງຈັກ ແລະ ອຸປະກອນຕ່າງໆ.</b>ບໍຖືກ ແລະບໍ່ມີ LcicID
               </h3>
@@ -284,19 +288,7 @@
                 com_enterprise_code_error ຜິດ ຫຼື ບໍ່ມີ
               </h3>
 
-              <v-table>
-                <thead>
-                  <tr style="background-color: #5c6bc0; color: aliceblue">
-                    <th>ID</th>
-                    <th></th>
-                    <th>LCICID</th>
-                    <th>com_enterprise_code</th>
-                    <th>customer_id</th>
-
-                    <th>status</th>
-                  </tr>
-                </thead>
-              </v-table>
+              
               <v-data-table :items="lcicenterpriseerror" :headers="headers4">
                 <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
