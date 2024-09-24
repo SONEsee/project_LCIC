@@ -44,6 +44,9 @@
         <div v-if="selectedOption === options[7]">
           <UploadFileDetailUploadFileColGoldsilverGold :cidData="cidData" />
         </div>
+        <div v-if="selectedOption === options[8]">
+          <UploadFileDetailUploadFileColGuarantorCom :cidData="cidData" />
+        </div>
       </v-col>
      
     </v-row>
@@ -97,6 +100,7 @@ export default defineComponent({
       "ຍານພາຫະນະ",
       "ຜູ້​ຄ້ຳປະກັນ",
       "GOLD AND SILVER",
+      "ບໍລິສັດຄໍ່າປະກັນ",
     ] as string[];
 
     const selectedOption = ref<string>("ທັງໝົດ");

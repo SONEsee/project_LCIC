@@ -42,9 +42,9 @@
             >{{ item.percentage.toFixed(2) }}%</span
           >
         </template>
-        <template v-slot:item.status_upload="{ item }">
-          <v-chip :color="getStatusColor(item.status_upload)" dark>{{
-            getStatusText(item.status_upload)
+        <template v-slot:item.statussubmit="{ item }">
+          <v-chip :color="getStatusColor(item.statussubmit)" dark>{{
+            getStatusText(item.statussubmit)
           }}</v-chip>
         </template>
         <template v-slot:item.actions="{ item }">
@@ -89,7 +89,7 @@
       const headers = ref([
         { text: "ໄອດີ", value: "CID" },
         { text: "ຊື່ພາດ", value: "path" },
-        { text: "ສະຖານະ", value: "status_upload" },
+        { text: "ສະຖານະ", value: "statussubmit" },
         { text: "ວັນທີອັບໂຫຼດ", value: "percentage" },
         { text: "Actions", value: "actions", sortable: false },
         
@@ -143,6 +143,7 @@
             throw new Error("Network response was not ok");
           }
           const data = await response.json();
+          console.log('data',data);
           items.value = data.map((item: any) => ({
             ...item,
             CID: item.CID,
@@ -335,33 +336,34 @@
         return parts[parts.length - 1];
       };
   
-      const getStatusColor = (status_upload: string) => {
-        switch (status_upload) {
-          case "in_progress":
-            return "orange";
-          case "completed":
-            return "green";
-          case "failed":
-            return "red";
-          case "0":
-          case "default":
-            return "blue";
-        }
-      };
-  
-      const getStatusText = (status_upload: string) => {
-        switch (status_upload) {
-          case "in_progress":
-            return "ກຳລັງນຳສົ່ຂໍ້ມູນ";
-          case "completed":
-            return "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ";
-          case "failed":
-            return "ປະຕິເສດ";
-          case "0":
-          case "default":
-            return "ສຳເລັດການໂຫຼດ";
-        }
-      };
+      const getStatusColor = (statussubmit: string) => {
+      switch (statussubmit) {
+        case "Pending":
+          return "orange";
+        case "1":
+          return "green";
+        case "2":
+          return "red";
+        case "0":
+        case "default":
+          return "blue";
+      }
+    };
+
+    const getStatusText = (statussubmit: string) => {
+      console.log("completed",statussubmit)
+      switch (statussubmit) {
+        case "Pending":
+          return "ກຳລັງນຳສົ່ຂໍ້ມູນ";
+        case "1":
+          return "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ";
+        case "2":
+          return "ປະຕິເສດ";
+        case "0":
+        case "default":
+          return "ສຳເລັດການໂຫຼດ";
+      }
+    };
   
       const getPercentageColor = (percentage: string) => {
         const percentageValue = parseFloat(percentage);

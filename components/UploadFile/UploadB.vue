@@ -446,7 +446,7 @@ export default defineComponent({
 
     const getStatusColor = (statussubmit: string) => {
       switch (statussubmit) {
-        case "Pending":
+        case "pending":
           return "orange";
         case "1":
           return "green";
@@ -460,7 +460,7 @@ export default defineComponent({
 
     const getStatusText = (statussubmit: string) => {
       switch (statussubmit) {
-        case "Pending":
+        case "pending":
           return "ກຳລັງນຳສົ່ຂໍ້ມູນ";
         case "1":
           return "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ";
