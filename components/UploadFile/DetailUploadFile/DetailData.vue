@@ -19,13 +19,7 @@
       </p>
     </template>
   </div>
-  <!-- <div :items="combinedData" class="ml-5" style="color: black">
-    <template v-if="combinedData.length > 0">
-      {{ combinedData.length }}
-    </template>
-  </div> -->
 
-  <!-- <p>{{ combinedData }}</p> -->
 </template>
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed, PropType } from "vue";

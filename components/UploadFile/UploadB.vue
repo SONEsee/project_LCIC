@@ -140,7 +140,7 @@ export default defineComponent({
       }
     });
 
-    const fetchDataByUserID = async (userID) => {
+    const fetchDataByUserID = async (userID: String) => {
       try {
         const url = `http://127.0.0.1:35729/api/api/upload-files2/?user_id=${userID}`;
         const response = await fetch(url);
@@ -153,7 +153,7 @@ export default defineComponent({
         const data = await response.json();
         console.log("Data for user:", data);
 
-        items.value = data.map((item) => ({
+        items.value = data.map((item:String) => ({
           ...item,
           FID: item.FID,
           status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",

@@ -176,7 +176,7 @@
               <v-fab
                 @click="exportToJson"
                 icon="mdi-cloud-braces"
-                class="mt-5 d-flex justify-end mr-6"
+                class="mt-5 mb-5 d-flex justify-end mr-6"
              
                 color="red-lighten-1"
               >

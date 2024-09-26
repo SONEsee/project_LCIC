@@ -18,7 +18,7 @@ onMounted(() => {
   <div>
     <div class="scrollnavbar">
       <div class="profile"> 
-        <div class="profile-pic">
+        <!-- <div class="profile-pic">
           <v-avatar size="45">
             <img
               src="https://img.freepik.com/free-photo/abstract-autumn-beauty-multi-colored-leaf-vein-pattern-generated-by-ai_188544-9871.jpg?size=626&ext=jpg&ga=GA1.1.2082370165.1716249600&semt=ais_user"
@@ -26,10 +26,10 @@ onMounted(() => {
               alt="sone"
             />
           </v-avatar>
-        </div>
-        <div class="profile-name text-center" v-if="user">
+        </div> -->
+        <!-- <div class="profile-name text-center" v-if="user">
           <h3 style="color: aliceblue;">{{ user.username }}:programer </h3>
-        </div>
+        </div> -->
       </div>
       <v-list class="pa-4">
         <template v-for="(item, i) in sidebarMenu" :key="i">

@@ -33,7 +33,7 @@ const signOut = () => {
 </script>
 
 <template>
-  <v-menu anchor="bottom end" origin="auto" min-width="300" style="background-color: blue;">
+  <v-menu anchor="bottom end" origin="auto" min-width="300" style="background-color: red;">
     <template v-slot:activator="{ props }">
       <div class="d-flex">
         <!-- User Profile -->

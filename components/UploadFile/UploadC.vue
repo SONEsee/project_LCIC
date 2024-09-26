@@ -134,7 +134,7 @@
       }
     });
   
-      const fetchData = async () => {
+      const fetchData = async ( userID: string) => {
         try {
           const response = await fetch(
             "http://127.0.0.1:35729/api/api/upload-filesc2/"
