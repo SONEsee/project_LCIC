@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import LoginPage from '@/components/index.vue';
 import ProtectedPage from '@/components/ProtectedPage.vue';
+import PrintPage from '@/components/print.vue'; // Your component
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -14,6 +15,27 @@ const routes: Array<RouteRecordRaw> = [
     component: ProtectedPage,
     meta: { requiresAuth: true }, // Example for route that requires authentication
   },
+  // {
+  //   path: '/manageuser',
+  //   name: 'ManageUser',
+  //   // component: ManageUser/ManageUser.vue,
+  // },
+  // {
+  //   path: '/manageuser/create_user',
+  //   name: 'CreateUser',
+  //   // component: CreateUser
+  // },
+  // {
+  //   path: '/manageuser/edit_user/:id',
+  //   name: 'EditUser',
+  //   // component: EditUser,
+  //   props: true 
+  // },
+  // {
+  //   path: '/print',
+  //   name: 'PrintPage',
+  //   component: PrintPage,
+  // },
   // Add more routes here as needed
 ];
 

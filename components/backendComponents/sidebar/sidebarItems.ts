@@ -27,7 +27,7 @@ export default [
   {
     title: "ຈັດການ User",
     icon: "mdi-cog-outline",
-    to: "/backend/setting",
+    to: "/backend/manageuser/userlist",
   },
   {
     title: "Tets ຂສລ",

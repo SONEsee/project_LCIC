@@ -99,7 +99,7 @@
       // onMounted(async () => {
       //   try {
       //     const response = await fetch(
-      //       "http://127.0.0.1:35729/api/api/upload-files2/"
+      //       "http://127.0.0.1:8000/api/api/upload-files2/"
       //     );
       //     if (!response.ok) {
       //       throw new Error("Network response was not ok");
@@ -120,7 +120,7 @@
       const fetchData = async () => {
         try {
           const response = await fetch(
-            "http://127.0.0.1:35729/api/api/upload-files2/"
+            "http://127.0.0.1:8000/api/api/upload-files2/"
           );
           if (!response.ok) {
             throw new Error("Network response was not ok");
@@ -178,7 +178,7 @@
   
         try {
           const response = await axios.post(
-            "http://127.0.0.1:35729/api/upload-files/",
+            "http://127.0.0.1:8000/api/upload-files/",
             formData
           );
   
@@ -197,7 +197,7 @@
           });
   
           const response2 = await fetch(
-            "http://127.0.0.1:35729/api/api/upload-files2/"
+            "http://127.0.0.1:8000/api/api/upload-files2/"
           );
           const data = await response2.json();
           items.value = data.map((item: any) => ({
@@ -236,7 +236,7 @@
   
         try {
           const response = await axios.get(
-            "http://127.0.0.1:35729/api/api/productinfo3/",
+            "http://127.0.0.1:8000/api/api/productinfo3/",
             {
               params: {
                 FID: item.FID,
@@ -260,7 +260,7 @@
       };
   
       const getFullPath = (path: string) => {
-        const baseUrl = "http://127.0.0.1:35729/";
+        const baseUrl = "http://127.0.0.1:8000/";
         return `${baseUrl}${path}`;
       };
   

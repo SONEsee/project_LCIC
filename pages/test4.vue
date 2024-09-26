@@ -85,7 +85,7 @@ onMounted(async () => {
 
     // onMounted(async () => {
     //   try {
-    //     const response = await fetch('http://127.0.0.1:35729/api/api/upload-files2/');
+    //     const response = await fetch('http://127.0.0.1:8000/api/api/upload-files2/');
     //     if (!response.ok) {
     //       throw new Error('Network response was not ok');
     //     }
@@ -104,7 +104,7 @@ onMounted(async () => {
     
     const fetchData = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:35729/api/api/upload-files2/');
+        const response = await fetch('http://127.0.0.1:8000/api/api/upload-files2/');
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
@@ -161,7 +161,7 @@ onMounted(async () => {
       items.value.push(newItem);
 
       try {
-        const response = await axios.post('http://127.0.0.1:35729/api/upload-files/', formData);
+        const response = await axios.post('http://127.0.0.1:8000/api/upload-files/', formData);
 
         const updatedItem = items.value.find(item => item.fileName === file.value!.name);
         if (updatedItem) {
@@ -175,7 +175,7 @@ onMounted(async () => {
           text: 'ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ',
         });
 
-        const response2 = await fetch('http://127.0.0.1:35729/api/api/upload-files2/');
+        const response2 = await fetch('http://127.0.0.1:8000/api/api/upload-files2/');
         const data = await response2.json();
         items.value = data.map((item: any) => ({
           ...item,
@@ -212,7 +212,7 @@ onMounted(async () => {
       }
 
       try {
-        const response = await axios.get('http://127.0.0.1:35729/api/api/productinfo3/', {
+        const response = await axios.get('http://127.0.0.1:8000/api/api/productinfo3/', {
           params: {
             FID: item.FID,
           },
@@ -245,7 +245,7 @@ onMounted(async () => {
             const params = new URLSearchParams();
             params.append('FID', item.FID);
 
-            const response = await axios.post('http://127.0.0.1:35729/api/confirm_upload/', params);
+            const response = await axios.post('http://127.0.0.1:8000/api/confirm_upload/', params);
 
             if (response.data.status === 'success') {
               const confirmedItem = items.value.find(i => i.fileName === item.fileName);
@@ -268,7 +268,7 @@ onMounted(async () => {
         }
       });
 
-      const response = await axios.post('http://127.0.0.1:35729/api/api/update-statussubmit/', `FID=${item.FID}`);
+      const response = await axios.post('http://127.0.0.1:8000/api/api/update-statussubmit/', `FID=${item.FID}`);
 
       if (response.data.status === 'success') {
         const confirmedItem = items.value.find(i => i.fileName === item.fileName);
@@ -302,9 +302,9 @@ onMounted(async () => {
     };
 
     // const getFullPath = (path: string) => {
-    //   return `http://127.0.0.1:35729/media/${path}`;
+    //   return `http://127.0.0.1:8000/media/${path}`;
     // };
-    const getFullPath = (path: string) => `http://127.0.0.1:35729/${path}`;
+    const getFullPath = (path: string) => `http://127.0.0.1:8000/${path}`;
 
 const getFileName = (path: string) => {
   const parts = path.split('/');
