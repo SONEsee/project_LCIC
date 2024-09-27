@@ -29,7 +29,7 @@ const submit = async () => {
     if (ruleRequired(username.value) && rulePassLen(password.value)) {
       const config = useRuntimeConfig();
       const { data, error } = await useFetch(
-        `${config.public.strapi.url}login/`,
+        `${config.public.strapi.url}api/login/`,
         {
           method: "POST",
           headers: {

@@ -104,7 +104,8 @@ const submit = async () => {
     });
 
     try {
-      const res = await fetch("http://127.0.0.1:35729/api/api/v1/enterprise-info/search/", {
+      const config = useRuntimeConfig();
+      const res = await fetch(`${config.public.strapi.url}api/api/v1/enterprise-info/search/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

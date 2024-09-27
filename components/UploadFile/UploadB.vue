@@ -142,7 +142,8 @@ export default defineComponent({
 
     const fetchDataByUserID = async (userID: String) => {
       try {
-        const url = `http://127.0.0.1:35729/api/api/upload-files2/?user_id=${userID}`;
+        const config = useRuntimeConfig();
+        const url = `${config.public.strapi.url}api/api/upload-files2/?user_id=${userID}`;
         const response = await fetch(url);
         console.log("Response:", response);
 
@@ -167,8 +168,9 @@ export default defineComponent({
 
     const fetchData = async () => {
       try {
+        const config = useRuntimeConfig();
         const response = await fetch(
-          "http://127.0.0.1:35729/api/api/upload-files2/"
+          `${config.public.strapi.url}api/api/upload-files2/`
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -199,61 +201,7 @@ export default defineComponent({
         file.value = target.files[0];
       }
     };
-    //     const uploadFile = async () => {
-    //   if (!file.value) {
-    //     Swal.fire({
-    //       icon: "warning",
-    //       title: "ບໍ່ໄດ້ເລືອກໄຟລ໌",
-    //       text: "ກະລຸນາເລືອກໄຟລ໌ກ່ອນ",
-    //     });
-    //     return;
-    //   }
-
-    //   const formData = new FormData();
-    //   formData.append("file", file.value);
-    //   // formData.append("title", file.value.name);
-
-    //   if (user.value) {
-    //     formData.append("user_id", user.value.MID.id);
-    //     console.log("User ID:", user.value.MID.id);
-    //   } else {
-    //     Swal.fire({
-    //       icon: "warning",
-    //       title: "ຂໍ້ມູນຜູ້ໃຊ້ບໍ່ສາມາດສົ່ງໄດ້",
-    //       text: "ກະລຸນາກວດສອບຂໍ້ມູນຜູ້ໃຊ້",
-    //     });
-    //     return;
-    //   }
-
-    //   try {
-    //     const response = await axios.post(
-    //       "http://127.0.0.1:35729/api/upload-files/",
-    //       formData
-    //     );
-
-    //     Swal.fire({
-    //       icon: "success",
-    //       title: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-    //       text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ",
-    //     });
-
-    //     const response2 = await fetch(
-    //       "http://127.0.0.1:35729/api/api/upload-files2/"
-    //     );
-    //     const data = await response2.json();
-    //     items.value = data.map((item) => ({
-    //       ...item,
-    //       FID: item.FID,
-    //     }));
-    //   } catch (error) {
-    //     console.error(error);
-    //     Swal.fire({
-    //       icon: "error",
-    //       title: "ການອັບໂຫຼດລົ້ມເຫລວ",
-    //       text: "ມີການສໍ້າກັນຂອງຊື້ໄຟລ໌",
-    //     });
-    //   }
-    // };
+    
 
     const uploadFile = async () => {
       if (!file.value) {
@@ -265,21 +213,7 @@ export default defineComponent({
         return;
       }
 
-      // const formData = new FormData();
-      // formData.append("file", file.value);
-      // formData.append("title", file.value.name);
-
-      // if (user.value) {
-      //   formData.append("user_id", user.value.MID.id);
-      //   console.log("User ID:", user.value.MID.id);
-      // } else {
-      //   Swal.fire({
-      //     icon: "warning",
-      //     title: "ຂໍ້ມູນຜູ້ໃຊ້ບໍ່ສາມາດສົ່ງໄດ້",
-      //     text: "ກະລຸນາກວດສອບຂໍ້ມູນຜູ້ໃຊ້",
-      //   });
-      //   return;
-      // }
+   
       const formData = new FormData();
       formData.append("file", file.value);
       formData.append("title", file.value.name);
@@ -311,10 +245,11 @@ export default defineComponent({
         status: "ກຳລັງນຳສົ່ງຂໍ້ມູນ",
       };
       items.value.push(newItem);
-
+const config = useRuntimeConfig();
       try {
         const response = await axios.post(
-          "http://127.0.0.1:35729/api/upload-files/",
+        
+          `${config.public.strapi.url}api/upload-files/`,
           formData
         );
 
@@ -333,7 +268,7 @@ export default defineComponent({
         });
 
         const response2 = await fetch(
-          "http://127.0.0.1:35729/api/api/upload-files2/"
+          `${config.public.strapi.url}api/upload-files2/`
         );
         const data = await response2.json();
         items.value = data.map((item: any) => ({
@@ -401,10 +336,11 @@ export default defineComponent({
         });
         return;
       }
-
+const config = useRuntimeConfig();
       try {
         const response = await axios.get(
-          "http://127.0.0.1:35729/api/api/productinfo3/",
+          
+          `${config.public.strapi.url}api/api/productinfo3/`,
           {
             params: {
               FID: item.FID,
@@ -425,9 +361,9 @@ export default defineComponent({
         });
       }
     };
-
+    const config = useRuntimeConfig();
     const getFullPath = (path: string) => {
-      const baseUrl = "http://127.0.0.1:35729/";
+      const baseUrl = `${config.public.strapi.url}`;
       return `${baseUrl}${path}`;
     };
 
@@ -438,7 +374,7 @@ export default defineComponent({
 
     const getStatusColor = (statussubmit: string) => {
       switch (statussubmit) {
-        case "pending":
+        case "Pending":
           return "orange";
         case "1":
           return "green";
@@ -452,7 +388,7 @@ export default defineComponent({
 
     const getStatusText = (statussubmit: string) => {
       switch (statussubmit) {
-        case "pending":
+        case "Pending":
           return "ກຳລັງນຳສົ່ຂໍ້ມູນ";
         case "1":
           return "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ";

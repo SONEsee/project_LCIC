@@ -104,8 +104,8 @@
       });
   
       const fetchData = async () => {
-        try {
-          const response = await fetch('http://127.0.0.1:35729/api/api/upload-filesc2/');
+        try {const config = useRuntimeConfig();
+          const response = await fetch(`${config.public.strapi.url}api/api/upload-filesc2/`);
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
@@ -162,7 +162,8 @@
         items.value.push(newItem);
   
         try {
-          const response = await axios.post('http://127.0.0.1:35729/api/upload-files/', formData);
+          const config = useRuntimeConfig();
+          const response = await axios.post(`${config.public.strapi.url}api/upload-files/`, formData);
   
           const updatedItem = items.value.find(item => item.fileName === file.value!.name);
           if (updatedItem) {
@@ -176,7 +177,7 @@
             text: 'ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ',
           });
   
-          const response2 = await fetch('http://127.0.0.1:35729/api/api/upload-filesc2/');
+          const response2 = await fetch(`${config.public.strapi.url}api/api/upload-filesc2/`);
           const data = await response2.json();
           items.value = data.map((item: any) => ({
             ...item,
@@ -213,7 +214,8 @@
         }
   
         try {
-          const response = await axios.get('http://127.0.0.1:35729/api/api/productinfoc3/', {
+          const config = useRuntimeConfig();
+          const response = await axios.get(`${config.public.strapi.url}api/api/productinfoc3/`, {
             params: {
               CID: item.CID,
             },
@@ -244,10 +246,11 @@
           if (result.isConfirmed) {
             try {
               const params = new URLSearchParams();
+              const config = useRuntimeConfig();
               const csrfToken = Cookies.get('csrftoken');
               params.append('CID', item.CID);
   
-              const response = await axios.post('http://127.0.0.1:35729/api/confirm_uploadc/', params, {
+              const response = await axios.post(`${config.public.strapi.url}api/confirm_uploadc/`, params, {
             headers: {
                 'X-CSRFToken': csrfToken, // ເພີ່ມ CSRF Token ເຂົ້າໄປໃນ header
             },
@@ -273,8 +276,9 @@
             }
           }
         });
+        const config = useRuntimeConfig();
   
-        const response = await axios.post('http://127.0.0.1:35729/api/api/update-statussubmitc/', `CID=${item.CID}`);
+        const response = await axios.post(`${config.public.strapi.url}api/api/update-statussubmitc/`, `CID=${item.CID}`);
   
         if (response.data.status === 'success') {
           const confirmedItem = items.value.find(i => i.fileName === item.fileName);
@@ -310,7 +314,8 @@
       // const getFullPath = (path: string) => {
       //   return `http://127.0.0.1:35729/media/${path}`;
       // };
-      const getFullPath = (path: string) => `http://127.0.0.1:35729/${path}`;
+      const config = useRuntimeConfig();
+      const getFullPath = (path: string) => `${config.public.strapi.url}/${path}`;
   
   const getFileName = (path: string) => {
     const parts = path.split('/');

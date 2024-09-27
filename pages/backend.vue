@@ -1,4 +1,4 @@
-<!-- <script setup lang="ts">
+<script setup lang="ts">
 
     definePageMeta({
        middleware: ['auth'],
@@ -6,13 +6,13 @@
 
 </script>
 
-<template>
+<!-- <template>
     
-</template>
+</template> -->
 
 <style scoped>
 
-</style> -->
+</style>
 
 
 <template>

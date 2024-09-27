@@ -518,17 +518,7 @@ export default defineComponent({
       { title: "branch_id", value: "branch_id" },
       { title: "loan_id", value: "loan_id" },
     ];
-    // const headers1 = [
-    //   { title: "id", value: "id" },
-    //   { title: "lcicID", value: "lcicID" },
-    //   { title: "com_enterprise_code", value: "com_enterprise_code" },
-    //   { title: "bnk_code", value: "bnk_code" },
-    //   { title: "bank_customer_ID", value: "bank_customer_ID" },
-    //   { title: "branch_id_code", value: "branch_id_code" },
-    //   { title: "loan_id", value: "loan_id" },
-    //   { title: "col_id", value: "col_id" },
-    //   { title: "account_no", value: "account_no" },
-    // ];
+
     const headers2 = [
       { title: "id", value: "id" },
       { title: "lcicID", value: "lcicID" },

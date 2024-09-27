@@ -167,8 +167,9 @@ export default defineComponent({
 
     const fetchCollaterals = async () => {
       try {
+        const config = useRuntimeConfig();
         const response = await axios.get(
-          "http://127.0.0.1:35729/api/api/get_collaterals/",
+          `${config.public.strapi.url}api/api/get_collaterals/`,
           { params: { status: 1 } }
         );
         collaterals.value = response.data;
@@ -197,13 +198,14 @@ export default defineComponent({
 
     const confirmImage = async (id: number) => {
       try {
+        const config = useRuntimeConfig();
         const csrfResponse = await axios.get(
-          "http://127.0.0.1:35729/api/api/get_csrf_token/"
+          `${config.public.strapi.url}api/api/get_csrf_token/`
         );
         const csrfToken = csrfResponse.data.csrfToken;
 
         await axios.post(
-          `http://127.0.0.1:35729/api/api/confirm_image/${id}/`,
+          `${config.public.strapi.url}api/api/confirm_image/${id}/`,
           {},
           {
             headers: {
