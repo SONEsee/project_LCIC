@@ -19,14 +19,12 @@
              <v-col cols="auto">
                <v-img
                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQguq0YjU42M_ijrBwnE9IpgFAFeMZQCDDJVi3yrfOCog&s"
-                 width="100"
+                 width="70"
                ></v-img>
              </v-col>
              <v-col>
-               <div class="row-content">
+               <div class="row-content text-center float-left">
                  <h4>ບໍລິສັດ ຂໍ້ມູນຂ່າວສານສິນເຊື່ອເເຫ່ງ ສປປ ລາວ</h4>
-               </div>
-               <div class="row-content">
                  <h4>Lao Credit Information Company</h4>
                </div>
              </v-col>
@@ -35,11 +33,11 @@
        </v-col>
        <v-col>
          <div class="float-right row-content">
-           <p>Lao Credit Information Company</p>
-           <p>2nd Floor, Lao Security Exchange Building</p>
-           <p>Phonthan Village, Xaysettha District, Vientiane Capital</p>
-           <p>Telephone: (856)-21-25429</p>
-           <p>Email: info@lcic.com.la</p>
+          <p class="no-margin">Lao Credit Information Company</p>
+          <p class="no-margin">2nd Floor, Lao Security Exchange Building</p>
+          <p class="no-margin">Phonthan Village, Xaysettha District, Vientiane Capital</p>
+          <p class="no-margin">Telephone: (856)-21-25429</p>
+          <p class="no-margin">Email: info@lcic.com.la</p>
          </div>
        </v-col>
      </v-row>
@@ -47,7 +45,7 @@
      <v-row>
        <v-col>
          <div class="text-center">
-           <h3 class="text-h4">
+           <h3 class="text-md">
              ບົດລາຍງານສິນເຊື່ອຄົບຖວ້ນ(ສໍາລັບນິຕິບຸກຄົນ)
            </h3>
          </div>
@@ -578,5 +576,12 @@ export default {
    color: black !important;
    font-size: bold !important;
 }
+.no-margin {
+  margin-top: 0;
+  margin-bottom: 0;
+  line-height: 14px;
+  font-size:12px;
+}
+
  </style>
  
