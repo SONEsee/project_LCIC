@@ -82,7 +82,7 @@
   
       // onMounted(async () => {
       //   try {
-      //     const response = await fetch('http://127.0.0.1:35729/api/api/upload-files2/');
+      //     const response = await fetch('http://127.0.0.1:8000/api/api/upload-files2/');
       //     if (!response.ok) {
       //       throw new Error('Network response was not ok');
       //     }
@@ -165,9 +165,6 @@
           const config = useRuntimeConfig();
           const response = await axios.post(`${config.public.strapi.url}api/upload-files/`, formData);
   
-          const updatedItem = items.value.find(item => item.fileName === file.value!.name);
-          if (updatedItem) {
-            updatedItem.status = 'ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ';
             updatedItem.path = response.data.path;
           }
   
@@ -176,11 +173,11 @@
             title: 'ສຳເລັດການນຳສົ່ງຂໍ້ມູນ',
             text: 'ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ',
           });
+
           
           const response2 = await fetch(`${config.public.strapi.url}api/api/upload-files2/`);
-          const data = await response2.json();
-          items.value = data.map((item: any) => ({
-            ...item,
+  
+          const response2 = await fetch('http://127.0.0.1:8000/api/api/upload-files2/');
             FID: item.FID,
             status: 'ສຳເລັດການນຳສົ່ງຂໍ້ມູນ',
             confirmed: false,
@@ -249,11 +246,11 @@
               const config = useRuntimeConfig();
               params.append('FID', item.FID);
   
+
               const response = await axios.post(`${config.public.strapi.url}api/confirm_upload/`, params);
+
+              const response = await axios.post('http://127.0.0.1:8000/api/confirm_upload/', params);
   
-              if (response.data.status === 'success') {
-                const confirmedItem = items.value.find(i => i.fileName === item.fileName);
-                if (confirmedItem) {
                   confirmedItem.confirmed = true;
                   confirmedItem.statussubmit = "0";
                 }
@@ -306,7 +303,7 @@
       };
   
       // const getFullPath = (path: string) => {
-      //   return `http://127.0.0.1:35729/media/${path}`;
+      //   return `http://127.0.0.1:8000/media/${path}`;
       // };
       const config = useRuntimeConfig();
       const getFullPath = (path: string) => `${config.public.strapi.url}${path}`;

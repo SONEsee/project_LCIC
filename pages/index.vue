@@ -247,7 +247,7 @@ const submit = async () => {
   
   const submit = async () => {
 	try {
-	  const { data, error } = await useFetch('http://127.0.0.1:35729/api/login/', {
+	  const { data, error } = await useFetch('http://127.0.0.1:8000/api/login/', {
 		method: 'POST',
 		body: {
 		  username: username.value,

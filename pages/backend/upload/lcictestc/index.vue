@@ -315,7 +315,7 @@
       //   return `http://127.0.0.1:35729/media/${path}`;
       // };
       const config = useRuntimeConfig();
-      const getFullPath = (path: string) => `${config.public.strapi.url}/${path}`;
+      const getFullPath = (path: string) => `${config.public.strapi.url}${path}`;
   
   const getFileName = (path: string) => {
     const parts = path.split('/');

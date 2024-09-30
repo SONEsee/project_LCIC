@@ -36,7 +36,7 @@ export default defineComponent({
     const fetchProducts = async (code: string) => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:35729/api/productinfo2/?code=${code}`
+          `http://127.0.0.1:8000/api/productinfo2/?code=${code}`
         );
         const data = await response.json();
         products.value = data;

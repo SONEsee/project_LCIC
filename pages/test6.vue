@@ -42,7 +42,7 @@
     <v-row>
       <v-col v-for="collateral in collaterals" :key="collateral.id" cols="12" md="4">
         <v-card >
-          <v-img :src="`http://127.0.0.1:35729/${collateral.image}`" aspect-ratio="1.75"></v-img>
+          <v-img :src="`http://127.0.0.1:8000/${collateral.image}`" aspect-ratio="1.75"></v-img>
           <v-card-title>{{ collateral.filename }}</v-card-title>
         </v-card>
       </v-col>
@@ -68,7 +68,7 @@ export default defineComponent({
 
       try {
         const response = await axios.post(
-          "http://127.0.0.1:35729/api/api/upload_image/",  
+          "http://127.0.0.1:8000/api/api/upload_image/",  
           formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
@@ -80,7 +80,7 @@ export default defineComponent({
 
     const fetchCollaterals = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:35729/api/api/get_collaterals/');
+        const response = await axios.get('http://127.0.0.1:8000/api/api/get_collaterals/');
         collaterals.value = response.data;
       } catch (error) {
         console.error(error.response ? error.response.data : error.message);

@@ -61,7 +61,7 @@ export default {
     
     const fetchRoles = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:35729/api/roles/');
+        const response = await fetch('http://127.0.0.1:8000/api/roles/');
         const data = await response.json();
         state.roles = data;
       } catch (error) {
@@ -71,7 +71,7 @@ export default {
 
     const fetchSidebarItems = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:35729/api/sidebar-items/');
+        const response = await fetch('http://127.0.0.1:8000/api/sidebar-items/');
         const data = await response.json();
         state.sidebarItems = data;
       } catch (error) {
@@ -91,7 +91,7 @@ export default {
     //   };
 
     //   try {
-    //     const response = await fetch('http://127.0.0.1:35729/api/assign-role/', {
+    //     const response = await fetch('http://127.0.0.1:8000/api/assign-role/', {
     //       method: 'POST',
     //       headers: { 'Content-Type': 'application/json' },
     //       body: JSON.stringify(formData)
@@ -142,7 +142,7 @@ export default {
   // Send the POST requests for each role
   for (const formData of formDataList) {
     try {
-      const response = await fetch('http://127.0.0.1:35729/api/assign-role/', {
+      const response = await fetch('http://127.0.0.1:8000/api/assign-role/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
