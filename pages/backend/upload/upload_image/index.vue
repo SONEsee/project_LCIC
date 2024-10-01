@@ -119,10 +119,9 @@ export default defineComponent({
       try {
         const config = useRuntimeConfig();
         const response = await axios.post(
-
           `${config.public.strapi.url}api/api/upload_image/`,
           formData,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
+          { headers: { "Content-Type": "multipart/form-data" } }
         );
         console.log(response.data);
         await Swal.fire({
@@ -130,12 +129,10 @@ export default defineComponent({
           text: "ອັບໂຫຼດຮູບພາບສຳເລັດແລ້ວ!",
           icon: "success",
           confirmButtonText: "OK",
-
         }).then(() => {
-  // ຄຳສັ່ງສຳຫຼັບການລີເຟດໜ້າຈໍ
-  location.reload(); // ລີເຟດໜ້າຈໍ
-});
-        fetchCollaterals(); // Refresh the list after successful upload
+          location.reload();
+        });
+        fetchCollaterals();
       } catch (error) {
         console.error(error.response ? error.response.data : error.message);
         Swal.fire({
@@ -150,28 +147,34 @@ export default defineComponent({
     const fetchCollaterals = async () => {
       try {
         const config = useRuntimeConfig();
-        const response = await axios.get(`${config.public.strapi.url}api/api/get_collaterals/`);
+        const response = await axios.get(
+          `${config.public.strapi.url}api/api/get_collaterals/`
+        );
         collaterals.value = response.data;
+      } catch (error) {
+        console.error(error.response ? error.response.data : error.message);
+      }
     };
 
     const viewImage = (imagePath: string, id: string) => {
       const config = useRuntimeConfig();
       const fullPath = `${config.public.strapi.url}${imagePath}?id=${id}`;
-      window.open(fullPath, '_blank');
+      window.open(fullPath, "_blank");
       console.log("id image", id);
     };
 
     const confirmImage = async (id: number) => {
       try {
         const config = useRuntimeConfig();
-        const response = await axios.post(`${config.public.strapi.url}api/api/confirm_image/${id}/`);
+        const response = await axios.post(
+          `${config.public.strapi.url}api/api/confirm_image/${id}/`
+        );
         console.log(response.data);
         await Swal.fire({
           title: "ສຳເລັດ!",
           text: "ຢືນຢັນຮູບພາບສຳເລັດແລ້ວ!",
           icon: "success",
           confirmButtonText: "OK",
-
         });
         fetchCollaterals(); // Refresh the list after confirmation
       } catch (error) {
@@ -184,8 +187,12 @@ export default defineComponent({
         });
       }
     };
+
     onMounted(() => {
       fetchCollaterals();
+    });
+
+    return {
       files,
       uploadFiles,
       collaterals,

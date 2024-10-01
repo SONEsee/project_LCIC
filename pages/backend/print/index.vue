@@ -443,7 +443,7 @@ export default {
 
     const fetchData = async (enterpriseID: string, lcicID: string) => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/report/?EnterpriseID=${enterpriseID}&LCICID=${lcicID}`)
+        const response = await fetch(`http://127.0.0.1:35729/api/report/?EnterpriseID=${enterpriseID}&LCICID=${lcicID}`)
         if (response.ok) {
           const data = await response.json()
           tableData.value = data.loan_info

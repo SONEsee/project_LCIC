@@ -128,7 +128,7 @@ const { LCICID, EnterpriseID } = route.query;
 
   try {
     const res = await fetch(
-      "http://127.0.0.1:8000/api/api/v1/enterprise-info/search/",
+      "http://127.0.0.1:35729/api/api/v1/enterprise-info/search/",
       {
         method: "POST",
         headers: {
@@ -273,19 +273,20 @@ useHead({
 const route = useRoute();
 const data = ref([]);
 const loading = ref(true);
-const details = ref(false);
 
 const fetchData = async () => {
   const { LCICID, EnterpriseID } = route.query;
 
   try {
     const config = useRuntimeConfig();
+    const token = localStorage.getItem('access_token');
     const res = await fetch(
       `${config.public.strapi.url}api/api/v1/enterprise-info/search/`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           LCICID: LCICID,
@@ -334,7 +335,7 @@ const showDetails = (item: any) => {
       <p class="text-center"><strong><b> ລາຍລະອຽດບົດລາຍງານ</b></strong></p>
       <p><strong>ຊື່ວິສາຫະກິດ (ລາວ):</strong> ${item.enterpriseNameLao}</p>
       <p><strong>ຊື່ວິສາຫະກິດ (ອັງກິດ):</strong> ${item.eneterpriseNameEnglish}</p>
-      <p><strong>ປະເພດບົດລາຍງານ:</strong> ບົດລາຍງານສິນເຊື້ອຄົບຖວ້ນ ${item.LCICID} ${item.EnterpriseID}</p>
+      <p><strong>ປະເພດບົດລາຍງານ:</strong> ບົດລາຍງານສິນເຊື້ອຄົບຖວ້ນ</p>
      </div>
     `,
     // confirmButtonText: "Close"
@@ -345,9 +346,8 @@ const showDetails = (item: any) => {
     }
   }).then((result) => {
     if (result.isConfirmed) {
-      // Navigate to the new 
-      const printUrl = `../backend/print?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}`;
-      window.location.href = printUrl;
+      // Navigate to the new route
+      window.location.href = `../backend/print?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}`;
     }
 
   });

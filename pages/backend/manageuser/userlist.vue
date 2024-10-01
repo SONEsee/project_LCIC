@@ -115,7 +115,8 @@ import Swal from 'sweetalert2';
     // Method to fetch the user list
     async fetchUsers(): Promise<void> {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/userList/');
+        const config = useRuntimeConfig();
+        const response = await fetch(`${config.public.strapi.url}api/userList/`);
         const data = await response.json();
         this.users = data.all_user;
         console.log(this.users);  // Check the fetched users
@@ -137,7 +138,8 @@ import Swal from 'sweetalert2';
     });
 
     if (confirmDelete.isConfirmed) {
-      const response = await fetch(`http://127.0.0.1:8000/api/delete_user/${UID}/`, {
+      const config = useRuntimeConfig();
+      const response = await fetch(`${config.public.strapi.url}api/delete_user/${UID}/`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

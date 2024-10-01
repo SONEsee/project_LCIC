@@ -24,7 +24,7 @@
                           prepend-inner-icon="fluent:password-20-regular"
                           id="idcompany"
                           name="idcompany"
-                          type="text"
+                          type="number"
                           placeholder="ປອ້ນລະຫັດວິສາຫະກິດ....."
                         />
                       </div>
@@ -38,7 +38,7 @@
                           prepend-inner-icon="fluent:password-20-regular"
                           id="idLCIC"
                           name="idLCIC"
-                          type="text"
+                          type="number"
                           placeholder="ປອ້ນລະຫັດ ຂສລ....."
                         />
                       </div>
@@ -104,11 +104,12 @@ const submit = async () => {
     });
 
     try {
-      const config = useRuntimeConfig();
-      const res = await fetch(`${config.public.strapi.url}api/api/v1/enterprise-info/search/`, {
+      const token = localStorage.getItem('access_token');
+      const res = await fetch("http://127.0.0.1:35729/api/api/v1/enterprise-info/search/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           LCICID: id1.value,
