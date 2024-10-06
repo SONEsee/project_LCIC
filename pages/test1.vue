@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div>
     <h1>Roles</h1>
     <v-container>
@@ -23,11 +23,18 @@
                 </td>
                 <td>
                   <ul>
-                    <li v-for="subItem in item.sidebarSubItems" :key="subItem.id">
+                    <li
+                      v-for="subItem in item.sidebarSubItems"
+                      :key="subItem.id"
+                    >
                       {{ subItem.name }}
                       <v-checkbox
                         v-model="selectedSidebarSubItems"
-                        :value="{ roleId: role.id, itemId: item.id, subItemId: subItem.id }"
+                        :value="{
+                          roleId: role.id,
+                          itemId: item.id,
+                          subItemId: subItem.id,
+                        }"
                         :label="subItem.name"
                       ></v-checkbox>
                     </li>
@@ -44,9 +51,9 @@
 </template>
 
 <script>
-import { reactive, onMounted, toRefs } from 'vue';
+import { reactive, onMounted, toRefs } from "vue";
 definePageMeta({
-  middleware:['auth'],
+  // middleware:['auth'],
   layout: "backend",
 });
 
@@ -56,26 +63,28 @@ export default {
       roles: [],
       sidebarItems: [],
       selectedSidebarItems: [],
-      selectedSidebarSubItems: []
+      selectedSidebarSubItems: [],
     });
-    
+
     const fetchRoles = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/roles/');
+        const response = await fetch("http://127.0.0.1:8000/api/roles/");
         const data = await response.json();
         state.roles = data;
       } catch (error) {
-        console.error('Error fetching roles:', error);
+        console.error("Error fetching roles:", error);
       }
     };
 
     const fetchSidebarItems = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/sidebar-items/');
+        const response = await fetch(
+          "http://127.0.0.1:8000/api/sidebar-items/"
+        );
         const data = await response.json();
         state.sidebarItems = data;
       } catch (error) {
-        console.error('Error fetching sidebar items:', error);
+        console.error("Error fetching sidebar items:", error);
       }
     };
 
@@ -104,57 +113,59 @@ export default {
     // };
 
     const submitForm = async () => {
-  // Object to hold the roles and their corresponding sidebar items/sub-items
-  const formDataList = [];
+      // Object to hold the roles and their corresponding sidebar items/sub-items
+      const formDataList = [];
 
-  // Create a structure to group sidebar items and sub-items by role
-  const roleItems = {};
+      // Create a structure to group sidebar items and sub-items by role
+      const roleItems = {};
 
-  // Process selected sidebar items
-  state.selectedSidebarItems.forEach(({ roleId, itemId }) => {
-    if (!roleItems[roleId]) {
-      roleItems[roleId] = {
-        role_id: roleId,
-        sidebar_items: [],
-        sidebar_sub_items: []
-      };
-    }
-    roleItems[roleId].sidebar_items.push(itemId);
-  });
-
-  // Process selected sidebar sub-items
-  state.selectedSidebarSubItems.forEach(({ roleId, subItemId }) => {
-    if (!roleItems[roleId]) {
-      roleItems[roleId] = {
-        role_id: roleId,
-        sidebar_items: [],
-        sidebar_sub_items: []
-      };
-    }
-    roleItems[roleId].sidebar_sub_items.push(subItemId);
-  });
-
-  // Convert the roleItems object to an array of formData for each role
-  for (const roleId in roleItems) {
-    formDataList.push(roleItems[roleId]);
-  }
-
-  // Send the POST requests for each role
-  for (const formData of formDataList) {
-    try {
-      const response = await fetch('http://127.0.0.1:8000/api/assign-role/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+      // Process selected sidebar items
+      state.selectedSidebarItems.forEach(({ roleId, itemId }) => {
+        if (!roleItems[roleId]) {
+          roleItems[roleId] = {
+            role_id: roleId,
+            sidebar_items: [],
+            sidebar_sub_items: [],
+          };
+        }
+        roleItems[roleId].sidebar_items.push(itemId);
       });
-      const result = await response.json();
-      console.log('Role assigned successfully:', result);
-    } catch (error) {
-      console.error('Error assigning role:', error);
-    }
-  }
-};
 
+      // Process selected sidebar sub-items
+      state.selectedSidebarSubItems.forEach(({ roleId, subItemId }) => {
+        if (!roleItems[roleId]) {
+          roleItems[roleId] = {
+            role_id: roleId,
+            sidebar_items: [],
+            sidebar_sub_items: [],
+          };
+        }
+        roleItems[roleId].sidebar_sub_items.push(subItemId);
+      });
+
+      // Convert the roleItems object to an array of formData for each role
+      for (const roleId in roleItems) {
+        formDataList.push(roleItems[roleId]);
+      }
+
+      // Send the POST requests for each role
+      for (const formData of formDataList) {
+        try {
+          const response = await fetch(
+            "http://127.0.0.1:8000/api/assign-role/",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(formData),
+            }
+          );
+          const result = await response.json();
+          console.log("Role assigned successfully:", result);
+        } catch (error) {
+          console.error("Error assigning role:", error);
+        }
+      }
+    };
 
     onMounted(() => {
       fetchRoles();
@@ -163,9 +174,9 @@ export default {
 
     return {
       ...toRefs(state),
-      submitForm
+      submitForm,
     };
-  }
+  },
 };
 </script>
 
@@ -175,7 +186,8 @@ table {
   width: 100%;
 }
 
-th, td {
+th,
+td {
   border: 1px solid #ddd;
   padding: 10px;
 }
@@ -202,4 +214,17 @@ li {
 li:last-child {
   border-bottom: none;
 }
-</style>
+</style> -->
+
+<script lang="ts" setup>
+const { locale, setLocale } = useI18n();
+</script>
+
+<template>
+  <div>
+    <v-btn color="primary" @click="setLocale(locale === 'en' ? 'lo' : 'en')">
+      {{ locale }}</v-btn
+    >
+    {{ $t("hello") }}
+  </div>
+</template>
