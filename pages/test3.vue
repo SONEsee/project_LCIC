@@ -17,6 +17,7 @@ export default defineComponent({
   setup() {
     definePageMeta({
       layout: "backend",
+      middleware: ["auth"],
     });
 
     useHead({

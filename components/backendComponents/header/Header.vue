@@ -1,35 +1,84 @@
 <script setup lang="ts">
-import { message, notification, profile } from "./headerItems";
-import { User } from "@/types/user";
-import { ref, onMounted } from 'vue';
+// import { message, notification, profile } from "./headerItems";
+// import { User } from "@/types/user";
+// import { ref, onMounted } from 'vue';
+// import { useRouter, useCookie } from 'nuxt/app';
+
+// const href = ref(undefined);
+// const messages = ref(message);
+// const notifications = ref(notification);
+// const userprofile = ref(profile);
+
+
+// const user = ref<User | null>(null);
+
+// onMounted(() => {
+//   const userData = localStorage.getItem('user_data');
+//   if (userData) {
+//     user.value = JSON.parse(userData);
+//     console.log('User data:', user.value);
+//   }
+// });
+
+
+// const signOut = () => {
+//   const token = useCookie("access_token");
+
+ 
+//   token.value = null;
+
+ 
+//   useRouter().push({ path: "/" });
+// };
 import { useRouter, useCookie } from 'nuxt/app';
+import { onMounted, ref } from 'vue';
+import { User } from "@/types/user";
+import { message, notification, profile } from "./headerItems";
 
-const href = ref(undefined);
-const messages = ref(message);
+const router = useRouter();
+const href = ref(undefined)
 const notifications = ref(notification);
+const messages = ref(message);
+const timeout = ref<number | null>(null);
 const userprofile = ref(profile);
-
-// Define user with the type User or null (in case it's not loaded yet)
 const user = ref<User | null>(null);
 
+
+const signOut = () => {
+  localStorage.removeItem('access_token'); 
+  const token = useCookie('access_token'); 
+  token.value = null;
+  router.push({ path: '/' }); 
+};
+
+
+const resetTimeout = () => {
+  if (timeout.value) {
+    clearTimeout(timeout.value); 
+  }
+  timeout.value = setTimeout(signOut, 30 * 60 * 1000); 
+};
+
+
+const events = ['mousemove', 'click', 'keydown'];
+
+// Setup the inactivity timer
+const setupInactivityTimer = () => {
+  resetTimeout(); // Initialize the timer
+  events.forEach(event => {
+    window.addEventListener(event, resetTimeout); // Add event listeners
+  });
+};
+
+// When component is mounted, start the inactivity timer
 onMounted(() => {
   const userData = localStorage.getItem('user_data');
   if (userData) {
     user.value = JSON.parse(userData);
     console.log('User data:', user.value);
   }
+  setupInactivityTimer();
 });
-
-// sign out method
-const signOut = () => {
-  const token = useCookie("access_token");
-
-  // Remove token from cookie
-  token.value = null;
-
-  // Redirect to login page
-  useRouter().push({ path: "/" });
-};
 </script>
 
 <template>

@@ -1,23 +1,24 @@
+// export default defineNuxtRouteMiddleware((to, from) => {
+//   const localStorageToken = localStorage.getItem("access_token");
+
+//   const cookieToken = useCookie("access_token");
+
+//   if (!localStorageToken && !cookieToken.value) {
+//     return navigateTo("/");
+//   }
+// });
 export default defineNuxtRouteMiddleware((to, from) => {
-    // Check local storage for token
-    const localStorageToken = localStorage.getItem('access_token');
-    
-    // Get token from cookie
-    const cookieToken = useCookie('access_token');
-
-    // If no token found, redirect to login page
+    const localStorageToken = localStorage.getItem("access_token");
+    const cookieToken = useCookie("access_token");
+  
     if (!localStorageToken && !cookieToken.value) {
-        return navigateTo('/');
+      return navigateTo("/"); 
     }
-
-
-    
-});
-
-
+  });
+  
 // export default defineNuxtRouteMiddleware((to, from) => {
 //     const token = localStorage.getItem('access_token');
-  
+
 //     if (!token && to.path.startsWith('/backend/dashboard')) {
 //       // If the token is missing and the user is trying to access a protected path,
 //       // redirect them to the login page.

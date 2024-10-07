@@ -4,22 +4,10 @@
   <v-container>
   <v-card class="bg-pink-darken-1">
     <v-card-text>
-      <!-- <v-col cols="12">
-      <div class="d-flex align-start"><div class="mr-auto ">
-          <v-btn color="primary" icon size="90">
-            
-          </v-btn>
-        </div>
-        
-
-        <v-spacer></v-spacer>
-        
-      </div></v-col> -->
+    
       <v-col cols="12">
         <v-row>
-          <!-- <v-col cols="12">
-            <div class="text-center"><v-icon icon="mdi-account-group" size="80" color="#4A148C"></v-icon></div>
-          </v-col> -->
+          
           <v-col cols="12"
             ><h2 class="title text-h6 font-weight-medium mt-4">
               <p style="font-family: Noto Sans Lao; font-size: 100%">

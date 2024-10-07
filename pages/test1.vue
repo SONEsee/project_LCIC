@@ -1,4 +1,4 @@
-<!-- <template>
+<template>
   <div>
     <h1>Roles</h1>
     <v-container>
@@ -214,9 +214,9 @@ li {
 li:last-child {
   border-bottom: none;
 }
-</style> -->
+</style>
 
-<script lang="ts" setup>
+<!-- <script lang="ts" setup>
 const { locale, setLocale } = useI18n();
 </script>
 
@@ -227,4 +227,4 @@ const { locale, setLocale } = useI18n();
     >
     {{ $t("hello") }}
   </div>
-</template>
+</template> -->

@@ -347,7 +347,7 @@ const showDetails = (item: any) => {
   }).then((result) => {
     if (result.isConfirmed) {
       // Navigate to the new route
-      window.location.href = `../backend/print?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}`;
+      window.location.href = `../backend/reportprint1?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}`;
     }
 
   });

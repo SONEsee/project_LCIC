@@ -70,6 +70,7 @@ import { ref } from "vue";
 import Swal from "sweetalert2";
 definePageMeta({
   layout: "backend",
+  middleware: "auth"
 });
 
 useHead({

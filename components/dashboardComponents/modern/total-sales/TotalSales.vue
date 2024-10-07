@@ -12,9 +12,7 @@ onMounted(() => {
 
 <template>
   <v-container>
-  <!-- ------------------------------------ -->
-  <!-- html -->
-  <!-- ------------------------------------ -->
+  
   <v-card class="bg-blue-lighten-3 mt-3"> 
     <v-card-text>
       <div class="d-flex align-center mb-1">
