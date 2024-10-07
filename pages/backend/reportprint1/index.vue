@@ -33,15 +33,14 @@
               </v-row>
             </div>
           </v-col>
-          <v-col cole="4"  class="text-end">
-            <div class="float-right row-content text-start">
-              <p class="no-margin">Lao Credit Information Company</p>
-              <p class="no-margin">2nd Floor, Lao Security Exchange Building</p>
-              <p class="no-margin">
-                Phonthan Village, Xaysettha District, Vientiane Capital
-              </p>
-              <p class="no-margin">Telephone: (856)-21-25429</p>
-              <p class="no-margin">Email: info@lcic.com.la</p>
+          <v-col cole="12"  class="text-end mt-4">
+            <div class=""  v-if="enterpriseInfo">
+              <p>ລະຫັດວິສາຫະກິດ: <b>{{ enterpriseInfo.EnterpriseID }}</b></p>
+              
+              <p>ລະຫັດຂສລ: <b>{{ enterpriseInfo.LCICID}}</b></p>
+            </div>
+            <div class="" v-if="user">
+              <p>ຜູ້ສອບຖາມຂໍ້ມູນ: <b> {{ user.nameE }}</b> ຈາກທະນາຄານ: <b>{{ user.MID?.code }}</b></p>
             </div>
           </v-col>
         </v-row>
@@ -61,57 +60,47 @@
             <v-row>
 
           
-          <v-col cols="7" >
+          <v-col cols="12" >
             <v-row justify="center  justify-space-between" >
               <v-col cols="12" >
-                <v-row>
-                  <v-col cols="12" >
-                  <p><b>  ຂໍ້ມູນທີ່ຜ່ານມາ:</b>-- </p>
-              
-                  </v-col>
-                  <v-col cols="12"  v-if="enterpriseInfo">
-                   
-                  <p><b>  ຊື່ບໍລິສັດພາສາລາວ:</b> {{ enterpriseInfo.enterpriseNameLao }} </p>
-                  </v-col>
-                  <v-col cols="12"  v-if="enterpriseInfo">
-                   
-                   <p><b>  ຊື່ບໍລິສັດພາສາລາວ:</b> {{ enterpriseInfo.eneterpriseNameEnglish }} </p>
-                   </v-col> 
-                  <v-col cols="12" v-if="enterpriseInfo">
+                <v-row class="ml-2">
                   
-                  <p><b>  ຊື່ຜູ້ຈັດການທົ່ວໄປ:</b>-- </p>
-                  </v-col>
-                 
+                  <p v-if="enterpriseInfo"><b>  Kyc No:</b> {{ enterpriseInfo.investmentAmount }},</p>
+                  <p v-if="enterpriseInfo" class="ml-5"><b>  ຊື່ບໍລິສັດພາສາລາວ:</b> {{ enterpriseInfo.eneterpriseNameEnglish }} </p> <br>
+                </v-row>
+                <v-row>
+                   <p v-if="enterpriseInfo" class="ml-5"><b>  ຊື່ຜູ້ຈັດການທົ່ວໄປ:</b> --- </p>
                 </v-row>
               </v-col>
             </v-row>
           </v-col>
 
-
-
-          <v-col cols="4">
-            <v-row>
-              <v-col cols="12" v-if="enterpriseInfo">
-                <p><b>ອ້າງອີງການສອບຖາມ:</b> --</p>
-              </v-col>
-              <v-col cols="12" v-if="enterpriseInfo">
-                <p><b>ລະຫັດວິສາຫະກິດ:</b> {{ enterpriseInfo.EnterpriseID }} </p>
-              </v-col>
-              <v-col cols="12" v-if="enterpriseInfo">
-                <p><b>ລະຫັດຂສລ:</b> {{ enterpriseInfo.LCICID }} </p>
-              </v-col>
-              <v-col cols="12" v-if="enterpriseInfo">
-                <p><b>ຜູ້ສອບຖາມຂໍ້ມູນ:</b> {{ user.MID?.code }} </p>
-              </v-col>
-            </v-row>
-            
-
-          </v-col> 
          </v-row>
           </v-col>
         </v-col>
       </section></v-col
     >
+    <v-col cols="12">
+      <p ><b> - ຂໍ້ມູນທົວໄປຜູ້ກູ້</b></p>
+     <v-row class="mt-2">
+      <v-col cols="4" v-if="enterpriseInfo" >
+        <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.enterpriseNameLao }}</p>
+        <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.regisStrationOfficeType }}</p>
+        <p><b>ເລກທີ:</b> {{ enterpriseInfo.EnterpriseID }}</p>
+      </v-col>
+      <v-col cols="4" v-if="enterpriseInfo">
+<p><b>ວັນທີອອກໃບທະບຽນ:</b> {{ enterpriseInfo.regisDate.slice(0, -18) }}</p>
+<p><b>ທີ່ຕັ້ງວິສາຫະກິດ:</b> {{ enterpriseInfo.enLocation }}</p>
+<p><b>ພາສວນເສດຖະກິດ:</b> --</p>
+      </v-col>
+      <v-col cols="4" v-if="enterpriseInfo">
+        <p><b >ທຶນຈົດທະບຽນ:</b> {{ enterpriseInfo.investmentAmount }}</p>
+        <p><b>ທຶນຈົດທະບຽນ:</b> --</p>
+        <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ:</b> --</p>
+      </v-col>
+     </v-row>
+
+    </v-col>
     <v-col cols="12" >
       <p><b>- ລວມວົງເງິນກູ້ທີ່ເຄື່ອນໄຫວທັງໝົດ</b></p>
       <v-table class="mt-5 elevation-1 v-data-table1" >
@@ -119,14 +108,13 @@
     <tr style="font-size: 90%;  " class="text-bold">
   
       <th><b>ສະມາຊິກ</b></th>
-      <th><b> Loan ID</b></th>
-      <th><b>Loan Open Date</b></th>
-      <th>Loan Credit Line</th>
-      <th>Outstanding Balance</th>
-      <th>Loan Currency Code</th>
-      <th>Number of Days Slow</th>
-      <th>Loan Class</th>
-      <!-- <th>Loan Status</th> -->
+      <th><b> ລະຫັດເງິນກູ້</b></th>
+      <th><b>ມືເປີດ</b></th>
+      <th>ວົງເງິນກູ້</th>
+      <th>ຍອດເງິນເຫຼືອ</th>
+      <th>ສະກຸນເງິນ</th>
+      <th>ຈຳນວນວັນຄ້າງຈ່າຍ</th>
+      <th>ປະເພດ</th>
     </tr>
   </thead>
   <tbody>
@@ -140,56 +128,14 @@
       <td>{{ item.lon_currency_code }}</td>
       <td>{{ item.lon_no_days_slow }}</td>
       <td>{{ item.lon_class }}</td>
-      <!-- <td>{{ item.lon_status }}</td> -->
-      <!-- <td>{{ item }}</td> -->
+
  
     </tr>
     
   </tbody>
 </v-table>
 
-      <!-- <v-data-table
-        :headers="headers"
-        :items="tableData"
-        class="elevation-1 v-data-table1"
-        :items-per-page="-1"
-        hide-default-footer
-       
-      >
-        <template v-slot:items.id="{ item }" >
-         <p style="color: blueviolet;"></p> {{ item.id }}
-        </template>
-        <template v-slot:item.bank="{ item }" >
-          {{ item.bank }}
-        </template>
-        <template
-          v-slot:item.lon_insert_date="{ item }"
-         
-        >
-          {{ item.lon_insert_date }}
-        </template>
-        <template
-          v-slot:item.lon_outstanding_balance="{ item }"
-          
-        >
-          {{ item.lon_outstanding_balance }}
-        </template>
-        <template
-          v-slot:item.lon_currency_code="{ item }"
-         
-        >
-          {{ item.lon_currency_code }}
-        </template>
-        <template v-slot:item.lon_class="{ item }" >
-          {{ item.lon_class }}
-        </template>
-        <template
-          v-slot:item.lon_class_history="{ item }"
-          
-        >
-          {{ item.lon_class_history }}
-        </template>
-      </v-data-table> -->
+  
     </v-col>
     <p><b>-ລາຍລະອຽດຂໍ້ມູນເງິນກູ້</b></p>
     <v-col cols="12">
@@ -211,6 +157,20 @@
                     <b>- ຂໍ້ມູນລາຍລະອຽດເງິນກູ້ບວ້ງທີ {{ index + 1 }}</b>
                   </p>
                   <v-col cols="12">
+                    <v-row>
+                      <v-col cols="12" md="4" >
+                        <p> <b>ລະຫັດເງິນກູ້: </b>{{ item.id }}</p>
+                        <p> <b>ມື້ເປິດເງິນກູ້: </b>{{ item.lon_open_date.slice(0, -10) }}</p>
+                        <p> <b>ມືໝົດສັນຍາເງິນກູ້ເງິນກູ້: </b>{{ item.lon_expiry_date }}</p>
+                      </v-col>
+                      <v-col cols="12" md="4">
+                        <p> <b>ໄລຍະການກູ້ຢືມ:</b>{{ item.lon_term }}</p>
+                      </v-col>
+                      <v-col cols="12" md="4"></v-col>
+                    </v-row>
+
+                  </v-col>
+                  <!-- <v-col cols="12">
                     <v-row  class="table">
                       
                       <v-col cols="3"
@@ -288,7 +248,7 @@
                         </p></v-col
                       >
                     </v-row>
-                  </v-col>
+                  </v-col> -->
                   <hr
                     color="indigo"
                     model-value="100"
@@ -606,8 +566,25 @@
           </v-row>
         </v-col>
       </v-row>
-    </v-col></v-container
-  >
+      <v-row>
+        <v-col cols="12">
+          <div style="border: #1565c0 1px solid; padding: 10px" class="bg-blue-darken-4 rounded-lg">
+<v-col cols="12">
+  <v-row>
+    <v-col cols="6" >
+
+<p> <v-icon icon="mdi-map-marker" style="font-size: 120%; color: red;"></v-icon> 2nd Floor, Lao Security Exchange Building Phonthan  Village, </p><p class="ml-5">Xaysettha District, Vientiane Capital</p>
+
+    </v-col>
+    <v-col cols="6"><p> <v-icon icon="mdi-phone" style="font-size: 100%;color: #1565c0;" class="mr-2"></v-icon>  Telephone: (856)-21-25429</p>
+<p> <v-icon icon=" mdi-email-outline" style="font-size: 100%;" class="mr-2"></v-icon>  Email: info@lcic.com.la</p></v-col>
+    
+  </v-row>
+</v-col>
+          </div>
+        </v-col>
+      </v-row>
+    </v-col></v-container>
 </template>
 
 <script lang="ts">

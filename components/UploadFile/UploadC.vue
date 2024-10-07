@@ -117,7 +117,7 @@ export default defineComponent({
               console.log("Padded MID.id:", paddedMID);
 
               // ດຶງຂໍ້ມູນຕາມ UserID ໃຊ້ MID.id
-              // await fetchDataByUserID(paddedMID);
+              await fetchDataByUserID(paddedMID);
             }
           } catch (error) {
             console.error("Error parsing user data:", error);
@@ -127,6 +127,31 @@ export default defineComponent({
         console.error("Error in onMounted:", error);
       }
     });
+    const fetchDataByUserID = async (userID: String) => {
+      try {
+        const config = useRuntimeConfig();
+        const url = `${config.public.strapi.url}api/api/upload-filesc2/?user_id=${userID}`;
+        const response = await fetch(url);
+        console.log("Response:", response);
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+        console.log("Data for user:", data);
+
+        items.value = data.map((item:String) => ({
+          ...item,
+          FID: item.CID,
+          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+          confirmed: false,
+        }));
+        sortItemsByUploadDate();
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
+    };
 
     const fetchData = async (userID: string) => {
       const config = useRuntimeConfig();

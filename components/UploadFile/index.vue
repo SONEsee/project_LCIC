@@ -12,11 +12,11 @@
     <v-card-text>
       <v-window v-model="tab">
         <v-window-item value="one">
-          <UploadB />
+          <UploadFileUploadB />
         </v-window-item>
 
         <v-window-item value="three">
-          <UploadC />
+          <UploadFileUploadC />
         </v-window-item>
       </v-window>
     </v-card-text>
