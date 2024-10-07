@@ -24,8 +24,9 @@
                   ></v-img>
                 </v-col>
                 <v-col>
-                  <div class="row-content text-center float-left">
+                  <div class="row-content text-start float-left">
                     <h4>ບໍລິສັດ ຂໍ້ມູນຂ່າວສານສິນເຊື່ອເເຫ່ງ ສປປ ລາວ</h4>
+                    <hr>
                     <h4>Lao Credit Information Company</h4>
                   </div>
                 </v-col>
@@ -113,21 +114,41 @@
     >
     <v-col cols="12" >
       <p><b>- ລວມວົງເງິນກູ້ທີ່ເຄື່ອນໄຫວທັງໝົດ</b></p>
-      <v-table>
-     <thead>
-      <tr>
-        <th>ສະມາຊິກ</th>
-        <th>Loan ID</th>
-        <th>Loan Open Date</th>
-        <th>Loan Credit Line</th>
-        <th>Loan Credit Line</th>
-        <th>Outstanding Balance</th>
-        <th>Lon Currency Code</th>
-        <th>Lon Currency Code</th>
-      </tr>
-     </thead>
-      </v-table>
-      <v-data-table
+      <v-table class="mt-5 elevation-1 v-data-table1" >
+  <thead>
+    <tr style="font-size: 90%;  " class="text-bold">
+  
+      <th><b>ສະມາຊິກ</b></th>
+      <th><b> Loan ID</b></th>
+      <th><b>Loan Open Date</b></th>
+      <th>Loan Credit Line</th>
+      <th>Outstanding Balance</th>
+      <th>Loan Currency Code</th>
+      <th>Number of Days Slow</th>
+      <th>Loan Class</th>
+      <!-- <th>Loan Status</th> -->
+    </tr>
+  </thead>
+  <tbody>
+    <tr v-for="(item, index) in tableData" :key="index">
+      <td>{{ item.bnk_code }}</td>
+      <td>{{ item.loan_id }}</td>
+      <td>{{ item.lon_open_date.slice(0, -15) }}</td>
+      <td>{{ item.lon_credit_line.slice(0, -3) }}</td>
+      <td>{{ item.lon_outstanding_balance.slice(0, -3) }}</td>
+      
+      <td>{{ item.lon_currency_code }}</td>
+      <td>{{ item.lon_no_days_slow }}</td>
+      <td>{{ item.lon_class }}</td>
+      <!-- <td>{{ item.lon_status }}</td> -->
+      <!-- <td>{{ item }}</td> -->
+ 
+    </tr>
+    
+  </tbody>
+</v-table>
+
+      <!-- <v-data-table
         :headers="headers"
         :items="tableData"
         class="elevation-1 v-data-table1"
@@ -168,7 +189,7 @@
         >
           {{ item.lon_class_history }}
         </template>
-      </v-data-table>
+      </v-data-table> -->
     </v-col>
     <p><b>-ລາຍລະອຽດຂໍ້ມູນເງິນກູ້</b></p>
     <v-col cols="12">
@@ -855,7 +876,7 @@ export default {
     padding: 15px 3% 0 3%;
   }
   .v-data-table1 {
-      font-size: 7pt !important;
+      font-size: 11pt !important;
     }
 
   .button {
