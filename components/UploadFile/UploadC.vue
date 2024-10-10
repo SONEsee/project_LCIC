@@ -206,7 +206,7 @@ export default defineComponent({
       if (user.value) {
         let userId = user.value.MID.id;
         if (userId < 10) {
-          userId = "0" + userId;
+          userId = "" + userId;
         }
         formData.append("user_id", userId);
         console.log("Formatted User ID:", userId);
@@ -233,6 +233,7 @@ export default defineComponent({
         const config = useRuntimeConfig();
         const response = await axios.post(
           `${config.public.strapi.url}api/upload-filesC/`,
+          
           formData
         );
 

@@ -106,29 +106,29 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
-        // ດຶງຂໍ້ມູນເພື່ອປະຕິບັດ
+        
         await fetchData();
 
-        // ດຶງຂໍ້ມູນຜູ້ໃຊ້ຈາກ localStorage
+       
         const userData = localStorage.getItem("user_data");
         console.log("User data:", userData);
 
         if (userData) {
           try {
-            // ແປໄພເປັນ JSON ເພື່ອໃຊ້ງານ
+            
             user.value = JSON.parse(userData);
             console.log("Parsed user data:", user.value);
 
-            // ດຶງ MID ຈາກ user.value
+            
             const MID = user.value.MID;
 
-            // ກວດສອບວ່າ MID ແລະ MID.id ມີຄ່າຫຼືບໍ່
+          
             if (MID && MID.id) {
-              // ຕື່ມ '0' ດ້ານໜ້າຖ້າຄ່າ MID.id ນ້ອຍກວ່າ 10
+             
               const paddedMID = MID.id.toString().padStart(2, "0");
               console.log("Padded MID.id:", paddedMID);
 
-              // ດຶງຂໍ້ມູນຕາມ UserID ໃຊ້ MID.id
+              
               await fetchDataByUserID(paddedMID);
             }
           } catch (error) {
@@ -143,7 +143,7 @@ export default defineComponent({
     const fetchDataByUserID = async (userID: String) => {
       try {
         const config = useRuntimeConfig();
-        const url = `${config.public.strapi.url}api/api/upload-files2/?user_id=${userID}`;
+        const url = `${config.public.strapi.url}api/upload-files2/?user_id=${userID}`;
         const response = await fetch(url);
         console.log("Response:", response);
 
@@ -170,7 +170,8 @@ export default defineComponent({
       try {
         const config = useRuntimeConfig();
         const response = await fetch(
-          `${config.public.strapi.url}api/api/upload-files2/`
+          `${config.public.strapi.url}api/upload-files2/`
+
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -222,7 +223,7 @@ export default defineComponent({
         let userId = user.value.MID.id;
 
         if (userId < 10) {
-          userId = "0" + userId;
+          userId = "" + userId;
         }
 
         formData.append("user_id", userId);

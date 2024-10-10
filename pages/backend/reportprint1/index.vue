@@ -137,7 +137,27 @@
 
   
     </v-col>
+    <p><b>- ຂໍ້ມູນປະຫວັດການເຂົ້າຄົ້ນຫາ</b></p>
+    <v-table>
+      <thead>
+        <tr>
+          <th>ວັນເດືອນທີ່ຄົ້ນຫາ</th>
+          <th>ຜູ້ຄົ້ນຫາ</th>
+          <th>ເຫດຜົນການຄົ້ນຫາ</th>
+          <th>ປະເພດເງິນກູ້</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2023-07-10</td>
+          <td>User1</td>
+          <td>Success</td>
+          <td> load  </td>
+        </tr>
+      </tbody>
+    </v-table>
     <p><b>-ລາຍລະອຽດຂໍ້ມູນເງິນກູ້</b></p>
+    
     <v-col cols="12">
       <v-row>
         <v-col cols="12">
@@ -152,103 +172,33 @@
                 class="ml-1 rounded-lg"
                 style="border: 1px solid #1565c0; padding: 10px"
               >
+
                 <div>
+                  
                   <p>
                     <b>- ຂໍ້ມູນລາຍລະອຽດເງິນກູ້ບວ້ງທີ {{ index + 1 }}</b>
                   </p>
                   <v-col cols="12">
                     <v-row>
-                      <v-col cols="12" md="4" >
+                      <v-col cols="4" md="4" >
                         <p> <b>ລະຫັດເງິນກູ້: </b>{{ item.id }}</p>
                         <p> <b>ມື້ເປິດເງິນກູ້: </b>{{ item.lon_open_date.slice(0, -10) }}</p>
-                        <p> <b>ມືໝົດສັນຍາເງິນກູ້ເງິນກູ້: </b>{{ item.lon_expiry_date }}</p>
+                        <p> <b>ມື້ໝົດສັນຍາເງິນກູ້ເງິນກູ້: </b>{{ item.lon_expiry_date }}</p>
                       </v-col>
-                      <v-col cols="12" md="4">
-                        <p> <b>ໄລຍະການກູ້ຢືມ:</b>{{ item.lon_term }}</p>
+                      <v-col cols="4" md="4">
+                        <p> <b>ໄລຍະການກູ້ຢືມ:</b> {{ item.lon_term }}</p>
+                        <p> <b>ວົງເງິນໃນອານຸມັດ:</b> {{ item.lon_credit_line.toLocaleString() }} {{  item.lon_currency_code }}</p>
+                        <p> <b>ອັດຕາດອກເບ້ຍ:</b> {{ item.lon_int_rate }}</p>
                       </v-col>
-                      <v-col cols="12" md="4"></v-col>
+                      <v-col cols="4" md="4">
+                        <p><b>ຍອດເງິນເຫຼືອຕົ້ນທຶນ:</b> {{ Number(item.lon_outstanding_balance).toLocaleString() }} {{  item.lon_currency_code }}</p>
+                        <p><b>ເຫດຜົນຫການສິ້ນສຸດໜີ້:</b> -- </p>
+
+                      </v-col>
                     </v-row>
 
                   </v-col>
-                  <!-- <v-col cols="12">
-                    <v-row  class="table">
-                      
-                      <v-col cols="3"
-                        ><p>
-                          Loan ID:<b> {{ item.id }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="4"
-                        ><p>
-                          Loan Open Date:<b> {{ item.lon_open_date }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Expiry Date:<b> {{ item.lon_expiry_date }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Credit Line:<b> {{ item.lon_credit_line }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Outstanding Balance:<b>
-                            {{ item.lon_outstanding_balance }}</b
-                          >
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Currency Code:<b> {{ item.lon_currency_code }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Interest Rate:<b> {{ item.lon_int_rate }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Purpose Code:<b> {{ item.lon_purpose_code }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Number of Days Slow:<b>
-                            {{ item.lon_no_days_slow }}</b
-                          >
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Class:<b> {{ item.lon_class }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Type:<b> {{ item.lon_type }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Term:<b> {{ item.lon_term }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Status:<b> {{ item.lon_status }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="2"
-                        ><p>
-                          ສະມາຊິກ:<b> {{ item.bank }}</b>
-                        </p></v-col
-                      >
-                    </v-row>
-                  </v-col> -->
+
                   <hr
                     color="indigo"
                     model-value="100"
@@ -527,7 +477,34 @@
                   <p v-if="item.lon_class_history.length">
                     <b>- ປະຫວັດການຊຳລະ</b>
                   </p>
-                  <v-data-table
+                  <v-table>
+                    <thead>
+                      <tr>
+                        <th>No.</th>
+                        <th>Period</th>
+                        <th>Credit Line</th>
+                        <th>Outstanding Balance</th>
+                        <th>Loan Days Slow</th>
+                        <th>Loan Currency Code</th>
+                        <th>Loan Class</th>
+                        <th>Loan Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(item , index) in item.lon_class_history">
+                        <td>{{index +1}}</td>
+                        <td>{{ item.period.slice(0, 2) + '-' + item.period.slice(2) }}</td>
+                        <td>{{Number( item.lon_credit_line).toLocaleString() }}</td>
+                        <td>{{Number( item.lon_outstanding_balance).toLocaleString() }}</td>
+                        <td>{{ item.lon_no_days_slow }}</td>
+                        <td>{{ item.lon_currency_code }}</td>
+                        <td>{{ item.lon_class }}</td>
+                        <td>{{ item.lon_status }}</td>
+
+                      </tr>
+                    </tbody>
+                  </v-table>
+                  <!-- <v-data-table
                     v-if="
                       item.lon_class_history &&
                       item.lon_class_history.length > 0
@@ -559,7 +536,7 @@
                     <template v-slot:header.lon_status>
                       <th class="white--text">Outstanding Balance</th>
                     </template>
-                  </v-data-table>
+                  </v-data-table> -->
                 </div>
               </div></v-col
             >
