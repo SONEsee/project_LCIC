@@ -247,7 +247,8 @@ const submit = async () => {
   
   const submit = async () => {
 	try {
-	  const { data, error } = await useFetch('http://127.0.0.1:8000/api/login/', {
+    const config = useRuntimeConfig();
+	  const { data, error } = await useFetch(`${config.public.strapi.url}api/login/`, {
 		method: 'POST',
 		body: {
 		  username: username.value,

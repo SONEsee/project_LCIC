@@ -1,29 +1,8 @@
 <template>
   <div>
-    <div v-for="product in products" :key="product.code">
-      <!-- <h2>{{ product.nameL }} / {{ product.nameE }}</h2>
-        <p>{{ product.descL }} / {{ product.descE }}</p>
-        <p>Price: {{ product.price }}</p>
-        <img v-if="product.pimage" :src="product.pimage" alt="Product Image" /> -->
-
-      <v-table>
-        <thead>
-          <tr>
-            <th>ບົດລາຍງານ</th>
-            <th>ລາຍລະອຽດຂອງບົດລາຍງານ</th>
-            <th>ຄ່າທຳນຽມ</th>
-          </tr>
-        </thead>
-        <tbody style="font-size:90%;">
-          <tr v-for="product in products" :key="product.code">
-            <td>{{ product.nameL }}</td>
-            <td style="font-size:85%;">{{ product.descL }}</td>
-            <td class="text-red" style="font-size:90%;">{{ product.price }} <b class="text-black">ກີບ</b></td>
-          </tr>
-        </tbody>
-      </v-table>
-    </div>
+    test
   </div>
+<<<<<<< HEAD
 </template>
 
 <script lang="ts">
@@ -55,3 +34,6 @@ export default defineComponent({
   },
 });
 </script>
+=======
+</template>
+>>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491

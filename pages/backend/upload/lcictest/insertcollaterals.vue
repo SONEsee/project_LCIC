@@ -51,7 +51,7 @@ export default defineComponent({
     const fetchCollaterals = async () => {
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/api/api/get_collaterals/"
+          "http://192.168.45.56:8000/api/api/get_collaterals/"
         );
         collaterals.value = response.data;
       } catch (error) {
@@ -66,12 +66,12 @@ export default defineComponent({
     const confirmImage = async (id: number) => {
   try {
     // Fetch CSRF token
-    const csrfResponse = await axios.get('http://127.0.0.1:8000/api/api/get_csrf_token/');
+    const csrfResponse = await axios.get('http://192.168.45.56:8000/api/api/get_csrf_token/');
     const csrfToken = csrfResponse.data.csrfToken;
 
     // Send POST request with CSRF token
     await axios.post(
-      `http://127.0.0.1:8000/api/api/confirm_image/${id}/`,
+      `http://192.168.45.56:8000/api/api/confirm_image/${id}/`,
       {},
       {
         headers: {
@@ -169,7 +169,11 @@ export default defineComponent({
       try {
         const config = useRuntimeConfig();
         const response = await axios.get(
+<<<<<<< HEAD
           `${config.public.strapi.url}api/api/get_collaterals/`,
+=======
+          "http://192.168.45.56:8000/api/api/get_collaterals/",
+>>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
           { params: { status: 1 } }
         );
         collaterals.value = response.data;
@@ -180,7 +184,7 @@ export default defineComponent({
     };
 
     // const viewImage = (imagePath: string, id: string) => {
-    // const fullPath = `http://127.0.0.1:8000/${imagePath}?id=${id}`;
+    // const fullPath = `http://192.168.45.56:8000/${imagePath}?id=${id}`;
     // window.open(fullPath, '_blank');
     // console.log("id image", id);
     const goToTest1 = (imagePath: string, id: number, status: number) => {
@@ -200,12 +204,20 @@ export default defineComponent({
       try {
         const config = useRuntimeConfig();
         const csrfResponse = await axios.get(
+<<<<<<< HEAD
           `${config.public.strapi.url}api/api/get_csrf_token/`
+=======
+          "http://192.168.45.56:8000/api/api/get_csrf_token/"
+>>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
         );
         const csrfToken = csrfResponse.data.csrfToken;
 
         await axios.post(
+<<<<<<< HEAD
           `${config.public.strapi.url}api/api/confirm_image/${id}/`,
+=======
+          `http://192.168.45.56:8000/api/api/confirm_image/${id}/`,
+>>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
           {},
           {
             headers: {

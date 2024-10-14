@@ -68,7 +68,11 @@ export default {
 
     const fetchRoles = async () => {
       try {
+<<<<<<< HEAD
         const response = await fetch("http://127.0.0.1:8000/api/roles/");
+=======
+        const response = await fetch('http://192.168.45.56:8000/api/roles/');
+>>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
         const data = await response.json();
         state.roles = data;
       } catch (error) {
@@ -78,9 +82,13 @@ export default {
 
     const fetchSidebarItems = async () => {
       try {
+<<<<<<< HEAD
         const response = await fetch(
           "http://127.0.0.1:8000/api/sidebar-items/"
         );
+=======
+        const response = await fetch('http://192.168.45.56:8000/api/sidebar-items/');
+>>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
         const data = await response.json();
         state.sidebarItems = data;
       } catch (error) {
@@ -100,7 +108,7 @@ export default {
     //   };
 
     //   try {
-    //     const response = await fetch('http://127.0.0.1:8000/api/assign-role/', {
+    //     const response = await fetch('http://192.168.45.56:8000/api/assign-role/', {
     //       method: 'POST',
     //       headers: { 'Content-Type': 'application/json' },
     //       body: JSON.stringify(formData)
@@ -119,6 +127,7 @@ export default {
       // Create a structure to group sidebar items and sub-items by role
       const roleItems = {};
 
+<<<<<<< HEAD
       // Process selected sidebar items
       state.selectedSidebarItems.forEach(({ roleId, itemId }) => {
         if (!roleItems[roleId]) {
@@ -129,6 +138,44 @@ export default {
           };
         }
         roleItems[roleId].sidebar_items.push(itemId);
+=======
+  // Process selected sidebar items
+  state.selectedSidebarItems.forEach(({ roleId, itemId }) => {
+    if (!roleItems[roleId]) {
+      roleItems[roleId] = {
+        role_id: roleId,
+        sidebar_items: [],
+        sidebar_sub_items: []
+      };
+    }
+    roleItems[roleId].sidebar_items.push(itemId);
+  });
+
+  // Process selected sidebar sub-items
+  state.selectedSidebarSubItems.forEach(({ roleId, subItemId }) => {
+    if (!roleItems[roleId]) {
+      roleItems[roleId] = {
+        role_id: roleId,
+        sidebar_items: [],
+        sidebar_sub_items: []
+      };
+    }
+    roleItems[roleId].sidebar_sub_items.push(subItemId);
+  });
+
+  // Convert the roleItems object to an array of formData for each role
+  for (const roleId in roleItems) {
+    formDataList.push(roleItems[roleId]);
+  }
+
+  // Send the POST requests for each role
+  for (const formData of formDataList) {
+    try {
+      const response = await fetch('http://192.168.45.56:8000/api/assign-role/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+>>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
       });
 
       // Process selected sidebar sub-items

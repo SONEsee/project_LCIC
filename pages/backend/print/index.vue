@@ -383,6 +383,7 @@ export default {
         console.log("User data:", user.value);
       }
 
+<<<<<<< HEAD
       fetchData(enterpriseID, lcicID);
     });
 
@@ -392,6 +393,14 @@ export default {
         const response = await fetch(
           `${config.public.strapi.url}api/report/?EnterpriseID=${enterpriseID}&LCICID=${lcicID}`
         );
+=======
+      fetchData(enterpriseID, lcicID)
+    })
+    const config = useRuntimeConfig();
+    const fetchData = async (enterpriseID: string, lcicID: string) => {
+      try {
+        const response = await fetch(`${config.public.strapi.url}api/report/?EnterpriseID=${enterpriseID}&LCICID=${lcicID}`)
+>>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
         if (response.ok) {
           const data = await response.json();
           tableData.value = data.loan_info;
