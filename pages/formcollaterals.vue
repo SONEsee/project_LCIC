@@ -311,7 +311,7 @@ export default defineComponent({
     const investmentAmountFormatted = parseFloat(investmentAmount.value);
 
     const response = await axios.post(
-      "http://127.0.0.1:8000/api/api/enterprise-info/",
+      "http://127.0.0.1:35729/api/api/enterprise-info/",
       {
         enterpriseNameLao: enterpriseNameLao.value,
         eneterpriseNameEnglish: eneterpriseNameEnglish.value,
@@ -395,11 +395,11 @@ export default defineComponent({
 
 const updateCollateralStatus = async (id: number) => {
         try {
-          const csrfResponse = await axios.get('http://127.0.0.1:8000/api/api/get_csrf_token/');
+          const csrfResponse = await axios.get('http://127.0.0.1:35729/api/api/get_csrf_token/');
           const csrfToken = csrfResponse.data.csrfToken;
   
           await axios.post(
-            `http://127.0.0.1:8000/api/api/confirm_image/${id}/`,
+            `http://127.0.0.1:35729/api/api/confirm_image/${id}/`,
             {},
             {
               headers: {
@@ -451,7 +451,7 @@ const updateCollateralStatus = async (id: number) => {
       console.log("Route Query Image:", route.query.image);
       console.log("Route Query ID:", route.query.id);
       console.log
-      return `http://127.0.0.1:8000/${route.query.image}?id=${route.query.id}`;
+      return `http://127.0.0.1:35729/collaterals/${route.query.image}?id=${route.query.id}`;
     });
 
     // const id = computed(() => {
@@ -479,7 +479,7 @@ const updateCollateralStatus = async (id: number) => {
     const fetchLastLCICID = async () => {
       try {
         const response = await axios.get<{ last_lcicid: string }>(
-          "http://127.0.0.1:8000/api/api/last-lcicid/"
+          "http://127.0.0.1:35729/api/api/last-lcicid/"
         );
         LCICID.value = (parseInt(response.data.last_lcicid) + 1).toString();
       } catch (error) {

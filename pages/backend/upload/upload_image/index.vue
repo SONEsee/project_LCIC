@@ -90,6 +90,7 @@ export default defineComponent({
   setup() {
     definePageMeta({
       layout: "backend",
+      middleware: "auth",
     });
 
     useHead({
@@ -158,7 +159,7 @@ export default defineComponent({
 
     const viewImage = (imagePath: string, id: string) => {
       const config = useRuntimeConfig();
-      const fullPath = `${config.public.strapi.url}${imagePath}?id=${id}`;
+      const fullPath = `${config.public.strapi.url}/collaterals/${imagePath}`;
       window.open(fullPath, "_blank");
       console.log("id image", id);
     };
@@ -176,7 +177,7 @@ export default defineComponent({
           icon: "success",
           confirmButtonText: "OK",
         });
-        fetchCollaterals(); // Refresh the list after confirmation
+        fetchCollaterals();
       } catch (error) {
         console.error(error.response ? error.response.data : error.message);
         Swal.fire({
