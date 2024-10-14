@@ -87,7 +87,7 @@ export default defineComponent({
 
       try {
         const response = await axios.post(
-          "http://127.0.0.1:8000/api/collateral_update_view/",
+          "http://192.168.45.56:8000/api/collateral_update_view/",
           formData,
           {
             headers: {

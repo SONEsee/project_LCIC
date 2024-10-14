@@ -43,6 +43,17 @@
                         />
                       </div>
                       <div class="mt-5">
+                        <v-combobox
+        v-model="selectedCat"
+        :items="categories"
+        item-value="cat_sys_id"
+        item-title="cat_name"
+        :return-object="true"
+        label="Select Category"
+        outlined
+        :rules="[ruleRequired]"
+        required
+      ></v-combobox>
                         <v-btn
                           type="submit"
                           block
@@ -64,10 +75,10 @@
     </v-container>
   </div>
 </template>
-
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import Swal from "sweetalert2";
+
 definePageMeta({
   layout: "backend",
 });
@@ -81,18 +92,51 @@ useHead({
     },
     {
       name: "Description",
-      content: "Report Nuxt 3,  IT Genius Engineering",
+      content: "Report Nuxt 3, IT Genius Engineering",
     },
   ],
 });
+
+// Inputs
 const id1 = ref<string>("");
 const id2 = ref<string>("");
-const loading = ref<boolean>(false);
+const selectedCat = ref<string>(""); // Combobox selection
 
+// Loading and validation
+const loading = ref<boolean>(false);
 const ruleRequired = (v: any) => !!v || "Required.";
 
+// Category data for combobox
+const categories = ref<any[]>([]);
+
+// Fetch categories using fetch
+onMounted(async () => {
+  try {
+    const config = useRuntimeConfig(); // Assuming the URL is in config
+    const token = localStorage.getItem("access_token");
+    
+    const response = await fetch(`${config.public.strapi.url}api/catalog-cats/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      categories.value = data; // Assuming the data is an array of categories
+    } else {
+      console.error("Failed to fetch categories:", response.statusText);
+    }
+  } catch (error) {
+    console.error("Error occurred while fetching categories:", error);
+  }
+});
+
+// Submit function
 const submit = async () => {
-  if (id1.value && id2.value) {
+  if (id1.value && id2.value && selectedCat.value) {
     loading.value = true;
     Swal.fire({
       title: "ກະລຸນາລໍຖ້າ",
@@ -104,14 +148,19 @@ const submit = async () => {
     });
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/api/v1/enterprise-info/search/", {
+      const config = useRuntimeConfig();
+      const token = localStorage.getItem("access_token");
+
+      const res = await fetch(`${config.public.strapi.url}api/enterprisematch/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           LCICID: id1.value,
           EnterpriseID: id2.value,
+          CatalogID: selectedCat.value.cat_sys_id,  // Extract the correct ID from the selected category
         }),
       });
 
@@ -119,9 +168,8 @@ const submit = async () => {
 
       if (res.ok && data.length > 0) {
         Swal.close();
-        // Redirect to the new data display page
-        window.location.href = `/backend/datasearch?LCICID=${id1.value}&EnterpriseID=${id2.value}`;
-      
+        // Redirect to the new data display page, passing only the `cat_sys_id` from the selected category
+        window.location.href = `/backend/datasearch?LCICID=${id1.value}&EnterpriseID=${id2.value}&CatalogID=${selectedCat.value.cat_sys_id}`;
       } else {
         Swal.fire({
           icon: "error",
@@ -136,7 +184,7 @@ const submit = async () => {
         icon: "error",
         title: "Error",
         text: "ການດືງຂໍ້ມູນຜິດພາດ, ລອງໃໝ່ອີກຄັ້ງ",
-        confirmButtonText: "ຕົກລົງ"
+        confirmButtonText: "ຕົກລົງ",
       });
     } finally {
       loading.value = false;
@@ -145,12 +193,15 @@ const submit = async () => {
     Swal.fire({
       icon: "error",
       title: "ເກີດຂໍ້ຜິດພາດໃນການຄົ້ນຫາ",
-      text: "ກາລຸນາໃສ່ ID ໃຫ້ຄົບທັງສອງ ID.",
-      confirmButtonText: "ຕົກລົງ"
+      text: "ກາລຸນາໃສ່ ID ໃຫ້ຄົບທັງສອງ ID ແລະ ເລືອກ Category.",
+      confirmButtonText: "ຕົກລົງ",
     });
   }
 };
+
 </script>
+
+
 
 <style scoped>
 input {

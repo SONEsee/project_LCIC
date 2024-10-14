@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import { TotalSales } from "./TotalSalesData";
 
 const select = ref("March");
@@ -12,9 +12,6 @@ onMounted(() => {
 
 <template>
   <v-container>
-  <!-- ------------------------------------ -->
-  <!-- html -->
-  <!-- ------------------------------------ -->
   <v-card class="bg-blue-lighten-3 mt-3"> 
     <v-card-text>
       <div class="d-flex align-center mb-1">
@@ -106,5 +103,65 @@ onMounted(() => {
   position: absolute;
   left: 46%;
   top: 45%;
+}
+</style> -->
+<template>
+  <div style="width: 80%; height: 500px;">
+    <canvas id="doughnutChart" style="width: 100%; height: 100%;"></canvas>
+  </div>
+</template>
+
+<script>
+import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
+
+// Register the components you need
+Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
+
+export default {
+  data() {
+    return {
+      chartData: null,
+    };
+  },
+  mounted() {
+    this.fetchChartData();
+  },
+  methods: {
+    async fetchChartData() {
+      try {
+        const config = useRuntimeConfig();
+        const response = await fetch(`${config.public.strapi.url}api/searchlog_doughnutchart/`);
+        const data = await response.json();
+
+        this.renderChart(data.labels, data.datasets[0].data, data.datasets[0].backgroundColor);
+      } catch (error) {
+        console.error('Error fetching chart data:', error);
+      }
+    },
+    renderChart(labels, dataset, backgroundColor) {
+      const ctx = document.getElementById('doughnutChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Search Logs by Bank',
+            data: dataset,
+            backgroundColor: backgroundColor,
+          }]
+        },
+        options: {
+          responsive: true,
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style scoped>
+canvas {
+  width: 30%;
+  height: 100px;
 }
 </style>

@@ -105,7 +105,8 @@ export default {
     // Function to fetch user data for editing
     const fetchUserData = async (UID) => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/get_user/${UID}/`);
+        const config = useRuntimeConfig();
+        const response = await fetch(`${config.public.strapi.url}api/get_user/${UID}/`);
         const data = await response.json();
         form.value.firstnameLao = data.nameL;
         form.value.surnameLao = data.surnameL;
@@ -122,7 +123,8 @@ export default {
     // Function to fetch available banks
     const fetchBanks = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/bank/');
+        const config = useRuntimeConfig();
+        const response = await fetch(`${config.public.strapi.url}api/bank/`);
         const data = await response.json();
         banks.value = data;
       } catch (error) {
@@ -133,7 +135,8 @@ export default {
     // Function to submit form for updating user
     const submitForm = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/update_user/${UID}/`, {
+        const config = useRuntimeConfig();
+        const response = await fetch(`${config.public.strapi.url}api/update_user/${UID}/`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

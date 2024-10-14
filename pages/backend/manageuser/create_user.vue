@@ -44,7 +44,7 @@
           <v-col>
             <v-sheet class=" ma-2">
               <!-- <v-text-field v-model="form.member" label="Member"></v-text-field> -->
-              <v-combobox v-model="form.selectedBank" :items="banks" item-title="bnk_short_form" item-value="bnk_sys_id" label="Bank" outlined return-object></v-combobox>
+              <v-combobox v-model="form.selectedBank" :items="banks" item-title="bnk_short_form" item-value="bnk_code" label="Bank" outlined return-object></v-combobox>
             </v-sheet>
           </v-col>
           <v-col>
@@ -115,8 +115,8 @@
       const banks = ref([]);
       const selectdBank = ref(null);
       const submitForm = async () => {
-
-          const response = await fetch('http://127.0.0.1:8000/api/create_user/', {
+          const config = useRuntimeConfig();
+          const response = await fetch(`${config.public.strapi.url}api/create_user/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -127,7 +127,7 @@
               nameE: form.value.firstnameEng,
               surnameE: form.value.surnameEng,
               username: form.value.username,
-              MID: form.value.selectedBank.bnk_sys_id, 
+              MID: form.value.selectedBank.bnk_code,
               GID: form.value.groupUser,
               password: form.value.password,
               confirmPassword: form.value.confirmPassword
@@ -148,16 +148,17 @@
       
     };
 
-    const fetchBanks = async () => {
-        try {
-          const response = await fetch('http://127.0.0.1:8000/api/bank/');
-          const data = await response.json();
-          banks.value = data;  // Assign the fetched banks to the banks array
-          console.log("Fetched Banks:", banks.value);
-        } catch (error) {
-          console.error('Error fetching banks:', error);
-        }
-      };
+    // const fetchBanks = async () => {
+    //     try {
+    //       const config = useRuntimeConfig();
+    //       const response = await fetch(`${config.public.strapi.url}api/bank/`);
+    //       const data = await response.json();+
+    //       banks.value = data;  // Assign the fetched banks to the banks array
+    //       console.log("Fetched Banks:", banks.value);
+    //     } catch (error) {
+    //       console.error('Error fetching banks:', error);
+    //     }
+    //   };
   
       // Fetch bank data when component is mounted
       onMounted(() => {

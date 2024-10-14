@@ -284,7 +284,7 @@
           const investmentAmountFormatted = parseFloat(investmentAmount.value);
   
           const response = await axios.post(
-            "http://127.0.0.1:8000/api/api/enterprise-info/",
+            "http://192.168.45.56:8000/api/api/enterprise-info/",
             {
               enterpriseNameLao: enterpriseNameLao.value,
               eneterpriseNameEnglish: eneterpriseNameEnglish.value,
@@ -329,7 +329,7 @@
       
       const fetchLastLCICID = async () => {
         try {
-          const response = await axios.get<{ last_lcicid: string }>('http://127.0.0.1:8000/api/api/last-lcicid/');
+          const response = await axios.get<{ last_lcicid: string }>('http://192.168.45.56:8000/api/api/last-lcicid/');
           LCICID.value = (parseInt(response.data.last_lcicid) + 1).toString();
         } catch (error) {
           console.error("Error fetching last LCICID:", error);

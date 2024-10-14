@@ -109,7 +109,7 @@ export default defineComponent({
 
       try {
         const response = await axios.post(
-          "http://127.0.0.1:8000/api/api/upload_image/",
+          "http://192.168.45.56:8000/api/api/upload_image/",
           formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
@@ -122,7 +122,7 @@ export default defineComponent({
 
     const fetchCollaterals = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/api/get_collaterals/');
+        const response = await axios.get('http://192.168.45.56:8000/api/api/get_collaterals/');
         collaterals.value = response.data;
       } catch (error) {
         console.error(error.response ? error.response.data : error.message);
@@ -130,13 +130,13 @@ export default defineComponent({
     };
 
     const viewImage = (imagePath: string) => {
-      const fullPath = `http://127.0.0.1:8000/${imagePath}`;
+      const fullPath = `http://192.168.45.56:8000/${imagePath}`;
       window.open(fullPath, '_blank');
     };
 
     const confirmImage = async (id: number) => {
       try {
-        const response = await axios.post(`http://127.0.0.1:8000/api/api/confirm_image/${id}/`);
+        const response = await axios.post(`http://192.168.45.56:8000/api/api/confirm_image/${id}/`);
         console.log(response.data);
         fetchCollaterals(); 
       } catch (error) {
@@ -268,7 +268,7 @@ export default defineComponent({
 
       try {
         const response = await axios.post(
-          "http://127.0.0.1:8000/api/api/upload_image/",
+          "http://192.168.45.56:8000/api/api/upload_image/",
           formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
@@ -297,7 +297,7 @@ export default defineComponent({
 
     const fetchCollaterals = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/api/get_collaterals/');
+        const response = await axios.get('http://192.168.45.56:8000/api/api/get_collaterals/');
         collaterals.value = response.data;
       } catch (error) {
         console.error(error.response ? error.response.data : error.message);
@@ -305,14 +305,14 @@ export default defineComponent({
     };
 
     const viewImage = (imagePath: string, id: string) => {
-      const fullPath = `http://127.0.0.1:8000/${imagePath}?id=${id}`;
+      const fullPath = `http://192.168.45.56:8000/${imagePath}?id=${id}`;
       window.open(fullPath, '_blank');
       console.log("id image", id);
     };
 
     const confirmImage = async (id: number) => {
       try {
-        const response = await axios.post(`http://127.0.0.1:8000/api/api/confirm_image/${id}/`);
+        const response = await axios.post(`http://192.168.45.56:8000/api/api/confirm_image/${id}/`);
         console.log(response.data);
         await Swal.fire({
           title: "ສຳເລັດ!",
