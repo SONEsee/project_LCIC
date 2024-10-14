@@ -141,6 +141,7 @@
     <v-table>
       <thead>
         <tr>
+          <th>ລຳດັບ</th>
           <th>ວັນເດືອນທີ່ຄົ້ນຫາ</th>
           <th>ຜູ້ຄົ້ນຫາ</th>
           <th>ເຫດຜົນການຄົ້ນຫາ</th>
@@ -148,11 +149,17 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>2023-07-10</td>
-          <td>User1</td>
-          <td>Success</td>
-          <td> load  </td>
+        <tr  v-for="(item, index) in search_history" :key="index">
+          
+          <!-- {{item}} -->
+          <td> {{ index + 1 }}</td>
+          <td>{{ item.date }}</td>
+          <td>{{ item.bnk_code }}</td>
+          <td>{{ item.lon_purpose }}</td>
+          
+          <td>--</td>
+          
+          
         </tr>
       </tbody>
     </v-table>
@@ -606,6 +613,7 @@ export default {
     const tableData = ref([]);
     const loan_detail_inactive = ref([]);
     const loan_detail_active = ref([]);
+    const search_history = ref([]);
     const user = ref({});
     const enterpriseInfo = ref(null);
     const invesInfo = ref(null);
@@ -728,9 +736,11 @@ export default {
           tableData.value = data.loan_info;
           loan_detail_inactive.value = data.inactive_loans;
           loan_detail_active.value = data.active_loans;
+          search_history.value = data.search_history;
 
           enterpriseInfo.value = data.enterprise_info;
           invesInfo.value = data.inves_info;
+
 
           if (data.enterprise_info.length > 0) {
             enterpriseInfo.value = data.enterprise_info[0];
@@ -783,6 +793,7 @@ export default {
       user,
       loan_detail_inactive,
       loan_detail_active,
+      search_history,
       mainHeaders,
       subHeaders,
       subHeaders_collteral,
