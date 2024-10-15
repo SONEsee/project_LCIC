@@ -1,0 +1,202 @@
+[33mcommit 75c929a9193bbfe40c87015ad075ce9b8eb7e925[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Tue Oct 15 09:04:08 2024 +0700
+
+    15.10.11.2024
+
+[33mcommit cef2f668eb3332cdd4dca5f7fdefa1c2c44876c9[m
+Merge: 1df4666 8b48fd2
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Mon Oct 14 15:57:37 2024 +0700
+
+    master
+
+[33mcommit 8b48fd2a1696bc13a6659c284560aa69db42d491[m[33m ([m[1;31morigin/paylay_sone[m[33m)[m
+Author: paylayweb <soulaphon.vongmala559@gmail.com>
+Date:   Mon Oct 14 15:56:16 2024 +0700
+
+    update front 14-10-2024
+
+[33mcommit 1df466647733f2b580cfc469ab664bd9955613fe[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Mon Oct 14 15:54:31 2024 +0700
+
+    master
+
+[33mcommit bbed990c9e51d837ccd10a1225d34e086eb04d12[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Mon Oct 14 14:25:06 2024 +0700
+
+    sone immage 14.10.2024
+
+[33mcommit 89f13504e34743958677920d9a9a14c284cf6f56[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Thu Oct 10 16:56:30 2024 +0700
+
+    master sone error B
+
+[33mcommit c185181d71fc47c26006dd8903a76a347b0acc4d[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Mon Oct 7 17:20:46 2024 +0700
+
+    master sone Upload
+
+[33mcommit 5d3432f31f272c02e40d0db0c48bb2e49108e9d0[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Mon Oct 7 09:57:05 2024 +0700
+
+    master sone report 7.10.2024
+
+[33mcommit 366217bc6cd67cba7c9818a37118309e542d4293[m[33m ([m[1;32mmain[m[33m)[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Mon Oct 7 08:41:48 2024 +0700
+
+     master sone lang 7.10.2402
+
+[33mcommit 65c867153515380457906600f254d432cd95a4b0[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Merge: 2af0238 4bb7345
+Author: SONEsee <sonesdv164@gmail.com>
+Date:   Sun Oct 6 14:56:46 2024 +0700
+
+    Merge commit '4bb7345fbc040b67cc7ca0395db056458bb838fb'
+
+[33mcommit 4bb7345fbc040b67cc7ca0395db056458bb838fb[m
+Author: SONEsee <sonesdv164@gmail.com>
+Date:   Sun Oct 6 14:55:58 2024 +0700
+
+    master Fix localize language and update nuxt version
+
+[33mcommit 2af02382f043e5206afe79bb0de2c46b34fc35a9[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Tue Oct 1 17:19:22 2024 +0700
+
+    1.10.2024
+
+[33mcommit 6b53e22bc2810ee673d7c04da11ba8eeaaccf0ba[m
+Merge: bf08b6b 4482f93
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Mon Sep 30 10:28:03 2024 +0700
+
+    Resolve merge conflicts
+
+[33mcommit 4482f93bc93cdc17d7438c9cc412ffc9d061f1d1[m
+Author: paylayweb <soulaphon.vongmala559@gmail.com>
+Date:   Mon Sep 30 08:59:30 2024 +0700
+
+    font_update
+
+[33mcommit bf08b6b6fe860fe7815dd861d055e39adef025f0[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Fri Sep 27 10:31:40 2024 +0700
+
+    server sone project
+
+[33mcommit 0e7b6237df48b5e39b02bc9fa90cf544882795bd[m
+Author: SONEsee <sonesdv164@gmail.com>
+Date:   Fri Sep 27 09:32:29 2024 +0700
+
+    09
+
+[33mcommit 675ca72b73d7ed0977989dda2ef86cd8019c7ead[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Thu Sep 26 18:12:09 2024 +0700
+
+    sone
+
+[33mcommit 874e669bb89de1568438c59cc1989f24f9e93153[m
+Author: SONEsee <sonesdv164@gmail.com>
+Date:   Thu Sep 26 17:48:15 2024 +0700
+
+    test
+
+[33mcommit 0ed1309b244d2d3a0a5c87df4161768080a05d7f[m
+Author: paylayweb <soulaphon.vongmala559@gmail.com>
+Date:   Thu Sep 26 17:07:09 2024 +0700
+
+    update paylay 26_09_2024
+
+[33mcommit 1c4077dfb7f2f90e515593de56d821ddb089eec8[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Tue Sep 24 15:21:38 2024 +0700
+
+    sone Upload
+
+[33mcommit edc0fe8058ceefe316a0f8150f81105253490482[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Tue Sep 24 09:26:40 2024 +0700
+
+    sone font_end C upload
+
+[33mcommit 078cf3f99e8a3e84df77949ea58dee846bc06c3d[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Thu Sep 19 09:51:00 2024 +0700
+
+    sone upload
+
+[33mcommit b15babe64e379a71b74b5e2615e853014c83bbb4[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Tue Sep 17 13:42:37 2024 +0700
+
+    sone Upload B
+
+[33mcommit 4e2b874015c8e61cfb411f4e497d0a464c47af28[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Thu Sep 12 08:32:05 2024 +0700
+
+    11/09/2024/ sone
+
+[33mcommit 118a4284a9067bfff048ea8e6ce3fdaf6132ac18[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Wed Sep 11 11:10:22 2024 +0700
+
+    sone 10/9/2024
+
+[33mcommit a4a58f56a705a6f3f9526b489af1549a2e6f7b5d[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Fri Sep 6 17:42:27 2024 +0700
+
+    V1.0.2
+
+[33mcommit f81db1f70e4ac0e3f7401036196186e6a10370dc[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Fri Sep 6 11:11:58 2024 +0700
+
+    sone
+
+[33mcommit 67523a65f92fc13e49f01601ba8540dad0319365[m
+Author: Sone11 <sonesdv164@gmail.com>
+Date:   Fri Aug 23 15:51:44 2024 +0700
+
+    V1.0.3
+
+[33mcommit 081e61b9454befdf08d6e296dbca41fc410a84a0[m
+Author: Sone SEEDAVANH <sonesdv164@gmail.com>
+Date:   Tue Jun 25 16:08:59 2024 +0700
+
+    sone
+
+[33mcommit e54c54715027ce1c42e6db84f4d4b46debfb510c[m
+Author: Sone SEEDAVANH <sonesdv164@gmail.com>
+Date:   Tue Jun 18 15:35:19 2024 +0700
+
+    Search
+
+[33mcommit c87fc6a54676af1847658151cbea5f233f2f7ca9[m
+Author: Sone SEEDAVANH <sonesdv164@gmail.com>
+Date:   Mon Jun 17 15:45:53 2024 +0700
+
+    first commit
+
+[33mcommit 8d25b22ac561a70c6fcdc59d5fe306adfb801638[m
+Author: SONEsee <141574653+SONEsee@users.noreply.github.com>
+Date:   Mon May 20 08:20:52 2024 +0700
+
+    sone
+    
+    sone
+
+[33mcommit 5c27b9977511fa624600faac648b111d9b6cff03[m
+Author: unknown <sonesdv164@gmail.com>
+Date:   Fri May 17 14:51:58 2024 +0700
+
+    first commit

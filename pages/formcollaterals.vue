@@ -347,8 +347,8 @@ export default defineComponent({
         await updateCollateralStatus(route.query.id);
       }
     }).then(() => {
-  // ຄຳສັ່ງສຳຫຼັບການລີເຟດໜ້າຈໍ
-  location.reload(); // ລີເຟດໜ້າຈໍ
+ 
+  location.reload(); 
 });
 
   } catch (error) {
@@ -451,7 +451,11 @@ const updateCollateralStatus = async (id: number) => {
       console.log("Route Query Image:", route.query.image);
       console.log("Route Query ID:", route.query.id);
       console.log
+<<<<<<< HEAD
       return `http://127.0.0.1:35729/${route.query.image}?id=${route.query.id}`;
+=======
+      return `http://127.0.0.1:35729/collaterals/${route.query.image}?id=${route.query.id}`;
+>>>>>>> 5d582458ecd7c97e64097a48a51feb1b9ae2ca17
     });
 
     // const id = computed(() => {
