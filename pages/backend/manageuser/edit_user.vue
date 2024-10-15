@@ -141,13 +141,9 @@ export default {
     const fetchUserData = async (UID) => {
       try {
         const config = useRuntimeConfig();
-<<<<<<< HEAD
         const response = await fetch(
           `${config.public.strapi.url}api/get_user/${UID}/`
         );
-=======
-        const response = await fetch(`${config.public.strapi.url}api/get_user/${UID}/`);
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
         const data = await response.json();
         form.value.firstnameLao = data.nameL;
         form.value.surnameLao = data.surnameL;
@@ -177,7 +173,6 @@ export default {
     const submitForm = async () => {
       try {
         const config = useRuntimeConfig();
-<<<<<<< HEAD
         const response = await fetch(
           `${config.public.strapi.url}api/update_user/${UID}/`,
           {
@@ -220,24 +215,6 @@ export default {
           icon: "error",
           title: "Update Failed",
           text: error.message,
-=======
-        const response = await fetch(`${config.public.strapi.url}api/update_user/${UID}/`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            nameL: form.value.firstnameLao,
-            surnameL: form.value.surnameLao,
-            nameE: form.value.firstnameEng,
-            surnameE: form.value.surnameEng,
-            username: form.value.username,
-            MID: form.value.selectedBank.bnk_sys_id,
-            GID: form.value.groupUser,
-            password: form.value.password,
-            confirmPassword: form.value.confirmPassword
-          }),
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
         });
       }
     };

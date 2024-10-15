@@ -12,10 +12,7 @@ onMounted(() => {
 
 <template>
   <v-container>
-<<<<<<< HEAD
   
-=======
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
   <v-card class="bg-blue-lighten-3 mt-3"> 
     <v-card-text>
       <div class="d-flex align-center mb-1">

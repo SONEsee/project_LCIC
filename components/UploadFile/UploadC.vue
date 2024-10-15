@@ -96,43 +96,15 @@ export default defineComponent({
       try {
         // ດຶງຂໍ້ມູນເພື່ອປະຕິບັດ
         await fetchData();
-<<<<<<< HEAD
-
-        // ດຶງຂໍ້ມູນຜູ້ໃຊ້ຈາກ localStorage
-        const userData = localStorage.getItem("user_data");
-        console.log("User data:", userData);
-
-        if (userData) {
-          try {
-            // ແປໄພເປັນ JSON ເພື່ອໃຊ້ງານ
-            user.value = JSON.parse(userData);
-            console.log("Parsed user data:", user.value);
-
-            // ດຶງ MID ຈາກ user.value
-            const MID = user.value.MID;
-
-            // ກວດສອບວ່າ MID ແລະ MID.id ມີຄ່າຫຼືບໍ່
-            if (MID && MID.id) {
-              // ຕື່ມ '0' ດ້ານໜ້າຖ້າຄ່າ MID.id ນ້ອຍກວ່າ 10
-              const paddedMID = MID.id.toString().padStart(2, "0");
-              console.log("Padded MID.id:", paddedMID);
-
-              // ດຶງຂໍ້ມູນຕາມ UserID ໃຊ້ MID.id
-              await fetchDataByUserID(paddedMID);
-            }
-          } catch (error) {
-            console.error("Error parsing user data:", error);
-=======
       });
   
       const fetchData = async () => {
         try {
           const response = await fetch(
-            "http://192.168.45.56:8000/api/api/upload-filesc2/"
+            "http://127.0.0.1:35729/api/api/upload-filesc2/"
           );
           if (!response.ok) {
             throw new Error("Network response was not ok");
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
           }
         }
       } catch (error) {
@@ -292,9 +264,6 @@ export default defineComponent({
             title: "ມີຊືຟາຍຊໍ້າກັນ",
             text: "ຊື່ຟາຍນີ້ມີຢູ່ໃນລະບົບແລ້ວ ກາລຸນາກວດຄືນໃໝ່",
           });
-<<<<<<< HEAD
-        } else if (error.response && error.response.status === 406) {
-=======
           return;
         }
   
@@ -314,7 +283,7 @@ export default defineComponent({
   
         try {
           const response = await axios.post(
-            "http://192.168.45.56:8000/api/upload-filesC/",
+            "http://127.0.0.1:35729/api/upload-filesC/",
             formData
           );
   
@@ -326,24 +295,14 @@ export default defineComponent({
             updatedItem.path = response.data.path;
           }
   
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
           Swal.fire({
             icon: "error",
             title: "ອັບໂຫຼດລົ້ມເຫຼວ",
             text: "ຮູບແບບຂໍ້ມູນຂອງ period ຢູ່ໃນຖານຂໍ້ມູນບໍ່ຖືກຮູບແບບ",
           });
-<<<<<<< HEAD
-        } else if (error.response && error.response.status === 408) {
-          Swal.fire({
-            icon: "error",
-            title: "ການອັບໂຫຼດລົ້ມເຫຼວ",
-            text: "ທ່ານບໍ່ສາມາດອັບໂຫຼດຂໍ້ມູນຍອ້ນຫຼັງໄດ້",
-          });
-        } else {
-=======
   
           const response2 = await fetch(
-            "http://192.168.45.56:8000/api/api/upload-filesc2/"
+            "http://127.0.0.1:35729/api/api/upload-filesc2/"
           );
           const data = await response2.json();
           items.value = data.map((item: any) => ({
@@ -360,17 +319,12 @@ export default defineComponent({
             updatedItem.status = "ການນຳສົ່ງບໍ່ສົມບູນ";
           }
   
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
           Swal.fire({
             icon: "error",
             title: "ການອັບໂຫຼດລົ້ມເຫລວ",
             text: "ກາລຸນາກວດສອບຄືນ",
           });
         }
-<<<<<<< HEAD
-      }
-    };
-=======
       };
   
       const router = useRouter();
@@ -387,7 +341,7 @@ export default defineComponent({
   
         try {
           const response = await axios.get(
-            "http://192.168.45.56:8000/api/api/productinfoc3/",
+            "http://127.0.0.1:35729/api/api/productinfoc3/",
             {
               params: {
                 CID: item.CID,
@@ -409,7 +363,6 @@ export default defineComponent({
           });
         }
       };
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
 
     const router = useRouter();
 
@@ -423,51 +376,9 @@ export default defineComponent({
         return;
       }
 
-<<<<<<< HEAD
-      try {
-        const config = useRuntimeConfig();
-        const response = await axios.get(
-          `${config.public.strapi.url}api/api/productinfoc3/`,
-          {
-            params: {
-              CID: item.CID,
-            },
-          }
-        );
-
-        const data = response.data;
-        router.push({
-          name: "detailupload_c",
-          query: { data: JSON.stringify(data) },
-        });
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "ລົ້ມເຫລວ",
-          text: "ລົ້ມເຫລວໃນການສະແດບຂໍ້ມູນ",
-        });
-      }
-    };
-    const config = useRuntimeConfig();
-    const getFullPath = (path: string) => {
-      const baseUrl = `${config.public.strapi.url}`;
-      return `${baseUrl}${path}`;
-    };
-
-    const getFileName = (path: string) => {
-      const parts = path.split("/");
-      return parts[parts.length - 1];
-    };
-
-    const getStatusColor = (statussubmit: string) => {
-      switch (statussubmit) {
-        case "Pending":
-          return "orange";
-        case "1":
-=======
   
       const getFullPath = (path: string) => {
-        const baseUrl = "http://192.168.45.56:8000/";
+        const baseUrl = "http://127.0.0.1:35729/";
         return `${baseUrl}${path}`;
       };
   
@@ -510,7 +421,6 @@ export default defineComponent({
         if (percentageValue >= 15) {
           return "red";
         } else if (percentageValue < 15) {
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
           return "green";
         case "2":
           return "red";

@@ -88,7 +88,6 @@ export default defineNuxtConfig({
     },
   },
 
-<<<<<<< HEAD
   // runtime config
 
   runtimeConfig: {
@@ -96,16 +95,6 @@ export default defineNuxtConfig({
       strapi: {
         url: process.env.STRAPI_URL || "http://127.0.0.1:35729/",
       },
-=======
-    // runtime config
-    
-    runtimeConfig: {
-        public: {
-           strapi: {
-             url: process.env.STRAPI_URL || "http://192.168.45.56:8000/",
-           },
-        }
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
     },
   },
 });

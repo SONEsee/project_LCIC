@@ -311,11 +311,7 @@ export default defineComponent({
     const investmentAmountFormatted = parseFloat(investmentAmount.value);
 
     const response = await axios.post(
-<<<<<<< HEAD
       "http://127.0.0.1:35729/api/api/enterprise-info/",
-=======
-      "http://192.168.45.56:8000/api/api/enterprise-info/",
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
       {
         enterpriseNameLao: enterpriseNameLao.value,
         eneterpriseNameEnglish: eneterpriseNameEnglish.value,
@@ -374,7 +370,7 @@ export default defineComponent({
 //     const csrfToken = Cookies.get("csrftoken");
 
 //     const response = await axios.patch(
-//       `http://192.168.45.56:8000/api/api/collateral/${id}/`,
+//       `http://127.0.0.1:35729/api/api/collateral/${id}/`,
 //       {
 //         status: 0,
 //       },
@@ -399,19 +395,11 @@ export default defineComponent({
 
 const updateCollateralStatus = async (id: number) => {
         try {
-<<<<<<< HEAD
           const csrfResponse = await axios.get('http://127.0.0.1:35729/api/api/get_csrf_token/');
           const csrfToken = csrfResponse.data.csrfToken;
   
           await axios.post(
             `http://127.0.0.1:35729/api/api/confirm_image/${id}/`,
-=======
-          const csrfResponse = await axios.get('http://192.168.45.56:8000/api/api/get_csrf_token/');
-          const csrfToken = csrfResponse.data.csrfToken;
-  
-          await axios.post(
-            `http://192.168.45.56:8000/api/api/confirm_image/${id}/`,
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
             {},
             {
               headers: {
@@ -456,18 +444,14 @@ const updateCollateralStatus = async (id: number) => {
     });
 
     // const fullImagePath = computed(() => {
-    //   return `http://192.168.45.56:8000/${route.query.image}`;
+    //   return `http://127.0.0.1:35729/${route.query.image}`;
     // });
 
     const fullImagePath = computed(() => {
       console.log("Route Query Image:", route.query.image);
       console.log("Route Query ID:", route.query.id);
       console.log
-<<<<<<< HEAD
-      return `http://127.0.0.1:35729/collaterals/${route.query.image}?id=${route.query.id}`;
-=======
-      return `http://192.168.45.56:8000/${route.query.image}?id=${route.query.id}`;
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
+      return `http://127.0.0.1:35729/${route.query.image}?id=${route.query.id}`;
     });
 
     // const id = computed(() => {
@@ -478,13 +462,13 @@ const updateCollateralStatus = async (id: number) => {
     //   if (!route.query.image) {
     //     return 'default-image-path'; // ເອີ້ນຄ່າຂອງຮູບພາບ default ຖ້າບໍ່ມີ `image` ໃນ URL
     //   }
-    //   return `http://192.168.45.56:8000/${route.query.image}`;
+    //   return `http://127.0.0.1:35729/${route.query.image}`;
     // });
 
     // const fetchLastLCICID = async () => {
     //   try {
     //     const response = await axios.get<{ last_lcicid: string }>(
-    //       "http://192.168.45.56:8000/api/api/last-lcicid/"
+    //       "http://127.0.0.1:35729/api/api/last-lcicid/"
     //     );
     //     LCICID.value = (parseInt(response.data.last_lcicid) + 1).toString();
     //   } catch (error) {
@@ -495,11 +479,7 @@ const updateCollateralStatus = async (id: number) => {
     const fetchLastLCICID = async () => {
       try {
         const response = await axios.get<{ last_lcicid: string }>(
-<<<<<<< HEAD
           "http://127.0.0.1:35729/api/api/last-lcicid/"
-=======
-          "http://192.168.45.56:8000/api/api/last-lcicid/"
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
         );
         LCICID.value = (parseInt(response.data.last_lcicid) + 1).toString();
       } catch (error) {

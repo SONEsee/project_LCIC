@@ -150,14 +150,8 @@ const submit = async () => {
 
     try {
       const config = useRuntimeConfig();
-<<<<<<< HEAD
       const token = localStorage.getItem('access_token');
       const res = await fetch(`${config.public.strapi.url}api/api/v1/enterprise-info/search/`, {
-=======
-      const token = localStorage.getItem("access_token");
-
-      const res = await fetch(`${config.public.strapi.url}api/enterprisematch/`, {
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
         method: "POST",
         headers: {
           "Content-Type": "application/json",

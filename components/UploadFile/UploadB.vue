@@ -38,108 +38,11 @@
       </template>
 
       
-<<<<<<< HEAD
-      <template v-slot:item.path="{ item }">
-        <a :href="getFullPath(item.path)" target="_blank">{{
-          getFileName(item.path)
-        }}</a>
-      </template>
-
-      <template v-slot:item.percentage="{ item }">
-        <span :style="{ color: getPercentageColor(item.percentage) }"
-          >{{ item.percentage.toFixed(2) }}%</span
-        >
-      </template>
-
-      <template v-slot:item.statussubmit="{ item }">
-        <v-chip :color="getStatusColor(item.statussubmit)" dark>{{
-          getStatusText(item.statussubmit)
-        }}</v-chip>
-      </template>
-
-      <template v-slot:item.actions="{ item }">
-        <v-btn @click="viewDetails(item)" color="info">ເບິ່ງລາຍລະອຽດ</v-btn>
-      </template>
-
-      <template v-slot:no-data>
-        <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
-      </template>
-    </v-data-table>
-  </v-container>
-</template>
-
-<script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
-import axios from "axios";
-import Swal from "sweetalert2";
-import { useRouter } from "vue-router";
-
-export default defineComponent({
-  setup() {
-    definePageMeta({
-      layout: "backend",
-    });
-
-    useHead({
-      title: "Upload File",
-      meta: [
-        {
-          name: "keywords",
-          content: "Report, Nuxt 3, Backend",
-        },
-        {
-          name: "Description",
-          content: "Report Nuxt 3, IT Genius Engineering",
-        },
-      ],
-    });
-
-    const user = ref<User | null>(null);
-    const file = ref<File | null>(null);
-    const items = ref([]);
-    const headers = ref([
-      { title: "ໄອດີ", value: "FID" },
-      { title: "ຊື່ພາດ", value: "path" },
-      { title: "ສະຖານະ", value: "statussubmit" },
-      { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
-      { title: "Actions", value: "actions", sortable: false },
-    ]);
-
-    onMounted(async () => {
-      try {
-        
-        await fetchData();
-
-       
-        const userData = localStorage.getItem("user_data");
-        console.log("User data:", userData);
-
-        if (userData) {
-          try {
-            
-            user.value = JSON.parse(userData);
-            console.log("Parsed user data:", user.value);
-
-            
-            const MID = user.value.MID;
-
-          
-            if (MID && MID.id) {
-             
-              const paddedMID = MID.id.toString().padStart(2, "0");
-              console.log("Padded MID.id:", paddedMID);
-
-              
-              await fetchDataByUserID(paddedMID);
-            }
-          } catch (error) {
-            console.error("Error parsing user data:", error);
-=======
   
       // onMounted(async () => {
       //   try {
       //     const response = await fetch(
-      //       "http://192.168.45.56:8000/api/api/upload-files2/"
+      //       "http://127.0.0.1:35729/api/api/upload-files2/"
       //     );
       //     if (!response.ok) {
       //       throw new Error("Network response was not ok");
@@ -160,11 +63,10 @@ export default defineComponent({
       const fetchData = async () => {
         try {
           const response = await fetch(
-            "http://192.168.45.56:8000/api/api/upload-files2/"
+            "http://127.0.0.1:35729/api/api/upload-files2/"
           );
           if (!response.ok) {
             throw new Error("Network response was not ok");
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
           }
         }
       } catch (error) {
@@ -257,70 +159,6 @@ export default defineComponent({
         if (userId < 10) {
           userId = "" + userId;
         }
-<<<<<<< HEAD
-
-        formData.append("user_id", userId);
-        console.log("Formatted User ID:", userId);
-      } else {
-        Swal.fire({
-          icon: "warning",
-          title: "ຂໍ້ມູນຜູ້ໃຊ້ບໍ່ສາມາດສົ່ງໄດ້",
-          text: "ກະລຸນາກວດສອບຂໍ້ມູນຜູ້ໃຊ້",
-        });
-        return;
-      }
-
-      const newItem = {
-        fileName: file.value.name,
-        fileSize: file.value.size,
-        path: "",
-        insertDate: new Date().toLocaleString(),
-        updateDate: new Date().toLocaleString(),
-        status: "ກຳລັງນຳສົ່ງຂໍ້ມູນ",
-      };
-      items.value.push(newItem);
-const config = useRuntimeConfig();
-      try {
-        const response = await axios.post(
-        
-          `${config.public.strapi.url}api/upload-files/`,
-          formData
-        );
-
-        const updatedItem = items.value.find(
-          (item) => item.fileName === file.value!.name
-        );
-        if (updatedItem) {
-          updatedItem.status = "ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ";
-          updatedItem.path = response.data.path;
-        }
-
-        Swal.fire({
-          icon: "success",
-          title: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-          text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ",
-        });
-
-        const response2 = await fetch(
-          `${config.public.strapi.url}api/upload-files2/`
-        );
-        const data = await response2.json();
-        items.value = data.map((item: any) => ({
-          ...item,
-          FID: item.FID,
-        }));
-      } catch (error) {
-        console.error(error);
-
-        const updatedItem = items.value.find(
-          (item) => item.fileName === file.value!.name
-        );
-        if (updatedItem) {
-          updatedItem.status = "ການນຳສົ່ງບໍ່ສົມບູນ";
-        }
-
-        if (error.response && error.response.status === 401) {
-=======
   
         const formData = new FormData();
         formData.append("file", file.value);
@@ -338,7 +176,7 @@ const config = useRuntimeConfig();
   
         try {
           const response = await axios.post(
-            "http://192.168.45.56:8000/api/upload-files/",
+            "http://127.0.0.1:35729/api/upload-files/",
             formData
           );
   
@@ -350,42 +188,14 @@ const config = useRuntimeConfig();
             updatedItem.path = response.data.path;
           }
   
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
           Swal.fire({
             icon: "error",
             title: "ການນຳສົ່ງບໍ່ສົມບູນ",
             text: "ຂໍ້ມູນບໍ່ຖືກກັບທະນາຄານ ກາລຸນາກວດສອບຄືນ",
           });
-<<<<<<< HEAD
-        } else if (error.response && error.response.status === 402) {
-          Swal.fire({
-            icon: "error",
-            title: "ການນຳສົ່ງບໍ່ສົມບູນ",
-            text: "ບໍ່ມີຂໍ້ມູນ Bnk_code ກາລຸນາກວດຄືນໃຫມ່",
-          });
-        } else if (error.response && error.response.status === 403) {
-          Swal.fire({
-            icon: "error",
-            title: "ການນຳສົ່ງບໍ່ສົມບູນ",
-            text: "ຊື່ໄຟລ໌ຂອງທ່ານມີການສໍ້າກັນ ກາລຸນາກວດຄືນໃຫມ່",
-          });
-        } else if (error.response && error.response.status === 404) {
-          Swal.fire({
-            icon: "error",
-            title: "ການນຳສົ່ງບໍ່ສົມບູນ",
-            text: "ຮູບແບບຂອງ period ຢູ່ໃນຖານຂໍ້ມູນບໍ່ຖືກຕ້ອງ",
-          });
-        } else if (error.response && error.response.status === 405) {
-          Swal.fire({
-            icon: "error",
-            title: "ການນຳສົ່ງບໍ່ສົມບູນ",
-            text: "ທ່ານບໍ່ສາມາດອັບໂຫຼດຂໍ້ມູນຍອ້ນຫຼັງໄດ້ ກາລຸນາກວດຄືນໃຫມ່",
-          });
-        } else {
-=======
   
           const response2 = await fetch(
-            "http://192.168.45.56:8000/api/api/upload-files2/"
+            "http://127.0.0.1:35729/api/api/upload-files2/"
           );
           const data = await response2.json();
           items.value = data.map((item: any) => ({
@@ -402,70 +212,12 @@ const config = useRuntimeConfig();
             updatedItem.status = "ການນຳສົ່ງບໍ່ສົມບູນ";
           }
   
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
           Swal.fire({
             icon: "error",
             title: "ການອັບໂຫຼດລົ້ມເຫລວ",
             text: "ບໍ່ສາມາດອັບໂຫຼດຂໍ້ມູນການນຳສົ່ງຂໍ້ມູນບໍ່ສົມບູນ",
           });
         }
-<<<<<<< HEAD
-      }
-    };
-
-    const router = useRouter();
-
-    const viewDetails = async (item: any) => {
-      if (!item.FID) {
-        Swal.fire({
-          icon: "error",
-          title: "ລົ້ມເຫລວ",
-          text: "ບໍມີຂໍ້ມູນທີ່ກົງກັບ FID ນີ້",
-        });
-        return;
-      }
-const config = useRuntimeConfig();
-      try {
-        const response = await axios.get(
-          
-          `${config.public.strapi.url}api/api/productinfo3/`,
-          {
-            params: {
-              FID: item.FID,
-            },
-          }
-        );
-
-        const data = response.data;
-        router.push({
-          name: "detailupload",
-          query: { data: JSON.stringify(data) },
-        });
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "ລົ້ມເຫລວ",
-          text: "ລົ້ມເຫລວໃນການສະແດບຂໍ້ມູນ",
-        });
-      }
-    };
-    const config = useRuntimeConfig();
-    const getFullPath = (path: string) => {
-      const baseUrl = `${config.public.strapi.url}`;
-      return `${baseUrl}${path}`;
-    };
-
-    const getFileName = (path: string) => {
-      const parts = path.split("/");
-      return parts[parts.length - 1];
-    };
-
-    const getStatusColor = (statussubmit: string) => {
-      switch (statussubmit) {
-        case "Pending":
-          return "orange";
-        case "1":
-=======
       };
   
       const router = useRouter();
@@ -482,7 +234,7 @@ const config = useRuntimeConfig();
   
         try {
           const response = await axios.get(
-            "http://192.168.45.56:8000/api/api/productinfo3/",
+            "http://127.0.0.1:35729/api/api/productinfo3/",
             {
               params: {
                 FID: item.FID,
@@ -506,7 +258,7 @@ const config = useRuntimeConfig();
       };
   
       const getFullPath = (path: string) => {
-        const baseUrl = "http://192.168.45.56:8000/";
+        const baseUrl = "http://127.0.0.1:35729/";
         return `${baseUrl}${path}`;
       };
   
@@ -549,7 +301,6 @@ const config = useRuntimeConfig();
         if (percentageValue >= 15) {
           return "red";
         } else if (percentageValue < 15) {
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
           return "green";
         case "2":
           return "red";

@@ -1,5 +1,4 @@
 <template>
-<<<<<<< HEAD
   <v-container>
     <v-data-table
       :headers="headers"
@@ -127,127 +126,6 @@ export default defineComponent({
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");
-=======
-    <v-container>
-      <v-data-table :headers="headers" :items="items" class="elevation-1" :items-per-page="12">
-        <template v-slot:top>
-          <v-toolbar flat>
-            <v-divider class="mx-4" inset vertical></v-divider>
-          </v-toolbar>
-        </template>
-        <!-- <template v-slot:item.path="{ item }">
-          <a :href="getFullPath(item.path)" target="_blank">{{ item.path }}</a>
-        </template> -->
-        <template v-slot:item.path="{ item }">
-          <a :href="getFullPath(item.path)" target="_blank">{{ getFileName(item.path) }}</a>
-        </template>
-        <template v-slot:item.percentage="{ item }" class="text-start">
-          <span :style="{ color: getPercentageColor(item.percentage) }" class="text-start"><p class="text-center">{{ item.percentage.toFixed(2) }}%</p></span>
-        </template>
-        <template v-slot:item.status="{ item }">
-          <v-chip :color="getStatusColor(item.status)" dark>{{ item.status }}</v-chip>
-        </template>
-        <template v-slot:item.statussubmit="{ item }" >
-          <div class="d-flex align-center">
-            <template v-if="item.statussubmit === '0' && item.percentage <= 15">
-              <span style="color: green;">ຢືນຢັນສຳເລັດແລ້ວ</span>
-            </template>
-            <template v-else-if="item.percentage > 15">
-              <span style="color: red;">ຂໍ້ຜິດພາດສູງເກີນກຳນົດ</span>
-            </template>
-            <template v-else>
-              <v-btn @click="confirmAction(item)" color="success">
-                ຢືນຢັນ
-              </v-btn>
-            </template>
-          </div>
-        </template>
-        <template v-slot:item.actions="{ item }">
-          <v-btn @click="viewDetails(item)" color="info" class="ml-10">ເບິ່ງລາຍລະອຽດ</v-btn>
-        </template>
-        <template v-slot:no-data>
-          <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
-        </template>
-      </v-data-table>
-    </v-container>
-  </template>
-  
-  <script lang="ts">
-  import { defineComponent, ref, onMounted } from 'vue';
-  import axios from 'axios';
-  import Swal from 'sweetalert2';
-  import { useRouter } from 'vue-router';
-  
-  export default defineComponent({
-    setup() {
-      
-      definePageMeta({
-        layout: "backend",
-      });
-  
-      useHead({
-        title: "Upload File",
-        meta: [
-          {
-            name: "keywords",
-            content: "Report, Nuxt 3, Backend",
-          },
-          {
-            name: "Description",
-            content: "Report Nuxt 3, IT Genius Engineering",
-          },
-        ],
-      });
-  
-      const file = ref<File | null>(null);
-      const items = ref([]);
-      const headers = ref([
-        { text: 'ໄອດີ', value: 'FID' },
-        { text: 'ຊື່ພາດ', value: 'path' },
-        
-        { text: 'ສະຖານະການຢືນຢັນ', value: 'statussubmit' },{ text: 'ວັນທີອັບໂຫຼດ', value: 'percentage' },
-        { text: 'Actions', value: 'actions', sortable: false },
-      ]);
-  
-      // onMounted(async () => {
-      //   try {
-      //     const response = await fetch('http://192.168.45.56:8000/api/api/upload-files2/');
-      //     if (!response.ok) {
-      //       throw new Error('Network response was not ok');
-      //     }
-      //     const data = await response.json();
-      //     items.value = data.map((item: any) => ({
-      //       ...item,
-      //       FID: item.FID,
-      //       status: 'ສຳເລັດການນຳສົ່ງຂໍ້ມູນ',
-      //       confirmed: false,
-      //     }));
-      //   } catch (error) {
-      //     console.error('Failed to fetch data:', error);
-      //   }
-      // });
-  
-      onMounted(async () => {
-        await fetchData();
-      });
-  
-      const fetchData = async () => {
-        try {
-          const response = await fetch('http://192.168.45.56:8000/api/api/upload-files2/');
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          const data = await response.json();
-          items.value = data.map((item: any) => ({
-            ...item,
-            FID: item.FID,
-            status: 'ສຳເລັດການນຳສົ່ງຂໍ້ມູນ',
-            confirmed: false,
-          }));
-          sortItemsByUploadDate();
-        } catch (error) {
-          console.error('Failed to fetch data:', error);
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
         }
         const data = await response.json();
         items.value = data.map((item: any) => ({
@@ -255,7 +133,6 @@ export default defineComponent({
           FID: item.FID,
           status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
           confirmed: false,
-<<<<<<< HEAD
         }));
         sortItemsByUploadDate();
       } catch (error) {
@@ -299,48 +176,6 @@ export default defineComponent({
         updateDate: new Date().toLocaleString(),
         status: "ກຳລັງນຳສົ່ງຂໍ້ມູນ",
         confirmed: false,
-=======
-        };
-        items.value.push(newItem);
-  
-        try {
-          const response = await axios.post('http://192.168.45.56:8000/api/upload-files/', formData);
-  
-          const updatedItem = items.value.find(item => item.fileName === file.value!.name);
-          if (updatedItem) {
-            updatedItem.status = 'ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ';
-            updatedItem.path = response.data.path;
-          }
-  
-          Swal.fire({
-            icon: 'success',
-            title: 'ສຳເລັດການນຳສົ່ງຂໍ້ມູນ',
-            text: 'ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ',
-          });
-  
-          const response2 = await fetch('http://192.168.45.56:8000/api/api/upload-files2/');
-          const data = await response2.json();
-          items.value = data.map((item: any) => ({
-            ...item,
-            FID: item.FID,
-            status: 'ສຳເລັດການນຳສົ່ງຂໍ້ມູນ',
-            confirmed: false,
-          }));
-        } catch (error) {
-          console.error(error);
-  
-          const updatedItem = items.value.find(item => item.fileName === file.value!.name);
-          if (updatedItem) {
-            updatedItem.status = 'ການນຳສົ່ງບໍ່ສົມບູນ';
-          }
-  
-          Swal.fire({
-            icon: 'error',
-            title: 'ການອັບໂຫຼດລົ້ມເຫລວ',
-            text: 'ລົ້ມເຫລວໃນການອັບໂຫຼດໄຟລ໌',
-          });
-        }
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
       };
       items.value.push(newItem);
 
@@ -358,7 +193,6 @@ export default defineComponent({
           updatedItem.status = "ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ";
           updatedItem.path = response.data.path;
         }
-<<<<<<< HEAD
 
         Swal.fire({
           icon: "success",
@@ -411,11 +245,6 @@ export default defineComponent({
         const response = await axios.get(
           `${config.public.strapi.url}api/api/productinfo3/`,
           {
-=======
-  
-        try {
-          const response = await axios.get('http://192.168.45.56:8000/api/api/productinfo3/', {
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
             params: {
               FID: item.FID,
             },
@@ -429,38 +258,9 @@ export default defineComponent({
         });
       } catch (error) {
         Swal.fire({
-<<<<<<< HEAD
           icon: "error",
           title: "ລົ້ມເຫລວ",
           text: "ການດຶງຂໍ້ມູນລົ້ມເຫລວ",
-=======
-          title: 'ຢືນຢັນການດຳເນີນການ',
-          text: 'ທ່ານແນ່ໃຈຫຼືບໍ່ທີ່ຢືນຢັນການອັບໂຫຼດນີ້?',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'ແນ່ໃຈ, ຢືນຢັນ!',
-          cancelButtonText: 'ຍົກເລີກ',
-        }).then(async (result) => {
-          if (result.isConfirmed) {
-            try {
-              const params = new URLSearchParams();
-              params.append('FID', item.FID);
-  
-              const response = await axios.post('http://192.168.45.56:8000/api/confirm_upload/', params);
-  
-              if (response.data.status === 'success') {
-                const confirmedItem = items.value.find(i => i.fileName === item.fileName);
-                if (confirmedItem) {
-                  confirmedItem.confirmed = true;
-                  confirmedItem.statussubmit = "0";
-                }
-  
-                Swal.fire('ຢືນຢັນສຳເລັດ!', 'ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.', 'success').then(() => {
-          
-          location.reload();
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
         });
       }
     };
@@ -510,7 +310,6 @@ export default defineComponent({
           } catch (error) { 
   console.error("Failed to confirm upload:", error);
   
-<<<<<<< HEAD
   Swal.fire(
     "ຜິດພາດ!",
     "ທ່ານບໍ່ສາມາດຢືນຢັນການອັບໂຫຼດຂໍ້ມູນຍອ້ນຫຼັງໄດ້.",
@@ -518,65 +317,6 @@ export default defineComponent({
   ).then(() => {
     
     location.reload();
-=======
-        const response = await axios.post('http://192.168.45.56:8000/api/api/update-statussubmit/', `FID=${item.FID}`);
-  
-        if (response.data.status === 'success') {
-          const confirmedItem = items.value.find(i => i.fileName === item.fileName);
-          if (confirmedItem) {
-            confirmedItem.confirmed = true;
-            confirmedItem.statussubmit = "0";
-          }
-        }
-      };
-      const getPercentageColor = (percentage: number) => {
-        if (percentage > 15) {
-          return 'red';
-        } else if (percentage <= 15) {
-          return 'green';
-        } else {
-          return 'black';
-        }
-      };
-  
-      const getStatusColor = (status: string) => {
-        switch (status) {
-          case 'ກຳລັງນຳສົ່ງຂໍ້ມູນ':
-            return 'blue';
-          case 'ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ':
-            return 'green';
-          case 'ການນຳສົ່ງບໍ່ສົມບູນ':
-            return 'red';
-          default:
-            return 'black';
-        }
-      };
-  
-      // const getFullPath = (path: string) => {
-      //   return `http://192.168.45.56:8000/media/${path}`;
-      // };
-      const getFullPath = (path: string) => `http://192.168.45.56:8000/${path}`;
-  
-  const getFileName = (path: string) => {
-    const parts = path.split('/');
-    return parts[parts.length - 1];
-  };
-      return {
-        file,
-        headers,
-        items,
-        onFileChange,
-        uploadFile,
-        viewDetails,
-        confirmAction,
-        getPercentageColor,
-        getStatusColor,
-        getFullPath,
-        getFileName,
-        
-      };
-    },
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
   });
 }
 

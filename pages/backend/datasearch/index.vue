@@ -127,12 +127,7 @@ const fetchData = async () => {
 const { LCICID, EnterpriseID } = route.query;
 
   try {
-<<<<<<< HEAD
-    const res = await fetch(
-      "http://127.0.0.1:35729/api/api/v1/enterprise-info/search/",
-=======
     const res = await fetch(`${config.public.strapi.url}api/v1/enterprise-info/search/",
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
       {
         method: "POST",
         headers: {
@@ -277,8 +272,6 @@ useHead({
 const route = useRoute();
 const data = ref([]);
 const loading = ref(true);
-<<<<<<< HEAD
-=======
 const details = ref(false);
 const catalogID = ref(route.query.CatalogID || '');
 
@@ -452,7 +445,7 @@ const showDetails = (item: any) => {
       console.log("CatalogID:", item.CatalogID); 
       insertSearchLog(item).then(() => {
         // After successful insertion, navigate to the print report
-        const printUrl = `../backend/print?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}&CatalogID=${CatalogID}`;
+        const printUrl = `../backend/reportprint1?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}&CatalogID=${CatalogID}`;
         window.location.href = printUrl;
       }).catch(error => {
         console.error("Error inserting search log:", error);
@@ -522,21 +515,13 @@ const route = useRoute();
 const data = ref([]);
 const loading = ref(true);
 const details = ref(false);
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
 
 const fetchData = async () => {
   const { LCICID, EnterpriseID } = route.query;
 
   try {
-<<<<<<< HEAD
-    const config = useRuntimeConfig();
-    const token = localStorage.getItem('access_token');
-    const res = await fetch(
-      `${config.public.strapi.url}api/api/v1/enterprise-info/search/`,
-=======
     const token = localStorage.getItem('access_token');
     const res = await fetch(`${config.public.strapi.url}api/v1/enterprise-info/search/",
->>>>>>> 8b48fd2a1696bc13a6659c284560aa69db42d491
       {
         method: "POST",
         headers: {
@@ -560,7 +545,7 @@ const fetchData = async () => {
       if (newToken) {
         // Retry the original request with the new token
         const retryRes = await fetch(
-          "http://192.168.45.56:8000/api/api/v1/enterprise-info/search/",
+          "http://127.0.0.1:35729/api/api/v1/enterprise-info/search/",
           {
             method: "POST",
             headers: {
@@ -611,7 +596,7 @@ const fetchData = async () => {
 const refreshAccessToken = async () => {
   const refreshToken = localStorage.getItem('refresh_token'); // Ensure the refresh token is stored
   try {
-    const response = await fetch("http://192.168.45.56:8000/api/token/refresh/", {
+    const response = await fetch("http://127.0.0.1:35729/api/token/refresh/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -670,7 +655,7 @@ const showDetails = (item: any) => {
       <p class="text-center"><strong><b> ລາຍລະອຽດບົດລາຍງານ</b></strong></p>
       <p><strong>ຊື່ວິສາຫະກິດ (ລາວ):</strong> ${item.enterpriseNameLao}</p>
       <p><strong>ຊື່ວິສາຫະກິດ (ອັງກິດ):</strong> ${item.eneterpriseNameEnglish}</p>
-      <p><strong>ປະເພດບົດລາຍງານ:</strong> ບົດລາຍງານສິນເຊື້ອຄົບຖວ້ນ</p>
+      <p><strong>ປະເພດບົດລາຍງານ:</strong> ບົດລາຍງານສິນເຊື້ອຄົບຖວ້ນ ${item.LCICID} ${item.EnterpriseID}</p>
      </div>
     `,
     // confirmButtonText: "Close"
@@ -681,8 +666,9 @@ const showDetails = (item: any) => {
     }
   }).then((result) => {
     if (result.isConfirmed) {
-      // Navigate to the new route
-      window.location.href = `../backend/reportprint1?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}`;
+      // Navigate to the new 
+      const printUrl = `../backend/print?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}`;
+      window.location.href = printUrl;
     }
 
   });
