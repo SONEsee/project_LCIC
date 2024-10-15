@@ -478,6 +478,7 @@ const updateCollateralStatus = async (id: number) => {
     // onMounted(fetchLastLCICID);
     const fetchLastLCICID = async () => {
       try {
+        
         const response = await axios.get<{ last_lcicid: string }>(
           "http://127.0.0.1:35729/api/api/last-lcicid/"
         );

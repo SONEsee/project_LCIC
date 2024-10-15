@@ -12,11 +12,11 @@
     <v-card-text>
       <v-window v-model="tab">
         <v-window-item value="one">
-          <UploadB />
+          <UploadFileUploadB />
         </v-window-item>
 
         <v-window-item value="three">
-          <UploadC />
+          <UploadFileUploadC />
         </v-window-item>
       </v-window>
     </v-card-text>
@@ -24,6 +24,7 @@
 </template>
 
 <script lang="ts">
+import { UploadFile, UploadFileUploadB } from "#build/components";
 import { defineComponent, ref, onMounted, computed } from "vue";
 
 export default defineComponent({
