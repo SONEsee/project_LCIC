@@ -51,7 +51,7 @@ export default defineComponent({
     const fetchCollaterals = async () => {
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/api/api/get_collaterals/"
+          "http://127.0.0.1:35729/api/api/get_collaterals/"
         );
         collaterals.value = response.data;
       } catch (error) {
@@ -66,12 +66,12 @@ export default defineComponent({
     const confirmImage = async (id: number) => {
   try {
     // Fetch CSRF token
-    const csrfResponse = await axios.get('http://127.0.0.1:8000/api/api/get_csrf_token/');
+    const csrfResponse = await axios.get('http://127.0.0.1:35729/api/api/get_csrf_token/');
     const csrfToken = csrfResponse.data.csrfToken;
 
     // Send POST request with CSRF token
     await axios.post(
-      `http://127.0.0.1:8000/api/api/confirm_image/${id}/`,
+      `http://127.0.0.1:35729/api/api/confirm_image/${id}/`,
       {},
       {
         headers: {
@@ -136,7 +136,7 @@ export default defineComponent({
 import { defineComponent, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
-import Swal from "sweetalert2"; // Import Swal
+import Swal from "sweetalert2"; 
 
 export default defineComponent({
   setup() {
@@ -166,23 +166,25 @@ export default defineComponent({
     ]);
 
     const fetchCollaterals = async () => {
-      try {
-        const config = useRuntimeConfig();
-        const response = await axios.get(
-          `${config.public.strapi.url}api/api/get_collaterals/`,
-          { params: { status: 1 } }
-        );
-        collaterals.value = response.data;
-      } catch (error) {
-        console.error(error.response ? error.response.data : error.message);
-      }
-      console.log(collaterals.value);
-    };
+  try {
+    const config = useRuntimeConfig();
+    const response = await axios.get(
+      `${config.public.strapi.url}api/api/get_collaterals/`
+    );
 
-    // const viewImage = (imagePath: string, id: string) => {
-    // const fullPath = `http://127.0.0.1:8000/${imagePath}?id=${id}`;
-    // window.open(fullPath, '_blank');
-    // console.log("id image", id);
+    console.log(response.data); 
+
+    // ກອງຂໍ້ມູນຕາມ status
+    collaterals.value = response.data.filter(collateral => collateral.status === '1');
+    console.log(collaterals.value);
+
+  } catch (error) {
+    console.error(error.response ? error.response.data : error.message);
+  }
+  console.log("status = 1", collaterals.value);
+};
+
+
     const goToTest1 = (imagePath: string, id: number, status: number) => {
       router.push({
         name: "formcollaterals",
@@ -190,12 +192,7 @@ export default defineComponent({
       });
     };
 
-    //       const goToTest1 = (imagePath: string, id: number) => {
-    //   console.log('Image Path:', imagePath);
-    //   console.log('ID:', id);
-    //   router.push({ name: 'formcollaterals', query: { image: imagePath, id: id.toString() } });
-    // };
-
+ 
     const confirmImage = async (id: number) => {
       try {
         const config = useRuntimeConfig();

@@ -2,6 +2,9 @@
   <v-container>
     <div>
       <h1>ການອັບໂຫຼດຮູບພາບ</h1>
+      <div v-if="user">
+        {{ user.MID.id }}
+      </div>
       <v-col cols="12">
         <v-file-input
           v-model="files"
@@ -46,6 +49,7 @@
           <th>ຊື່ຮູບພາບ</th>
           <th>ທີ່ຢູ່ຮູບພາບ</th>
           <th>ສະຖານະ</th>
+          
           <th>ລາຍລະອຽດ</th>
         </tr>
       </thead>
@@ -54,6 +58,7 @@
           <td>{{ collateral.id }}</td>
           <td>{{ collateral.filename }}</td>
           <td>{{ collateral.pathfile }}</td>
+        
           <td>
             <div v-if="collateral.status === 1">
               <v-btn
@@ -63,6 +68,7 @@
                 >ຢືນຢັນ</v-btn
               >
             </div>
+
             <div v-else>
               <span class="text-success">ອັບໂຫຼດສຳເລັດ</span>
             </div>
@@ -85,6 +91,7 @@
 import { defineComponent, ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useRouter } from "vue-router";
 
 export default defineComponent({
   setup() {
@@ -108,13 +115,18 @@ export default defineComponent({
 
     const files = ref<File[]>([]);
     const collaterals = ref([]);
-
+    const user = ref<User | null>(null);
     const uploadFiles = async () => {
       const formData = new FormData();
 
       files.value.forEach((file) => {
         formData.append("image", file);
       });
+
+      if (user.value && user.value.MID) {
+        
+        formData.append("user_mid_id", user.value.MID.id);
+      }
 
       try {
         const config = useRuntimeConfig();
@@ -144,17 +156,9 @@ export default defineComponent({
       }
     };
 
-    const fetchCollaterals = async () => {
-      try {
-        const config = useRuntimeConfig();
-        const response = await axios.get(
-          `${config.public.strapi.url}api/api/get_collaterals/`
-        );
-        collaterals.value = response.data;
-      } catch (error) {
-        console.error(error.response ? error.response.data : error.message);
-      }
-    };
+    const userID1 = user.value?.MID.id;
+
+
 
     const viewImage = (imagePath: string, id: string) => {
       const config = useRuntimeConfig();
@@ -176,7 +180,7 @@ export default defineComponent({
           icon: "success",
           confirmButtonText: "OK",
         });
-        fetchCollaterals(); // Refresh the list after confirmation
+        fetchCollaterals();
       } catch (error) {
         console.error(error.response ? error.response.data : error.message);
         Swal.fire({
@@ -189,8 +193,39 @@ export default defineComponent({
     };
 
     onMounted(() => {
-      fetchCollaterals();
-    });
+  const userData = localStorage.getItem("user_data");
+  if (userData) {
+    user.value = JSON.parse(userData);
+    console.log("User data:", user.value);
+  }
+  
+  const userID = user.value?.MID?.id;
+  console.log("User ID:", userID);
+
+  // ກວດສອບວ່າ userID ໄດ້ສົ່ງໄປຫາ fetchCollaterals ຢ່າງຖືກຕ້ອງ
+  if (userID) {
+    fetchCollaterals(userID);
+  } else {
+    console.error("User ID is undefined");
+  }
+});
+
+const fetchCollaterals = async (userID: string) => {
+  try {
+    const config = useRuntimeConfig();
+    const response = await axios.get(
+      `${config.public.strapi.url}api/api/get_collaterals/`
+    );
+
+    // ຟິວເອົາຂໍ້ມູນຕາມ userID
+    collaterals.value = response.data.filter((item: any) => item.user === userID);
+    console.log("Filtered Collaterals:", collaterals.value);
+  } catch (error) {
+    console.error(error.response ? error.response.data : error.message);
+  }
+};
+
+
 
     return {
       files,
@@ -198,6 +233,7 @@ export default defineComponent({
       collaterals,
       viewImage,
       confirmImage,
+      user,
     };
   },
 });

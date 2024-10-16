@@ -335,7 +335,7 @@ export default defineComponent({
       }
     );
 
-    // Show success alert and update status upon confirmation
+    
     Swal.fire({
       title: "ສຳເລັດ!",
       text: "ສ້າງຂໍ້ມູນວິສາຫະກິດສຳເລັດແລ້ວ!",
@@ -343,12 +343,12 @@ export default defineComponent({
       confirmButtonText: "OK",
     }).then(async (result) => {
       if (result.isConfirmed) {
-        // Call function to update status
+        
         await updateCollateralStatus(route.query.id);
       }
     }).then(() => {
- 
-  location.reload(); 
+  // ຄຳສັ່ງສຳຫຼັບການລີເຟດໜ້າຈໍ
+  location.reload(); // ລີເຟດໜ້າຈໍ
 });
 
   } catch (error) {
@@ -364,34 +364,6 @@ export default defineComponent({
   }
 };
 
-// Function to update the collateral status
-// const updateCollateralStatus = async (id) => {
-//   try {
-//     const csrfToken = Cookies.get("csrftoken");
-
-//     const response = await axios.patch(
-//       `http://127.0.0.1:35729/api/api/collateral/${id}/`,
-//       {
-//         status: 0,
-//       },
-//       {
-//         headers: {
-//           "X-CSRFToken": csrfToken || "",
-//         },
-//       }
-//     );
-
-//     console.log("Collateral status updated successfully:", response.data);
-//   } catch (error) {
-//     console.error("Error updating collateral status:", error);
-//     Swal.fire({
-//       title: "ຜິດພາດ!",
-//       text: error.message || "ລົ້ມເຫລວໃນການປ່ຽນສະຖານະ.",
-//       icon: "error",
-//       confirmButtonText: "OK",
-//     });
-//   }
-// };
 
 const updateCollateralStatus = async (id: number) => {
         try {
@@ -409,14 +381,7 @@ const updateCollateralStatus = async (id: number) => {
             }
           );
   
-          // Swal.fire({
-          //   title: 'ເຮັດສຳເລັດ!',
-          //   text: 'ການຢືນຢັນຮູບພາບສຳເລັດແລ້ວ.',
-          //   icon: 'success',
-          //   confirmButtonText: 'OK'
-          // }).then(() => {
-          //   fetchCollaterals(); 
-          // });
+         
   
         } catch (error) {
           console.error(error.response ? error.response.data : error.message);
@@ -443,9 +408,7 @@ const updateCollateralStatus = async (id: number) => {
       );
     });
 
-    // const fullImagePath = computed(() => {
-    //   return `http://127.0.0.1:35729/${route.query.image}`;
-    // });
+    
 
     const fullImagePath = computed(() => {
       console.log("Route Query Image:", route.query.image);
@@ -454,31 +417,9 @@ const updateCollateralStatus = async (id: number) => {
       return `http://127.0.0.1:35729/collaterals/${route.query.image}?id=${route.query.id}`;
     });
 
-    // const id = computed(() => {
-    //   return route.query.id;
-    // });
-
-    // const fullImagePath = computed(() => {
-    //   if (!route.query.image) {
-    //     return 'default-image-path'; // ເອີ້ນຄ່າຂອງຮູບພາບ default ຖ້າບໍ່ມີ `image` ໃນ URL
-    //   }
-    //   return `http://127.0.0.1:35729/${route.query.image}`;
-    // });
-
-    // const fetchLastLCICID = async () => {
-    //   try {
-    //     const response = await axios.get<{ last_lcicid: string }>(
-    //       "http://127.0.0.1:35729/api/api/last-lcicid/"
-    //     );
-    //     LCICID.value = (parseInt(response.data.last_lcicid) + 1).toString();
-    //   } catch (error) {
-    //     console.error("Error fetching last LCICID:", error);
-    //   }
-    // };
-    // onMounted(fetchLastLCICID);
-    const fetchLastLCICID = async () => {
+       const fetchLastLCICID = async () => {
       try {
-        
+
         const response = await axios.get<{ last_lcicid: string }>(
           "http://127.0.0.1:35729/api/api/last-lcicid/"
         );
