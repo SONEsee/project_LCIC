@@ -176,7 +176,7 @@
                           >
                             <v-text-field
                               v-model="investmentAmount"
-                              :rules="rules"
+                             
                               type="number"
                               label=" ທຶນຈົດທະບຽນ"
                               variant="outlined"
@@ -498,7 +498,7 @@ export default defineComponent({
 
     const rules = [
       (value: string) => !!value || "Required.",
-      (value: string) => (value && value.length >= 1) || "Min 3 characters",
+      // (value: string) => (value && value.length >= 0) || "Min 3 characters",
     ];
     const fetchVillages = async () => {
       try {
@@ -508,7 +508,8 @@ export default defineComponent({
         );
         villages.value = response.data.map((village) => ({
           ...village,
-          title: `ແຂວງ: ${village.Province_Name} - ເມືອງ: ${village.District_Name} - ບ້ານ ${village.Village_Name}`,
+          title: `ແຂວງ:${village.Province_Name}-ເມືອງ:${village.District_Name}-ບ້ານ${village.Village_Name}`,
+          id: village.ID,
         }));
 
         console.log(
@@ -526,6 +527,8 @@ export default defineComponent({
       const selected = villages.value.find((village) => village.id === value);
       if (selected) {
         selectedVillageName.value = selected.Village_Name;
+        enLocation.value = selected.Village_Name;
+
         title.value = ` ${selected.District_Name} ${selected.Province_Name}  `;
       }
       console.log("Selected village ID:", value);
@@ -569,6 +572,8 @@ export default defineComponent({
             regisStrationOfficeType: regisStrationOfficeType.value,
             EnterpriseID: EnterpriseID.value,
             LCICID: LCICID.value,
+           
+
           },
           {
             headers: {
@@ -576,6 +581,8 @@ export default defineComponent({
             },
           }
         );
+        console.log("Response:", response.data);
+       
 
         Swal.fire({
           title: "ສຳເລັດ!",
@@ -630,16 +637,16 @@ export default defineComponent({
     const route = useRoute();
     const isFormValid = computed(() => {
       return (
-        enterpriseNameLao.value.trim() !== "" &&
-        eneterpriseNameEnglish.value.trim() !== "" &&
-        regisCertificateNumber.value.trim() !== "" &&
-        regisDate.value.trim() !== "" &&
-        enLocation.value.trim() !== "" &&
-        regisStrationOfficeType.value.trim() !== "" &&
+        // enterpriseNameLao.value.trim() !== "" &&
+        // eneterpriseNameEnglish.value.trim() !== "" &&
+        // regisCertificateNumber.value.trim() !== "" &&
+        // regisDate.value.trim() !== "" &&
+        // enLocation.value.trim() !== "" &&
+        // regisStrationOfficeType.value.trim() !== "" &&
         // regisStationOfficeCode.value.trim() !== "" &&
         // enLegalStrature.value.trim() !== "" &&
         // foreigninvestorFlag.value.trim() !== "" &&
-        investmentAmount.value.trim() !== "" &&
+        // investmentAmount.value.trim() !== "" &&
         // investmentCurrency.value.trim() !== "" &&
         // representativeNationality.value.trim() !== "" &&
         EnterpriseID.value.trim() !== "" &&

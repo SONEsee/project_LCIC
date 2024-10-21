@@ -10,7 +10,7 @@ export const TotalSales = {
       foreColor: "#adb0bb",
       fontFamily: "Noto Sans Lao",
     },
-    colors: ["#1e88e5", "#03c9d7", "#F50057", "#880E4F", "#76FF03" ,"#6A1B9A", "#6A1B9A"], 
+    colors: ["#1e88e5", "#03c9d7", "#F50057", "#880E4F", "#76FF03" ,"#1B5E20", "#6A1B9A"], 
     dataLabels: { enabled: false },
     legend: { show: false },
     grid: {
