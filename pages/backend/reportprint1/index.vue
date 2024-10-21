@@ -24,23 +24,23 @@
                   ></v-img>
                 </v-col>
                 <v-col>
-                  <div class="row-content text-center float-left">
+                  <div class="row-content text-start float-left">
                     <h4>ບໍລິສັດ ຂໍ້ມູນຂ່າວສານສິນເຊື່ອເເຫ່ງ ສປປ ລາວ</h4>
+                    <hr>
                     <h4>Lao Credit Information Company</h4>
                   </div>
                 </v-col>
               </v-row>
             </div>
           </v-col>
-          <v-col cole="4"  class="text-end">
-            <div class="float-right row-content text-start">
-              <p class="no-margin">Lao Credit Information Company</p>
-              <p class="no-margin">2nd Floor, Lao Security Exchange Building</p>
-              <p class="no-margin">
-                Phonthan Village, Xaysettha District, Vientiane Capital
-              </p>
-              <p class="no-margin">Telephone: (856)-21-25429</p>
-              <p class="no-margin">Email: info@lcic.com.la</p>
+          <v-col cole="12"  class="text-end mt-4">
+            <div class=""  v-if="enterpriseInfo">
+              <p>ລະຫັດວິສາຫະກິດ: <b>{{ enterpriseInfo.EnterpriseID }}</b></p>
+              
+              <p>ລະຫັດຂສລ: <b>{{ enterpriseInfo.LCICID}}</b></p>
+            </div>
+            <div class="" v-if="user">
+              <p>ຜູ້ສອບຖາມຂໍ້ມູນ: <b> {{ user.nameE }}</b> ຈາກທະນາຄານ: <b>{{ user.MID?.code }}</b></p>
             </div>
           </v-col>
         </v-row>
@@ -60,117 +60,111 @@
             <v-row>
 
           
-          <v-col cols="7" >
+          <v-col cols="12" >
             <v-row justify="center  justify-space-between" >
               <v-col cols="12" >
-                <v-row>
-                  <v-col cols="12" >
-                  <p><b>  ຂໍ້ມູນທີ່ຜ່ານມາ:</b>-- </p>
-              
-                  </v-col>
-                  <v-col cols="12"  v-if="enterpriseInfo">
-                   
-                  <p><b>  ຊື່ບໍລິສັດພາສາລາວ:</b> {{ enterpriseInfo.enterpriseNameLao }} </p>
-                  </v-col>
-                  <v-col cols="12"  v-if="enterpriseInfo">
-                   
-                   <p><b>  ຊື່ບໍລິສັດພາສາລາວ:</b> {{ enterpriseInfo.eneterpriseNameEnglish }} </p>
-                   </v-col> 
-                  <v-col cols="12" v-if="enterpriseInfo">
+                <v-row class="ml-2">
                   
-                  <p><b>  ຊື່ຜູ້ຈັດການທົ່ວໄປ:</b>-- </p>
-                  </v-col>
-                 
+                  <p v-if="enterpriseInfo"><b>  Kyc No:</b> {{ enterpriseInfo.investmentAmount }},</p>
+                  <p v-if="enterpriseInfo" class="ml-5"><b>  ຊື່ບໍລິສັດພາສາລາວ:</b> {{ enterpriseInfo.eneterpriseNameEnglish }} </p> <br>
+                </v-row>
+                <v-row>
+                   <p v-if="enterpriseInfo" class="ml-5"><b>  ຊື່ຜູ້ຈັດການທົ່ວໄປ:</b> --- </p>
                 </v-row>
               </v-col>
             </v-row>
           </v-col>
 
-
-
-          <v-col cols="4">
-            <v-row>
-              <v-col cols="12" v-if="enterpriseInfo">
-                <p><b>ອ້າງອີງການສອບຖາມ:</b> --</p>
-              </v-col>
-              <v-col cols="12" v-if="enterpriseInfo">
-                <p><b>ລະຫັດວິສາຫະກິດ:</b> {{ enterpriseInfo.EnterpriseID }} </p>
-              </v-col>
-              <v-col cols="12" v-if="enterpriseInfo">
-                <p><b>ລະຫັດຂສລ:</b> {{ enterpriseInfo.LCICID }} </p>
-              </v-col>
-              <v-col cols="12" v-if="enterpriseInfo">
-                <p><b>ຜູ້ສອບຖາມຂໍ້ມູນ:</b> {{ user.MID?.code }} </p>
-              </v-col>
-            </v-row>
-            
-
-          </v-col> 
          </v-row>
           </v-col>
         </v-col>
       </section></v-col
     >
+    <v-col cols="12">
+      <p ><b> - ຂໍ້ມູນທົວໄປຜູ້ກູ້</b></p>
+     <v-row class="mt-2">
+      <v-col cols="4" v-if="enterpriseInfo" >
+        <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.enterpriseNameLao }}</p>
+        <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.regisStrationOfficeType }}</p>
+        <p><b>ເລກທີ:</b> {{ enterpriseInfo.EnterpriseID }}</p>
+      </v-col>
+      <v-col cols="4" v-if="enterpriseInfo">
+<p><b>ວັນທີອອກໃບທະບຽນ:</b> {{ enterpriseInfo.regisDate.slice(0, -18) }}</p>
+<p><b>ທີ່ຕັ້ງວິສາຫະກິດ:</b> {{ enterpriseInfo.enLocation }}</p>
+<p><b>ພາສວນເສດຖະກິດ:</b> --</p>
+      </v-col>
+      <v-col cols="4" v-if="enterpriseInfo">
+        <p><b >ທຶນຈົດທະບຽນ:</b> {{ enterpriseInfo.investmentAmount }}</p>
+        <p><b>ທຶນຈົດທະບຽນ:</b> --</p>
+        <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ:</b> --</p>
+      </v-col>
+     </v-row>
+
+    </v-col>
     <v-col cols="12" >
       <p><b>- ລວມວົງເງິນກູ້ທີ່ເຄື່ອນໄຫວທັງໝົດ</b></p>
-      <v-table>
-     <thead>
-      <tr>
-        <th>ສະມາຊິກ</th>
-        <th>Loan ID</th>
-        <th>Loan Open Date</th>
-        <th>Loan Credit Line</th>
-        <th>Loan Credit Line</th>
-        <th>Outstanding Balance</th>
-        <th>Lon Currency Code</th>
-        <th>Lon Currency Code</th>
-      </tr>
-     </thead>
-      </v-table>
-      <v-data-table
-        :headers="headers"
-        :items="tableData"
-        class="elevation-1 v-data-table1"
-        :items-per-page="-1"
-        hide-default-footer
-       
-      >
-        <template v-slot:items.id="{ item }" >
-         <p style="color: blueviolet;"></p> {{ item.id }}
-        </template>
-        <template v-slot:item.bank="{ item }" >
-          {{ item.bank }}
-        </template>
-        <template
-          v-slot:item.lon_insert_date="{ item }"
-         
-        >
-          {{ item.lon_insert_date }}
-        </template>
-        <template
-          v-slot:item.lon_outstanding_balance="{ item }"
-          
-        >
-          {{ item.lon_outstanding_balance }}
-        </template>
-        <template
-          v-slot:item.lon_currency_code="{ item }"
-         
-        >
-          {{ item.lon_currency_code }}
-        </template>
-        <template v-slot:item.lon_class="{ item }" >
-          {{ item.lon_class }}
-        </template>
-        <template
-          v-slot:item.lon_class_history="{ item }"
-          
-        >
-          {{ item.lon_class_history }}
-        </template>
-      </v-data-table>
+      <v-table class="mt-5 elevation-1 v-data-table1" >
+  <thead>
+    <tr style="font-size: 90%;  " class="text-bold">
+  
+      <th><b>ສະມາຊິກ</b></th>
+      <th><b> ລະຫັດເງິນກູ້</b></th>
+      <th><b>ມືເປີດ</b></th>
+      <th>ວົງເງິນກູ້</th>
+      <th>ຍອດເງິນເຫຼືອ</th>
+      <th>ສະກຸນເງິນ</th>
+      <th>ຈຳນວນວັນຄ້າງຈ່າຍ</th>
+      <th>ປະເພດ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr v-for="(item, index) in tableData" :key="index">
+      <td>{{ item.bnk_code }}</td>
+      <td>{{ item.loan_id }}</td>
+      <td>{{ item.lon_open_date.slice(0, -15) }}</td>
+      <td>{{ item.lon_credit_line.slice(0, -3) }}</td>
+      <td>{{ item.lon_outstanding_balance.slice(0, -3) }}</td>
+      
+      <td>{{ item.lon_currency_code }}</td>
+      <td>{{ item.lon_no_days_slow }}</td>
+      <td>{{ item.lon_class }}</td>
+
+ 
+    </tr>
+    
+  </tbody>
+</v-table>
+
+  
     </v-col>
+    <p><b>- ຂໍ້ມູນປະຫວັດການເຂົ້າຄົ້ນຫາ</b></p>
+    <v-table>
+      <thead>
+        <tr>
+          <th>ລຳດັບ</th>
+          <th>ວັນເດືອນທີ່ຄົ້ນຫາ</th>
+          <th>ຜູ້ຄົ້ນຫາ</th>
+          <th>ເຫດຜົນການຄົ້ນຫາ</th>
+          <th>ປະເພດເງິນກູ້</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr  v-for="(item, index) in search_history" :key="index">
+          
+          <!-- {{item}} -->
+          <td> {{ index + 1 }}</td>
+          <td>{{ item.date }}</td>
+          <td>{{ item.bnk_code }}</td>
+          <td>{{ item.lon_purpose }}</td>
+          
+          <td>--</td>
+          
+          
+        </tr>
+      </tbody>
+    </v-table>
     <p><b>-ລາຍລະອຽດຂໍ້ມູນເງິນກູ້</b></p>
+    
     <v-col cols="12">
       <v-row>
         <v-col cols="12">
@@ -185,89 +179,33 @@
                 class="ml-1 rounded-lg"
                 style="border: 1px solid #1565c0; padding: 10px"
               >
+
                 <div>
+                  
                   <p>
                     <b>- ຂໍ້ມູນລາຍລະອຽດເງິນກູ້ບວ້ງທີ {{ index + 1 }}</b>
                   </p>
                   <v-col cols="12">
-                    <v-row  class="table">
-                      
-                      <v-col cols="3"
-                        ><p>
-                          Loan ID:<b> {{ item.id }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="4"
-                        ><p>
-                          Loan Open Date:<b> {{ item.lon_open_date }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Expiry Date:<b> {{ item.lon_expiry_date }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Credit Line:<b> {{ item.lon_credit_line }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Outstanding Balance:<b>
-                            {{ item.lon_outstanding_balance }}</b
-                          >
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Currency Code:<b> {{ item.lon_currency_code }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Interest Rate:<b> {{ item.lon_int_rate }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Purpose Code:<b> {{ item.lon_purpose_code }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Number of Days Slow:<b>
-                            {{ item.lon_no_days_slow }}</b
-                          >
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Class:<b> {{ item.lon_class }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Type:<b> {{ item.lon_type }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Term:<b> {{ item.lon_term }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="3"
-                        ><p>
-                          Loan Status:<b> {{ item.lon_status }}</b>
-                        </p></v-col
-                      >
-                      <v-col cols="2"
-                        ><p>
-                          ສະມາຊິກ:<b> {{ item.bank }}</b>
-                        </p></v-col
-                      >
+                    <v-row>
+                      <v-col cols="4" md="4" >
+                        <p> <b>ລະຫັດເງິນກູ້: </b>{{ item.id }}</p>
+                        <p> <b>ມື້ເປິດເງິນກູ້: </b>{{ item.lon_open_date.slice(0, -10) }}</p>
+                        <p> <b>ມື້ໝົດສັນຍາເງິນກູ້ເງິນກູ້: </b>{{ item.lon_expiry_date }}</p>
+                      </v-col>
+                      <v-col cols="4" md="4">
+                        <p> <b>ໄລຍະການກູ້ຢືມ:</b> {{ item.lon_term }}</p>
+                        <p> <b>ວົງເງິນໃນອານຸມັດ:</b> {{ item.lon_credit_line.toLocaleString() }} {{  item.lon_currency_code }}</p>
+                        <p> <b>ອັດຕາດອກເບ້ຍ:</b> {{ item.lon_int_rate }}</p>
+                      </v-col>
+                      <v-col cols="4" md="4">
+                        <p><b>ຍອດເງິນເຫຼືອຕົ້ນທຶນ:</b> {{ Number(item.lon_outstanding_balance).toLocaleString() }} {{  item.lon_currency_code }}</p>
+                        <p><b>ເຫດຜົນຫການສິ້ນສຸດໜີ້:</b> -- </p>
+
+                      </v-col>
                     </v-row>
+
                   </v-col>
+
                   <hr
                     color="indigo"
                     model-value="100"
@@ -546,7 +484,34 @@
                   <p v-if="item.lon_class_history.length">
                     <b>- ປະຫວັດການຊຳລະ</b>
                   </p>
-                  <v-data-table
+                  <v-table>
+                    <thead>
+                      <tr>
+                        <th>No.</th>
+                        <th>Period</th>
+                        <th>Credit Line</th>
+                        <th>Outstanding Balance</th>
+                        <th>Loan Days Slow</th>
+                        <th>Loan Currency Code</th>
+                        <th>Loan Class</th>
+                        <th>Loan Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(item , index) in item.lon_class_history">
+                        <td>{{index +1}}</td>
+                        <td>{{ item.period.slice(0, 2) + '-' + item.period.slice(2) }}</td>
+                        <td>{{Number( item.lon_credit_line).toLocaleString() }}</td>
+                        <td>{{Number( item.lon_outstanding_balance).toLocaleString() }}</td>
+                        <td>{{ item.lon_no_days_slow }}</td>
+                        <td>{{ item.lon_currency_code }}</td>
+                        <td>{{ item.lon_class }}</td>
+                        <td>{{ item.lon_status }}</td>
+
+                      </tr>
+                    </tbody>
+                  </v-table>
+                  <!-- <v-data-table
                     v-if="
                       item.lon_class_history &&
                       item.lon_class_history.length > 0
@@ -578,15 +543,32 @@
                     <template v-slot:header.lon_status>
                       <th class="white--text">Outstanding Balance</th>
                     </template>
-                  </v-data-table>
+                  </v-data-table> -->
                 </div>
               </div></v-col
             >
           </v-row>
         </v-col>
       </v-row>
-    </v-col></v-container
-  >
+      <v-row>
+        <v-col cols="12">
+          <div style="border: #1565c0 1px solid; padding: 10px" class="bg-blue-darken-4 rounded-lg">
+<v-col cols="12">
+  <v-row>
+    <v-col cols="6" >
+
+<p> <v-icon icon="mdi-map-marker" style="font-size: 120%; color: red;"></v-icon> 2nd Floor, Lao Security Exchange Building Phonthan  Village, </p><p class="ml-5">Xaysettha District, Vientiane Capital</p>
+
+    </v-col>
+    <v-col cols="6"><p> <v-icon icon="mdi-phone" style="font-size: 100%;color: #1565c0;" class="mr-2"></v-icon>  Telephone: (856)-21-25429</p>
+<p> <v-icon icon=" mdi-email-outline" style="font-size: 100%;" class="mr-2"></v-icon>  Email: info@lcic.com.la</p></v-col>
+    
+  </v-row>
+</v-col>
+          </div>
+        </v-col>
+      </v-row>
+    </v-col></v-container>
 </template>
 
 <script lang="ts">
@@ -631,6 +613,7 @@ export default {
     const tableData = ref([]);
     const loan_detail_inactive = ref([]);
     const loan_detail_active = ref([]);
+    const search_history = ref([]);
     const user = ref({});
     const enterpriseInfo = ref(null);
     const invesInfo = ref(null);
@@ -753,9 +736,11 @@ export default {
           tableData.value = data.loan_info;
           loan_detail_inactive.value = data.inactive_loans;
           loan_detail_active.value = data.active_loans;
+          search_history.value = data.search_history;
 
           enterpriseInfo.value = data.enterprise_info;
           invesInfo.value = data.inves_info;
+
 
           if (data.enterprise_info.length > 0) {
             enterpriseInfo.value = data.enterprise_info[0];
@@ -808,6 +793,7 @@ export default {
       user,
       loan_detail_inactive,
       loan_detail_active,
+      search_history,
       mainHeaders,
       subHeaders,
       subHeaders_collteral,
@@ -855,7 +841,7 @@ export default {
     padding: 15px 3% 0 3%;
   }
   .v-data-table1 {
-      font-size: 7pt !important;
+      font-size: 11pt !important;
     }
 
   .button {

@@ -2,23 +2,15 @@ export const RevenueChart = {
   series: [
     {
       name: "ທະນາຄານ",
-      data: [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000],
+      data: [] as number[],
     },
     {
       name: "ສະຖາບັນ",
-      data: [2000, 1000, 3000, 7000, 6000, 12000, 8000, 3000],
-    },
-    {
-      name: "ໂຮງຊວດຈຳ",
-      data: [1000, 4000, 1000, 2600, 5800, 12000, 4000, 3000],
-    },
-    {
-      name: "ສະຫະກອນ",
-      data: [3000, 4000, 6000, 1000, 9000, 11000, 4000, 4000],
+      data: [] as number[],
     },
   ],
   chartOptions: {
-    colors: ["#3949AB", "#4A148C", "#C2185B", "#D50000"],
+    colors: ["#3949AB", "#4A148C"],
     fill: {
       type: "solid",
       opacity: 1,
@@ -81,4 +73,23 @@ export const RevenueChart = {
       theme: "dark",
     },
   },
+  
+  async loadDataFromAPI() {
+    try {
+      const response = await fetch("http://127.0.0.1:35729/api/searchlog_chart/2024-10");
+      const data = await response.json();
+  
+      this.series[0].data = data.chart_data.map((item: any) => item["2024-10"]);
+      const bankCodes = data.chart_data.map((item: any) => item.bnk_code);
+      console.log("ລາຍຊື່ທັງຫມົດຂອງທະນາຄານ", bankCodes);
+      this.series[1].data = data.institution_data.map((item: any) => item["2024-10"]);
+  
+    } catch (error) {
+      console.error("ການດຶງຂໍ້ມູນຈາກ API ຜິດພາດ:", error);
+    }
+  }
+  
 };
+
+
+RevenueChart.loadDataFromAPI();

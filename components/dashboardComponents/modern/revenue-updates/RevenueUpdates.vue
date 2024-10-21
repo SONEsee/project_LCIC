@@ -53,18 +53,7 @@ onMounted(() => {
           </span>
           <span class="font-weight-regular">ສະຖາບັນ</span>
         </div>
-        <div class="d-flex align-center px-2 text-pink-darken-2">
-          <span class="text-overline">
-            <i class="mdi mdi-brightness-1 mx-1"></i>
-          </span>
-          <span class="font-weight-regular">ໂຮງຊວດຈຳ</span>
-        </div>
-        <div class="d-flex align-center px-2 text-red-accent-4">
-          <span class="text-overline">
-            <i class="mdi mdi-brightness-1 mx-1"></i>
-          </span>
-          <span class="font-weight-regular">ສະຫະກອນ</span>
-        </div>
+       
       </div>
     </v-card-text>
   </v-card></v-container>

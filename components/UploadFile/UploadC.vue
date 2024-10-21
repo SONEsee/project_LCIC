@@ -268,7 +268,7 @@ export default defineComponent({
         if (updatedItem) {
           updatedItem.status = "ການນຳສົ່ງບໍ່ສົມບູນ";
         }
-        if (error.response && error.response.status === 405) {
+        if (error.response && error.response.status === 401) {
           Swal.fire({
             icon: "error",
             title: "ການນຳສົ່ງບໍ່ສົມບູນ",

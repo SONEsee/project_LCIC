@@ -20,7 +20,7 @@ export default [
     to: "/backend/report",
   },
   {
-    title: "ການອັບໂຫຼດ File",
+    title: "ນຳສົ່ງຂໍ້ມູນ",
     icon: "mdi-upload-box-outline",
     to: "/backend/upload",
   },
@@ -30,7 +30,7 @@ export default [
     to: "/backend/manageuser/userlist",
   },
   {
-    title: "Tets ຂສລ",
+    title: "ກວາດສອບຂໍ້ມູນ",
     icon: "mdi-history",
     to: "/backend/upload/lcictest",
   },
@@ -42,6 +42,6 @@ export default [
   {
     title: "ຂສລ ສ້າງຂໍ້ມູນ LCIC",
     icon: "mdi-form-select",
-    to: "/backend/upload/lcictest/insertcollaterals",
+    to: "/insertcollaterals",
   },
 ];
