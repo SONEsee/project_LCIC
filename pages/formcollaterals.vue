@@ -150,7 +150,7 @@
                               :items="enLegalStratures"
                               item-text="title"
                               item-value="id"
-                              label=" EnLegal Strature"
+                              label=" ຮູບແບບວິສາຫະກິດ"
                               variant="outlined"
                               persistent-hint
                             ></v-select>
@@ -502,8 +502,9 @@ export default defineComponent({
     ];
     const fetchVillages = async () => {
       try {
+        const config = useRuntimeConfig();
         const response = await axios.get(
-          "http://127.0.0.1:35729/api/filter_villages/"
+          `${config.public.strapi.url}api/filter_villages/`
         );
         villages.value = response.data.map((village) => ({
           ...village,
@@ -536,6 +537,7 @@ export default defineComponent({
     const submit = async () => {
       loading.value = true;
       try {
+        const config = useRuntimeConfig();
         const csrfToken = Cookies.get("csrftoken");
 
         let regisDateFormatted = null;
@@ -551,7 +553,7 @@ export default defineComponent({
         const investmentAmountFormatted = parseFloat(investmentAmount.value);
 
         const response = await axios.post(
-          "http://127.0.0.1:35729/api/api/enterprise-info/",
+          `${config.public.strapi.url}api/api/enterprise-info/`,
           {
             enterpriseNameLao: enterpriseNameLao.value,
             eneterpriseNameEnglish: eneterpriseNameEnglish.value,
@@ -604,13 +606,14 @@ export default defineComponent({
 
     const updateCollateralStatus = async (id: number) => {
       try {
+        const config = useRuntimeConfig();
         const csrfResponse = await axios.get(
-          "http://127.0.0.1:35729/api/api/get_csrf_token/"
+          `${config.public.strapi.url}api/api/get_csrf_token/`
         );
         const csrfToken = csrfResponse.data.csrfToken;
 
         await axios.post(
-          `http://127.0.0.1:35729/api/api/confirm_image/${id}/`,
+          `${config.public.strapi.url}api/api/confirm_image/${id}/`,
           {},
           {
             headers: {
@@ -645,16 +648,18 @@ export default defineComponent({
     });
 
     const fullImagePath = computed(() => {
+      const config = useRuntimeConfig();
       console.log("Route Query Image:", route.query.image);
       console.log("Route Query ID:", route.query.id);
       console.log;
-      return `http://127.0.0.1:35729/collaterals/${route.query.image}?id=${route.query.id}`;
+      return `${config.public.strapi.url}collaterals/${route.query.image}?id=${route.query.id}`;
     });
 
     const fetchLastLCICID = async () => {
       try {
+        const config = useRuntimeConfig();
         const response = await axios.get<{ last_lcicid: string }>(
-          "http://127.0.0.1:35729/api/api/last-lcicid/"
+          `${config.public.strapi.url}api/api/last-lcicid/`
         );
         LCICID.value = (parseInt(response.data.last_lcicid) + 1).toString();
       } catch (error) {
