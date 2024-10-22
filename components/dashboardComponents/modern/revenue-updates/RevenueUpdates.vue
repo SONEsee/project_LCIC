@@ -1,60 +1,78 @@
-<script setup lang="ts">
+<template>
+  
+ <v-container><div>
+    <p> ອັດຕາການຄົ້ນຫາ </p>
+  </div>
+  <div style="" class="mt-5 ">
+    <apexchart type="bar" 
+    :options="chartOptions" 
+    :width="'100%'"  
+    :series="series">
 
-import { RevenueChart } from "./RevenueUpdatesData"
+    </apexchart>
+  </div></v-container>
+</template>
 
-const select = ref("March");
-const items = ref(["March", "April", "May", "June"])
+<script lang="ts">
+import { defineComponent, onMounted, ref } from 'vue';
+import ApexCharts from 'vue3-apexcharts';
+import { fetchChartData } from './RevenueUpdatesData';
 
-const elementVisible = ref(false)
+export default defineComponent({
+  name: 'RevenueUpdates',
+  components: {
+    apexchart: ApexCharts
+  },
+  setup() {
+    const chartOptions = ref({});
+    const series = ref([]);
 
-onMounted(() => {
-  setTimeout(() => (elementVisible.value = true), 30);
+    onMounted(async () => {
+      const { categories, data } = await fetchChartData();
+
+      chartOptions.value = {
+        chart: {
+          type: 'bar',
+          height: 350,
+          toolbar: {
+            show: false
+          }
+        },
+        plotOptions: {
+          bar: {
+            horizontal: true,
+            dataLabels: {
+              position: 'center'
+            }
+          }
+        },
+        xaxis: {
+          categories: categories
+        },
+        dataLabels: {
+          enabled: true,
+          formatter: function (val: any) {
+            return val.toLocaleString(); // Format numbers with commas
+          }
+        }
+      };
+
+      series.value = [
+        {
+          name: '10-2024',
+          data: data
+        }
+      ];
+    });
+
+    return { chartOptions, series };
+  }
 });
 </script>
 
-<template>
-  '<v-container>
-  <v-card class="bg-blue-lighten-1">
-    <v-card-text>
-      <div class="d-sm-flex align-start">
-        <div>
-          <h2 class="title text-h6 font-weight-medium"><p style="font-family: Noto Sans Lao;">ອັດຕາການຄົ້ນຫາທັງໝົດ</p></h2>
-        </div>
-        <v-spacer></v-spacer>
-        <div class="ml-auto">
-            <v-select
-              aria-atomic="true"
-              v-model="select"
-              :items="items"
-              variant="outlined"
-              density="compact"
-              hide-details
-            ></v-select>
-        </div>
-      </div>
-      <div v-if="elementVisible">
-        <apexchart
-          type="line"
-          height="300px"
-          :options="RevenueChart.chartOptions"
-          :series="RevenueChart.series"
-        ></apexchart>
-      </div>
-      <div class="d-flex justify-center">
-        <div class="d-flex align-center text-primary px-2">
-          <span class="text-overline">
-            <i class="mdi mdi-brightness-1 mx-1"></i>
-          </span>
-          <span class="font-weight-regular">ທະນາຄານ</span>
-        </div>
-        <div class="d-flex align-center px-2 text-secondary">
-          <span class="text-overline">
-            <i class="mdi mdi-brightness-1 mx-1"></i>
-          </span>
-          <span class="font-weight-regular">ສະຖາບັນ</span>
-        </div>
-       
-      </div>
-    </v-card-text>
-  </v-card></v-container>
-</template>
+<style scoped>
+#chart {
+  max-width: 600px;
+  margin: auto;
+}
+</style>

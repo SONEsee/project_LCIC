@@ -44,7 +44,7 @@
       
       <TotalSales />
       <CongratulationCard />
-      <!-- <MonthlyEarnings /> -->
+      
     </v-col>
     <v-col cols="12" sm="12" lg="7">
       <v-row>

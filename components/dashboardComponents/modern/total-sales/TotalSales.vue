@@ -52,94 +52,86 @@ onMounted(() => {
           ></apexchart>
         </div>
 
-        
-            <v-col cols="12" style="font-size: 80%;">
-              <v-row>
-                <div class="d-flex align-center px-2">
-                  <span>
-                    <span class="text-overline">
-                      <i class="mdi mdi-brightness-1 text-cyan mx-1"></i>
-                    </span>
-                    <span class="text-grey-darken-1 font-weight-medium mr-1"
-                      >ທະນາຄານທຸລະກິດ</span
-                    >
-                  </span>
-                </div>
-                <div class="d-flex align-center px-2">
-                  <span>
-                    <span class="text-overline">
-                      <i
-                        class="mdi mdi-brightness-1 text-purple-darken-3 mx-1"
-                      ></i>
-                    </span>
-                    <span class="text-grey-darken-1 font-weight-medium mr-1"
-                      >ສະຖາບັນການເງິນຈຸລະພາກບໍ່ຮັບຝາກ</span
-                    >
-                  </span>
-                </div>
-                <div class="d-flex align-center px-2">
-                  <span>
-                    <span class="text-overline">
-                      <i
-                        class="mdi mdi-brightness-1 text-light-green-darken-4 mx-1"
-                      ></i>
-                    </span>
-                    <span class="text-grey-darken-1 font-weight-medium mr-1"
-                      >ໂຮງຊວດຈຳ</span
-                    >
-                  </span>
-                </div>
-                <div class="d-flex align-center px-2">
-                  <span>
-                    <span class="text-overline">
-                      <i
-                        class="mdi mdi-brightness-1 text-pink-accent-3 mx-1"
-                      ></i>
-                    </span>
-                    <span class="text-grey-darken-1 font-weight-medium mr-1"
-                      >ບໍລິສັດເຊົ່າສິນເຊື່ອ</span
-                    >
-                  </span>
-                </div>
-                <div class="d-flex align-center px-2">
-                  <span>
-                    <span class="text-overline">
-                      <i
-                        class="mdi mdi-brightness-1 text-light-green-accent-3 mx-1"
-                      ></i>
-                    </span>
-                    <span class="text-grey-darken-1 font-weight-medium mr-1"
-                      >ສະຫະກອນສິນເຊື່ອ ແລະ ເງິນຝາກປະຢັດ</span
-                    >
-                  </span>
-                </div>
-                <div class="d-flex align-center px-2">
-                  <span>
-                    <span class="text-overline">
-                      <i
-                        class="mdi mdi-brightness-1 text-pink-darken-4 mx-1"
-                      ></i>
-                    </span>
-                    <span class="text-grey-darken-1 font-weight-medium mr-1"
-                      >ສະຖາບັນການເງິນຈຸລະພາກຮັບຝາກ</span
-                    >
-                  </span>
-                </div>
-                <div class="d-flex align-center px-2">
-                  <span>
-                    <span class="text-overline">
-                      <i
-                        class="mdi mdi-brightness-1 text-light-blue-darken-2 mx-1"
-                      ></i>
-                    </span>
-                    <span class="text-grey-darken-1 font-weight-medium mr-1"
-                      >ບຸກຄົນ-ນິຕິບຸກຄົນ & ອົງການຈັດຕັ້ງອື່ນ</span
-                    >
-                  </span>
-                </div>
-              </v-row>
-            </v-col>
-         
+        <v-col cols="12" style="font-size: 80%">
+          <v-row>
+            <div class="d-flex align-center px-2">
+              <span>
+                <span class="text-overline">
+                  <i class="mdi mdi-brightness-1 text-cyan mx-1"></i>
+                </span>
+                <span class="text-grey-darken-1 font-weight-medium mr-1"
+                  >ທະນາຄານທຸລະກິດ</span
+                >
+              </span>
+            </div>
+            <div class="d-flex align-center px-2">
+              <span>
+                <span class="text-overline">
+                  <i class="mdi mdi-brightness-1 text-purple-darken-3 mx-1"></i>
+                </span>
+                <span class="text-grey-darken-1 font-weight-medium mr-1"
+                  >ສະຖາບັນການເງິນຈຸລະພາກບໍ່ຮັບຝາກ</span
+                >
+              </span>
+            </div>
+            <div class="d-flex align-center px-2">
+              <span>
+                <span class="text-overline">
+                  <i
+                    class="mdi mdi-brightness-1 text-light-green-darken-4 mx-1"
+                  ></i>
+                </span>
+                <span class="text-grey-darken-1 font-weight-medium mr-1"
+                  >ໂຮງຊວດຈຳ</span
+                >
+              </span>
+            </div>
+            <div class="d-flex align-center px-2">
+              <span>
+                <span class="text-overline">
+                  <i class="mdi mdi-brightness-1 text-pink-accent-3 mx-1"></i>
+                </span>
+                <span class="text-grey-darken-1 font-weight-medium mr-1"
+                  >ບໍລິສັດເຊົ່າສິນເຊື່ອ</span
+                >
+              </span>
+            </div>
+            <div class="d-flex align-center px-2">
+              <span>
+                <span class="text-overline">
+                  <i
+                    class="mdi mdi-brightness-1 text-light-green-accent-3 mx-1"
+                  ></i>
+                </span>
+                <span class="text-grey-darken-1 font-weight-medium mr-1"
+                  >ສະຫະກອນສິນເຊື່ອ ແລະ ເງິນຝາກປະຢັດ</span
+                >
+              </span>
+            </div>
+            <div class="d-flex align-center px-2">
+              <span>
+                <span class="text-overline">
+                  <i class="mdi mdi-brightness-1 text-pink-darken-4 mx-1"></i>
+                </span>
+                <span class="text-grey-darken-1 font-weight-medium mr-1"
+                  >ສະຖາບັນການເງິນຈຸລະພາກຮັບຝາກ</span
+                >
+              </span>
+            </div>
+            <div class="d-flex align-center px-2">
+              <span>
+                <span class="text-overline">
+                  <i
+                    class="mdi mdi-brightness-1 text-light-blue-darken-2 mx-1"
+                  ></i>
+                </span>
+                <span class="text-grey-darken-1 font-weight-medium mr-1"
+                  >ບຸກຄົນ-ນິຕິບຸກຄົນ & ອົງການຈັດຕັ້ງອື່ນ</span
+                >
+              </span>
+            </div>
+          </v-row>
+        </v-col>
       </v-card-text>
     </v-card>
   </v-container>

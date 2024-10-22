@@ -116,13 +116,16 @@
                             cols="12"
                             style="margin-bottom: 8px; width: 100%"
                           >
-                            <v-text-field
-                              v-model="regisStrationOfficeType"
+                            <v-autocomplete
+                            v-model="regisStrationOfficeType"
+                              :items="regisStrationOfficeTypes"
+                              item-text="title"
+                              item-value="id"
                               :rules="rules"
-                              label=" Regis Stration Office Type"
+                              label="ລະຫັດຫອ້ງການຂື້ນທະບຽນ"
                               variant="outlined"
                               persistent-hint
-                            ></v-text-field>
+                            ></v-autocomplete>
                           </div>
                           <div
                             cols="12"
@@ -176,7 +179,6 @@
                           >
                             <v-text-field
                               v-model="investmentAmount"
-                             
                               type="number"
                               label=" ທຶນຈົດທະບຽນ"
                               variant="outlined"
@@ -258,7 +260,7 @@
 import Swal from "sweetalert2";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { defineComponent, computed } from "vue";
+import { defineComponent, computed ,ref  } from "vue";
 import { useRoute } from "vue-router";
 export default defineComponent({
   data() {
@@ -268,6 +270,28 @@ export default defineComponent({
       foreigninvestorFlag: 1,
       investmentCurrency: 1,
       representativeNationality: 1,
+      regisStrationOfficeType:"ລະຫັດຫອ້ງການຂັ້ນທະບຽນ",
+
+      regisStrationOfficeTypes:[
+      { id:"01", title: "ນະຄອນຫຼວງວຽງຈັນ" },
+      { id:"10", title: "ວຽງຈັນ" },
+      { id:"11", title: "ບໍລິຄຳໄຊ" },
+      { id:"12", title: "ຄຳມ່ວນ" },
+      { id:"13", title: "ສະຫວັນນະເຂດ" },
+      { id:"14", title: "ສາລະວັນ" },
+      { id:"15", title: "ເຊກອງ" },
+      { id:"16", title: "ຈຳປາສັກ" },
+      { id:"17", title: "ອັດຕະປື" },
+      { id:"18", title: "ໄຊສົມບູນ" },
+      { id:"02", title: "ຜົ້ງສາລີ" },
+      { id:"03", title: "ຫຼວງນ້ຳທາ" },
+      { id:"04", title: "ອຸດົມໄຊ" },
+      { id:"05", title: "ບໍ່ແກ້ວ" },
+      { id:"06", title: "ຫຼວງພະບາງ" },
+      { id:"07", title: "ຫົວພັນ" },
+      { id:"08", title: "ໄຊຍະບູລີ" },
+      { id:"09", title: "ຊຽງຂວາງ" },
+      ],
       enLegalStratures: [
         { id: 411, title: "ວິສາຫະກິດ ສ່ວນບຸກຄົນ" },
         { id: 422, title: "ວິສາຫະກິດ ຮຸ້ນສ່ວນສາກົນ" },
@@ -280,87 +304,87 @@ export default defineComponent({
         { id: 499, title: "ວິສາຫະກິດລວມໝູ່" },
       ],
       representativeNationalitys: [
-        { id: "AF", title: "AF" },
-        { id: "AO", title: "AO" },
-        { id: "AT", title: "AT" },
-        { id: "AU", title: "AU" },
-        { id: "BD", title: "BD" },
-        { id: "BE", title: "BE" },
-        { id: "BG", title: "BG" },
-        { id: "BO", title: "BO" },
-        { id: "BR", title: "BR" },
-        { id: "CA", title: "CA" },
-        { id: "CL", title: "CL" },
-        { id: "CM", title: "CM" },
-        { id: "CN", title: "CN" },
-        { id: "CO", title: "CO" },
-        { id: "CY", title: "CY" },
-        { id: "CZ", title: "CZ" },
-        { id: "DE", title: "DE" },
-        { id: "DK", title: "DK" },
-        { id: "DM", title: "DM" },
-        { id: "DO", title: "DO" },
-        { id: "EG", title: "EG" },
-        { id: "ER", title: "ER" },
-        { id: "FI", title: "FI" },
-        { id: "FM", title: "FM" },
-        { id: "FR", title: "FR" },
-        { id: "GE", title: "GE" },
-        { id: "GH", title: "GH" },
-        { id: "GT", title: "GT" },
-        { id: "HN", title: "HN" },
-        { id: "HR", title: "HR" },
-        { id: "HU", title: "HU" },
-        { id: "ID", title: "ID" },
-        { id: "IL", title: "IL" },
-        { id: "IN", title: "IN" },
-        { id: "IT", title: "IT" },
-        { id: "JP", title: "JP" },
-        { id: "KG", title: "KG" },
-        { id: "KH", title: "KH" },
-        { id: "KN", title: "KN" },
-        { id: "KP", title: "KP" },
-        { id: "KR", title: "KR" },
-        { id: "LA", title: "LA" },
-        { id: "LB", title: "LB" },
-        { id: "LT", title: "LT" },
-        { id: "LU", title: "LU" },
-        { id: "LV", title: "LV" },
-        { id: "MC", title: "MC" },
-        { id: "MM", title: "MM" },
-        { id: "MX", title: "MX" },
-        { id: "MY", title: "MY" },
-        { id: "NG", title: "NG" },
-        { id: "NL", title: "NL" },
-        { id: "NP", title: "NP" },
-        { id: "NZ", title: "NZ" },
-        { id: "PA", title: "PA" },
-        { id: "PH", title: "PH" },
-        { id: "PK", title: "PK" },
-        { id: "PL", title: "PL" },
-        { id: "PW", title: "PW" },
-        { id: "RO", title: "RO" },
-        { id: "RS", title: "RS" },
-        { id: "RU", title: "RU" },
-        { id: "SD", title: "SD" },
-        { id: "SE", title: "SE" },
-        { id: "SG", title: "SG" },
-        { id: "SI", title: "SI" },
-        { id: "SN", title: "SN" },
-        { id: "SZ", title: "SZ" },
-        { id: "TH", title: "TH" },
-        { id: "TL", title: "TL" },
-        { id: "TM", title: "TM" },
-        { id: "TR", title: "TR" },
-        { id: "TZ", title: "TZ" },
-        { id: "UA", title: "UA" },
-        { id: "US", title: "US" },
-        { id: "UZ", title: "UZ" },
-        { id: "VA", title: "VA" },
-        { id: "VN", title: "VN" },
-        { id: "VU", title: "VU" },
-        { id: "YE", title: "YE" },
-        { id: "ZA", title: "ZA" },
+      { "id": "AF", "title": "Afghanistan" },
+    { "id": "AO", "title": "Angola" },
+    { "id": "AT", "title": "Austria" },
+    { "id": "AU", "title": "Australia" },
+    { "id": "BD", "title": "Bangladesh" },
+    { "id": "BE", "title": "Belgium" },
+    { "id": "BG", "title": "Bulgaria" },
+    { "id": "BO", "title": "Bolivia" },
+    { "id": "BR", "title": "Brazil" },
+    { "id": "CA", "title": "Canada" },
+    { "id": "CL", "title": "Chile" },
+    { "id": "CM", "title": "Cameroon" },
+    { "id": "CN", "title": "China" },
+    { "id": "CO", "title": "Colombia" },
+    { "id": "CY", "title": "Cyprus" },
+    { "id": "CZ", "title": "Czech Republic" },
+    { "id": "DE", "title": "Germany" },
+    { "id": "DK", "title": "Denmark" },
+    { "id": "DM", "title": "Dominica" },
+    { "id": "DO", "title": "Dominican Republic" },
+    { "id": "EG", "title": "Egypt" },
+    { "id": "ER", "title": "Eritrea" },
+    { "id": "FI", "title": "Finland" },
+    { "id": "FM", "title": "Micronesia" },
+    { "id": "FR", "title": "France" },
+    { "id": "GE", "title": "Georgia" },
+    { "id": "GH", "title": "Ghana" },
+    { "id": "GT", "title": "Guatemala" },
+    { "id": "HN", "title": "Honduras" },
+    { "id": "HR", "title": "Croatia" },
+    { "id": "HU", "title": "Hungary" },
+    { "id": "ID", "title": "Indonesia" },
+    { "id": "IL", "title": "Israel" },
+    { "id": "IN", "title": "India" },
+    { "id": "IT", "title": "Italy" },
+    { "id": "JP", "title": "Japan" },
+    { "id": "KG", "title": "Kyrgyzstan" },
+    { "id": "KH", "title": "Cambodia" },
+    { "id": "KN", "title": "Saint Kitts and Nevis" },
+    { "id": "KP", "title": "North Korea" },
+    { "id": "KR", "title": "South Korea" },
+    { "id": "LA", "title": "Laos" },
+    { "id": "LB", "title": "Lebanon" },
+    { "id": "LT", "title": "Lithuania" },
+    { "id": "LU", "title": "Luxembourg" },
+    { "id": "LV", "title": "Latvia" },
+    { "id": "MC", "title": "Monaco" },
+    { "id": "MM", "title": "Myanmar" },
+    { "id": "MX", "title": "Mexico" },
+    { "id": "MY", "title": "Malaysia" },
+    { "id": "NG", "title": "Nigeria" },
+    { "id": "NL", "title": "Netherlands" },
+    { "id": "NP", "title": "Nepal" },
+    { "id": "NZ", "title": "New Zealand" },
+    { "id": "PA", "title": "Panama" },
+    { "id": "PH", "title": "Philippines" },
+    { "id": "PK", "title": "Pakistan" },
+    { "id": "PL", "title": "Poland" },
+    { "id": "PW", "title": "Palau" },
+    { "id": "RO", "title": "Romania" },
+    { "id": "RS", "title": "Serbia" },
+    { "id": "RU", "title": "Russia" },
+    { "id": "SD", "title": "Sudan" },
+    { "id": "SE", "title": "Sweden" },
+    { "id": "SG", "title": "Singapore" },
+    { "id": "SI", "title": "Slovenia" },
+    { "id": "SN", "title": "Senegal" },
+    { "id": "SZ", "title": "Eswatini" },
+    { "id": "TH", "title": "Thailand" },
+    { "id": "TL", "title": "Timor-Leste" },
+    { "id": "TM", "title": "Turkmenistan" },
+    { "id": "TR", "title": "Turkey" },
+    { "id": "TZ", "title": "Tanzania" },
+    { "id": "UA", "title": "Ukraine" },
+    { "id": "US", "title": "United States" },
+    { "id": "UZ", "title": "Uzbekistan" },
+    { "id": "VA", "title": "Vatican City" },
+    { "id": "VN", "title": "Vietnam" },
+    { "id": "VU", "title": "Vanuatu" },
+    { "id": "YE", "title": "Yemen" },
+    { "id": "ZA", "title": "South Africa" }
       ],
       regisStationOfficeCodes: [
         { id: 1, title: "ຫອ້ງການຂື້ນທະບຽນວິສາຫະກິດຂັ້ນສູງກາງ" },
@@ -482,6 +506,10 @@ export default defineComponent({
     const enLocation = ref<string>("");
     const villageName = ref<string>("");
 
+
+    
+   
+
     //     const selectedVillage = ref(null);
     // const selectedVillageName = ref("");
     // const villages = ref([]);
@@ -536,7 +564,6 @@ export default defineComponent({
       console.log("Selected province and district:", title.value);
     };
 
-    
     const submit = async () => {
       loading.value = true;
       try {
@@ -572,8 +599,6 @@ export default defineComponent({
             regisStrationOfficeType: regisStrationOfficeType.value,
             EnterpriseID: EnterpriseID.value,
             LCICID: LCICID.value,
-           
-
           },
           {
             headers: {
@@ -582,7 +607,6 @@ export default defineComponent({
           }
         );
         console.log("Response:", response.data);
-       
 
         Swal.fire({
           title: "ສຳເລັດ!",
@@ -649,8 +673,7 @@ export default defineComponent({
         // investmentAmount.value.trim() !== "" &&
         // investmentCurrency.value.trim() !== "" &&
         // representativeNationality.value.trim() !== "" &&
-        EnterpriseID.value.trim() !== "" &&
-        LCICID.value.trim() !== ""
+        EnterpriseID.value.trim() !== "" && LCICID.value.trim() !== ""
       );
     });
 
