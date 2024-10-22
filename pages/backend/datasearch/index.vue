@@ -127,7 +127,8 @@ const fetchData = async () => {
 const { LCICID, EnterpriseID } = route.query;
 
   try {
-    const res = await fetch(`${config.public.strapi.url}api/v1/enterprise-info/search/",
+    const res = await fetch(
+      "http://127.0.0.1:35729/api/api/v1/enterprise-info/search/",
       {
         method: "POST",
         headers: {
@@ -182,7 +183,7 @@ onMounted(fetchData);
             <v-col cols="12">
               <v-row>
                 <v-col cols="12" md="6">
-                  <h1>ລາຍການລູກຄ້າທີ່ໄດ້ຜ່ານການສອບຖາມ: -----{{ catalogID  }}</h1>
+                  <h1>ລາຍການລູກຄ້າທີ່ໄດ້ຜ່ານການສອບຖາມ:</h1>
                 </v-col>
                 <v-col
                   cols="12"
@@ -195,7 +196,7 @@ onMounted(fetchData);
                     <b class="ml-1 mr-3" style="color: black">{{ item.LCICID }}</b>
                     ລະຫັດວິສາຫະກິດ:
                     <b class="ml-1 mr-3" style="color: black">{{ item.EnterpriseID }}</b>
-                
+                    
                   </p>
                 </v-col>
               </v-row>
@@ -272,256 +273,15 @@ useHead({
 const route = useRoute();
 const data = ref([]);
 const loading = ref(true);
-const details = ref(false);
-const catalogID = ref(route.query.CatalogID || '');
-
-
-const fetchData = async () => {
-  const { LCICID, EnterpriseID, CatalogID } = route.query;
-
-  try {
-    const config = useRuntimeConfig();
-    const token = localStorage.getItem('access_token');
-    const res = await fetch(`${config.public.strapi.url}api/api/v1/enterprise-info/search/`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          LCICID: LCICID,
-          EnterpriseID: EnterpriseID,
-          CatalogID: CatalogID
-        }),
-      }
-    );
-
-    if (res.ok) {
-      const result = await res.json();
-      data.value = result;
-
-      console.log("Fetched data:", data.value);
-    } else if (res.status === 401) {
-      // Handle token expiration by refreshing the token
-      const config = useRuntimeConfig();
-      const newToken = await refreshAccessToken();
-      if (newToken) {
-        // Retry the original request with the new token
-        const retryRes = await fetch(`${config.public.strapi.url}api/v1/enterprise-info/search/`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${newToken}`,
-            },
-            body: JSON.stringify({
-              LCICID: LCICID,
-              EnterpriseID: EnterpriseID,
-              CatalogID:CatalogID
-            }),
-          }
-        );
-
-        const result = await retryRes.json();
-        if (retryRes.ok) {
-          data.value = result;
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: result.error || "Error fetching data",
-            confirmButtonText: "OK",
-          });
-        }
-      }
-    } else {
-      const result = await res.json();
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: result.error || "Error fetching data",
-        confirmButtonText: "OK",
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "An error occurred while fetching data. Please try again.",
-      confirmButtonText: "OK",
-    });
-  } finally {
-    loading.value = false;
-  }
-};
-
-const refreshAccessToken = async () => {
-  const refreshToken = localStorage.getItem('refresh_token');
-  if (!refreshToken) {
-    Swal.fire({
-      icon: "error",
-      title: "Session Expired",
-      text: "Your session has expired. Please log in again.",
-      confirmButtonText: "OK",
-    });
-    window.location.href = '/'; // Redirect to login if no refresh token
-    return;
-  }
-
-  try {
-    const config = useRuntimeConfig();
-    const response = await fetch(`${config.public.strapi.url}api/token/refresh/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ refresh: refreshToken }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      // Update the local storage with the new token
-      localStorage.setItem('access_token', data.access);
-      Swal.fire({
-        icon: "success",
-        title: "Session Extended",
-        text: "Your session has been refreshed.",
-        confirmButtonText: "OK",
-      });
-      // Redirect to the dashboard after successful token refresh
-      window.location.href = '/backend/dashboard'; 
-      return data.access; // Return new access token
-    } else {
-      // If the refresh token fails, alert and redirect to login
-      Swal.fire({
-        icon: "error",
-        title: "Session Expired",
-        text: "Your session has expired. Please log in again.",
-        confirmButtonText: "OK",
-      });
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      window.location.href = '/'; // Redirect to login
-    }
-  } catch (error) {
-    console.error("Error refreshing token:", error);
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "An error occurred while refreshing the token.",
-      confirmButtonText: "OK",
-    });
-  }
-};
-
-const showDetails = (item: any) => {
-  const { LCICID, EnterpriseID, CatalogID } = route.query;
-  Swal.fire({
-    icon: "info",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    confirmButtonText: "Confirm",
-    cancelButtonColor:  "#d33",
-    cancelButtonText: "Cancel",
-    title: `<strong>Do you want to show this report?</strong>`,
-    html: `
-      <div>
-        <p><strong>Enterprise Name (Lao):</strong> ${item.enterpriseNameLao}</p>
-        <p><strong>Enterprise Name (English):</strong> ${item.eneterpriseNameEnglish}</p>
-        <p><strong>Report Type:</strong> Full Loan Report ${item.LCICID} ${item.EnterpriseID} </p>
-      </div>
-    `,
-    preConfirm: () => {
-      return new Promise((resolve) => {
-        resolve(true);
-      });
-    }
-  }).then((result) => {
-    if (result.isConfirmed) {
-      // Insert search log into backend
-      console.log("Item details:", item);
-      console.log("CatalogID:", item.CatalogID); 
-      insertSearchLog(item).then(() => {
-        // After successful insertion, navigate to the print report
-        const printUrl = `../backend/reportprint1?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}&CatalogID=${CatalogID}`;
-        window.location.href = printUrl;
-      }).catch(error => {
-        console.error("Error inserting search log:", error);
-      });
-    }
-  });
-};
-
-const insertSearchLog = async (item: any) => {
-  try {
-    const { LCICID, EnterpriseID, CatalogID } = route.query;
-    const token = localStorage.getItem('access_token');
-    const config = useRuntimeConfig();
-    const response = await fetch(`${config.public.strapi.url}api/insert_searchlog/`, { // Update this URL to match your Django API endpoint
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        EnterpriseID: item.EnterpriseID,
-        LCICID: item.LCICID,
-        CatalogID:CatalogID
-        // Add any other data required by your backend view
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to insert search log');
-    }
-
-    const data = await response.json();
-    console.log('Search log inserted:', data);
-  } catch (error) {
-    console.error('Error inserting search log:', error);
-  }
-};
-
-onMounted(fetchData);
-</script>
-
-
-<!-- <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
-import Swal from "sweetalert2";
-
-definePageMeta({
-  layout: "backend",
-});
-
-useHead({
-  title: "Search",
-  meta: [
-    {
-      name: "keywords",
-      content: "Report, Nuxt 3, Backend",
-    },
-    {
-      name: "Description",
-      content: "Report Nuxt 3, IT Genius Engineering",
-    },
-  ],
-});
-
-const route = useRoute();
-const data = ref([]);
-const loading = ref(true);
-const details = ref(false);
 
 const fetchData = async () => {
   const { LCICID, EnterpriseID } = route.query;
 
   try {
+    const config = useRuntimeConfig();
     const token = localStorage.getItem('access_token');
-    const res = await fetch(`${config.public.strapi.url}api/v1/enterprise-info/search/",
+    const res = await fetch(
+      `${config.public.strapi.url}api/api/v1/enterprise-info/search/`,
       {
         method: "POST",
         headers: {
@@ -535,44 +295,11 @@ const fetchData = async () => {
       }
     );
 
-    // Check if the response is OK
-    if (res.ok) {
-      const result = await res.json();
-      data.value = result;
-    } else if (res.status === 401) {
-      // Handle token expiration
-      const newToken = await refreshAccessToken(); // Call the refresh token function
-      if (newToken) {
-        // Retry the original request with the new token
-        const retryRes = await fetch(
-          "http://127.0.0.1:35729/api/api/v1/enterprise-info/search/",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${newToken}`,
-            },
-            body: JSON.stringify({
-              LCICID: LCICID,
-              EnterpriseID: EnterpriseID,
-            }),
-          }
-        );
+    const result = await res.json();
 
-        const result = await retryRes.json();
-        if (retryRes.ok) {
-          data.value = result;
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: result.error || "Error fetching data",
-            confirmButtonText: "OK",
-          });
-        }
-      }
+    if (res.ok) {
+      data.value = result;
     } else {
-      const result = await res.json();
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -593,53 +320,6 @@ const fetchData = async () => {
   }
 };
 
-const refreshAccessToken = async () => {
-  const refreshToken = localStorage.getItem('refresh_token'); // Ensure the refresh token is stored
-  try {
-    const response = await fetch("http://127.0.0.1:35729/api/token/refresh/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-
-      },
-      body: JSON.stringify({
-        refresh: refreshToken,
-      }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      // Update local storage with new tokens
-      localStorage.setItem('access_token', data.access);
-      return data.access; // Return new access token
-
-      // Redirect to dashboard after successful token refresh
-      window.location.href = '/backend/dashboard'; 
-    } else {
-      // Handle refresh token failure (e.g., log out user)
-      console.error("Refresh token failed");
-      Swal.fire({
-        icon: "error",
-        title: "Session Expired",
-        text: "Your session has expired. Please log in again.",
-        confirmButtonText: "OK",
-      });
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      window.location.href = '/'; // Redirect to login
-    }
-  } catch (error) {
-    console.error("Error refreshing token:", error);
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "An error occurred while refreshing the token.",
-      confirmButtonText: "OK",
-    });
-  }
-};
-
-
 const showDetails = (item: any) => {
   Swal.fire({
     icon: "info",
@@ -655,7 +335,7 @@ const showDetails = (item: any) => {
       <p class="text-center"><strong><b> ລາຍລະອຽດບົດລາຍງານ</b></strong></p>
       <p><strong>ຊື່ວິສາຫະກິດ (ລາວ):</strong> ${item.enterpriseNameLao}</p>
       <p><strong>ຊື່ວິສາຫະກິດ (ອັງກິດ):</strong> ${item.eneterpriseNameEnglish}</p>
-      <p><strong>ປະເພດບົດລາຍງານ:</strong> ບົດລາຍງານສິນເຊື້ອຄົບຖວ້ນ ${item.LCICID} ${item.EnterpriseID}</p>
+      <p><strong>ປະເພດບົດລາຍງານ:</strong> ບົດລາຍງານສິນເຊື້ອຄົບຖວ້ນ</p>
      </div>
     `,
     // confirmButtonText: "Close"
@@ -666,13 +346,12 @@ const showDetails = (item: any) => {
     }
   }).then((result) => {
     if (result.isConfirmed) {
-      // Navigate to the new 
-      const printUrl = `../backend/print?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}`;
-      window.location.href = printUrl;
+      // Navigate to the new route
+      window.location.href = `../backend/reportprint1?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}`;
     }
 
   });
 };
 
 onMounted(fetchData);
-</script> -->
+</script>
