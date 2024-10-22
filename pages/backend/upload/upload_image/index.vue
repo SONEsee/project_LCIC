@@ -159,11 +159,7 @@ export default defineComponent({
 
     const viewImage = (imagePath: string, id: string) => {
       const config = useRuntimeConfig();
-<<<<<<< HEAD
-      const fullPath = `${config.public.strapi.url}/collaterals/${imagePath}`;
-=======
       const fullPath = `${config.public.strapi.url}collaterals/${imagePath}?id=${id}`;
->>>>>>> 5d582458ecd7c97e64097a48a51feb1b9ae2ca17
       window.open(fullPath, "_blank");
       console.log("id image", id);
     };
