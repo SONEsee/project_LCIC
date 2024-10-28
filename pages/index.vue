@@ -13,10 +13,10 @@ useHead({
   ],
 });
 
-// sweetalert2
+
 const { $swal } = useNuxtApp();
 
-// ref const for username and password
+
 const username = ref("");
 const password = ref("");
 
@@ -43,7 +43,7 @@ const submit = async () => {
       );
 
       if (data.value && data.value.access && data.value.refresh) {
-        // Save tokens and user data
+       
         localStorage.setItem("access_token", data.value.access);
         localStorage.setItem("refresh_token", data.value.refresh);
         localStorage.setItem("user_data", JSON.stringify(data.value.user));

@@ -37,7 +37,8 @@
 </script>
 
 <template>
-  <v-row>
+
+  <v-row class="bg-indigo-lighten-5">
     <v-col cols="12" sm="12" lg="5">
       <!-- <DashboardComponentsModernCongratulationCard /> -->
       <!-- <CongratulationCard /> -->

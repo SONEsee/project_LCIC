@@ -1,34 +1,85 @@
-<script setup lang="ts"></script>
-
 <template>
-  <v-container>
-    <v-card class="position-relative overflow-hidden bg-pink-lighten-1">
-      <v-card-text>
-        <v-col cols="12">
-          <v-row>
-            <v-col cols="12">
-              <h3 class="title text-h6 overlay-title font-weight-medium">
-                <p>ຈຳນວນເກັບຄ່າທຳນຽມ</p>
-              </h3>
-              <h2 class="title text-h5 font-weight-bold d-flex align-end">
-                <p>39,358,000 ກີບ</p>
-
-                <span
-                  class="text-subtitle-1 ml-2 d-flex align-center font-weight-medium bg-pink-lighten-1"
-                  >ເພີ່ມຂື້ນ 9% ຈາກເືອນທີ່ແລ້ວ
-                </span>
-              </h2></v-col
-            > </v-row
-        ></v-col>
-        <v-btn color="primary" class=""> ດາວໂຫຼດທີ່ນີ້ </v-btn>
-      </v-card-text>
-    </v-card></v-container
-  >
+  <div id="chart" class="bg-white mt-5 rounded-lg">
+    <apexchart type="area" height="350" :options="chartOptions" :series="series" />
+  </div>
 </template>
 
+<script lang="ts">
+import { defineComponent, ref, onMounted } from 'vue';
+import VueApexCharts from 'vue3-apexcharts';
+
+export default defineComponent({
+  name: 'StockPriceChart',
+  components: {
+    apexchart: VueApexCharts,
+  },
+  setup() {
+    const series = ref([{ name: 'Charge Count', data: [] as { x: string; y: number }[] }]);
+    const chartOptions = ref({
+      chart: {
+        type: 'area',
+        stacked: false,
+        height: 350,
+        zoom: {
+          type: 'x',
+          enabled: true,
+          autoScaleYaxis: true,
+        },
+        toolbar: {
+          autoSelected: 'zoom',
+        },
+      },
+      dataLabels: { enabled: false },
+      markers: { size: 0 },
+      title: { text: 'ການເຄືອນໄຫວ ແລະ ການເໜັງຕີງຂອງການຄົ້ນຫາປະຈຳວັນ', align: 'left' },
+      fill: {
+        type: 'gradient',
+        gradient: {
+          shadeIntensity: 1,
+          inverseColors: false,
+          opacityFrom: 0.5,
+          opacityTo: 0,
+          stops: [0, 90, 100],
+        },
+      },
+      yaxis: {
+        labels: {
+          formatter: (val: number) => val.toFixed(0),
+        },
+        title: { text: 'Count' },
+      },
+      xaxis: { type: 'category' },
+      tooltip: {
+        shared: false,
+        y: {
+          formatter: (val: number) => val.toFixed(0),
+        },
+      },
+    });
+
+    
+    onMounted(async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:35729/api/charge-count/');
+        const data = await response.json();
+
+       
+        series.value[0].data = Object.entries(data).map(([hour, count]) => ({
+          x: hour,
+          y: count as number,
+        }));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    });
+
+    return { series, chartOptions };
+  },
+});
+</script>
+
 <style scoped>
-.overlay-title {
-  position: relative;
-  z-index: 1;
+#chart {
+  max-width: 100%;
 }
 </style>

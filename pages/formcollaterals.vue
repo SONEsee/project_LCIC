@@ -179,9 +179,10 @@
                           >
                             <v-text-field
                               v-model="investmentAmount"
-                              type="number"
+                              type="text"
                               label=" ທຶນຈົດທະບຽນ"
                               variant="outlined"
+                               @input="formatNumber"
                               persistent-hint
                             ></v-text-field>
                           </div>
@@ -507,7 +508,13 @@ export default defineComponent({
     const villageName = ref<string>("");
 
 
-    
+    const formatNumber = (): void => {
+      const number = investmentAmount.value.replace(/,/g, "");
+      if (!isNaN(Number(number))) {
+        investmentAmount.value = Number(number).toLocaleString();
+      }
+    };
+
    
 
     //     const selectedVillage = ref(null);
@@ -565,75 +572,85 @@ export default defineComponent({
     };
 
     const submit = async () => {
-      loading.value = true;
-      try {
-        const config = useRuntimeConfig();
-        const csrfToken = Cookies.get("csrftoken");
+  const result = await Swal.fire({
+    title: "ຢືນຢັນການບັນທຶກ?",
+    text: "ເຈົ້າຕ້ອງການບັນທຶກຂໍ້ມູນນີ້ແທ້ຫຼືບໍ?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "ບັນທຶກ",
+    cancelButtonText: "ຍົກເລີກ",
+  });
 
-        let regisDateFormatted = null;
-        if (regisDate.value) {
-          const dateObject = new Date(regisDate.value);
-          if (!isNaN(dateObject.getTime())) {
-            regisDateFormatted = dateObject.toISOString();
-          } else {
-            throw new Error("Invalid date format for regisDate");
-          }
+  if (result.isConfirmed) {
+    loading.value = true;
+    try {
+      const config = useRuntimeConfig();
+      const csrfToken = Cookies.get("csrftoken");
+
+      let regisDateFormatted = null;
+      if (regisDate.value) {
+        const dateObject = new Date(regisDate.value);
+        if (!isNaN(dateObject.getTime())) {
+          regisDateFormatted = dateObject.toISOString();
+        } else {
+          throw new Error("Invalid date format for regisDate");
         }
-
-        const investmentAmountFormatted = parseFloat(investmentAmount.value);
-
-        const response = await axios.post(
-          `${config.public.strapi.url}api/api/enterprise-info/`,
-          {
-            enterpriseNameLao: enterpriseNameLao.value,
-            eneterpriseNameEnglish: eneterpriseNameEnglish.value,
-            enLegalStrature: enLegalStrature.value,
-            foreigninvestorFlag: foreigninvestorFlag.value,
-            investmentAmount: investmentAmountFormatted,
-            investmentCurrency: investmentCurrency.value,
-            representativeNationality: representativeNationality.value,
-            regisCertificateNumber: regisCertificateNumber.value,
-            regisDate: regisDateFormatted,
-            enLocation: enLocation.value,
-            regisStationOfficeCode: regisStationOfficeCode.value,
-            regisStrationOfficeType: regisStrationOfficeType.value,
-            EnterpriseID: EnterpriseID.value,
-            LCICID: LCICID.value,
-          },
-          {
-            headers: {
-              "X-CSRFToken": csrfToken || "",
-            },
-          }
-        );
-        console.log("Response:", response.data);
-
-        Swal.fire({
-          title: "ສຳເລັດ!",
-          text: "ສ້າງຂໍ້ມູນວິສາຫະກິດສຳເລັດແລ້ວ!",
-          icon: "success",
-          confirmButtonText: "OK",
-        })
-          .then(async (result) => {
-            if (result.isConfirmed) {
-              await updateCollateralStatus(route.query.id);
-            }
-          })
-          .then(() => {
-            location.reload();
-          });
-      } catch (error) {
-        console.error("Error creating enterprise info:", error);
-        Swal.fire({
-          title: "ຜິດພາດ!",
-          text: error.message || "ລົ້ມເຫລວໃນການສ້າງຂໍ້ມູນວິສາຫະກິດ.",
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-      } finally {
-        loading.value = false;
       }
-    };
+
+      const investmentAmountFormatted = parseFloat(investmentAmount.value);
+
+      const response = await axios.post(
+        `${config.public.strapi.url}api/api/enterprise-info/`,
+        {
+          enterpriseNameLao: enterpriseNameLao.value,
+          eneterpriseNameEnglish: eneterpriseNameEnglish.value,
+          enLegalStrature: enLegalStrature.value,
+          foreigninvestorFlag: foreigninvestorFlag.value,
+          investmentAmount: investmentAmountFormatted,
+          investmentCurrency: investmentCurrency.value,
+          representativeNationality: representativeNationality.value,
+          regisCertificateNumber: regisCertificateNumber.value,
+          regisDate: regisDateFormatted,
+          enLocation: enLocation.value,
+          regisStationOfficeCode: regisStationOfficeCode.value,
+          regisStrationOfficeType: regisStrationOfficeType.value,
+          EnterpriseID: EnterpriseID.value,
+          LCICID: LCICID.value,
+        },
+        {
+          headers: {
+            "X-CSRFToken": csrfToken || "",
+          },
+        }
+      );
+      console.log("Response:", response.data);
+
+      Swal.fire({
+        title: "ສຳເລັດ!",
+        text: "ສ້າງຂໍ້ມູນວິສາຫະກິດສຳເລັດແລ້ວ!",
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          await updateCollateralStatus(route.query.id);
+        }
+      }).then(() => {
+        location.reload();
+      });
+    } catch (error) {
+      console.error("Error creating enterprise info:", error);
+      Swal.fire({
+        title: "ຜິດພາດ!",
+        text: error.message || "ລົ້ມເຫລວໃນການສ້າງຂໍ້ມູນວິສາຫະກິດ.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    } finally {
+      loading.value = false;
+    }
+  }
+};
+
 
     const updateCollateralStatus = async (id: number) => {
       try {
@@ -720,7 +737,7 @@ export default defineComponent({
       representativeNationality,
       fullImagePath,
       handleVillageSelect,
-
+      formatNumber,
       isFormValid,
       rules,
       submit,

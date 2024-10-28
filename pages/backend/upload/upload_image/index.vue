@@ -58,19 +58,15 @@
           <td>{{ collateral.id }}</td>
           <td>{{ collateral.filename }}</td>
           <td>{{ collateral.pathfile }}</td>
+          <!-- <td>{{ collateral.status }}</td> -->
         
           <td>
-            <div v-if="collateral.status === 1">
-              <v-btn
-                small
-                @click="confirmImage(collateral.id)"
-                class="bg-green darken-4"
-                >ຢືນຢັນ</v-btn
-              >
+            <div v-if="collateral.status === '1'">
+             <p class="text-warning">ອັບໂຫຼດສຳເລັດ</p>
             </div>
 
             <div v-else>
-              <span class="text-success">ອັບໂຫຼດສຳເລັດ</span>
+              <span class="text-success">ຖືກກວດສອບແລ້ວ</span>
             </div>
           </td>
           <td>

@@ -277,7 +277,7 @@ const showDetails = (item: any) => {
       console.log("CatalogID:", item.CatalogID); 
       insertSearchLog(item).then(() => {
         
-        const printUrl = `../backend/print?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}&CatalogID=${CatalogID}`;
+        const printUrl = `../backend/reportprint1?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}&CatalogID=${CatalogID}`;
         window.location.href = printUrl;
       }).catch(error => {
         console.error("Error inserting search log:", error);

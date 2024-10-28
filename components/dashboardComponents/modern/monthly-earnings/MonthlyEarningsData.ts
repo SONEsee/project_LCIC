@@ -1,52 +1,99 @@
-export const MonthlyChart = {
-  series: [
-    {
-      name: "ຍອດໃນເດືອນນີ້",
-      data: [10, 12, 13, 14, 15, 13, 14, 16, 9, 18, 17, 15],
-    },
-  ],
-  chartOptions: {
-    chart: {
-      toolbar: {
-        show: false,
-      },
-      foreColor: "#adb0bb",
-      fontFamily: "'DM Sans',sans-serif",
-      type: "bar",
-      height: 45,
-      sparkline: {
-        enabled: true,
-      },
-    },
-    colors: ["rgba(255,255,255,0.5)"],
+import { ref } from 'vue';
+import axios from 'axios';
 
-    marker: {
-      size: 0,
-    },
+export const series = ref([
+  {
+    name: "Bank_TotalChgAmount",
+    data: []
+  },
+  {
+    name: "MFI_TotalChgAmount",
+    data: []
+  },
+  {
+    name: "Overall_TotalChgAmount",
+    data: []
+  }
+]);
 
-    tooltip: {
-      theme: "dark",
+export const chartOptions = ref({
+  chart: {
+    height: 350,
+    type: 'line',
+    dropShadow: {
+      enabled: true,
+      color: '#000',
+      top: 18,
+      left: 7,
+      blur: 10,
+      opacity: 0.2
     },
-
-    grid: {
-      show: false,
+    zoom: {
+      enabled: false
     },
-
-    stroke: {
-      show: true,
-      width: 2,
-      curve: "smooth",
-      colors: ["transparent"],
-    },
-
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        startingShape: "flat",
-        endingShape: "flat",
-        columnWidth: "30%",
-        barHeight: "100%",
-      },
+    toolbar: {
+      show: false
+    }
+  },
+  colors: ['#77B6EA', '#545454','#D50000'],
+  dataLabels: {
+    enabled: true,
+  },
+  stroke: {
+    curve: 'smooth'
+  },
+  title: {
+    text: 'ຄ່າທຳນຽມຂອງການຄົ້ນຫາ',
+    align: 'left'
+  },
+  grid: {
+    borderColor: '#e7e7e7',
+    row: {
+      colors: ['#f3f3f3', 'transparent'],
+      opacity: 0.5
     },
   },
+  markers: {
+    size: 1
+  },
+  xaxis: {
+    categories: ['ມັງກອນ','ກຸມພາ','ມີນາ','ເມສາ','ພຶດສະພາ','ມິຖຸນາ','ກໍລະກົດ','ສິງຫາ','ກັນຍາ','ຕຸລາ','ພະຈິກ','ທັນວາ'],
+    title: {
+      text: 'ຂໍ້ມູນເປັນປີ'
+    }
+  },
+  yaxis: {
+    title: {
+      text: 'Amount'
+    },
+    min: 0
+  },
+  legend: {
+    position: 'top',
+    horizontalAlign: 'right',
+    floating: true,
+    offsetY: -25,
+    offsetX: -5
+  }
+});
+
+export const fetchData = async () => {
+  try {
+    
+    const response = await axios.get('http://127.0.0.1:35729/api/sumbanktype_chargeamount/anymonth/');
+    const data = response.data.data;
+
+    const months = Object.keys(data);
+    const bankAmounts = months.map(month => data[month].Bank_TotalChgAmount);
+    const mfiAmounts = months.map(month => data[month].MFI_TotalChgAmount);
+    const totalAmounts = months.map(month => data[month].Overall_TotalChgAmount);
+
+    chartOptions.value.xaxis.categories = months;
+    console.log('months', months)
+    series.value[0].data = bankAmounts;
+    series.value[1].data = mfiAmounts;
+    series.value[2].data = totalAmounts;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
 };

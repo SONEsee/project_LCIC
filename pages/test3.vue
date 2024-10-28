@@ -1,35 +1,85 @@
 <template>
-  <v-card>
-    <v-col cols="12"> </v-col>
-
-    <div>
-      <UploadFile />
-    </div>
-  </v-card>
+  <div id="chart">
+    <apexchart type="area" height="350" :options="chartOptions" :series="series" />
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed } from "vue";
-import { useRoute } from "vue-router";
-import { Icon, UploadFile } from "~~/.nuxt/components";
+import { defineComponent, ref, onMounted } from 'vue';
+import VueApexCharts from 'vue3-apexcharts';
 
 export default defineComponent({
+  name: 'StockPriceChart',
+  components: {
+    apexchart: VueApexCharts,
+  },
   setup() {
-    definePageMeta({
-      layout: "backend",
-      middleware: ["auth"],
+    const series = ref([{ name: 'Charge Count', data: [] as { x: string; y: number }[] }]);
+    const chartOptions = ref({
+      chart: {
+        type: 'area',
+        stacked: false,
+        height: 350,
+        zoom: {
+          type: 'x',
+          enabled: true,
+          autoScaleYaxis: true,
+        },
+        toolbar: {
+          autoSelected: 'zoom',
+        },
+      },
+      dataLabels: { enabled: false },
+      markers: { size: 0 },
+      title: { text: 'Hourly Charge Count', align: 'left' },
+      fill: {
+        type: 'gradient',
+        gradient: {
+          shadeIntensity: 1,
+          inverseColors: false,
+          opacityFrom: 0.5,
+          opacityTo: 0,
+          stops: [0, 90, 100],
+        },
+      },
+      yaxis: {
+        labels: {
+          formatter: (val: number) => val.toFixed(0),
+        },
+        title: { text: 'Count' },
+      },
+      xaxis: { type: 'category' },
+      tooltip: {
+        shared: false,
+        y: {
+          formatter: (val: number) => val.toFixed(0),
+        },
+      },
     });
 
-    useHead({
-      title: "Upload File",
-      meta: [
-        { name: "keywords", content: "Report, Nuxt 3, Backend" },
-        {
-          name: "Description",
-          content: "Report Nuxt 3, IT Genius Engineering",
-        },
-      ],
+  
+    onMounted(async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:35729/api/charge-count/');
+        const data = await response.json();
+
+       
+        series.value[0].data = Object.entries(data).map(([hour, count]) => ({
+          x: hour,
+          y: count as number,
+        }));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
     });
+
+    return { series, chartOptions };
   },
 });
 </script>
+
+<style scoped>
+#chart {
+  max-width: 100%;
+}
+</style>
