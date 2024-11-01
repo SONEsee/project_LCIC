@@ -62,31 +62,31 @@ const resetTimeout = () => {
 
 const events = ['mousemove', 'click', 'keydown'];
 
-// Setup the inactivity timer
+
 const setupInactivityTimer = () => {
-  resetTimeout(); // Initialize the timer
+  resetTimeout(); 
   events.forEach(event => {
-    window.addEventListener(event, resetTimeout); // Add event listeners
+    window.addEventListener(event, resetTimeout); 
   });
 };
 
-// When component is mounted, start the inactivity timer
+
 onMounted(() => {
   const userData = localStorage.getItem('user_data');
   if (userData) {
     user.value = JSON.parse(userData);
-    console.log('User data:', user.value);
+    // console.log('User data:', user.value);
   }
   setupInactivityTimer();
 });
 </script>
 
 <template>
-  <v-menu anchor="bottom end" origin="auto" min-width="300" style="background-color: red;">
-    <template v-slot:activator="{ props }">
+  <v-menu anchor="bottom end" origin="auto" min-width="300" >
+    <template v-slot:activator="{ props }" >
       <div class="d-flex">
         <!-- User Profile -->
-        <v-btn icon class="mx-3">
+        <v-btn icon class="mx-3" >
           <v-avatar size="35">
             <img
               src="https://img.freepik.com/free-photo/abstract-autumn-beauty-multi-colored-leaf-vein-pattern-generated-by-ai_188544-9871.jpg?size=626&ext=jpg&ga=GA1.1.2082370165.1716249600&semt=ais_user"
@@ -95,7 +95,7 @@ onMounted(() => {
             />
           </v-avatar>
 
-          <v-menu activator="parent">
+          <v-menu activator="parent" >
             <v-list class="pa-6" elevation="10" rounded="lg">
               <h4 class="font-weight-medium fs-18">ໂປຟາຍຂອງຂອ້ຍ</h4>
               <div class="d-flex align-center my-4" v-if="user">

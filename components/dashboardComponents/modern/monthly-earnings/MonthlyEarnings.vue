@@ -9,7 +9,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="chart bg-indigo-accent-2 rounded-lg text-black">
+  <div class="chart bg-white rounded-lg text-black custom-border mt-2 ">
     <VueApexCharts
       type="line"
       height="350"
@@ -18,3 +18,8 @@ onMounted(() => {
     />
   </div>
 </template>
+<style scoped>
+.custom-border {
+  border: 2px solid #1A237E; 
+}
+</style>

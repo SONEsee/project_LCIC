@@ -1,47 +1,88 @@
+<template>
+  <div class="image-background">
+    <div class="highlighted-text">
+      <p style="color: white; font-size: 24px;">ຄະແນນສິນເຊື່ອ</p>
+    </div>
+    <v-card
+      color="rgba(255, 255, 255, 0.3)"
+      max-width="90%"
+      max-height="90%"
+      class="p-4 rounded-lg shadow-lg"
+    >
+     
+      <v-row>
+        <v-col
+          cols="12"
+          md="6"
+          v-for="(item, index) in items"
+          :key="index"
+          class="text-center"
+        >
+          <nuxt-link :to="item.url">
+            <v-hover v-slot:default="{ isHovering, props }">
+              <v-card
+                class="rounded-lg"
+                height="250px"
+                :style="{
+                  backgroundImage: `url(${item.backgroundImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  boxShadow: isHovering
+                    ? '0 6px 12px rgba(#FFFFFF)'
+                    : '0 4px 8px rgba(0, 0, 0, 0.4)',
+                  transition: 'box-shadow 0.3s',
+                  transform: isHovering ? 'scale(1.05)' : 'scale(1)',
+                }"
+                color="white"
+                v-bind="props"
+              >
+                <div class="overlay">
+                  <h3></h3>
+                </div>
+              </v-card>
+            </v-hover>
+          </nuxt-link>
+        </v-col>
+      </v-row>
+    </v-card>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.image-background {
+  background-image: url("@/assets/images/serch/bg.jpg");
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay {
+  background-color: rgba(57, 22, 212, 0.288);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+.highlighted-text {
+  position: absolute;
+  top: 100px; 
+  text-align: center;
+  width: 100%;
+}
+</style>
 <script setup lang="ts">
+import serchinImage from "@/assets/images/serch/serchin.png";
+import loginImage from "@/assets/images/serch/srchen.png";
+
 const items = [
-  { title: "ບຸກຄົນ ", url: "../backend/individualssearch" },
-  { title: "ນິຕິບຸກຄົນ", url: "../backend/searchuser" },
+  { url: "../backend/individualssearch", backgroundImage: serchinImage },
+  { url: "../backend/searchuser", backgroundImage: loginImage },
 ];
 </script>
-<template>
-  <v-card class="hovering-zoom mt-10">
-    <div>
-      <p style="color: #01579b"><b># ເກັບຄ່າທຳນຽມສິນເຊືອ</b></p>
-    </div>
-    <div class="text-center">
-      <v-col cols="12">
-        <v-row>
-          <v-col
-            cols="12"
-            md="6"
-            class="h"
-            v-for="(item, index) in items"
-            :key="index"
-          >
-            <nuxt-link :to="item.url" style="text-decoration: none">
-              <!-- <v-card
-                height="200px"
-                class="d-flex align-center justify-center border hovering-zoom"
-              >
-                <b style="color: #1a237e"> {{ item.title }}</b></v-card
-              > -->
-              <v-hover>
-                <template v-slot:default="{ isHovering, props }">
-                  <v-card
-                  class="d-flex justify-center align-center"
-                    height="200px"
-                    v-bind="props"
-                    :color="isHovering ? 'primary' : undefined"
-                    ><p>{{ item.title }}</p></v-card
-                  >
-                </template>
-              </v-hover>
-            </nuxt-link>
-          </v-col>
-        </v-row>
-      </v-col>
-    </div>
-  </v-card>
-</template>
-<style lang="scss"></style>

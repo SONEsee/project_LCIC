@@ -10,9 +10,15 @@ export default [
     to: "/backend/search",
   },
   {
-    title: "ເກັບຄ່າທຳນຽມ",
-    icon: "mdi-cart-outline",
+    title: "ລາຍງານການຄົ້ນຫາ",
+    // icon: "mdi-cart-outline",
+    icon: " mdi-note-search-outline",
     to: "/backend/order",
+  },
+  {
+    title: "ລາຍງານຄ່າທຳນຽມ",
+    icon: "mdi-cash-multiple",
+    to: "/backend/charge",
   },
   {
     title: "ລາຍງານ",

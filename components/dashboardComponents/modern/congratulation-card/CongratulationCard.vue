@@ -1,5 +1,5 @@
 <template>
-  <div id="chart" class="bg-white mt-5 rounded-lg">
+  <div id="chart" class="bg-white mt-5 rounded-lg custom-border">
     <apexchart type="area" height="350" :options="chartOptions" :series="series" />
   </div>
 </template>
@@ -82,4 +82,9 @@ export default defineComponent({
 #chart {
   max-width: 100%;
 }
+
+.custom-border {
+  border: 2px solid #1A237E; 
+}
+
 </style>

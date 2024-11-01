@@ -8,11 +8,11 @@ const { mdAndUp, mdAndDown } = useDisplay();
 </script>
 <template>
   <div>
-    <v-app>
+    <v-app >
       <!-- ---------------------------------------------- -->
       <!---Header -->
       <!-- ---------------------------------------------- -->
-      <v-app-bar elevation="0" color="primary">
+      <v-app-bar elevation="0" class="bg-indigo-darken-4">
         <div class="pe-5">
           <NuxtLink to="/backend/dashboard" class="d-flex brand">
             <img

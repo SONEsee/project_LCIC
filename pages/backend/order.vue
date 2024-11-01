@@ -20,10 +20,11 @@ useHead({
 });
 </script>
 
-<template>
+<template >
   
-    <TheActivityTimeline />
  
+    <TheActivityTimeline />
+
 </template>
 
 <style scoped></style>

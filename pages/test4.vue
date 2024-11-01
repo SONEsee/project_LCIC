@@ -1,66 +1,85 @@
 <template>
+  <v-data-table-server
+    v-model:items-per-page="itemsPerPage"
+    :headers="headers"
+    :items="data"
+    :items-length="totalItems"
+    :loading="loading"
+    item-value="name"
+    @update:options="loadItems"
+  ></v-data-table-server>
   <div>
-    <apexchart 
-      width="380" 
-      type="pie" 
-      :options="chartOptions" 
-      :series="series"
-    />
+    <div v-if="error">
+      <p>Error: {{ error }}</p>
+    </div>
+    <div v-else-if="data && data.length === 0">
+      <p>No data available.</p>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
-import axios from 'axios';
-import ApexCharts from 'vue3-apexcharts';
+import { ref, onMounted } from 'vue'
+import Swal from 'sweetalert2'
 
-export default defineComponent({
-  components: {
-    apexchart: ApexCharts
-  },
+definePageMeta({
+  middleware: 'auth',
+  layout: 'backend',
+})
+
+export default {
   setup() {
-    const series = ref<number[]>([]);
-    const chartOptions = ref({
-      chart: {
-        width: 380,
-        type: 'pie'
+    const data = ref([])
+    const error = ref(null)
+    const loading = ref(false)
+    const itemsPerPage = ref(10)
+    const totalItems = ref(0)
+    const apiUrl = `http://202.137.141.244:3000/v3/api/loans/allbillmonth/102024`
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6IlUyRnNkR1ZrWDErdE9ja29vVDV0NXdqWlBqTzhVc0V1ZnR2QytPUXp3Z2ljWkFPdkhNUkNqdzh0NUhOSENBRVZsVXVNWHBrc1RudUFxaUE3R0VtVExRSTZMaWNTVUlaN1BMb0xGOVczMWtjWnFoQmxFUThHVUFwSFpNS0NDVjN1RURhWDJSSjFwZDNqaFRGc2lmdUF3Zz09IiwiaWF0IjoxNzA5MDEwNjU0fQ.mhmfUuasPQnAtxTQmwIyofClMuOAKVKZloNskpG9fHo'
+    const fetchData = async (page = 1, perPage = 10) => {
+  loading.value = true
+  try {
+   
+    const response = await fetch(`${apiUrl}?page=${page}&perPage=${perPage}`, {
+      headers: {
+        'Auth': `${token}`,
+        'Accept': 'application/json',
       },
-      labels: ['Type 1', 'Type 2', 'Type 3', 'Type 4', 'Type 5', 'Type 6', 'Type 7'],
-      responsive: [
-        {
-          breakpoint: 480,
-          options: {
-            chart: {
-              width: 200
-            },
-            legend: {
-              position: 'bottom'
-            }
-          }
-        }
-      ]
-    });
+    })
 
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('http://127.0.0.1:35729/api/member-count/');
-        const data = response.data.member_count;
-        series.value = data.map((item: { count: number }) => item.count);
-       
-        
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status} ${response.statusText}`)
+    }
 
-    onMounted(() => {
-      fetchData();
-    });
+  
+    const jsonData = await response.json()
+    data.value = jsonData.message || []
+    totalItems.value = jsonData.totalItems || data.value.length 
 
-    return {
-      series,
-      chartOptions
-    };
+    if (!data.value.length) {
+      console.log("No items returned from API")
+    }
+  } catch (err) {
+    error.value = err.message
+    Swal.fire('Error', error.value, 'error')
+  } finally {
+    loading.value = false
   }
-});
+}
+
+ 
+    onMounted(() => fetchData())
+
+   
+    const loadItems = ({ page, itemsPerPage }) => {
+      fetchData(page, itemsPerPage)
+    }
+
+    return { data, error, loading, itemsPerPage, totalItems, loadItems }
+  },
+}
 </script>
+
+<style scoped>
+
+</style>

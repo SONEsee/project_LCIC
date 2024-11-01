@@ -1,7 +1,12 @@
 import { ref } from 'vue';
 import axios from 'axios';
 
-export const series = ref([
+interface SeriesData {
+  name: string;
+  data: number[];
+}
+
+export const series = ref<SeriesData[]>([
   {
     name: "Bank_TotalChgAmount",
     data: []
@@ -35,7 +40,7 @@ export const chartOptions = ref({
       show: false
     }
   },
-  colors: ['#77B6EA', '#545454','#D50000'],
+  colors: ['#77B6EA', '#545454', '#D50000'],
   dataLabels: {
     enabled: true,
   },
@@ -79,7 +84,6 @@ export const chartOptions = ref({
 
 export const fetchData = async () => {
   try {
-    
     const response = await axios.get('http://127.0.0.1:35729/api/sumbanktype_chargeamount/anymonth/');
     const data = response.data.data;
 
@@ -89,7 +93,7 @@ export const fetchData = async () => {
     const totalAmounts = months.map(month => data[month].Overall_TotalChgAmount);
 
     chartOptions.value.xaxis.categories = months;
-    console.log('months', months)
+
     series.value[0].data = bankAmounts;
     series.value[1].data = mfiAmounts;
     series.value[2].data = totalAmounts;

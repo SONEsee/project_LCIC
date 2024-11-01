@@ -1,6 +1,7 @@
 <template>
-  <div class="container mx-auto px-4 py-8 bg-indigo-accent-2 mt-7 rounded-lg">
-    <v-col cols="12">
+  <div class="container mx-auto px-4 py-8 bg-white custom-border
+ mt-7 rounded-lg">
+    <v-col cols="12" class="mt-10 mb-9">
       <v-row>
         <v-col cols="12" md="8"><p>ຈຳນວນສະມາຊິກທັງໝົດ</p></v-col>
         <v-col cols="12" md="4"><p>{{  }}</p></v-col>
@@ -19,7 +20,8 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import ApexCharts from 'vue3-apexcharts';
-import { fetchTotalSalesData, MemberData } from './TotalSalesData';
+import { fetchTotalSalesData } from './TotalSalesData';
+import type { MemberData } from './TotalSalesData';  
 
 export default defineComponent({
   components: {
@@ -49,24 +51,23 @@ export default defineComponent({
           }
         }
       ],
-     
       dataLabels: {
-  enabled: true,
-  formatter: function (val: number, opts: any) {
-    const count = series.value[opts.seriesIndex];
-    const percentage = Math.floor((val / 100) * totalMembers.value); 
-    return `${count} (${percentage}%)`;
-  }
-},
-tooltip: {
-  y: {
-    formatter: function (val: number, opts: any) {
-      const count = series.value[opts.seriesIndex];
-      const percentage = Math.floor((val / totalMembers.value) * 100); 
-      return `${count} ສະມາຊິກ (${percentage}%)`;
-    }
-  }
-}
+        enabled: true,
+        formatter: function (val: number, opts: any) {
+          const count = series.value[opts.seriesIndex];
+          const percentage = Math.floor((val / 100) * totalMembers.value); 
+          return `${count} (${percentage}%)`;
+        }
+      },
+      tooltip: {
+        y: {
+          formatter: function (val: number, opts: any) {
+            const count = series.value[opts.seriesIndex];
+            const percentage = Math.floor((val / totalMembers.value) * 100); 
+            return `${count} ສະມາຊິກ (${percentage}%)`;
+          }
+        }
+      }
     });
 
     const fetchData = async () => {
@@ -75,7 +76,6 @@ tooltip: {
       series.value = data.map((item: { count: number }) => item.count);
       totalMembers.value = data.reduce((acc, item) => acc + item.count, 0);
     };
-    console.log('chartData total', chartData)
 
     onMounted(() => {
       fetchData();
@@ -89,3 +89,8 @@ tooltip: {
   }
 });
 </script>
+<style scoped>
+.custom-border {
+  border: 2px solid #1A237E; 
+}
+</style>
