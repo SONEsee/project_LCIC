@@ -96,17 +96,6 @@ export default defineComponent({
       try {
         // ດຶງຂໍ້ມູນເພື່ອປະຕິບັດ
         await fetchData();
-<<<<<<< HEAD
-      });
-  
-      const fetchData = async () => {
-        try {
-          const response = await fetch(
-            "http://127.0.0.1:35729/api/api/upload-filesc2/"
-          );
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-=======
 
         // ດຶງຂໍ້ມູນຜູ້ໃຊ້ຈາກ localStorage
         const userData = localStorage.getItem("user_data");
@@ -132,7 +121,6 @@ export default defineComponent({
             }
           } catch (error) {
             console.error("Error parsing user data:", error);
->>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
           }
         }
       } catch (error) {

@@ -153,11 +153,7 @@
           
           <!-- {{item}} -->
           <td> {{ index + 1 }}</td>
-<<<<<<< HEAD
-          <td>{{ item.date }}</td>
-=======
           <td>{{ item.id }}</td>
->>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
           <td>{{ item.bnk_code }}</td>
           <td>{{ item.lon_purpose }}</td>
           

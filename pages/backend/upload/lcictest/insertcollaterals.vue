@@ -185,13 +185,6 @@ export default defineComponent({
 };
 
 
-<<<<<<< HEAD
-    // const viewImage = (imagePath: string, id: string) => {
-    // const fullPath = `http://127.0.0.1:35729/${imagePath}?id=${id}`;
-    // window.open(fullPath, '_blank');
-    // console.log("id image", id);
-=======
->>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
     const goToTest1 = (imagePath: string, id: number, status: number) => {
       router.push({
         name: "formcollaterals",

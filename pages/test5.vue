@@ -54,79 +54,6 @@
   </div>
 </template>
 
-<<<<<<< HEAD
-<script lang="ts">
-import { defineComponent, ref } from "vue";
-import axios from "axios";
-
-export default defineComponent({
-  name: "CollateralUpdateForm",
-  setup() {
-    const form = ref({
-      bnk_id: "",
-      branch_id: "",
-      file_name: "",
-      file_path: "",
-      user: "",
-      image: null as File | null,
-    });
-    function getCookie(name: string) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          if (cookie.substring(0, name.length + 1) === name + "=") {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
-          }
-        }
-      }
-      return cookieValue;
-    }
-
-    const handleImageUpload = (event: Event) => {
-      const target = event.target as HTMLInputElement;
-      if (target.files && target.files[0]) {
-        form.value.image = target.files[0];
-      }
-    };
-
-    const submitForm = async () => {
-      const formData = new FormData();
-      formData.append("bnk_id", form.value.bnk_id);
-      formData.append("branch_id", form.value.branch_id);
-      formData.append("file_name", form.value.file_name);
-      formData.append("file_path", form.value.file_path);
-      formData.append("user", form.value.user);
-      if (form.value.image) {
-        formData.append("image", form.value.image);
-      }
-
-      try {
-        const response = await axios.post(
-          "http://127.0.0.1:35729/api/collateral_update_view/",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-        console.log("Form submitted successfully", response.data);
-      } catch (error) {
-        console.error("There was an error submitting the form", error);
-      }
-    };
-
-    return {
-      form,
-      handleImageUpload,
-      submitForm,
-      getCookie,
-    };
-  },
-=======
 <script setup lang="ts">
 useHead({
   title: "Sign In",
@@ -134,7 +61,6 @@ useHead({
     { name: "description", content: "Sign In Nuxt 3, IT Genius Engineering" },
     { name: "keywords", content: "Sign In, Nuxt 3, Learning Nuxt 3" },
   ],
->>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
 });
 
 const { $swal } = useNuxtApp();

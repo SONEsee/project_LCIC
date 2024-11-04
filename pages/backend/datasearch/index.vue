@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-<template>
-  tets
-</template>
-=======
 
 
 
@@ -324,4 +319,3 @@ const insertSearchLog = async (item: any) => {
 onMounted(fetchData);
 </script>
 
->>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa

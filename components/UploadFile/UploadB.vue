@@ -38,37 +38,6 @@
       </template>
 
       
-<<<<<<< HEAD
-  
-      // onMounted(async () => {
-      //   try {
-      //     const response = await fetch(
-      //       "http://127.0.0.1:35729/api/api/upload-files2/"
-      //     );
-      //     if (!response.ok) {
-      //       throw new Error("Network response was not ok");
-      //     }
-      //     const data = await response.json();
-      //     items.value = data.map((item: any) => ({
-      //       ...item,
-      //       FID: item.FID,
-      //     }));
-      //   } catch (error) {
-      //     console.error("Failed to fetch data:", error);
-      //   }
-      // });
-      onMounted(async () => {
-        await fetchData();
-      });
-  
-      const fetchData = async () => {
-        try {
-          const response = await fetch(
-            "http://127.0.0.1:35729/api/api/upload-files2/"
-          );
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-=======
       <template v-slot:item.path="{ item }">
         <a :href="getFullPath(item.path)" target="_blank">{{
           getFileName(item.path)
@@ -164,7 +133,6 @@ export default defineComponent({
             }
           } catch (error) {
             console.error("Error parsing user data:", error);
->>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
           }
         }
       } catch (error) {

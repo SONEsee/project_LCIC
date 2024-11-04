@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-<!-- <script setup lang="ts">
-import { TotalSales } from "./TotalSalesData";
-
-const select = ref("March");
-const items = ref(["March", "April", "May", "June"]);
-const elementVisible = ref(false);
-
-onMounted(() => {
-  setTimeout(() => (elementVisible.value = true), 30);
-});
-</script>
-
-=======
->>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
 <template>
   <div class="container mx-auto px-4 py-8 bg-white custom-border
  mt-7 rounded-lg">
@@ -108,68 +93,4 @@ export default defineComponent({
 .custom-border {
   border: 2px solid #1A237E; 
 }
-<<<<<<< HEAD
-</style> -->
-<template>
-  <div style="width: 80%; height: 500px;">
-    <canvas id="doughnutChart" style="width: 100%; height: 100%;"></canvas>
-  </div>
-</template>
-
-<script>
-import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
-
-// Register the components you need
-Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
-
-export default {
-  data() {
-    return {
-      chartData: null,
-    };
-  },
-  mounted() {
-    this.fetchChartData();
-  },
-  methods: {
-    async fetchChartData() {
-      try {
-        const config = useRuntimeConfig();
-        const response = await fetch(`${config.public.strapi.url}api/searchlog_doughnutchart/`);
-        const data = await response.json();
-
-        this.renderChart(data.labels, data.datasets[0].data, data.datasets[0].backgroundColor);
-      } catch (error) {
-        console.error('Error fetching chart data:', error);
-      }
-    },
-    renderChart(labels, dataset, backgroundColor) {
-      const ctx = document.getElementById('doughnutChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Search Logs by Bank',
-            data: dataset,
-            backgroundColor: backgroundColor,
-          }]
-        },
-        options: {
-          responsive: true,
-        }
-      });
-    }
-  }
-};
-</script>
-
-<style scoped>
-canvas {
-  width: 30%;
-  height: 100px;
-}
 </style>
-=======
-</style>
->>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
