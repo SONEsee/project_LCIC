@@ -1,88 +1,62 @@
 <template>
-  <v-container>
-    <v-data-table :headers="headers" :items="items" class="elevation-1" :items-per-page="12">
-      <template v-slot:top>
-        <v-toolbar flat>
-          <v-divider class="mx-4" inset vertical></v-divider>
-        </v-toolbar>
-      </template>
-      <!-- <template v-slot:item.path="{ item }">
-        <a :href="getFullPath(item.path)" target="_blank">{{ item.path }}</a>
-      </template> -->
-      <template v-slot:item.path="{ item }">
-        <a :href="getFullPath(item.path)" target="_blank">{{ getFileName(item.path) }}</a>
-      </template>
-      <template v-slot:item.percentage="{ item }" class="text-start">
-        <span :style="{ color: getPercentageColor(item.percentage) }" class="text-start"><p class="text-center">{{ item.percentage.toFixed(2) }}%</p></span>
-      </template>
-      <template v-slot:item.status="{ item }">
-        <v-chip :color="getStatusColor(item.status)" dark>{{ item.status }}</v-chip>
-      </template>
-      <template v-slot:item.statussubmit="{ item }" >
-        <div class="d-flex align-center">
-          <template v-if="item.statussubmit === '0' && item.percentage <= 15">
-            <span style="color: green;">ຢືນຢັນສຳເລັດແລ້ວ</span>
-          </template>
-          <template v-else-if="item.percentage > 15">
-            <span style="color: red;">ຂໍ້ຜິດພາດສູງເກີນກຳນົດ</span>
-          </template>
-          <template v-else>
-            <v-btn @click="confirmAction(item)" color="success">
-              ຢືນຢັນ
-            </v-btn>
-          </template>
-        </div>
-      </template>
-      <template v-slot:item.actions="{ item }">
-        <v-btn @click="viewDetails(item)" color="info" class="ml-10">ເບິ່ງລາຍລະອຽດ</v-btn>
-      </template>
-      <template v-slot:no-data>
-        <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
-      </template>
-    </v-data-table>
-  </v-container>
+  <v-data-table-server
+    v-model:items-per-page="itemsPerPage"
+    :headers="headers"
+    :items="data"
+    :items-length="totalItems"
+    :loading="loading"
+    item-value="name"
+    @update:options="loadItems"
+  ></v-data-table-server>
+  <div>
+    <div v-if="error">
+      <p>Error: {{ error }}</p>
+    </div>
+    <div v-else-if="data && data.length === 0">
+      <p>No data available.</p>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
-import axios from 'axios';
-import Swal from 'sweetalert2';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue'
+import Swal from 'sweetalert2'
 
-export default defineComponent({
+definePageMeta({
+  middleware: 'auth',
+  layout: 'backend',
+})
+
+export default {
   setup() {
-    definePageMeta({
-      layout: "backend",
-      middleware: ["auth"]
-    });
+    const data = ref([])
+    const error = ref(null)
+    const loading = ref(false)
+    const itemsPerPage = ref(10)
+    const totalItems = ref(0)
+    const apiUrl = `http://202.137.141.244:3000/v3/api/loans/allbillmonth/102024`
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6IlUyRnNkR1ZrWDErdE9ja29vVDV0NXdqWlBqTzhVc0V1ZnR2QytPUXp3Z2ljWkFPdkhNUkNqdzh0NUhOSENBRVZsVXVNWHBrc1RudUFxaUE3R0VtVExRSTZMaWNTVUlaN1BMb0xGOVczMWtjWnFoQmxFUThHVUFwSFpNS0NDVjN1RURhWDJSSjFwZDNqaFRGc2lmdUF3Zz09IiwiaWF0IjoxNzA5MDEwNjU0fQ.mhmfUuasPQnAtxTQmwIyofClMuOAKVKZloNskpG9fHo'
+    const fetchData = async (page = 1, perPage = 10) => {
+  loading.value = true
+  try {
+   
+    const response = await fetch(`${apiUrl}?page=${page}&perPage=${perPage}`, {
+      headers: {
+        'Auth': `${token}`,
+        'Accept': 'application/json',
+      },
+    })
 
-    useHead({
-      title: "Upload File",
-      meta: [
-        {
-          name: "keywords",
-          content: "Report, Nuxt 3, Backend",
-        },
-        {
-          name: "Description",
-          content: "Report Nuxt 3, IT Genius Engineering",
-        },
-      ],
-    });
-onMounted(async () => {
-      await fetchData();
-    });
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status} ${response.statusText}`)
+    }
 
-    const file = ref<File | null>(null);
-    const items = ref([]);
-    const headers = ref([
-      { text: 'ໄອດີ', value: 'FID' },
-      { text: 'ຊື່ພາດ', value: 'path' },
-      
-      { text: 'ສະຖານະການຢືນຢັນ', value: 'statussubmit' },{ text: 'ວັນທີອັບໂຫຼດ', value: 'percentage' },
-      { text: 'Actions', value: 'actions', sortable: false },
-    ]);
+  
+    const jsonData = await response.json()
+    data.value = jsonData.message || []
+    totalItems.value = jsonData.totalItems || data.value.length 
 
+<<<<<<< HEAD
     // onMounted(async () => {
     //   try {
     //     const response = await fetch('http://127.0.0.1:35729/api/api/upload-files2/');
@@ -120,8 +94,28 @@ onMounted(async () => {
         console.error('Failed to fetch data:', error);
       }
     };
+=======
+    if (!data.value.length) {
+      console.log("No items returned from API")
+    }
+  } catch (err) {
+    error.value = err.message
+    Swal.fire('Error', error.value, 'error')
+  } finally {
+    loading.value = false
+  }
+}
 
+ 
+    onMounted(() => fetchData())
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
 
+   
+    const loadItems = ({ page, itemsPerPage }) => {
+      fetchData(page, itemsPerPage)
+    }
+
+<<<<<<< HEAD
     const sortItemsByUploadDate = () => {
       items.value.sort((a: any, b: any) => new Date(b.insertDate).getTime() - new Date(a.insertDate).getTime());
     };
@@ -324,13 +318,13 @@ const getFileName = (path: string) => {
       getFileName,
       
     };
+=======
+    return { data, error, loading, itemsPerPage, totalItems, loadItems }
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
   },
-});
+}
 </script>
 
 <style scoped>
-.d-flex {
-  display: flex;
-  align-items: center;
-}
+
 </style>

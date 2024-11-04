@@ -1,100 +1,17 @@
-<template>
-  <v-container>
-    <div>
-      <h1>ການອັບໂຫຼດຮູບພາບ</h1>
-      <v-col cols="12">
-        <v-file-input
-          v-model="files"
-          :show-size="1000"
-          color="deep-purple-accent-4"
-          label="ອັບໂຫຼດຮູບພາບ"
-          placeholder="Select your files"
-          prepend-icon="mdi-camera"
-          variant="outlined"
-          counter
-          multiple
-        >
-          <template v-slot:selection="{ fileNames }">
-            <template v-for="(fileName, index) in fileNames" :key="fileName">
-              <v-chip
-                v-if="index < 2"
-                class="me-2"
-                color="deep-purple-accent-4"
-                size="small"
-                label
-              >
-                {{ fileName }}
-              </v-chip>
+<script setup lang="ts">
 
-              <span
-                v-else-if="index === 2"
-                class="text-overline text-grey-darken-3 mx-2"
-              >
-                +{{ files.length - 2 }} ຮູບ(s)
-              </span>
-            </template>
-          </template>
-        </v-file-input>
-        <v-btn color="primary" @click="uploadFiles" class="ml-9">ອັບໂຫຼດ</v-btn>
-      </v-col>
-    </div>
-
-    <v-table class="mt-5">
-      <thead>
-        <tr class="bg-indigo-lighten-1">
-          <th>ລຳດັບ</th>
-          <th>ຊື່ຮູບພາບ</th>
-          <th>ທີ່ຢູ່ຮູບພາບ</th>
-          <th>ສະຖານະ</th>
-          <th>ລາຍລະອຽດ</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="collateral in collaterals" :key="collateral.id">
-          <td>{{ collateral.id }}</td>
-          <td>{{ collateral.filename }}</td>
-          <td>{{ collateral.pathfile }}</td>
-          <td>
-            <div v-if="collateral.status === 1">
-              <v-btn
-                small
-                @click="confirmImage(collateral.id)"
-                class="bg-green darken-4"
-                >ຢືນຢັນ</v-btn
-              >
-            </div>
-            <div v-else>
-              <span class="text-success">ອັບໂຫຼດສຳເລັດ</span>
-            </div>
-          </td>
-          <td>
-            <v-btn
-              small
-              @click="viewImage(collateral.pathfile)"
-              class="bg-indigo-darken-4"
-              >ເບິ່ງຮູບພາບອັບໂຫຼດ</v-btn
-            >
-          </td>
-        </tr>
-      </tbody>
-    </v-table>
-  </v-container>
-</template>
-
-<script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
-import axios from "axios";
-import Swal from "sweetalert2";
-
-export default defineComponent({
-  setup() {
     definePageMeta({
       layout: "backend",
+<<<<<<< HEAD
       middleware: "auth",
+=======
+      middleware:["auth"]
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
     });
 
     useHead({
-      title: "Upload Image",
+      title: "image uplod",
+      
       meta: [
         {
           name: "keywords",
@@ -106,6 +23,7 @@ export default defineComponent({
         },
       ],
     });
+<<<<<<< HEAD
 
     const files = ref<File[]>([]);
     const collaterals = ref([]);
@@ -202,4 +120,10 @@ export default defineComponent({
     };
   },
 });
+=======
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
 </script>
+
+<template>
+<UploadFileUploadImage/>
+</template>

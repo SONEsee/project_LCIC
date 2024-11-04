@@ -1,34 +1,26 @@
-<template>
-  <v-container>
-    <v-col cols="12">
-      <v-row>
-        <v-col cols="12"></v-col>
-      </v-row>
-    </v-col>
-    <v-file-input
-      v-model="files"
-      :show-size="1000"
-      color="deep-purple-accent-4"
-      label="File input"
-      placeholder="Select your files"
-      prepend-icon="mdi-camera"
-      variant="outlined"
-      counter
-      multiple
-      @change="uploadFiles"
-    >
-      <template v-slot:selection="{ fileNames }">
-        <template v-for="(fileName, index) in fileNames" :key="fileName">
-          <v-chip
-            v-if="index < 2"
-            class="me-2"
-            color="deep-purple-accent-4"
-            size="small"
-            label
-          >
-            {{ fileName }}
-          </v-chip>
+<template >
 
+    <v-col cols="12">
+        <v-row>
+            <v-col cols="12" md="5">
+                <TotalSales/>
+            </v-col>
+            <v-col cols="12" md="4">
+                <div class="mt-7">
+                <test/></div>
+            </v-col>
+            <v-col cols="12" md="3">
+                <div class="mt-7">
+                <test3/></div>
+            </v-col>
+            <v-col cols="12" md="5">
+                <div class="mt-7">
+                <test2/></div>
+            </v-col>
+        </v-row>
+    </v-col>
+
+<<<<<<< HEAD
           <span
             v-else-if="index === 2"
             class="text-overline text-grey-darken-3 mx-2"
@@ -48,8 +40,20 @@
       </v-col>
     </v-row>
   </v-container>
+=======
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
 </template>
+<script setup leng="ts">
+import TotalSales from "@/components/dashboardComponents/modern/total-sales/TotalSales.vue"
+import test from "@/components/dashboardComponents/modern/monthly-earnings/MonthlyEarnings.vue"
+import test2 from "@/components/dashboardComponents/modern/revenue-updates/RevenueUpdates.vue"
+import test3 from "@/components/dashboardComponents/modern/congratulation-card/CongratulationCard.vue"
+definePageMeta({
+    layout: "backend",
+    middleware: ["auth"],
+  })
 
+<<<<<<< HEAD
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
 import axios from "axios";
@@ -99,4 +103,19 @@ export default defineComponent({
   },
 });
 
+=======
+  useHead({
+    title: 'Dashboard',
+    meta: [
+      { 
+        name: 'keywords', 
+        content: 'Dashboard, Nuxt 3, Backend'
+      },
+      {
+        name: 'Description',
+        content: 'Dashboard Nuxt 3,  IT Genius Engineering'
+      }
+    ]
+  })
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
 </script>

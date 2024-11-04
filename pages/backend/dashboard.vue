@@ -37,14 +37,15 @@
 </script>
 
 <template>
-  <v-row>
+
+  <v-row class="bg-indigo-lighten-5">
     <v-col cols="12" sm="12" lg="5">
       <!-- <DashboardComponentsModernCongratulationCard /> -->
       <!-- <CongratulationCard /> -->
       
       <TotalSales />
       <CongratulationCard />
-      <!-- <MonthlyEarnings /> -->
+      
     </v-col>
     <v-col cols="12" sm="12" lg="7">
       <v-row>
@@ -65,25 +66,25 @@
       <!-- <TotalSales /> -->
     </v-col>
     <v-col cols="12" sm="12" lg="8">
-      <ProductPerformance />
+      <!-- <ProductPerformance /> -->
     </v-col>
 
     <v-col cols="12" sm="12" lg="4">
       <!-- <TheProfileCard /> -->
       <div class="mt-7"></div>
-      <TheMyContacts />
+      <!-- <TheMyContacts /> -->
     </v-col>
-    <v-col cols="12" sm="12" lg="8">
+    <!-- <v-col cols="12" sm="12" lg="8">
       <TheActivityTimeline />
-    </v-col>
+    </v-col> -->
     <v-col cols="12" lg="4">
       <!-- <BlogCard /> -->
     </v-col>
-    <v-col cols="12" lg="4">
+    <!-- <v-col cols="12" lg="4">
       <WeeklyStats />
-    </v-col>
-    <v-col cols="12" lg="4">
+    </v-col> -->
+    <!-- <v-col cols="12" lg="4">
       <MedicalProBranding />
-    </v-col>
+    </v-col> -->
   </v-row>
 </template>

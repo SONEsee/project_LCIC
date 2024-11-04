@@ -1,71 +1,34 @@
 <template>
-  <div>
-    <h1>Roles</h1>
-    <v-container>
+  <div style="border: 1px solid brown;" id="0">
+    <v-col>
       <v-row>
-        <v-col>
-          <v-table>
-            <thead>
-              <tr>
-                <th>Sidebar Item</th>
-                <th v-for="role in roles" :key="role.id">{{ role.name }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in sidebarItems" :key="item.id">
-                <td>{{ item.name }}</td>
-                <td v-for="role in roles" :key="role.id">
-                  <v-checkbox
-                    v-model="selectedSidebarItems"
-                    :value="{ roleId: role.id, itemId: item.id }"
-                    :label="item.name"
-                  ></v-checkbox>
-                </td>
-                <td>
-                  <ul>
-                    <li
-                      v-for="subItem in item.sidebarSubItems"
-                      :key="subItem.id"
-                    >
-                      {{ subItem.name }}
-                      <v-checkbox
-                        v-model="selectedSidebarSubItems"
-                        :value="{
-                          roleId: role.id,
-                          itemId: item.id,
-                          subItemId: subItem.id,
-                        }"
-                        :label="subItem.name"
-                      ></v-checkbox>
-                    </li>
-                  </ul>
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
+        <v-col cols="12">
+          <v-autocomplete
+            v-model="selectedVillage"
+            :items="villages"
+            item-text="title"
+            item-value="id"
+            label="ກະລຸນາເລືອກບ້ານ"
+            @input="handleVillageSelect"
+          ></v-autocomplete>
         </v-col>
       </v-row>
-      <v-btn @click="submitForm" color="primary">Submit</v-btn>
-    </v-container>
+    </v-col>
+
+    <h1>ບ້ານທີ່ເລືອກ: {{ selectedVillageName }}</h1>
   </div>
 </template>
 
-<script>
-import { reactive, onMounted, toRefs } from "vue";
-definePageMeta({
-  // middleware:['auth'],
-  layout: "backend",
-});
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import axios from "axios";
 
-export default {
-  setup() {
-    const state = reactive({
-      roles: [],
-      sidebarItems: [],
-      selectedSidebarItems: [],
-      selectedSidebarSubItems: [],
-    });
+const selectedVillage = ref(null);
+const selectedVillageName = ref("");
+const villages = ref([]);
+const title = ref(""); 
 
+<<<<<<< HEAD
     const fetchRoles = async () => {
       try {
         const response = await fetch('http://127.0.0.1:35729/api/roles/');
@@ -85,18 +48,27 @@ export default {
         console.error("Error fetching sidebar items:", error);
       }
     };
+=======
 
-    // const submitForm = async () => {
-    //   // const userData = localStorage.getItem('user_data');
-    //   // const user = userData ? JSON.parse(userData) : null;
-    //   // const userGID = user ? user.GID : null;
+const fetchVillages = async () => {
+  try {
+    const response = await axios.get("http://127.0.0.1:35729/api/filter_villages/");
+    villages.value = response.data.map(village => ({
+      ...village,
+      title: `ແຂວງ: ${village.Province_Name} - ເມືອງ: ${village.District_Name} - ບ້ານ ${village.Village_Name}`
+    }));
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
 
-    //   const formData = {
+    console.log("Fetched villages:", JSON.parse(JSON.stringify(villages.value)));
+  } catch (error) {
+    console.error("Error fetching villages:", error);
+  }
+};
 
-    //     selectedSidebarItems: state.selectedSidebarItems,
-    //     selectedSidebarSubItems: state.selectedSidebarSubItems
-    //   };
 
+onMounted(fetchVillages);
+
+<<<<<<< HEAD
     //   try {
     //     const response = await fetch('http://127.0.0.1:35729/api/assign-role/', {
     //       method: 'POST',
@@ -175,54 +147,16 @@ export default {
       submitForm,
     };
   },
+=======
+const handleVillageSelect = (value: number) => {
+  const selected = villages.value.find(village => village.id === value);
+  if (selected) {
+    selectedVillageName.value = selected.Village_Name;
+    title.value = ` ${selected.District_Name} ${selected.Province_Name}  `;
+  }
+  console.log("Selected village ID:", value);
+  console.log("Selected village name:", selectedVillageName.value);
+  console.log("Selected province and district:", title.value);
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
 };
 </script>
-
-<style scoped>
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
-
-th,
-td {
-  border: 1px solid #ddd;
-  padding: 10px;
-}
-
-th {
-  background-color: #f0f0f0;
-}
-
-td {
-  background-color: #fff;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-li {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-}
-
-li:last-child {
-  border-bottom: none;
-}
-</style>
-
-<!-- <script lang="ts" setup>
-const { locale, setLocale } = useI18n();
-</script>
-
-<template>
-  <div>
-    <v-btn color="primary" @click="setLocale(locale === 'en' ? 'lo' : 'en')">
-      {{ locale }}</v-btn
-    >
-    {{ $t("hello") }}
-  </div>
-</template> -->

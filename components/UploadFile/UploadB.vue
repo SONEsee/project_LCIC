@@ -38,6 +38,7 @@
       </template>
 
       
+<<<<<<< HEAD
   
       // onMounted(async () => {
       //   try {
@@ -67,6 +68,103 @@
           );
           if (!response.ok) {
             throw new Error("Network response was not ok");
+=======
+      <template v-slot:item.path="{ item }">
+        <a :href="getFullPath(item.path)" target="_blank">{{
+          getFileName(item.path)
+        }}</a>
+      </template>
+
+      <template v-slot:item.percentage="{ item }">
+        <span :style="{ color: getPercentageColor(item.percentage) }"
+          >{{ item.percentage.toFixed(2) }}%</span
+        >
+      </template>
+
+      <template v-slot:item.statussubmit="{ item }">
+        <v-chip :color="getStatusColor(item.statussubmit)" dark>{{
+          getStatusText(item.statussubmit)
+        }}</v-chip>
+      </template>
+
+      <template v-slot:item.actions="{ item }">
+        <v-btn @click="viewDetails(item)" color="info">ເບິ່ງລາຍລະອຽດ</v-btn>
+      </template>
+
+      <template v-slot:no-data>
+        <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
+      </template>
+    </v-data-table>
+  </v-container>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref, onMounted } from "vue";
+import axios from "axios";
+import Swal from "sweetalert2";
+import { useRouter } from "vue-router";
+
+export default defineComponent({
+  setup() {
+    definePageMeta({
+      layout: "backend",
+    });
+
+    useHead({
+      title: "Upload File",
+      meta: [
+        {
+          name: "keywords",
+          content: "Report, Nuxt 3, Backend",
+        },
+        {
+          name: "Description",
+          content: "Report Nuxt 3, IT Genius Engineering",
+        },
+      ],
+    });
+
+    const user = ref<User | null>(null);
+    const file = ref<File | null>(null);
+    const items = ref([]);
+    const headers = ref([
+      { title: "ໄອດີ", value: "FID" },
+      { title: "ຊື່ພາດ", value: "path" },
+      { title: "ສະຖານະ", value: "statussubmit" },
+      { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
+      { title: "Actions", value: "actions", sortable: false },
+    ]);
+
+    onMounted(async () => {
+      try {
+        
+        await fetchData();
+
+       
+        const userData = localStorage.getItem("user_data");
+        console.log("User data:", userData);
+
+        if (userData) {
+          try {
+            
+            user.value = JSON.parse(userData);
+            console.log("Parsed user data:", user.value);
+
+            
+            const MID = user.value.MID;
+
+          
+            if (MID && MID.id) {
+             
+              const paddedMID = MID.id.toString().padStart(2, "0");
+              console.log("Padded MID.id:", paddedMID);
+
+              
+              await fetchDataByUserID(paddedMID);
+            }
+          } catch (error) {
+            console.error("Error parsing user data:", error);
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
           }
         }
       } catch (error) {

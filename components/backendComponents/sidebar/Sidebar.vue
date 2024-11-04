@@ -8,7 +8,7 @@ onMounted(() => {
   const userData = localStorage.getItem('user_data');
   if (userData) {
     user.value = JSON.parse(userData);
-    console.log('User data:', user.value);
+    // console.log('User data:', user.value);
   }
 });
 
@@ -40,7 +40,7 @@ onMounted(() => {
             :class="{ 'active-item': $route.path === item.to }"
           >
             <template v-slot:prepend>
-              <v-icon :icon="item.icon"></v-icon>
+              <v-icon :icon="item.icon" style="color: #304FFE;"></v-icon>
             </template>
             <v-list-item-title v-text="item.title"></v-list-item-title>
           </v-list-item>
@@ -56,7 +56,7 @@ onMounted(() => {
 }
 
 .active-item {
-  background-color: #1565C0 !important; 
+  background-color:#1A237E !important; 
   color: white !important;
 }
 </style>

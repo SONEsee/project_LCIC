@@ -136,7 +136,7 @@ export default defineComponent({
 import { defineComponent, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
-import Swal from "sweetalert2"; // Import Swal
+import Swal from "sweetalert2"; 
 
 export default defineComponent({
   setup() {
@@ -166,23 +166,32 @@ export default defineComponent({
     ]);
 
     const fetchCollaterals = async () => {
-      try {
-        const config = useRuntimeConfig();
-        const response = await axios.get(
-          `${config.public.strapi.url}api/api/get_collaterals/`,
-          { params: { status: 1 } }
-        );
-        collaterals.value = response.data;
-      } catch (error) {
-        console.error(error.response ? error.response.data : error.message);
-      }
-      console.log(collaterals.value);
-    };
+  try {
+    const config = useRuntimeConfig();
+    const response = await axios.get(
+      `${config.public.strapi.url}api/api/get_collaterals/`
+    );
 
+    console.log(response.data); 
+
+    // ກອງຂໍ້ມູນຕາມ status
+    collaterals.value = response.data.filter(collateral => collateral.status === '1');
+    console.log(collaterals.value);
+
+  } catch (error) {
+    console.error(error.response ? error.response.data : error.message);
+  }
+  console.log("status = 1", collaterals.value);
+};
+
+
+<<<<<<< HEAD
     // const viewImage = (imagePath: string, id: string) => {
     // const fullPath = `http://127.0.0.1:35729/${imagePath}?id=${id}`;
     // window.open(fullPath, '_blank');
     // console.log("id image", id);
+=======
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
     const goToTest1 = (imagePath: string, id: number, status: number) => {
       router.push({
         name: "formcollaterals",
@@ -190,12 +199,7 @@ export default defineComponent({
       });
     };
 
-    //       const goToTest1 = (imagePath: string, id: number) => {
-    //   console.log('Image Path:', imagePath);
-    //   console.log('ID:', id);
-    //   router.push({ name: 'formcollaterals', query: { image: imagePath, id: id.toString() } });
-    // };
-
+ 
     const confirmImage = async (id: number) => {
       try {
         const config = useRuntimeConfig();

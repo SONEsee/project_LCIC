@@ -24,6 +24,7 @@
 </template>
 
 <script lang="ts">
+import { UploadFile, UploadFileUploadB } from "#build/components";
 import { defineComponent, ref, onMounted, computed } from "vue";
 
 export default defineComponent({

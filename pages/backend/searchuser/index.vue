@@ -1,5 +1,6 @@
 <template>
   <div>
+<<<<<<< HEAD
     <v-container>
       <v-card class="bg-indigo-lighten-5 text-start">
         <div class="text-center">
@@ -216,3 +217,29 @@ h2 {
   margin-top: 20px;
 }
 </style>
+=======
+    <searchuser />
+  </div>
+</template>
+<script setup lang="ts">
+
+    definePageMeta({
+      layout: "backend",
+    });
+
+    useHead({
+      title: "Upload File",
+      meta: [
+        {
+          name: "keywords",
+          content: "Report, Nuxt 3, Backend",
+        },
+        {
+          name: "Description",
+          content: "Report Nuxt 3, IT Genius Engineering",
+        },
+      ],
+    });
+
+</script>
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa

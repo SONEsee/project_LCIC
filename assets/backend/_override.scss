@@ -61,18 +61,18 @@ html {
     background: #074bdf;
     background: -webkit-linear-gradient(
       legacy-direction(to right),
-      #316ce8,
-      #1a33a3
+      #1303f0,
+      #1101ee
     );
     background: -webkit-gradient(
       linear,
       left top,
       right top,
-      from(#1246b6),
-      to(#11288d)
+      from(#0408eb),
+      to(#2603ec)
     );
-    background: -webkit-linear-gradient(left, #1b49ad, #142b91);
-    background: linear-gradient(90deg, #194cb9 0, #2a44b6);
+    background: -webkit-linear-gradient(left, #1202f5, #042eeb);
+    background: linear-gradient(90deg, #0307f7 0, #0602ec);
   }
 
   .blog-card {
@@ -123,7 +123,7 @@ html {
     border: 0px;
   
     &:hover {
-      background: #5906f3;
+      background: #2702f7;
       background: -webkit-linear-gradient(
         legacy-direction(to right),
         #3509d4,
@@ -134,10 +134,10 @@ html {
         left top, 
         right top,
         from(#3408d1),
-        to(#4a03f0)
+        to(#1b03f0)
       );
-      background: -webkit-linear-gradient(left, #1d0672, #2a0daa);
-      background: linear-gradient(90deg, #21069c 0, #2b0be0);
+      background: -webkit-linear-gradient(left, #1d0672, #2e03f0);
+      background: linear-gradient(90deg, #2f04ee 0, hsl(249, 97%, 48%));
     }
   
     &.active,

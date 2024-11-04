@@ -10,9 +10,15 @@ export default [
     to: "/backend/search",
   },
   {
-    title: "ເກັບຄ່າທຳນຽມ",
-    icon: "mdi-cart-outline",
+    title: "ລາຍງານການຄົ້ນຫາ",
+    // icon: "mdi-cart-outline",
+    icon: " mdi-note-search-outline",
     to: "/backend/order",
+  },
+  {
+    title: "ລາຍງານຄ່າທຳນຽມ",
+    icon: "mdi-cash-multiple",
+    to: "/backend/charge",
   },
   {
     title: "ລາຍງານ",
@@ -20,7 +26,7 @@ export default [
     to: "/backend/report",
   },
   {
-    title: "ການອັບໂຫຼດ File",
+    title: "ນຳສົ່ງຂໍ້ມູນ",
     icon: "mdi-upload-box-outline",
     to: "/backend/upload",
   },
@@ -30,7 +36,7 @@ export default [
     to: "/backend/manageuser/userlist",
   },
   {
-    title: "Tets ຂສລ",
+    title: "ກວດສອບຂໍ້ມູນ",
     icon: "mdi-history",
     to: "/backend/upload/lcictest",
   },
@@ -40,8 +46,8 @@ export default [
     to: "/backend/upload/upload_image",
   },
   {
-    title: "ຂສລ ສ້າງຂໍ້ມູນ LCIC",
+    title: "ອອກລະຫັດ LCIC",
     icon: "mdi-form-select",
-    to: "/backend/upload/lcictest/insertcollaterals",
+    to: "/insertcollaterals",
   },
 ];

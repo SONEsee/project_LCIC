@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <template>
   <v-container>
     <v-data-table
@@ -386,12 +387,28 @@ export default defineComponent({
       getFileName,
     };
   },
+=======
+<script setup lang="ts">
+definePageMeta({
+  layout: "backend",
+});
+
+useHead({
+  title: "Submit",
+  meta: [
+    {
+      name: "keywords",
+      content: "Report, Nuxt 3, Backend",
+    },
+    {
+      name: "Description",
+      content: "Report Nuxt 3, IT Genius Engineering",
+    },
+  ],
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
 });
 </script>
 
-<style scoped>
-.d-flex {
-  display: flex;
-  align-items: center;
-}
-</style>
+<template>
+  <UploadFileLoanUploadLcictestB />
+</template>

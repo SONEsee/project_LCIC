@@ -22,7 +22,7 @@ useHead({
 <template>
   <div>
   
-    <ReportAllTileReport/>
+    <ReportAllReportAllTileReport/>
   </div>
 </template>
 

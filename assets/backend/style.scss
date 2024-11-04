@@ -1,10 +1,11 @@
 // @use "vuetify/styles" with (
-//   $body-font-family: "Noto Sans Lao"!default,
+//   $body-font-family: "Noto Sans Lao", sans-serif !default,
 //   $border-radius-root: 5px
 // );
 
 @use "vuetify/styles";
-@import url("https://fonts.googleapis.com/css?family=IBM+Plex+Sans+Thai:300,400,500,600,700");
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@300;400;500;600;700&display=swap');
+
 //@import "vuetify/lib/styles/main.sass";
 @import "./variables";
 @import "./override";

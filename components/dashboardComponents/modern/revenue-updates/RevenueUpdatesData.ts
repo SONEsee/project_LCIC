@@ -1,84 +1,101 @@
-export const RevenueChart = {
-  series: [
-    {
-      name: "ທະນາຄານ",
-      data: [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000],
-    },
-    {
-      name: "ສະຖາບັນ",
-      data: [2000, 1000, 3000, 7000, 6000, 12000, 8000, 3000],
-    },
-    {
-      name: "ໂຮງຊວດຈຳ",
-      data: [1000, 4000, 1000, 2600, 5800, 12000, 4000, 3000],
-    },
-    {
-      name: "ສະຫະກອນ",
-      data: [3000, 4000, 6000, 1000, 9000, 11000, 4000, 4000],
-    },
-  ],
-  chartOptions: {
-    colors: ["#3949AB", "#4A148C", "#C2185B", "#D50000"],
-    fill: {
-      type: "solid",
-      opacity: 1,
-    },
-    chart: {
-      toolbar: {
-        show: false,
-      },
-      type: "line",
-      foreColor: "#adb0bb",
-      fontFamily: "'noto sans lao',sans-serif",
-      height: 300,
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    markers: {
-      size: 4,
-      border: 1,
-    },
-    legend: {
-      show: false,
-    },
-    xaxis: {
-      categories: [
-        "ມັງກອນ",
-        "ກຸມພາ",
-        "ມີນາ",
-        "ເມສາ",
-        "ພຶດສະພາ",
-        "ມິຖຸນາ",
-        "ກໍລະກົດ",
-        "ສິງຫາ",
-      ],
-    },
-    grid: {
-      show: true,
-      borderColor: "rgba(0, 0, 0, .2)",
-      color: "#777e89",
-      strokeDashArray: 2,
-      xaxis: {
-        lines: {
-          show: false,
-        },
-      },
-      yaxis: {
-        lines: {
-          show: true,
-        },
-      },
-    },
-    stroke: {
-      curve: "smooth",
-      width: 3,
-    },
-    tooltip: {
-      x: {
-        format: "dd/MM/yy HH:mm",
-      },
-      theme: "dark",
+
+
+import axios from "axios";
+import { ref } from "vue";
+
+
+interface SeriesData {
+  x: string;
+  y: number;
+}
+
+
+export const series = ref<{ data: SeriesData[] }[]>([{ data: [] }]);
+
+
+export const selectedMonth = ref("2024-10");
+export const chartData = ref<any[]>([]);
+export const availableMonths = ref<string[]>([]);
+
+export const chartOptions = {
+  chart: {
+    id: "barYear",
+    height: 400,
+    type: "bar",
+  
+  },
+  plotOptions: {
+    bar: {
+      distributed: true,
+      horizontal: true,
+      barHeight: "75%",
     },
   },
+  dataLabels: {
+    enabled: true,
+    style: { colors: ["#fff"] },
+    formatter: (val: any, opt: any) => {
+      return opt.w.globals.series[0][opt.dataPointIndex].toLocaleString();
+    },
+  },
+  colors: [
+    "#00B0FF",
+    "#0288D1",
+    "#2979FF",
+    "#F50057",
+    "#FFCA28",
+    "#37474F",
+    "#1B5E20",
+    "#D32F2F",
+    "#8E24AA",
+    "#00C853",
+  ],
+  title: { text: "10 ການຄົ້ນຫາຫຼາຍສຸດພາຍໃນເດືອນ" },
+  subtitle: { text: "(ສະເພາະລາຍເດືອນ)" },
+  yaxis: {
+    labels: {
+      show: true,
+      formatter: (value: number) => value.toLocaleString(),
+    },
+  },
+};
+
+export const fetchData = async () => {
+  try {
+    const response = await axios.get(
+      "http://127.0.0.1:35729/api/searchlog_chart/"
+    );
+    chartData.value = response.data.chart_data;
+    updateChart();
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+
+  const monthsSet = new Set<string>();
+  chartData.value.forEach((item: any) => {
+    Object.keys(item).forEach((key: string) => {
+      if (key !== "bnk_code") {
+        monthsSet.add(key);
+      }
+    });
+  });
+
+  availableMonths.value = Array.from(monthsSet).sort();
+  selectedMonth.value = availableMonths.value[0] || "";
+};
+
+export const updateChart = () => {
+  const filteredData = chartData.value.filter(
+    (item: any) => selectedMonth.value in item
+  );
+
+ 
+  series.value[0].data = filteredData.map((item: any) => ({
+    x: item.bnk_code,
+    y: item[selectedMonth.value],
+  }));
+};
+
+export const updateQuarterChart = (chart: any, chartType: string) => {
+  console.log("Update quarter chart logic here...");
 };

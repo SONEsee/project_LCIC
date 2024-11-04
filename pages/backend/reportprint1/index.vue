@@ -153,7 +153,11 @@
           
           <!-- {{item}} -->
           <td> {{ index + 1 }}</td>
+<<<<<<< HEAD
           <td>{{ item.date }}</td>
+=======
+          <td>{{ item.id }}</td>
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
           <td>{{ item.bnk_code }}</td>
           <td>{{ item.lon_purpose }}</td>
           
@@ -629,7 +633,7 @@ export default {
       // { title: "Loan Update Date", value: "lon_update_date" },
       { title: "Loan Status", value: "lon_status" },
     ]);
-    // B1
+   
     const mainHeaders = ref([
       { title: "ສະມາຊິກ", value: "bank" },
       { title: "Loan ID", value: "id" },
@@ -777,7 +781,7 @@ export default {
         return goldsilverHeaders.value;
       }
 
-      return subHeaders_collteral.value; // Default headers if no match
+      return subHeaders_collteral.value; 
     };
 
     const print = () => {
@@ -847,11 +851,11 @@ export default {
   .button {
     display: none;
   }
-  div {
+  /* div {
     page-break-inside: avoid;
     page-break-before: auto;
     page-break-after: auto;
-  }
+  } */
   tr {
     page-break-inside: avoid;
     page-break-after: auto;

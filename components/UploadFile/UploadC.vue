@@ -96,6 +96,7 @@ export default defineComponent({
       try {
         // ດຶງຂໍ້ມູນເພື່ອປະຕິບັດ
         await fetchData();
+<<<<<<< HEAD
       });
   
       const fetchData = async () => {
@@ -105,6 +106,33 @@ export default defineComponent({
           );
           if (!response.ok) {
             throw new Error("Network response was not ok");
+=======
+
+        // ດຶງຂໍ້ມູນຜູ້ໃຊ້ຈາກ localStorage
+        const userData = localStorage.getItem("user_data");
+        console.log("User data:", userData);
+
+        if (userData) {
+          try {
+            // ແປໄພເປັນ JSON ເພື່ອໃຊ້ງານ
+            user.value = JSON.parse(userData);
+            console.log("Parsed user data:", user.value);
+
+            // ດຶງ MID ຈາກ user.value
+            const MID = user.value.MID;
+
+            // ກວດສອບວ່າ MID ແລະ MID.id ມີຄ່າຫຼືບໍ່
+            if (MID && MID.id) {
+              // ຕື່ມ '0' ດ້ານໜ້າຖ້າຄ່າ MID.id ນ້ອຍກວ່າ 10
+              const paddedMID = MID.id.toString().padStart(2, "0");
+              console.log("Padded MID.id:", paddedMID);
+
+              // ດຶງຂໍ້ມູນຕາມ UserID ໃຊ້ MID.id
+              await fetchDataByUserID(paddedMID);
+            }
+          } catch (error) {
+            console.error("Error parsing user data:", error);
+>>>>>>> 7a6a73f4385a12dae435ab5762d85d2ece83ccaa
           }
         }
       } catch (error) {
