@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const items = [
   { title: "ບຸກຄົນ ", url: "#" },
-  { title: "ນິຕິບຸກຄົນ", url: "#" },
+  { title: "ນິຕິບຸກຄົນ", url: "../backend/reportchart/enterprise" },
 
 ];
 </script>
@@ -21,12 +21,7 @@ const items = [
             :key="index"
           >
             <nuxt-link :to="item.url" style="text-decoration: none">
-              <!-- <v-card
-                height="200px"
-                class="d-flex align-center justify-center border hovering-zoom"
-              >
-                {{ item.title }}</v-card
-              > -->
+              
               <v-hover>
                 <template v-slot:default="{ isHovering, props }">
                   <v-card

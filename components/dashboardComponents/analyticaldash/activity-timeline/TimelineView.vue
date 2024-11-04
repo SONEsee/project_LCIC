@@ -26,7 +26,7 @@ const items = [
                 <template v-slot:default="{ isHovering, props }">
                   <v-card
                     class="d-flex justify-center align-center"
-                    height="50%"
+                    height="100%"
                     width=""
                     v-bind="props"
                     :color="isHovering ? 'indigo-accent-1' : 'blue-darken-4'"

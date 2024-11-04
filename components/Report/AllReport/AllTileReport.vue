@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card >
     <div>
       <p class="ml-3 pt-4"> <b style="color:#01579B ;">- ລາຍງານ</b></p>
     </div>

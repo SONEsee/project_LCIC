@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const items = [
   { title: "ບຸກຄົນ ", url: "#" },
-  { title: "ນິຕິບຸກຄົນ", url: "#" },
+  { title: "ນິຕິບຸກຄົນ", url: "../backend/chart/rrportchart" },
 
 ];
 </script>
