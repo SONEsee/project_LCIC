@@ -1,14 +1,19 @@
 <script setup lang="ts">
+import bank from "@/assets/images/report/bank.png";
+import mfi from '@/assets/images/report/mfi.png'
 const items = [
-  { title: "ທະນາຄານ ", url: "#" },
-  { title: "ສະຖາບັນ", url: "#" },
-
+  { title: "ທະນາຄານ ", url: "#", backgroundImage: bank },
+  { title: "ສະຖາບັນ", url: "#" , backgroundImage: mfi},
 ];
 </script>
 <template>
-  <v-card class="hovering-zoom">
-     <div>
-      <p style="color:#01579B ;"> <b># ລາຍງານການນຳສົ່ງ</b></p>
+  <v-card
+    class="hovering-zoom mt-10 text-center"
+    style="border: 1px #01579B solid"
+    color="rgba(255,255,255,0.4)"
+  >
+    <div class="mt-5 mb-5">
+      <p style="color: #01579b"><b># ລາຍງານການນຳສົ່ງ</b></p>
     </div>
     <div class="text-center">
       <v-col cols="12">
@@ -30,12 +35,44 @@ const items = [
               <v-hover>
                 <template v-slot:default="{ isHovering, props }">
                   <v-card
-                  class="d-flex justify-center align-center"
+                  :style="{
+                    border:'1px #01579B solid'
+                  }"
+                    class="d-flex justify-center align-center"
                     height="200px"
                     v-bind="props"
                     :color="isHovering ? 'primary' : undefined"
-                    ><p>{{ item.title }}</p></v-card
                   >
+                    <v-col cols="12">
+                      <v-row>
+                        <v-col cols="12" md="6">
+                          <img
+                          class="rounded-lg"
+                            :src="item.backgroundImage"
+                            alt=""
+                            height="150"
+                           
+                            :style="{
+                        backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      border: '1px solid #01579B',
+                      boxShadow: isHovering
+                        ? '0 6px 12px rgba(0, 0, 0, 0.3)'
+                        : '0 4px 8px rgba(0, 0, 0, 0.4)',
+                      transition: 'box-shadow 0.3s, transform 0.3s',
+                      transform: isHovering ? 'scale(1.05)' : 'scale(1)',
+                       }"
+                          />
+                        </v-col>
+                        <v-col
+                          cols="12"
+                          md="6"
+                          class="d-flex justify-center align-center"
+                          ><h2>{{ item.title }}</h2></v-col
+                        >
+                      </v-row>
+                    </v-col>
+                  </v-card>
                 </template>
               </v-hover>
             </nuxt-link>

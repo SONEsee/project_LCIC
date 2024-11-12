@@ -1,7 +1,7 @@
 <template>
-  <v-card >
+  <v-card class="fullscreen">
     <div>
-      <p class="ml-3 pt-4"> <b style="color:#01579B ;">- ລາຍງານ</b></p>
+      <p class="ml-3 pt-4"><b style="color: #01579b">- ລາຍງານ</b></p>
     </div>
     <v-tabs v-model="tab" fixed-tabs color="primary" stacked>
       <v-tab value="one">ລາຍງານຄ່າທຳນຽມ</v-tab>
@@ -17,17 +17,17 @@
         </v-window-item>
 
         <v-window-item value="two">
-         <SearchReport />
+          <SearchReport />
         </v-window-item>
 
         <v-window-item value="three">
-           <DeveliveryReport />
+          <DeveliveryReport />
         </v-window-item>
         <v-window-item value="four">
-          <PortpolioReport/>
+          <PortpolioReport />
         </v-window-item>
         <v-window-item value="five">
-          <LoginReport/>
+          <LoginReport />
         </v-window-item>
       </v-window>
     </v-card-text>
@@ -43,3 +43,22 @@ import LoginReport from "./LoginReport.vue";
 
 const tab = ref(null);
 </script>
+<style scoped lang="scss">
+.fullscreen {
+  background-image: url("@/assets/images/feed/logo.png");
+  height: 100vh;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+}
+.fullscreen::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ffffffec;
+  z-index: 0;
+}
+</style>

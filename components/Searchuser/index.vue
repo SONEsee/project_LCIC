@@ -2,7 +2,11 @@
     <div class="image-background">
       <v-container>
         <v-card class=" text-start "  
-          color="rgba(255, 255, 255, 0.4)">
+          color="rgba(255, 255, 255, 0.4)"
+          :style="{
+            border:'1px red solid'
+          }"
+          >
           <div class="text-center text-white">
             <p style="font-size: 20px"  class="mt-10">ຄົ້ນຫານິຕິບຸກຄົນ</p>
           </div>
@@ -12,7 +16,11 @@
               <v-row>
                 <v-col cols="12" md="3"></v-col>
                 <v-col cols="12" md="6">
-                  <v-card class="mb-13"  color="rgba(255, 255, 255, 0.8)">
+                  <v-card class="mb-13"  color="rgba(255, 255, 255, 0.8)"   
+                :style="{
+                  border:'1px red solid'
+                }"
+                  >
                     <v-form @submit.prevent="submit" class="mt-7">
                       <v-container>
                         <div class="mt-1">

@@ -61,8 +61,8 @@
             <v-combobox
               v-model="form.selectedBank"
               :items="banks"
-              item-title="bnk_short_form"
-              item-value="bnk_sys_id"
+              item-title="code"
+              item-value="id"
               label="Bank"
                variant="outlined"
 
@@ -161,7 +161,7 @@ export default {
     const fetchBanks = async () => {
       try {
         const config = useRuntimeConfig();
-        const response = await fetch(`${config.public.strapi.url}api/bank/`);
+        const response = await fetch(`${config.public.strapi.url}api/memberinfo/`);
         const data = await response.json();
         banks.value = data;
       } catch (error) {
@@ -186,7 +186,7 @@ export default {
               nameE: form.value.firstnameEng,
               surnameE: form.value.surnameEng,
               username: form.value.username,
-              MID: form.value.selectedBank.bnk_sys_id,
+              MID: form.value.selectedBank.id,
               GID: form.value.groupUser,
               password: form.value.password,
               confirmPassword: form.value.confirmPassword,

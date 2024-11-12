@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card class="background image-background" :style="backgroundStyle">
     <div>
       <p class="ml-3 pt-4"><b style="color: #01579b">- ການຄົ້ນຫາ</b></p>
     </div>
@@ -27,10 +27,21 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import Consumption from "./Consumption.vue";
 import Credit from "./Credit.vue";
-
 import CreditScore from "./CreditScore.vue";
+import backgroundImage from "@/assets/images/feed/logo.png";
 
 const tab = ref(null);
+
+const backgroundStyle = `background-image: url('${backgroundImage}'); background-size: cover; background-position: center;`;
 </script>
+
+<style scoped>
+.image-background {
+  min-height: 650px;
+  border-radius: 12px;
+  background-color: rgba(245, 248, 248, 0.89);
+}
+</style>

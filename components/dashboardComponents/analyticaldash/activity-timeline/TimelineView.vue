@@ -3,15 +3,15 @@ import serchinImage from "@/assets/images/feed/ff.jpg";
 import loginImage from "@/assets/images/feed/Water-Charges-2.jpg";
 
 const items = [
-  { title: "ໄຟຟ້າ", url: "#", backgroundImage: serchinImage },
-  { title: "ນໍ້າປະປາ", url: "#", backgroundImage: loginImage },
+  { title: "ບຸຄົນ", url: "#", backgroundImage: serchinImage },
+  { title: "ນິຕິບຸກຄົນ", url: "#", backgroundImage: loginImage },
 ];
 </script>
 
 <template>
   <v-card
     class="hovering-zoom mt-10 text-center"
-    color="rgba(255, 255, 255, 0.3)"
+    color="rgba(255, 255, 255, 0.6)"
     style="border-radius: 2px; border: 2px solid #9FA8DA"
   >
     <div class="mt-3 mb-3">
@@ -26,7 +26,7 @@ const items = [
                 <template v-slot:default="{ isHovering, props }">
                   <v-card
                     class="d-flex justify-center align-center"
-                    height="100%"
+                    height="90%"
                     width=""
                     v-bind="props"
                     :color="isHovering ? 'indigo-accent-1' : 'blue-darken-4'"

@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import serchinImage from "@/assets/images/serch/cd.png";
+import serchinImage from "@/assets/images/serch/individual.png";
 const items = [
-  { title: "ນິຕິບຸກຄົນ", url: "../backend/searchindividuals", backgroundImage: serchinImage },
+  {
+    title: "ນິຕິບຸກຄົນ",
+    url: "../backend/searchindividuals",
+    backgroundImage: serchinImage,
+  },
 ];
 </script>
 
-<template>  
-
-  <div class="d-flex justify-center align-center image-background text-center">
-   
+<template>
+  <div class=" image-background text-center">
     <div class="highlighted-text">
-      <p style="color: white; font-size: 24px;">ຄະແນນສິນເຊື່ອ</p>
+      <p style="color: white; font-size: 24px">ຄະແນນສິນເຊື່ອ</p>
     </div>
-    <v-card class="hovering-zoom mt-10" color="rgba(255, 255, 255, 0.4)">
+    <v-container>
+    <v-card class="hovering-zoom" color="rgba(255, 255, 255, 0.4)" style=" ">
       <v-container>
         <div class="text-center">
           <v-col cols="12">
@@ -54,28 +57,8 @@ const items = [
           </v-col>
         </div>
       </v-container>
-    </v-card>
+    </v-card></v-container>
   </div>
 </template>
 
-<style lang="scss">
-.image-background {
-  background-image: url("@/assets/images/serch/bg.jpg");
-  background-size: cover;
-  background-position: center;
-  width: 100%;
-  min-height: 100vh;
-}
-
-.text-overlay {
-  color: white;
-  font-weight: bold;
-  text-align: center;
-}
-.highlighted-text {
-  position: absolute;
-  top: 100px; 
-  text-align: center;
-  width: 100%;
-}
-</style>
+<style lang="scss"></style>

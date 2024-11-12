@@ -62,8 +62,10 @@ export const chartOptions = {
 
 export const fetchData = async () => {
   try {
+    const config = useRuntimeConfig();
+
     const response = await axios.get(
-      "http://127.0.0.1:35729/api/searchlog_chart/"
+      `${config.public.strapi.url}api/searchlog_chart/`
     );
     chartData.value = response.data.chart_data;
     updateChart();
@@ -84,14 +86,25 @@ export const fetchData = async () => {
   selectedMonth.value = availableMonths.value[0] || "";
 };
 
-export const updateChart = () => {
-  const filteredData = chartData.value.filter(
-    (item: any) => selectedMonth.value in item
-  );
+// export const updateChart = () => {
+//   const filteredData = chartData.value.filter(
+//     (item: any) => selectedMonth.value in item
+//   );
 
  
+//   series.value[0].data = filteredData.map((item: any) => ({
+//     x: item.bnk_code,
+//     y: item[selectedMonth.value],
+//   }));
+// };
+export const updateChart = () => {
+  const filteredData = chartData.value
+    .filter((item: any) => selectedMonth.value in item)
+    .sort((a: any, b: any) => b[selectedMonth.value] - a[selectedMonth.value]) 
+    .slice(0, 10); 
+
   series.value[0].data = filteredData.map((item: any) => ({
-    x: item.bnk_code,
+    x: item.bank_name,
     y: item[selectedMonth.value],
   }));
 };

@@ -9,7 +9,9 @@ const items = [
 ];
 </script>
 <template>
-  <v-card class="hovering-zoom bg-" >
+  <v-card class="hovering-zoom bg-" 
+    color="rgba(255, 255, 255, 0.6)"
+    style="border-radius: 2px; border: 2px solid #9FA8DA">
     <div>
       <p style="color: #01579b"><b># ສາທານຸປະໂພກ</b></p>
     </div>
