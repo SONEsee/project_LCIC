@@ -8,7 +8,7 @@
           :items="formattedBanks"
           label="ສະມາຊິກ"
           dense
-          outlined
+           variant="outlined"
           hide-details
           item-value="id"
           item-title="title"
@@ -49,7 +49,7 @@
           :items="months"
           label="ເດືອນ"
           dense
-          outlined
+           variant="outlined"
           hide-details
           class="custom-select"
         />
@@ -62,7 +62,7 @@
           :items="years"
           label="ປິ"
           dense
-          outlined
+           variant="outlined"
           hide-details
           class="custom-select"
         />

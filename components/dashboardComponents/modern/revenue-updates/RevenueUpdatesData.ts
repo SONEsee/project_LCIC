@@ -50,8 +50,8 @@ export const chartOptions = {
     "#8E24AA",
     "#00C853",
   ],
-  title: { text: "10 ການຄົ້ນຫາຫຼາຍສຸດພາຍໃນເດືອນ" },
-  subtitle: { text: "(ສະເພາະລາຍເດືອນ)" },
+  // title: { text: "10 ການຄົ້ນຫາຫຼາຍສຸດພາຍໃນເດືອນ" },
+  // subtitle: { text: "(ສະເພາະລາຍເດືອນ)" },
   yaxis: {
     labels: {
       show: true,

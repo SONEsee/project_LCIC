@@ -23,70 +23,82 @@
     </v-row>
 
     <v-card class="mx-auto my-4" elevation="4" rounded>
-    <div class="table-responsive">
-      <v-data-table :items="filteredUsers" class="bg-grey-lighten-5 rounded-table">
-        <!-- Table Header -->
-        <thead class="blue darken-4">
-          <tr class="bg-header wrap-text custom-width-name">
-            <th>ລະຫັດຜູ້ນໍາໃຊ້</th>
-            <th>ລະຫັດທນຄ</th>
-            <th>ຊື່ຜູ້ນໍາໃຊ້</th>
-            <th class="wrap-text custom-width-name">ຊື່</th>
-            <th class="">ນາມສະກຸນ</th>
-            <th>ສິດຜູ້ນໍາໃຊ້</th>
-            <th>ສະມາຊິກ</th>
-            
-            <th>ເຂົ້າລະບົບ</th>
-            <th>ສະຖານະ</th>
-            <th>ເຫດການ</th>
-          </tr>
-        </thead>
+      <div class="table-responsive">
+        <v-data-table
+          :items="filteredUsers"
+           items-per-page="5"
+          class="bg-grey-lighten-5 rounded-table"
 
-        <!-- Table Body -->
-        <tbody>
-          <tr v-for="user in filteredUsers" :key="user.UID" class="">
-            <td>{{ user.UID }}</td>
-            <td class="">{{ user.bnk_code }}</td>
-            <td class="wrap-text custom-width-name">{{ user.bnk_name }}</td>
-            <td class="">{{ user.username }}</td>
-            <td class="wrap-text custom-width-name">{{ user.Permission }}</td>
-            <td class="wrap-text custom-width-name">{{ user.nameL }} {{ user.surnameL }}</td>
-            <td class="wrap-text custom-width-name">{{ user.nameE }} {{ user.surnameE }}</td>
-            <td class="wrap-text custom-width-name">{{ user.last_login }}</td>
-            <td>
-              <p v-if="user.is_active" class="custom-box">Active</p>
-              <p v-else>Inactive</p>
-            </td>
-            <td class="action-icons">
-              <!-- Edit Icon -->
-              <NuxtLink :to="`../manageuser/edit_user?UID=${user.UID}`">
-                <Icon name="uil:edit" class="icon-user" />
-              </NuxtLink>
+        >
+          <thead class="blue darken-4">
+            <tr class="bg-header wrap-text custom-width-name">
+              <th>ລະຫັດຜູ້ນໍາໃຊ້</th>
+              <th>ລະຫັດທນຄ</th>
+              <th>ສະມາຊິກ</th>
+              <th class="wrap-text custom-width-name">ຊື່ຜູ້ນຳໃຊ້</th>
+              <th class="">ນາມສະກຸນ</th>
+              <th>ສິດຜູ້ນໍາໃຊ້</th>
 
-              <!-- Delete Icon -->
-              <Icon 
-                name="uil:trash" 
-                @click="deleteUser(user.UID)" 
-                class="icon-user ml-2"
-                style="cursor: pointer; color: red;" 
-              />
-            </td>
-          </tr>
-        </tbody>
-      </v-data-table>
-    </div>
-  </v-card>
+              <th>ເຂົ້າລະບົບ</th>
+              <th>ໂປຣຟາຍ</th>
+              <th>ສະຖານະ</th>
+              <th>ເຫດການ</th>
+            </tr>
+          </thead>
 
+          <tbody>
+            <tr v-for="user in filteredUsers" :key="user.UID" class="">
+              <td>{{ user.UID }}</td>
+              <td class="">{{ user.bnk_code }}</td>
+              <td class="wrap-text custom-width-name">{{ user.bnk_name }}</td>
+              <td class="">{{ user.username }}</td>
+              <td class="wrap-text custom-width-name">
+                {{ user.nameL }} {{ user.surnameL }}
+              </td>
+
+              <td class="wrap-text custom-width-name">
+                {{ user.nameE }} {{ user.surnameE }}
+              </td>
+              <td class="wrap-text custom-width-name">{{ user.last_login }}</td>
+              <td class="wrap-text custom-width-name">
+                <v-avatar>
+                  <v-img
+                    alt="John"
+                    src="https://cdn.vuetifyjs.com/images/john.jpg"
+                  ></v-img>
+                </v-avatar>
+              </td>
+              <td>
+                <p v-if="user.is_active" class="custom-box">Active</p>
+                <p v-else>Inactive</p>
+              </td>
+              <td class="action-icons">
+                <NuxtLink :to="`../manageuser/edit_user?UID=${user.UID}`">
+                  <v-icon icon="mdi-pencil"></v-icon>
+                </NuxtLink>
+
+                <v-icon
+                  icon="mdi-delete-outline"
+                  style="color: red"
+                  @click="deleteUser(user.UID)"
+                ></v-icon>
+              </td>
+            </tr>
+          </tbody>
+        </v-data-table>
+      </div>
+    </v-card>
   </div>
+ 
 </template>
 
 <style>
 .table-responsive {
   overflow-x: auto;
 }
-.bg-header{
+.bg-header {
   background-color: rgba(218, 218, 218, 0.719);
-  font-size:100%;
+  font-size: 100%;
 }
 .wrap-text {
   white-space: normal; /* Allow text to wrap */
@@ -101,7 +113,7 @@
 .head-user {
   font-weight: bold;
 }
-.icon-user{
+.icon-user {
   display: inline-block;
   font-size: 20px;
 }
@@ -115,7 +127,7 @@
   width: 100%;
   background-color: #ccffcc; /* Light green background */
   color: #32cd32; /* Lemon green text */
-  border: 1px solid #009400FF; /* Dark green border */
+  border: 1px solid #009400ff; /* Dark green border */
   border-radius: 10px; /* Rounded corners */
   padding: 3px; /* Padding inside the box */
   font-size: 10px; /* Text size */
@@ -128,29 +140,25 @@
   text-overflow: ellipsis; /* Adds ellipsis (...) to clipped text */
 }
 
-
 .custom-width-surname {
   width: 30%; /* Adjust the width as needed */
   white-space: nowrap; /* Prevents text from wrapping */
   overflow: hidden; /* Ensures the overflow is hidden */
   text-overflow: ellipsis; /* Adds ellipsis (...) to clipped text */
-
 }
 </style>
-
-
 
 <script lang="ts">
 // import SearchFilter from '@/components/SearchFilter.vue';
 
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 definePageMeta({
-  middleware: 'auth',
-  layout: 'backend',
+  middleware: "auth",
+  layout: "backend",
 });
 
 export default {
-  data(): { users: any[], filteredUsers: any[] } {
+  data(): { users: any[]; filteredUsers: any[] } {
     return {
       users: [], // Original users list
       filteredUsers: [], // Filtered users list
@@ -167,12 +175,14 @@ export default {
     async fetchUsers(): Promise<void> {
       try {
         const config = useRuntimeConfig();
-        const response = await fetch(`${config.public.strapi.url}api/userList/`);
+        const response = await fetch(
+          `${config.public.strapi.url}api/userList/`
+        );
         const data = await response.json();
         this.users = data.all_user;
         this.filteredUsers = data.all_user; // Initially, all users are shown
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error("Error fetching users:", error);
       }
     },
     // Method to filter users based on search query
@@ -185,44 +195,47 @@ export default {
     async deleteUser(UID: number): Promise<void> {
       try {
         const confirmDelete = await Swal.fire({
-          title: 'Confirm deletion',
+          title: "Confirm deletion",
           text: `Are you sure you want to delete user with UID ${UID}?`,
-          icon: 'warning',
+          icon: "warning",
           showCancelButton: true,
-          confirmButtonText: 'Yes, delete user',
-          cancelButtonText: 'No, cancel',
+          confirmButtonText: "Yes, delete user",
+          cancelButtonText: "No, cancel",
         });
 
         if (confirmDelete.isConfirmed) {
           const config = useRuntimeConfig();
-          const response = await fetch(`${config.public.strapi.url}api/delete_user/${UID}/`, {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
+          const response = await fetch(
+            `${config.public.strapi.url}api/delete_user/${UID}/`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
           if (response.ok) {
             Swal.fire({
-              title: 'User deleted',
+              title: "User deleted",
               text: `User with UID ${UID} deleted successfully.`,
-              icon: 'success',
+              icon: "success",
             });
             await this.fetchUsers(); // Re-fetch users after successful deletion
           } else {
             const errorData = await response.json();
             Swal.fire({
-              title: 'Error deleting user',
+              title: "Error deleting user",
               text: errorData,
-              icon: 'error',
+              icon: "error",
             });
           }
         }
       } catch (error) {
         Swal.fire({
-          title: 'Error deleting user',
+          title: "Error deleting user",
           text: error,
-          icon: 'error',
+          icon: "error",
         });
       }
     },

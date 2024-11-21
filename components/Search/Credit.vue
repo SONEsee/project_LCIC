@@ -4,7 +4,7 @@
       class="text-center"
       color="rgba(255, 255, 255, 0.1)"
       :style="{
-        border: '1px #0D47A1 solid',
+        border: '3px #0D47A1 solid',
       }"
       ><div class="mt-5 mb-5">
         <h3>ຄະແນນສິນເຊື່ອ</h3>
@@ -24,7 +24,7 @@
                   class="rounded-lg d-flex justify-center align-center"
                   height="200"
                   :style="{
-                    border: '1px #0D47A1 solid',
+                    border: '2px #0D47A1 solid',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     boxShadow: isHovering

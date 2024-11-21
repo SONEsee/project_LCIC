@@ -3,10 +3,10 @@
     <ManageUserAddUser />
   </div>
   <v-container class="elevation-4">
-    <div>
+    
       <h3>Personal Name</h3>
       <v-row no-gutters>
-        <v-col>
+        <v-col cols="12" md="4">
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.firstnameLao"
@@ -14,7 +14,7 @@
             ></v-text-field>
           </v-sheet>
         </v-col>
-        <v-col>
+        <v-col cols="12" md="4">
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.surnameLao"
@@ -22,9 +22,9 @@
             ></v-text-field>
           </v-sheet>
         </v-col>
-      </v-row>
-      <v-row no-gutters>
-        <v-col>
+      
+      
+        <v-col cols="12" md="4">
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.firstnameEng"
@@ -32,7 +32,7 @@
             ></v-text-field>
           </v-sheet>
         </v-col>
-        <v-col>
+        <v-col cols="12" md="4">
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.surnameEng"
@@ -40,15 +40,15 @@
             ></v-text-field>
           </v-sheet>
         </v-col>
-      </v-row>
-    </div>
+      
+    
 
-    <v-responsive width="100%"></v-responsive>
+    <!-- <v-responsive width="100%"></v-responsive> -->
 
-    <div>
-      <h3>Member Info</h3>
-      <v-row no-gutters>
-        <v-col>
+  
+      <!-- <h3>Member Info</h3> -->
+      
+        <v-col cols="12" md="4">
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.username"
@@ -56,7 +56,7 @@
             ></v-text-field>
           </v-sheet>
         </v-col>
-        <v-col>
+        <v-col cols="12" md="4">
           <v-sheet class="ma-2">
             <!-- <v-text-field v-model="form.member" label="Member"></v-text-field> -->
             <v-combobox
@@ -70,7 +70,7 @@
             ></v-combobox>
           </v-sheet>
         </v-col>
-        <v-col>
+        <v-col cols="12" md="4">
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.groupUser"
@@ -78,13 +78,13 @@
             ></v-text-field>
           </v-sheet>
         </v-col>
-      </v-row>
-    </div>
+     
 
-    <div>
-      <h3>Password</h3>
-      <v-row no-gutters>
-        <v-col>
+
+   
+      <!-- <h3>Password</h3> -->
+      
+        <v-col cols="12" md="4">
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.password"
@@ -93,7 +93,7 @@
             ></v-text-field>
           </v-sheet>
         </v-col>
-        <v-col>
+        <v-col cols="12" md="4">
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.confirmPassword"
@@ -102,10 +102,50 @@
             ></v-text-field>
           </v-sheet>
         </v-col>
-      </v-row>
-    </div>
+      
+        <div>
+        <h1>ການອັບໂຫຼດຮູບພາບ</h1>
+        <div v-if="user">
+          {{ user.MID.id }}
+        </div>
+        <v-col cols="12">
+          <v-file-input
+            v-model="files"
+            :show-size="1000"
+            color="deep-purple-accent-4"
+            label="ອັບໂຫຼດຮູບພາບ"
+            placeholder="Select your files"
+            prepend-icon="mdi-camera"
+            variant="outlined"
+            counter
+            multiple
+          >
+            <template v-slot:selection="{ fileNames }">
+              <template v-for="(fileName, index) in fileNames" :key="fileName">
+                <v-chip
+                  v-if="index < 2"
+                  class="me-2"
+                  color="deep-purple-accent-4"
+                  size="small"
+                  label
+                >
+                  {{ fileName }}
+                </v-chip>
+  
+                <span
+                  v-else-if="index === 2"
+                  class="text-overline text-grey-darken-3 mx-2"
+                >
+                  +{{ files.length - 2 }} ຮູບ(s)
+                </span>
+              </template>
+            </template>
+          </v-file-input>
+          <v-btn color="primary" @click="uploadFiles" class="ml-9">ອັບໂຫຼດ</v-btn>
+        </v-col>
+      </div>
 
-    <v-btn @click="submitForm">Create User</v-btn>
+    <v-btn @click="submitForm">Create User</v-btn></v-row>
   </v-container>
 </template>
 
@@ -129,7 +169,54 @@ useHead({
     },
   ],
 });
+const files = ref<File[]>([]);
+      const collaterals = ref([]);
+      const user = ref<User | null>(null);
 
+
+
+
+      
+      const uploadFiles = async () => {
+        const formData = new FormData();
+  
+        files.value.forEach((file) => {
+          formData.append("image", file);
+        });
+  
+        if (user.value && user.value.MID) {
+          
+          formData.append("user_mid_id", user.value.MID.id);
+        }
+  
+        try {
+          const config = useRuntimeConfig();
+          const response = await axios.post(
+            `${config.public.strapi.url}api/api/upload_image/`,
+            formData,
+            { headers: { "Content-Type": "multipart/form-data" } }
+          );
+          console.log(response.data);
+          await Swal.fire({
+            title: "ສຳເລັດ!",
+            text: "ອັບໂຫຼດຮູບພາບສຳເລັດແລ້ວ!",
+            icon: "success",
+            confirmButtonText: "OK",
+          }).then(() => {
+            location.reload();
+          });
+          fetchCollaterals();
+        } catch (error) {
+          console.error(error.response ? error.response.data : error.message);
+          Swal.fire({
+            title: "ຜິດພາດ!",
+            text: error.response ? error.response.data : error.message,
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        }
+      };
+  
 export default {
   setup() {
     const form = ref({
@@ -191,7 +278,11 @@ export default {
       fetchBanks();
     });
 
-    return { form, submitForm, banks };
+    return { form, submitForm, banks, files,
+        uploadFiles,
+        collaterals,
+        
+        user, };
   },
 };
 </script>

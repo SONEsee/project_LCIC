@@ -40,7 +40,7 @@ const backgroundStyle = `background-image: url('${backgroundImage}'); background
 
 <style scoped>
 .image-background {
-  min-height: 650px;
+  min-height: 780px;
   border-radius: 12px;
   background-color: rgba(245, 248, 248, 0.89);
 }

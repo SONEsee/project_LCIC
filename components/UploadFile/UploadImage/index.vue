@@ -114,6 +114,11 @@
       const files = ref<File[]>([]);
       const collaterals = ref([]);
       const user = ref<User | null>(null);
+
+
+
+
+      
       const uploadFiles = async () => {
         const formData = new FormData();
   
@@ -154,6 +159,10 @@
         }
       };
   
+
+
+
+
       const userID1 = user.value?.MID.id;
   
   

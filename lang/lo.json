@@ -1,3 +1,27 @@
 {
-  "hello": "ສະບາຍດີ"
+  "hello": "ສະບາຍດີ",
+  "search": "ການຄົ້ນຫາ",
+  "dashboard" : "ໜ້າຫຼັກ",
+  "searchreport" : "ລາຍງານການຄົ້ນຫາ",
+  "reportfees" : "ລາຍງານຄ່າທຳນຽມ",
+  "report" : "ລາຍງານ",
+  "datdsubmition" : " ການນຳສົ່ງຂໍ້ມູນ",
+  "manageuser" : " ຈັດການ User",
+  "datavadlidate" : " ກວດສອບຂໍ້ມູນ",
+  "uploadenterprise" : " ການອັບໂຫຼດໃບທະບຽນວິສາຫະກິດ",
+  "isuscodelcic" : " ອອກລະຫັດ LCIC",
+  "totalmember" : " ຈຳນວນສະມາຊິກທັງໝົດ",
+  "locations" : " ແຫ່ງ",
+  "individualslegal" : " ບຸກຄົນ-ນິຕິບຸກຄົນ & ອົງການຈັດຕັ້ງອື່ນ",
+  "businessbank" : " ທະນາຄານທຸລະກິດ",
+  "creditcompany" : "ບໍລິສັດສິນເຊື່ອ",
+  "MFI" : "ສະຖາບັນການເງິນຈຸລະພາກຮັບຝາກ",
+  "NIMF" : "ສະຖາບັນການເງິນຈຸລະພາກບໍ່ຮັບຝາກ",
+  "creditunion" : "ສະຫະກອນສິນເຊືອ",
+  "pewshop" : "ໂຮງຊວດຈຳ",
+  "member" : "ສະມາຊິກ",
+  "top10" : "10 ການຄົ້ນຫາຫຼາຍສຸດພາຍໃນເດືອນ",
+
+
+
 }

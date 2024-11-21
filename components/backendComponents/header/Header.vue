@@ -9,7 +9,6 @@
 // const notifications = ref(notification);
 // const userprofile = ref(profile);
 
-
 // const user = ref<User | null>(null);
 
 // onMounted(() => {
@@ -20,59 +19,66 @@
 //   }
 // });
 
-
 // const signOut = () => {
 //   const token = useCookie("access_token");
 
- 
 //   token.value = null;
 
- 
 //   useRouter().push({ path: "/" });
 // };
-import { useRouter, useCookie } from 'nuxt/app';
-import { onMounted, ref } from 'vue';
+import { useRouter, useCookie } from "nuxt/app";
+import { onMounted, ref, watch } from "vue";
 import { User } from "@/types/user";
 import { message, notification, profile } from "./headerItems";
 
 const router = useRouter();
-const href = ref(undefined)
+const href = ref(undefined);
 const notifications = ref(notification);
 const messages = ref(message);
 const timeout = ref<number | null>(null);
 const userprofile = ref(profile);
 const user = ref<User | null>(null);
+const { locale, setLocale } = useI18n();
 
+// const { locale } = useI18n();
+// const currentLocale = ref(locale.value);
+
+// function toggleLocale() {
+//   const newLocale = currentLocale.value === 'en' ? 'lo' : 'en';
+//   currentLocale.value = newLocale;
+//   locale.value = newLocale;
+// }
+
+// // Watch ເພື່ອໃຫ້ສະແດງພາສາທັນທີໂດຍບໍ່ຕ້ອງ reload ໜ້າ
+// watch(currentLocale, (newLocale) => {
+//   locale.value = newLocale;
+// });
 
 const signOut = () => {
-  localStorage.removeItem('access_token'); 
-  const token = useCookie('access_token'); 
+  localStorage.removeItem("access_token");
+  const token = useCookie("access_token");
   token.value = null;
-  router.push({ path: '/' }); 
+  router.push({ path: "/" });
 };
-
 
 const resetTimeout = () => {
   if (timeout.value) {
-    clearTimeout(timeout.value); 
+    clearTimeout(timeout.value);
   }
-  timeout.value = setTimeout(signOut, 30 * 60 * 1000); 
+  timeout.value = setTimeout(signOut, 30 * 60 * 1000);
 };
 
-
-const events = ['mousemove', 'click', 'keydown'];
-
+const events = ["mousemove", "click", "keydown"];
 
 const setupInactivityTimer = () => {
-  resetTimeout(); 
-  events.forEach(event => {
-    window.addEventListener(event, resetTimeout); 
+  resetTimeout();
+  events.forEach((event) => {
+    window.addEventListener(event, resetTimeout);
   });
 };
 
-
 onMounted(() => {
-  const userData = localStorage.getItem('user_data');
+  const userData = localStorage.getItem("user_data");
   if (userData) {
     user.value = JSON.parse(userData);
     // console.log('User data:', user.value);
@@ -82,11 +88,18 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-menu anchor="bottom end" origin="auto" min-width="300" >
-    <template v-slot:activator="{ props }" >
+  <v-menu anchor="bottom end" origin="auto" min-width="300">
+    <template v-slot:activator="{ props }">
       <div class="d-flex">
-        <!-- User Profile -->
-        <v-btn icon class="mx-3" >
+        <!-- User Profile --> 
+        <v-btn icon class="mx-3" color="white" @click="setLocale(locale === 'en' ? 'lo' : 'en')">
+  {{ locale }}
+</v-btn>
+
+<!-- <v-btn icon class="mx-3" color="white" @click="toggleLocale">
+    {{ currentLocale }}
+  </v-btn> -->
+        <v-btn icon class="mx-3">
           <v-avatar size="35">
             <img
               src="https://img.freepik.com/free-photo/abstract-autumn-beauty-multi-colored-leaf-vein-pattern-generated-by-ai_188544-9871.jpg?size=626&ext=jpg&ga=GA1.1.2082370165.1716249600&semt=ais_user"
@@ -94,8 +107,21 @@ onMounted(() => {
               alt="sone"
             />
           </v-avatar>
+          <!-- <v-menu  activator="parent">
+          
+          
+                <v-btn
+                  color="primary"
+                  @click="setLocale(locale === 'en' ? 'lo' : 'en')"
+                >
+                  {{ locale }}</v-btn
+                >
+                {{ $t("hello") }}
+           
+            
+          </v-menu> -->
 
-          <v-menu activator="parent" >
+          <v-menu activator="parent">
             <v-list class="pa-6" elevation="10" rounded="lg">
               <h4 class="font-weight-medium fs-18">ໂປຟາຍຂອງຂອ້ຍ</h4>
               <div class="d-flex align-center my-4" v-if="user">
@@ -108,14 +134,18 @@ onMounted(() => {
                 />
                 <div class="ml-4">
                   <h4 class="font-weight-medium fs-18">{{ user.username }}</h4>
-                  <span class="subtitle-2 font-weight-light">{{ user.MID?.code }}</span>
+                  <span class="subtitle-2 font-weight-light">{{
+                    user.MID?.code
+                  }}</span>
                   <div class="d-flex align-center">
                     <v-icon
                       icon="mdi-email-outline"
                       class="d-flex grey--text"
                       size="16"
                     ></v-icon>
-                    <span class="subtitle-2 font-weight-light ml-1">sone@gmail.com</span>
+                    <span class="subtitle-2 font-weight-light ml-1"
+                      >sone@gmail.com</span
+                    >
                   </div>
                 </div>
               </div>
@@ -139,12 +169,20 @@ onMounted(() => {
                   </v-btn>
                 </template>
               </v-list-item>
-              <v-btn block color="secondary" variant="tonal" class="mt-4 py-4" @click="signOut()">
+              <v-btn
+                block
+                color="secondary"
+                variant="tonal"
+                class="mt-4 py-4"
+                @click="signOut()"
+              >
                 ອອກຈາກລະບົບ
               </v-btn>
             </v-list>
           </v-menu>
         </v-btn>
+
+      
       </div>
     </template>
   </v-menu>

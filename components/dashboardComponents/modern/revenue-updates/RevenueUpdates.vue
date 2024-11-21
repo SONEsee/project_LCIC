@@ -22,6 +22,9 @@
     <v-divider></v-divider>
 
     <div id="chart-year">
+      <p class="ml-2">  {{ $t("top10") }}</p>
+      
+    
       <ApexCharts
         type="bar"
         height="400"
