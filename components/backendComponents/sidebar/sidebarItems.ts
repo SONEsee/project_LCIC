@@ -1,52 +1,51 @@
-export default [
+export const getSidebarItems = (t: (key: string) => string) => [
   {
-    title: "Dashboard",
+    title: t("dashboard"),
     icon: "mdi-view-dashboard-outline",
     to: "/backend/dashboard",
   },
   {
-    title: "ການຄົ້ນຫາ",
+    title: t("search"),
     icon: "mdi-magnify",
     to: "/backend/search",
   },
   {
-    title: "ລາຍງານການຄົ້ນຫາ",
-    // icon: "mdi-cart-outline",
-    icon: " mdi-note-search-outline",
+    title: t("searchreport"),
+    icon: "mdi-note-search-outline",
     to: "/backend/order",
   },
   {
-    title: "ລາຍງານຄ່າທຳນຽມ",
+    title: t("reportfees"),
     icon: "mdi-cash-multiple",
     to: "/backend/charge",
   },
   {
-    title: "ລາຍງານ",
+    title: t("report"),
     icon: "mdi-file-document-multiple-outline",
     to: "/backend/report",
   },
   {
-    title: "ນຳສົ່ງຂໍ້ມູນ",
+    title: t("datdsubmition"),
     icon: "mdi-upload-box-outline",
     to: "/backend/upload",
   },
   {
-    title: "ຈັດການ User",
+    title: t("manageuser"),
     icon: "mdi-cog-outline",
     to: "/backend/manageuser/userlist",
   },
   {
-    title: "ກວດສອບຂໍ້ມູນ",
+    title: t("datavadlidate"),
     icon: "mdi-history",
     to: "/backend/upload/lcictest",
   },
   {
-    title: "ອັບໂຫຼດທະບຽນວິສາຫະກິດ",
+    title: t("uploadenterprise"),
     icon: "mdi-image-area",
     to: "/backend/upload/upload_image",
   },
   {
-    title: "ອອກລະຫັດ LCIC",
+    title: t("isuscodelcic"),
     icon: "mdi-form-select",
     to: "/insertcollaterals",
   },

@@ -60,7 +60,8 @@ export default defineComponent({
     
     onMounted(async () => {
       try {
-        const response = await fetch('http://127.0.0.1:35729/api/charge-count/');
+        const config = useRuntimeConfig();
+        const response = await fetch(`${config.public.strapi.url}api/charge-count/`);
         const data = await response.json();
 
        

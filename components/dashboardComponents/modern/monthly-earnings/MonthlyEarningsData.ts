@@ -8,15 +8,15 @@ interface SeriesData {
 
 export const series = ref<SeriesData[]>([
   {
-    name: "Bank_TotalChgAmount",
+    name: "ຄ່າທຳນຽມຂອງທະນາຄານ",
     data: []
   },
   {
-    name: "MFI_TotalChgAmount",
+    name: "ຄ່າທຳນຽມຂອງສະຖາບັນ",
     data: []
   },
   {
-    name: "Overall_TotalChgAmount",
+    name: "ລວມທັງໝົດ",
     data: []
   }
 ]);
@@ -84,7 +84,8 @@ export const chartOptions = ref({
 
 export const fetchData = async () => {
   try {
-    const response = await axios.get('http://127.0.0.1:35729/api/sumbanktype_chargeamount/anymonth/');
+    const config = useRuntimeConfig();
+    const response = await axios.get(`${config.public.strapi.url}api/sumbanktype_chargeamount/anymonth/`);
     const data = response.data.data;
 
     const months = Object.keys(data);

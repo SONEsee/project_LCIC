@@ -1,14 +1,23 @@
 <script setup lang="ts">
+import image from "@/assets/images/report/individual.png";
+import enterprise from "@/assets/images/report/enterprise.png";
 const items = [
-  { title: "ບຸກຄົນ ", url: "#" },
-  { title: "ນິຕິບຸກຄົນ", url: "../backend/chart/rrportchart" },
-
+  { title: "ບຸກຄົນ ", url: "#", backgroundImage: image },
+  {
+    title: "ນິຕິບຸກຄົນ",
+    url: "../backend/chart/rrportchart",
+    backgroundImage: enterprise,
+  },
 ];
 </script>
 <template>
-  <v-card class="hovering-zoom">
-     <div>
-      <p style="color:#01579B ;"> <b># ຄ່າທຳນຽມ</b></p>
+  <v-card
+    class="hovering-zoom text-center"
+    style="border: 1px solid #9fa8da; max-height: 100%"
+    color="rgba(255,255,255,0.4)"
+  >
+    <div class="mt-10 mb-10">
+      <h3 style="color: #01579b"><b> ຄ່າທຳນຽມ</b></h3>
     </div>
     <div class="text-center">
       <v-col cols="12">
@@ -30,12 +39,58 @@ const items = [
               <v-hover>
                 <template v-slot:default="{ isHovering, props }">
                   <v-card
-                  class="d-flex justify-center align-center"
+                    :style="{
+                      // backgroundImage: `url(${item.backgroundImage})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      border: '1px solid #01579B',
+                      boxShadow: isHovering
+                        ? '0 6px 12px rgba(0, 0, 0, 0.3)'
+                        : '0 4px 8px rgba(0, 0, 0, 0.4)',
+                      transition: 'box-shadow 0.3s, transform 0.3s',
+                      transform: isHovering ? 'scale(1.05)' : 'scale(1)',
+                      
+                    }"
+                    class="d-flex justify-center align-center"
                     height="200px"
                     v-bind="props"
                     :color="isHovering ? 'primary' : undefined"
-                    ><p>{{ item.title }}</p></v-card
                   >
+                    <v-col
+                      color="rgba(255,255,255,0.5)"
+                      cols="12"
+                      class="d-flex justify-center align-center bg-indigo-lighten-5"
+                    >
+                      <v-row>
+                        <v-container></v-container>
+                        <v-col cols="12" md="6" class="d-flex  align-center">
+                          <img
+                            class="rounded-lg"
+                            :src="item.backgroundImage"
+                            alt=""
+                            height="150"
+                           
+                            :style="{
+                        backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      border: '1px solid #01579B',
+                      boxShadow: isHovering
+                        ? '0 6px 12px rgba(0, 0, 0, 0.3)'
+                        : '0 4px 8px rgba(0, 0, 0, 0.4)',
+                      transition: 'box-shadow 0.3s, transform 0.3s',
+                      transform: isHovering ? 'scale(1.05)' : 'scale(1)',
+                       }"
+                          />
+                        </v-col>
+                        <v-col
+                          cols="12"
+                          md="6"
+                          class="d-flex justify-center align-center"
+                          ><p>{{ item.title }}</p></v-col
+                        >
+                      </v-row>
+                    </v-col>
+                  </v-card>
                 </template>
               </v-hover>
             </nuxt-link>

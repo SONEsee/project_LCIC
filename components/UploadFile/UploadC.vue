@@ -280,105 +280,27 @@ export default defineComponent({
             title: "ມີຊືຟາຍຊໍ້າກັນ",
             text: "ຊື່ຟາຍນີ້ມີຢູ່ໃນລະບົບແລ້ວ ກາລຸນາກວດຄືນໃໝ່",
           });
-          return;
-        }
-  
-        const formData = new FormData();
-        formData.append("file", file.value);
-        formData.append("title", file.value.name);
-  
-        const newItem = {
-          fileName: file.value.name,
-          fileSize: file.value.size,
-          path: "",
-          insertDate: new Date().toLocaleString(),
-          updateDate: new Date().toLocaleString(),
-          status: "ກຳລັງນຳສົ່ງຂໍ້ມູນ",
-        };
-        items.value.push(newItem);
-  
-        try {
-          const response = await axios.post(
-            "http://127.0.0.1:35729/api/upload-filesC/",
-            formData
-          );
-  
-          const updatedItem = items.value.find(
-            (item) => item.fileName === file.value!.name
-          );
-          if (updatedItem) {
-            updatedItem.status = "ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ";
-            updatedItem.path = response.data.path;
-          }
-  
+        } else if (error.response && error.response.status === 406) {
           Swal.fire({
             icon: "error",
             title: "ອັບໂຫຼດລົ້ມເຫຼວ",
             text: "ຮູບແບບຂໍ້ມູນຂອງ period ຢູ່ໃນຖານຂໍ້ມູນບໍ່ຖືກຮູບແບບ",
           });
-  
-          const response2 = await fetch(
-            "http://127.0.0.1:35729/api/api/upload-filesc2/"
-          );
-          const data = await response2.json();
-          items.value = data.map((item: any) => ({
-            ...item,
-            CID: item.CID,
-          }));
-        } catch (error) {
-          console.error(error);
-  
-          const updatedItem = items.value.find(
-            (item) => item.fileName === file.value!.name
-          );
-          if (updatedItem) {
-            updatedItem.status = "ການນຳສົ່ງບໍ່ສົມບູນ";
-          }
-  
+        } else if (error.response && error.response.status === 408) {
+          Swal.fire({
+            icon: "error",
+            title: "ການອັບໂຫຼດລົ້ມເຫຼວ",
+            text: "ທ່ານບໍ່ສາມາດອັບໂຫຼດຂໍ້ມູນຍອ້ນຫຼັງໄດ້",
+          });
+        } else {
           Swal.fire({
             icon: "error",
             title: "ການອັບໂຫຼດລົ້ມເຫລວ",
             text: "ກາລຸນາກວດສອບຄືນ",
           });
         }
-      };
-  
-      const router = useRouter();
-  
-      const viewDetails = async (item: any) => {
-        if (!item.CID) {
-          Swal.fire({
-            icon: "error",
-            title: "ລົ້ມເຫລວ",
-            text: "ບໍມີຂໍ້ມູນທີ່ກົງກັບ CID ນີ້",
-          });
-          return;
-        }
-  
-        try {
-          const response = await axios.get(
-            "http://127.0.0.1:35729/api/api/productinfoc3/",
-            {
-              params: {
-                CID: item.CID,
-              },
-              
-            }
-          );
-         
-          const data = response.data;
-          router.push({
-            name: "detailupload_c",
-            query: { data: JSON.stringify(data) },
-          });
-        } catch (error) {
-          Swal.fire({
-            icon: "error",
-            title: "ລົ້ມເຫລວ",
-            text: "ລົ້ມເຫລວໃນການສະແດບຂໍ້ມູນ",
-          });
-        }
-      };
+      }
+    };
 
     const router = useRouter();
 
@@ -392,51 +314,46 @@ export default defineComponent({
         return;
       }
 
-  
-      const getFullPath = (path: string) => {
-        const baseUrl = "http://127.0.0.1:35729/";
-        return `${baseUrl}${path}`;
-      };
-  
-      const getFileName = (path: string) => {
-        const parts = path.split("/");
-        return parts[parts.length - 1];
-      };
-  
-      const getStatusColor = (status_upload: string) => {
-        switch (status_upload) {
-          case "in_progress":
-            return "orange";
-          case "completed":
-            return "green";
-          case "failed":
-            return "red";
-          case "0":
-          case "default":
-            return "blue";
-        }
-      };
-  
-      const getStatusText = (status_upload: string) => {
-        switch (status_upload) {
-          case "in_progress":
-            return "ກຳລັງນຳສົ່ຂໍ້ມູນ";
-          case "completed":
-            return "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ";
-          case "failed":
-            return "ປະຕິເສດ";
-          case "0":
-          case "default":
-            return "ສຳເລັດການໂຫຼດ";
-        }
-      };
-  
-      const getPercentageColor = (percentage: string) => {
-        const percentageValue = parseFloat(percentage);
-  
-        if (percentageValue >= 15) {
-          return "red";
-        } else if (percentageValue < 15) {
+      try {
+        const config = useRuntimeConfig();
+        const response = await axios.get(
+          `${config.public.strapi.url}api/api/productinfoc3/`,
+          {
+            params: {
+              CID: item.CID,
+            },
+          }
+        );
+
+        const data = response.data;
+        router.push({
+          name: "detailupload_c",
+          query: { data: JSON.stringify(data) },
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "ລົ້ມເຫລວ",
+          text: "ລົ້ມເຫລວໃນການສະແດບຂໍ້ມູນ",
+        });
+      }
+    };
+    const config = useRuntimeConfig();
+    const getFullPath = (path: string) => {
+      const baseUrl = `${config.public.strapi.url}`;
+      return `${baseUrl}${path}`;
+    };
+
+    const getFileName = (path: string) => {
+      const parts = path.split("/");
+      return parts[parts.length - 1];
+    };
+
+    const getStatusColor = (statussubmit: string) => {
+      switch (statussubmit) {
+        case "Pending":
+          return "orange";
+        case "1":
           return "green";
         case "2":
           return "red";

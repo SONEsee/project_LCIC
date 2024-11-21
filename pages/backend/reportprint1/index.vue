@@ -1,5 +1,13 @@
 <template>
-  <v-container>
+  
+  <v-container><div 
+    class="rounded-lg"
+  :style="{
+    border:'1px #2979FF solid'
+    
+  }">
+    
+  
     <v-col cols="12">
       <section class="pa-5" id="main-content">
         <div>
@@ -40,7 +48,7 @@
               <p>ລະຫັດຂສລ: <b>{{ enterpriseInfo.LCICID}}</b></p>
             </div>
             <div class="" v-if="user">
-              <p>ຜູ້ສອບຖາມຂໍ້ມູນ: <b> {{ user.nameE }}</b> ຈາກທະນາຄານ: <b>{{ user.MID?.code }}</b></p>
+              <p style="font-size: ;">ຜູ້ສອບຖາມ: <b> {{ user.nameE }}</b> ຈາກທະນາຄານ: <b>{{ user.MID?.code }}</b></p>
             </div>
           </v-col>
         </v-row>
@@ -65,8 +73,8 @@
               <v-col cols="12" >
                 <v-row class="ml-2">
                   
-                  <p v-if="enterpriseInfo"><b>  Kyc No:</b> {{ enterpriseInfo.investmentAmount }},</p>
-                  <p v-if="enterpriseInfo" class="ml-5"><b>  ຊື່ບໍລິສັດພາສາລາວ:</b> {{ enterpriseInfo.eneterpriseNameEnglish }} </p> <br>
+                  <p v-if="enterpriseInfo"><b> LCID:</b> {{ enterpriseInfo.LCICID }},</p>
+                  <p v-if="enterpriseInfo" class="ml-5"><b>  ຊື່ບໍລິສັດພາສາລາວ:</b> {{ enterpriseInfo.enterpriseNameLao}} </p> <br>
                 </v-row>
                 <v-row>
                    <p v-if="enterpriseInfo" class="ml-5"><b>  ຊື່ຜູ້ຈັດການທົ່ວໄປ:</b> --- </p>
@@ -81,33 +89,79 @@
       </section></v-col
     >
     <v-col cols="12">
+<div class="rounded-lg"
+
+>
+
+
       <p ><b> - ຂໍ້ມູນທົວໄປຜູ້ກູ້</b></p>
-     <v-row class="mt-2">
+      <div :style="{
+        border:'1px #2979FF solid'
+      }"
+      class="rounded-lg">
+     <v-row class="mt-2 mb-1 ml-1 mr-1">
       <v-col cols="4" v-if="enterpriseInfo" >
+        <!-- {{ enterpriseInfo }} -->
         <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.enterpriseNameLao }}</p>
-        <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.regisStrationOfficeType }}</p>
+        <!-- <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.regisStrationOfficeType }}</p> -->
         <p><b>ເລກທີ:</b> {{ enterpriseInfo.EnterpriseID }}</p>
       </v-col>
       <v-col cols="4" v-if="enterpriseInfo">
 <p><b>ວັນທີອອກໃບທະບຽນ:</b> {{ enterpriseInfo.regisDate.slice(0, -18) }}</p>
 <p><b>ທີ່ຕັ້ງວິສາຫະກິດ:</b> {{ enterpriseInfo.enLocation }}</p>
-<p><b>ພາສວນເສດຖະກິດ:</b> --</p>
+<p><b>ພາກສວນເສດຖະກິດ:</b> --</p>
       </v-col>
       <v-col cols="4" v-if="enterpriseInfo">
-        <p><b >ທຶນຈົດທະບຽນ:</b> {{ enterpriseInfo.investmentAmount }}</p>
-        <p><b>ທຶນຈົດທະບຽນ:</b> --</p>
+        <p><b >ທຶນຈົດທະບຽນ:</b> {{Number( enterpriseInfo.investmentAmount).toLocaleString() }}</p>
+        <!-- <td>{{Number( item.lon_credit_line).toLocaleString() }}</td> -->
+        <!-- <p><b>ທຶນຈົດທະບຽນ:</b> --</p> -->
         <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ:</b> --</p>
       </v-col>
-     </v-row>
+     </v-row></div>
+</div>
+
 
     </v-col>
+
+
+<p><b>- ຂໍ້ມູນປະຫວັດການເຂົ້າຄົ້ນຫາ</b></p>
+<div
+class="rounded-lg"
+ :style="{
+  border:'1px #2979FF solid'
+}">
+    <v-table>
+      <thead>
+        <tr>
+          <th>ລຳດັບ</th>
+          <th>ວັນເດືອນທີ່ຄົ້ນຫາ</th>
+          <th>ຜູ້ຄົ້ນຫາ</th>
+          <th>ເຫດຜົນການຄົ້ນຫາ</th>
+          <th>ປະເພດເງິນກູ້</th>
+        </tr>
+      </thead>
+      <tbody>
+    <tr v-for="(item, index) in search_history.slice(-12)" :key="index">
+    
+        <td>{{ index + 1 }}</td>
+        <td>{{ item.id.slice(0, -11) }}</td>
+        <td>{{ item.bnk_code }}</td>
+        <td>{{ item.lon_purpose }}</td>
+        <td>--</td>
+    </tr>
+</tbody>
+    </v-table></div>
     <v-col cols="12" >
       <p><b>- ລວມວົງເງິນກູ້ທີ່ເຄື່ອນໄຫວທັງໝົດ</b></p>
-      <v-table class="mt-5 elevation-1 v-data-table1" >
-  <thead>
-    <tr style="font-size: 90%;  " class="text-bold">
+      <v-table class="mt-5 elevation-1 v-data-table1 rouded-lg"  :style="{
+        border:'1px #2979FF solid'
+      }">
+  <thead 
   
-      <th><b>ສະມາຊິກ</b></th>
+  >
+    <tr style="font-size: 90%;  " class="text-bold" >
+  
+      <th ><b>ສະມາຊິກ</b></th>
       <th><b> ລະຫັດເງິນກູ້</b></th>
       <th><b>ມືເປີດ</b></th>
       <th>ວົງເງິນກູ້</th>
@@ -122,8 +176,8 @@
       <td>{{ item.bnk_code }}</td>
       <td>{{ item.loan_id }}</td>
       <td>{{ item.lon_open_date.slice(0, -15) }}</td>
-      <td>{{ item.lon_credit_line.slice(0, -3) }}</td>
-      <td>{{ item.lon_outstanding_balance.slice(0, -3) }}</td>
+      <td>{{Number( item.lon_credit_line).toLocaleString() }}</td>
+      <td>{{Number( item.lon_outstanding_balance).toLocaleString() }}</td>
       
       <td>{{ item.lon_currency_code }}</td>
       <td>{{ item.lon_no_days_slow }}</td>
@@ -137,32 +191,13 @@
 
   
     </v-col>
-    <p><b>- ຂໍ້ມູນປະຫວັດການເຂົ້າຄົ້ນຫາ</b></p>
-    <v-table>
-      <thead>
-        <tr>
-          <th>ລຳດັບ</th>
-          <th>ວັນເດືອນທີ່ຄົ້ນຫາ</th>
-          <th>ຜູ້ຄົ້ນຫາ</th>
-          <th>ເຫດຜົນການຄົ້ນຫາ</th>
-          <th>ປະເພດເງິນກູ້</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr  v-for="(item, index) in search_history" :key="index">
-          
-          <!-- {{item}} -->
-          <td> {{ index + 1 }}</td>
-          <td>{{ item.id }}</td>
-          <td>{{ item.bnk_code }}</td>
-          <td>{{ item.lon_purpose }}</td>
-          
-          <td>--</td>
-          
-          
-        </tr>
-      </tbody>
-    </v-table>
+
+
+
+
+
+
+    
     <p><b>-ລາຍລະອຽດຂໍ້ມູນເງິນກູ້</b></p>
     
     <v-col cols="12">
@@ -188,6 +223,7 @@
                   <v-col cols="12">
                     <v-row>
                       <v-col cols="4" md="4" >
+                        <!-- {{ item }} -->
                         <p> <b>ລະຫັດເງິນກູ້: </b>{{ item.id }}</p>
                         <p> <b>ມື້ເປິດເງິນກູ້: </b>{{ item.lon_open_date.slice(0, -10) }}</p>
                         <p> <b>ມື້ໝົດສັນຍາເງິນກູ້ເງິນກູ້: </b>{{ item.lon_expiry_date }}</p>
@@ -487,20 +523,20 @@
                   <v-table>
                     <thead>
                       <tr>
-                        <th>No.</th>
-                        <th>Period</th>
-                        <th>Credit Line</th>
-                        <th>Outstanding Balance</th>
-                        <th>Loan Days Slow</th>
-                        <th>Loan Currency Code</th>
-                        <th>Loan Class</th>
-                        <th>Loan Status</th>
+                        <th>ລຳດັບ.</th>
+                        <th>ເດືອນ ,ວັນ</th>
+                        <th>ວົງເງິນກູ້</th>
+                        <th>ຍອດຍັງເຫຼືອ</th>
+                        <th>ຈຳນວນວັນຈ່າຍຊ້າ</th>
+                        <th>ສະກຸນເງິນ</th>
+                        <th>ປະເພດເງິນກູ້</th>
+                        <th>ສະຖານະ</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr v-for="(item , index) in item.lon_class_history">
                         <td>{{index +1}}</td>
-                        <td>{{ item.period.slice(0, 2) + '-' + item.period.slice(2) }}</td>
+                        <td>{{ item.period.slice(0, 4) + '-' + item.period.slice(4) }}</td>
                         <td>{{Number( item.lon_credit_line).toLocaleString() }}</td>
                         <td>{{Number( item.lon_outstanding_balance).toLocaleString() }}</td>
                         <td>{{ item.lon_no_days_slow }}</td>
@@ -551,7 +587,7 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col cols="12">
+        <v-col cols="12" class="text-">
           <div style="border: #1565c0 1px solid; padding: 10px" class="bg-blue-darken-4 rounded-lg">
 <v-col cols="12">
   <v-row>
@@ -568,7 +604,7 @@
           </div>
         </v-col>
       </v-row>
-    </v-col></v-container>
+    </v-col></div></v-container>
 </template>
 
 <script lang="ts">
@@ -737,6 +773,7 @@ export default {
           loan_detail_inactive.value = data.inactive_loans;
           loan_detail_active.value = data.active_loans;
           search_history.value = data.search_history;
+          console.log("searchsone",search_history)
 
           enterpriseInfo.value = data.enterprise_info;
           invesInfo.value = data.inves_info;
@@ -821,13 +858,13 @@ export default {
   body {
     width: 210mm;
     height: 297mm;
-    padding: 5px 10% 0 10%;
+    padding: 4px 10% 0 10%;
     background: fixed;
     background-image: fixed;
     font-size: 10pt !important;
   }
   h1, h2, h3, h4, h5, h6 {
-      font-size: 12pt !important;
+      font-size: 11pt !important;
     }
     p, div, span, table {
       font-size: 10pt !important;
