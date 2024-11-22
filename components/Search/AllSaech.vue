@@ -1,12 +1,12 @@
 <template>
   <v-card class="background image-background" :style="backgroundStyle">
     <div>
-      <p class="ml-3 pt-4"><b style="color: #01579b">- ການຄົ້ນຫາ</b></p>
+      <p class="ml-3 pt-4"><b style="color: #01579b">- {{ $t("search1") }}</b></p>
     </div>
     <v-tabs v-model="tab" fixed-tabs color="primary" stacked>
-      <v-tab value="one">ສິນເຊື້ອ</v-tab>
-      <v-tab value="two">ສາທານຸປະໂພກ</v-tab>
-      <v-tab value="three">ຄະແນນສິນເຊືອ</v-tab>
+      <v-tab value="one">{{ $t("creditloans")  }}</v-tab>
+      <v-tab value="two">{{ $t("utilities") }}</v-tab>
+      <v-tab value="three">{{ $t("creditscores") }}</v-tab>
     </v-tabs>
     <v-card-text>
       <v-window v-model="tab">

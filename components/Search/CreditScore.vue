@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import serchinImage from "@/assets/images/serch/individual.png";
-const items = [
+import { useI18n } from "vue-i18n";
+const {t}= useI18n();
+const items = computed(() => [
   {
-    title: "ນິຕິບຸກຄົນ",
+    title: t("legalentity"),
     url: "../backend/searchindividuals",
     backgroundImage: serchinImage,
   },
-];
+]);
 </script>
 
 <template>
   <div class="image-background text-center">
     <div class="highlighted-text">
-      <p style="font-size: 24px">ຄະແນນສິນເຊື່ອ</p>
+      <p style="font-size: 24px"><b>{{ $t("creditscores") }}</b></p>
     </div>
     <v-container>
       <v-card
@@ -82,7 +84,7 @@ const items = [
                                 md="6"
                                 class="d-flex justify-center align-center"
                                 ><h3 class="text-black">
-                                  {{ item.title }}
+                                  <p>{{ item.title }}</p>
                                 </h3></v-col
                               >
                             </v-row>

@@ -9,7 +9,7 @@
         :style="{ border: '1px #90CAF9 solid' }"
       >
         <div style="color: ">
-          <h3 class="mt-4 mb-4"><b>ຄົ້ນຫາບົດລາຍງານສາທານຸປະໂພກ</b></h3>
+          <h3 class="mt-4 mb-4"><b>{{$t("searchutilityreports")}}</b></h3>
         </div>
         <v-row class="text-center">
           <v-col cols="12" md="4" v-for="(item, index) in items" :key="index">
@@ -43,7 +43,7 @@
                           style="font-size: 12pt"
                           class="text-black d-flex align-center justify-center"
                         >
-                          {{ item.title || "No Title" }}
+                         <p> {{ item.title || "No Title" }}</p>
                         </v-col>
                       </v-row>
                     </v-col>
@@ -63,12 +63,13 @@ import { ref } from "vue";
 import serchffImage from "@/assets/images/serch/enterprise.png";
 import serchttImage from "@/assets/images/serch/enterprise1.png";
 import serchnpImage from "@/assets/images/electric/eltn.jpg";
-
-const items = [
-  { url: "#", backgroundImage: serchffImage, title: "ໄຟຟ້າ " },
-  { url: "#", backgroundImage: serchttImage, title: "ນໍ້າປະປາ" },
-  { url: "#", backgroundImage: serchnpImage, title: "ໂທລະຄົມ" },
-];
+import { useI18n } from "vue-i18n";
+const {t}= useI18n();
+const items = computed(() =>  [
+  { url: "#", backgroundImage: serchffImage, title: t("electric") },
+  { url: "#", backgroundImage: serchttImage, title: t("tapwater") },
+  { url: "#", backgroundImage: serchnpImage, title: t("telecom") },
+]);
 
 const getCardStyle = (image: string, isHovering: boolean) => ({
   backgroundImage: `url(${image})`,
