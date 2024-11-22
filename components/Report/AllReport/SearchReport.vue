@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import individaul from "@/assets/images/report/saerch.png";
 import searchenterprise from '@/assets/images/report/enterprise1.png'
-const items = [
-  { title: "ບຸກຄົນ ", url: "#", backgroundImage: individaul },
-  { title: "ນິຕິບຸກຄົນ", url: "../backend/reportchart/enterprise" ,backgroundImage:searchenterprise },
-];
+import { useI18n } from "vue-i18n";
+
+const {t}= useI18n();
+const items = computed(() =>[
+  { title: t('person'), url: "#", backgroundImage: individaul },
+  { title: t('enterprise'), url: "../backend/reportchart/enterprise" ,backgroundImage:searchenterprise },
+]);
 </script>
 <template>
   <v-card class="hovering-zoom text-center mt-5" style="border: 1px solid #00B0FF">
     <div class="mt-5 mb-5">
-      <p style="color: #01579b"><b> ລາຍງານການຄົ້ນຫາ</b></p>
+      <p style="color: #01579b"><b> {{$t("searchreport")}}</b></p>
     </div>
     <div class="text-center">
       <v-col cols="12">

@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import image from "@/assets/images/report/individual.png";
 import enterprise from "@/assets/images/report/enterprise.png";
-const items = [
-  { title: "ບຸກຄົນ ", url: "#", backgroundImage: image },
+import { useI18n } from "vue-i18n";
+
+const {t}= useI18n();
+const items = computed(() =>[
+  { title: t("person"), url: "#", backgroundImage: image },
   {
-    title: "ນິຕິບຸກຄົນ",
+    title: t("enterprise"),
     url: "../backend/chart/rrportchart",
     backgroundImage: enterprise,
   },
-];
+]);
 </script>
 <template>
   <v-card
@@ -17,7 +20,7 @@ const items = [
     color="rgba(255,255,255,0.4)"
   >
     <div class="mt-10 mb-10">
-      <h3 style="color: #01579b"><b> ຄ່າທຳນຽມ</b></h3>
+      <h3 style="color: #01579b"><b> {{$t('collectfees')}}</b></h3>
     </div>
     <div class="text-center">
       <v-col cols="12">

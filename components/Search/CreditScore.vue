@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 const {t}= useI18n();
 const items = computed(() => [
   {
-    title: t("legalentity"),
+    title: t("enterprise"),
     url: "../backend/searchindividuals",
     backgroundImage: serchinImage,
   },
@@ -84,7 +84,7 @@ const items = computed(() => [
                                 md="6"
                                 class="d-flex justify-center align-center"
                                 ><h3 class="text-black">
-                                  <p>{{ item.title }}</p>
+                                  <p><b>{{ item.title }}</b></p>
                                 </h3></v-col
                               >
                             </v-row>

@@ -29,8 +29,35 @@
   "electric" : "Electric",
   "tapwater" : "Tap water",
   "telecom" : "Telecom",
-  "legalentity" : "Legal Entity",
-
+  "enterprise" : "Enterprise",
+  "collectloanfees" : "Collect loan fees",
+  "collectfees" : "Collect fees",
+  "person" : "Person",
+  "memberall" : "Member : All",
+  "feesall" : "fees All",
+  "kip" : "Kip",
+  "total" : "Total",
+  "detail" : "Detail",
+  "bankcode" : "Bank code",
+  "bankname" : "Bank Name",
+  "totalsearch" : "Total search",
+  "transmissionreport" : "Transmission Report", 
+  "portpolio" : "Portpolio", 
+  "reportlogin" : "Report Login",
+  "bank" : "Bank",
+  "institution" : "Institution",
+  "portpolio1" : "Debt classification by banks' lending objectives",
+  "portpolio2" : "Debt classification by lending objectives across the banking system",
+  "portpolio3" : "Debt classification by provinces of individual banks",
+  "portpolio4" : "Debt classification by provinces across the banking system",
+  "portpolio5" : "Aggregate analysis of loan amounts by debt classification",
+  "portpolio6" : "Aggregate analysis of total loan amounts by debt classification",
+  "portpolio7" : "Report on impaired loan values requiring high provisions for each bank",
+  "portpolio8" : "Report on impaired loan values requiring high provisions across the banking system",
+  "portpolio9" : "Loan loss reserve amounts for individual banks",
+  "portpolio10" : "Loan loss reserve amounts across the banking system",
   
 
 }
+
+

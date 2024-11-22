@@ -1,14 +1,14 @@
 <template>
   <v-card class="fullscreen">
     <div>
-      <p class="ml-3 pt-4"><b style="color: #01579b">- ລາຍງານ</b></p>
+      <p class="ml-3 pt-4"><b style="color: #01579b">- {{$t("report")}}</b></p>
     </div>
     <v-tabs v-model="tab" fixed-tabs color="primary" stacked>
-      <v-tab value="one">ລາຍງານຄ່າທຳນຽມ</v-tab>
-      <v-tab value="two">ລາຍງານຄົ້ນຫາ</v-tab>
-      <v-tab value="three">ລາຍງານການນຳສົ່ງ</v-tab>
-      <v-tab value="four">ພອດໂພລີໂອ</v-tab>
-      <v-tab value="five">ລາຍງານການເຂົ້ານຳໃຊ້</v-tab>
+      <v-tab value="one">{{ $t("reportfees") }}</v-tab>
+      <v-tab value="two">{{$t("searchreport")}}</v-tab>
+      <v-tab value="three">{{ $t("transmissionreport") }}</v-tab>
+      <v-tab value="four">{{ $t("portpolio") }}</v-tab>
+      <v-tab value="five">{{ $t("reportlogin") }}</v-tab> 
     </v-tabs>
     <v-card-text>
       <v-window v-model="tab">
