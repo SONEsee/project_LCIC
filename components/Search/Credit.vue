@@ -7,7 +7,7 @@
         border: '3px #0D47A1 solid',
       }"
       ><div class="mt-5 mb-5">
-        <h3>ຄະແນນສິນເຊື່ອ</h3>
+        <h3><b>{{ $t("creditscores") }}</b></h3>
       </div>
       <v-row>
         <v-col
@@ -81,17 +81,18 @@
 <script setup lang="ts">
 import serchinImage from "@/assets/images/serch/saerch.png";
 import loginImage from "@/assets/images/serch/individual.png";
-
-const items = [
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+const items = computed(() => [
   {
     url: "../backend/individualssearch",
     backgroundImage: serchinImage,
-    title: "ບຸກຄົນ",
+    title: t("search"),
   },
   {
     url: "../backend/searchuser",
     backgroundImage: loginImage,
-    title: "ນິຕິບຸກຄົນ",
+    title: t("creditscores"),
   },
-];
+]);
 </script>
