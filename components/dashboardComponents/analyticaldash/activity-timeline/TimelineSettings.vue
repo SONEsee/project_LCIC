@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import serchinImage from "@/assets/images/serch/faifar.png";
 import loginImage from "@/assets/images/serch/water.jpg";
+import { useI18n } from "vue-i18n";
 
-const items = [
-  { title: "ໄຟຟ້າ", url: "#", backgroundImage: serchinImage },
-  { title: "ນໍ້າປະປາ", url: "#", backgroundImage: loginImage },
-];
+const {t}= useI18n();
+const items = computed(() => [
+  { title: t("electric"), url: "#", backgroundImage: serchinImage },
+  { title: t("tapwater"), url: "#", backgroundImage: loginImage },
+]);
 </script>
 
 <template>
@@ -20,7 +22,7 @@ const items = [
   >
     <v-container>
       <div class="mt-3 mb-3">
-        <p style="color: #01579b"><b>ຄະແນນສິນເຊືອ</b></p>
+        <p style="color: #01579b"><b>{{ $t('creditscores') }}</b></p>
       </div>
       <div class="text-center">
         <v-col cols="12">

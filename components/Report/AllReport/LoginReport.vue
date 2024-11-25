@@ -2,18 +2,21 @@
 import addmin from "@/assets/images/manage/pngtree-vector-user-management-icon-png-image_4102332.jpg";
 import memberadmin from '@/assets/images/manage/addmin.png'
 import member from '@/assets/images/manage/member.png'
-const items = [
+import { useI18n } from "vue-i18n";
+
+const {t}= useI18n();
+const items = computed(() => [
   { title: "Admin ", url: "#", backgroudImage: addmin },
   { title: "Admin member", url: "#" , backgroudImage: memberadmin},
   { title: "member", url: "#" ,  backgroudImage: member},
-];
+]);
 </script>
 <template>
   <v-card class="hovering-zoom text-center mt-5" style="border: 1px #1A237E solid"
   color="rgba(255,255,255,0.2)"
   >
     <div class="mt-5 mb-5">
-      <p style="color: #01579b"><b># ຄ່າທຳນຽມ</b></p>
+      <p style="color: #01579b"><b> {{ $t('collectfees') }}</b></p>
     </div>
     <div class="text-center">
       <v-col cols="12">

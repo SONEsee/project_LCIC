@@ -2,11 +2,14 @@
 import serchinImage from "@/assets/images/serch/saveimage.png";
 import loginImage from "@/assets/images/serch/watercredit.webp";
 import loginImag2 from "@/assets/images/serch/telecom.jpg";
-const items = [
-  { title: "ໄຟຟ້າ ", url: "#", backgroundImage: serchinImage },
-  { title: "ນໍ້າປະປາ", url: "#"  , backgroundImage: loginImage },
-  { title: "ໂທລະຄົມ", url: "#" , backgroundImage: loginImag2  },
-];
+import { useI18n } from "vue-i18n"; 
+
+const {t}= useI18n();
+const items = computed(() => [
+  { title: t("electric"), url: "#", backgroundImage: serchinImage },
+  { title: t("tapwater"), url: "#"  , backgroundImage: loginImage },
+  { title: t("telecom"), url: "#" , backgroundImage: loginImag2  },
+]);
 </script>
 <template>
   <v-card class="hovering-zoom bg- text-center mt-5 rounded-lg" 

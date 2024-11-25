@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import bank from "@/assets/images/report/bank.png";
 import mfi from '@/assets/images/report/mfi.png'
-const items = [
-  { title: "ທະນາຄານ ", url: "#", backgroundImage: bank },
-  { title: "ສະຖາບັນ", url: "#" , backgroundImage: mfi},
-];
+import { useI18n } from "vue-i18n";
+
+const {t}= useI18n();
+const items = computed(() =>[
+  { title: t('bank'), url: "#", backgroundImage: bank },
+  { title: t('institution'), url: "#" , backgroundImage: mfi},
+]);
 </script>
 <template>
   <v-card
@@ -13,7 +16,7 @@ const items = [
     color="rgba(255,255,255,0.4)"
   >
     <div class="mt-5 mb-5">
-      <p style="color: #01579b"><b># ລາຍງານການນຳສົ່ງ</b></p>
+      <p style="color: #01579b"><b> {{$t("transmissionreport")}}</b></p>
     </div>
     <div class="text-center">
       <v-col cols="12">

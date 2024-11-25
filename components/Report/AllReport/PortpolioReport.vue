@@ -1,46 +1,49 @@
 <script setup lang="ts">
-const items = [
+import { useI18n } from 'vue-i18n';
+
+const {t}= useI18n();
+const items = computed(() => [
   {
-    message: "ການຈັດຊັ້ນໜີ້ຕາມເປົ້າໝາຍເງິນກູ້ຂອງບັນດາທະນາຄານ",
+    message: t('portpolio1'),
     url: "../backend/reportprint/Distribution_of_Loan_Class_By_Loan_Purpose_By_Bank",
   },
   {
-    message: "ການຈັດຊັ້ນໜີ້ຕາມເປົ້າໝາຍເງິນກູ້ຂອງທົ່ວລະບົບທະນາຄານ",
+    message: t('portpolio2'),
     url: "../backend/Distribtion_Of_Loan_Class_By_Loan_Purpose_For_All_Banks",
   },
   {
-    message: "ການຈັດຊັ້ນໜີ້ຕາມແຕ່ລະແຂວງຂອງບັນດາທະນາຄານ",
+    message: t('portpolio3'),
     url: "../backend/reportprint/Distribution_Of_Loan_Class_By_Province_By_Bank",
   },
   {
-    message: "ການຈັດຊັ້ນໜີ້ຕາມແຕ່ລະແຂວງຂອງທົວລະບົບທະນາຄານ",
+    message: t('portpolio4'),
     url: "..//backend/reportprint/Distribution_Of_Loan_Class_By_Province_For_All_Banks",
   },
   {
-    message: "ການວິເຄາະລວມຂອງຈຳນວເງິນກູ້ຕາມການຈັດຊັ້ນໜີ້",
+    message: t('portpolio5'),
     url: "../backend/reportprint/Portfolio_Analysis_Total_Loan_Count_Per_Loan_Class",
   },
   {
-    message: "ການວິເຄາະລວມຂອງຈຳນວນລວມເງິນຄ່າເງິນກູ້ຕາມການຈັດຊັ້ນໜີ້",
+    message: t('portpolio6'),
     url: "../backend/reportprint/Portfolio_Analysis_Total_Loan_Value_Per_Loan_Class",
   },
   {
-    message: "ບົດລາຍງານແຮຄ່າເສື່ອມມູນຄ່າໜີ້ຕອ້ງຮັບທວງຍາກຂອງແຕ່ລະທະນາຄານ",
+    message: t('portpolio7'),
     url: "../backend/reportprint/Provision_Requirement_By_Bank",
   },
   {
-    message: "ບົດລາຍງານເງິນແຮຄ່າເສື່ອມມູນຄ່າໜີ້ຕອ້ງຮັບທວງຍາກຂອງທົວລະບົບທະນາຄານ",
+    message: t('portpolio8'),
     url: "../backend/reportprint/Provision_Requirement_Report_For_All_Banks",
   },
   {
-    message: "ຈຳນວນເງິນແຮເພື່ອການສູນເສຍເງິນກູ້ຂອງແຕ່ລະທະນາຄານ",
+    message: t('portpolio9'),
     url: "../backend/reportprint/General_Provisions_by_Bank",
   },
   {
-    message: "ຈຳນວນເງິນແຮເພື່ອການສູນເສຍເງິນກູ້ຂອງທົວລະບົບທະນາຄານ",
+    message: t('portpolio10'),
     url: "../backend/reportprint/General_Provisions_For_All_Banks",
   },
-];
+]);
 </script>
 <template>
   <div v-for="(item, index) in items" :key="index">
