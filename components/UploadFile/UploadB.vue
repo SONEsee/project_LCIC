@@ -4,17 +4,10 @@
     <div v-if="user">
       {{ user.MID.id }}
     </div>
-    <div cols="4" md="4" class="d-flex justify-end align-end">
+    <!-- <div cols="4" md="4" class="d-flex justify-end align-end">
       <v-row>
         <v-col md="4" cols="12">
-          <!-- <v-autocomplete
-            :style="{}"
-            density="compact"
-            label="ເລືອກສະເພາະທະນາຄານ"
-            :items="['California', 'Colorado']"
-            variant="outlined"
-          ></v-autocomplete
-        > -->
+        
           <v-text-field
             v-model="search"
             density="compact"
@@ -29,7 +22,7 @@
           <v-btn class="bg-primary">ຄົ້ນຫາ</v-btn>
         </v-col></v-row
       >
-    </div>
+    </div> -->
 
     <v-file-input
       variant="outlined"
@@ -42,18 +35,24 @@
     <v-btn @click="uploadFile" color="primary">ອັບໂຫຼດຟາຍ</v-btn>
 
     <v-data-table
-      :custom-filter="filterOnlyCapsText"
-      :search="search"
+    item-value="name"
       :headers="headers"
-      :items="items"
+      :items="filteredItems"
       class="custom-header elevation-1"
     >
       <template v-slot:top>
-        <v-text-field
+
+
+        <v-text-field 
+        v-if="user && user.MID.id === '01'"
+        density="compact"
+        width="50%"
           v-model="search"
           class="pa-2"
-          label="Search (UPPER CASE ONLY)"
+          label="ໃສ່ລະຫັດທະນາຄານ"
         ></v-text-field>
+
+
       </template>
       <template v-slot:header.FID>
         <th style="color: #0d47a1">ໄອດີ</th>
@@ -118,6 +117,7 @@ import Swal from "sweetalert2";
 import { useRouter } from "vue-router";
 
 export default defineComponent({
+  user_id: 'SingleColumnSearchTable',
   data() {
     return {
       search: "" as string,
@@ -165,6 +165,7 @@ export default defineComponent({
       { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
       { title: "Actions", value: "actions", sortable: false },
     ]);
+
 
     onMounted(async () => {
       try {
@@ -221,37 +222,85 @@ export default defineComponent({
     //     console.error("Failed to fetch data:", error);
     //   }
     // };
-    const fetchDataByUserID = async (userID: String) => {
-      try {
-        const config = useRuntimeConfig();
 
-        const url =
-          userID === "01"
-            ? `${config.public.strapi.url}api/upload-files2/`
-            : `${config.public.strapi.url}api/upload-files2/?user_id=${userID}`;
 
-        const response = await fetch(url);
-        console.log("Response:", response);
-        console.log("user", userID);
+// Fetch data function
+const fetchDataByUserID = async (userID: string): Promise<void> => {
+try {
+  const config = useRuntimeConfig();
 
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
+  const url =
+    userID === "01"
+      ? `${config.public.strapi.url}api/upload-files2/`
+      : `${config.public.strapi.url}api/upload-files2/?user_id=${userID}`;
 
-        const data = await response.json();
-        console.log("Data for user:", data);
+  const response = await fetch(url);
 
-        items.value = data.map((item: String) => ({
-          ...item,
-          FID: item.FID,
-          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-          confirmed: false,
-        }));
-        sortItemsByUploadDate();
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-      }
-    };
+  if (!response.ok) {
+    throw new Error("Failed to fetch data from the server.");
+  }
+
+  const data = await response.json();
+
+  items.value = data.map((item: any) => ({
+    ...item,
+    FID: item.FID,
+    status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ", // Success message
+    confirmed: false, // Default value
+  }));
+
+  sortItemsByUploadDate(); // Ensure this function is implemented correctly
+} catch (error) {
+  console.error("Failed to fetch data:", error);
+}
+};
+
+// Computed property for filtered items
+const filteredItems = computed(() =>
+items.value.filter((item) =>
+  item.user_id.toLowerCase().includes(search.value.toLowerCase())
+  
+)
+);
+console.log("userid" ,items.value)
+
+
+    // const fetchDataByUserID = async (userID: String) => {
+    //   try {
+    //     const config = useRuntimeConfig();
+
+    //     const url =
+    //       userID === "01"
+    //         ? `${config.public.strapi.url}api/upload-files2/`
+    //         : `${config.public.strapi.url}api/upload-files2/?user_id=${userID}`;
+
+    //     const response = await fetch(url);
+    //     console.log("Response:", response);
+    //     console.log("user", userID);
+
+    //     if (!response.ok) {
+    //       throw new Error("Network response was not ok");
+    //     }
+
+    //     const data = await response.json();
+    //     console.log("Data for user:", data);
+
+    //     items.value = data.map((item: String) => ({
+    //       ...item,
+    //       FID: item.FID,
+    //       status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+    //       confirmed: false,
+    //     }));
+    //     sortItemsByUploadDate();
+    //   } catch (error) {
+    //     console.error("Failed to fetch data:", error);
+    //   }
+    // };
+    // const filter = computed(() => fetchDataByUserID)
+    
+   
+
+
     const filterOnlyCapsText = (
       value: string | null,
       query: string | null
@@ -264,6 +313,9 @@ export default defineComponent({
       );
     };
 
+
+
+    
     const fetchData = async () => {
       try {
         const config = useRuntimeConfig();
@@ -331,7 +383,11 @@ export default defineComponent({
         });
         return;
       }
-
+ const filteredItems = computed(() =>
+    items.value.filter((item) =>
+      item.name.toLowerCase().includes(search.value.toLowerCase())
+    )
+  );
       const newItem = {
         fileName: file.value.name,
         fileSize: file.value.size,
@@ -522,6 +578,7 @@ export default defineComponent({
       fetchDataByUserID,
       search,
       filterOnlyCapsText,
+      filteredItems,
     };
   },
 });
