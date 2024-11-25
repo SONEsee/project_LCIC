@@ -104,7 +104,7 @@ export default defineComponent({
 
 <template>
     <v-container>
-      <v-data-table :items="collaterals" :header="headers">
+      <v-data-table :items="collaterals" :headers="headers">
         <template v-slot:item="{ item }">
           <tr>
             <td>{{ item.id }}</td>
@@ -158,11 +158,11 @@ export default defineComponent({
       const router = useRouter();
       const collaterals = ref([]);
       const headers = ref([
-        { text: "ລຳດັບ", value: "id" },
-        { text: "ຊື່ຮູບພາບ", value: "filename" },
-        { text: "ທີ່ຢູ່ຮູບພາບ", value: "pathfile" },
-        { text: "ຢືນຢັນ", value: "confirm" },
-        { text: "ລາຍລະອຽດ", value: "actions" },
+        { title: "ລຳດັບ", value: "id" },
+        { title: "ຊື່ຮູບພາບ", value: "filename" },
+        { title: "ທີ່ຢູ່ຮູບພາບ", value: "pathfile" },
+        { title: "ຢືນຢັນ", value: "confirm" },
+        { title: "ລາຍລະອຽດ", value: "actions" },
       ]);
   
       const fetchCollaterals = async () => {

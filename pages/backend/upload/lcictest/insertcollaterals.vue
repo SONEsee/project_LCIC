@@ -117,7 +117,7 @@ export default defineComponent({
               @click="goToTest1(item.pathfile, item.id)"
               class="bg-indigo-darken-4"
             >
-              ບັນທືກຂໍ້ມູນວິສາຫະກິດ
+         ສາຫະກິດ
             </v-btn>
           </td>
           <td>

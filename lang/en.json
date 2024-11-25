@@ -56,7 +56,22 @@
   "portpolio8" : "Report on impaired loan values requiring high provisions across the banking system",
   "portpolio9" : "Loan loss reserve amounts for individual banks",
   "portpolio10" : "Loan loss reserve amounts across the banking system",
-  
+  "upload" : "Upload",
+  "uploads" : "Upload",
+  "loaninformation" : "Loan Information",
+  "uploadsecuritiesdata" : "Upload Securities Data",
+  "uploadjson" : "Upload JSON & XML only",
+  "id" : "ID",  
+  "pathname" : "Path Name",  
+  "status" : "Status",  
+  "percentage" : "Percentage",  
+  "filename" : "File Name",
+  "noinformation" : "No information",
+  "imageupload" : "Image upload",
+  "no:" : "No:",
+  "imagename" : "Image name",
+  "imageaddress" : "Image address",
+  "viewimage" : "View image",
 
 }
 
