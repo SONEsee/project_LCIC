@@ -1,26 +1,36 @@
 <template>
   <div></div>
-
-  <!-- <div v-if="user">
-    {{ user.MID.id }}
-  </div>
-  <div cols="4" md="4">
-    <v-row>
-      <v-col md="4" cols="12"
-        ><v-autocomplete
-          :style="{}"
-          label="ເລືອກສະເພາະທະນາຄານ"
-          :items="['California', 'Colorado']"
-          variant="outlined"
-        ></v-autocomplete
-      ></v-col>
-      <v-col md="2" cols="12">
-        <v-btn class="bg-primary">ຄົ້ນຫາ</v-btn>
-      </v-col></v-row
-    >
-  </div> -->
-
   <v-container>
+    <div v-if="user">
+      {{ user.MID.id }}
+    </div>
+    <div cols="4" md="4" class="d-flex justify-end align-end">
+      <v-row>
+        <v-col md="4" cols="12">
+          <!-- <v-autocomplete
+            :style="{}"
+            density="compact"
+            label="ເລືອກສະເພາະທະນາຄານ"
+            :items="['California', 'Colorado']"
+            variant="outlined"
+          ></v-autocomplete
+        > -->
+          <v-text-field
+            v-model="search"
+            density="compact"
+            label="ຄົ້ນຫາຜູ້ນໍາໃຊ້"
+            prepend-inner-icon=""
+            clearable
+            @input="onSearch"
+            class="custom-search-box"
+          ></v-text-field>
+        </v-col>
+        <v-col md="2" cols="12">
+          <v-btn class="bg-primary">ຄົ້ນຫາ</v-btn>
+        </v-col></v-row
+      >
+    </div>
+
     <v-file-input
       variant="outlined"
       prepend-icon="mdi-paperclip"
@@ -32,15 +42,27 @@
     <v-btn @click="uploadFile" color="primary">ອັບໂຫຼດຟາຍ</v-btn>
 
     <v-data-table
+      :custom-filter="filterOnlyCapsText"
+      :search="search"
       :headers="headers"
       :items="items"
       class="custom-header elevation-1"
     >
+      <template v-slot:top>
+        <v-text-field
+          v-model="search"
+          class="pa-2"
+          label="Search (UPPER CASE ONLY)"
+        ></v-text-field>
+      </template>
       <template v-slot:header.FID>
         <th style="color: #0d47a1">ໄອດີ</th>
       </template>
       <template v-slot:header.path>
         <th style="color: #0d47a1">ຊື່ພາດ</th>
+      </template>
+      <template v-slot:header.user_id>
+        <th style="color: #0d47a1">ລະຫັດທະນາຄານ</th>
       </template>
       <template v-slot:header.statussubmit>
         <th style="color: #0d47a1">ສະຖານະ</th>
@@ -57,6 +79,13 @@
         <a :href="getFullPath(item.path)" target="_blank">{{
           getFileName(item.path)
         }}</a>
+      </template>
+
+      <template :custom-filter="filterOnlyCapsText"
+      :search="search" v-slot:item.user_id="{ item }">
+        <p :href="getFullPath(item.user_id)" target="_blank">
+          {{ getFileName(item.user_id) }}
+        </p>
       </template>
 
       <template v-slot:item.percentage="{ item }">
@@ -89,7 +118,18 @@ import Swal from "sweetalert2";
 import { useRouter } from "vue-router";
 
 export default defineComponent({
+  data() {
+    return {
+      search: "" as string,
+    };
+  },
+  methods: {
+    onSearch(): void {
+      this.$emit("searchQuery", this.search);
+    },
+  },
   setup() {
+    const search = ref("");
     definePageMeta({
       layout: "backend",
     });
@@ -119,6 +159,8 @@ export default defineComponent({
     const headers = ref([
       { title: "ໄອດີ", value: "FID" },
       { title: "ຊື່ພາດ", value: "path" },
+      { title: "ລະຫັດທະນາຄານ", value: "user_id" },
+
       { title: "ສະຖານະ", value: "statussubmit" },
       { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
       { title: "Actions", value: "actions", sortable: false },
@@ -153,12 +195,44 @@ export default defineComponent({
       }
     });
 
+    // const fetchDataByUserID = async (userID: String) => {
+    //   try {
+    //     const config = useRuntimeConfig();
+    //     const url = `${config.public.strapi.url}api/upload-files2/?user_id=${userID}`;
+    //     const response = await fetch(url);
+    //     console.log("Response:", response);
+    //     console.log("user",userID )
+
+    //     if (!response.ok) {
+    //       throw new Error("Network response was not ok");
+    //     }
+
+    //     const data = await response.json();
+    //     console.log("Data for user:", data);
+
+    //     items.value = data.map((item: String) => ({
+    //       ...item,
+    //       FID: item.FID,
+    //       status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+    //       confirmed: false,
+    //     }));
+    //     sortItemsByUploadDate();
+    //   } catch (error) {
+    //     console.error("Failed to fetch data:", error);
+    //   }
+    // };
     const fetchDataByUserID = async (userID: String) => {
       try {
         const config = useRuntimeConfig();
-        const url = `${config.public.strapi.url}api/upload-files2/?user_id=${userID}`;
+
+        const url =
+          userID === "01"
+            ? `${config.public.strapi.url}api/upload-files2/`
+            : `${config.public.strapi.url}api/upload-files2/?user_id=${userID}`;
+
         const response = await fetch(url);
         console.log("Response:", response);
+        console.log("user", userID);
 
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -178,9 +252,17 @@ export default defineComponent({
         console.error("Failed to fetch data:", error);
       }
     };
-
-
-
+    const filterOnlyCapsText = (
+      value: string | null,
+      query: string | null
+    ): boolean => {
+      return (
+        value !== null &&
+        query !== null &&
+        typeof value === "string" &&
+        value.toUpperCase().includes(query)
+      );
+    };
 
     const fetchData = async () => {
       try {
@@ -204,9 +286,6 @@ export default defineComponent({
       }
     };
 
-
-
-    
     const sortItemsByUploadDate = () => {
       items.value.sort(
         (a: any, b: any) =>
@@ -282,8 +361,6 @@ export default defineComponent({
           title: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
           text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ",
         });
-
-      
 
         const response2 = await fetch(
           `${config.public.strapi.url}api/upload-files2/`
@@ -443,6 +520,8 @@ export default defineComponent({
       getStatusText,
       getFileName,
       fetchDataByUserID,
+      search,
+      filterOnlyCapsText,
     };
   },
 });
