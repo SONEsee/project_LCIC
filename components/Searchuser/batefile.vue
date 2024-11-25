@@ -6,7 +6,7 @@
           <div>
             <v-file-input
               label="File input"
-              prepend-icon="mdi-camera"
+              prepend-icon="mdi-file"
               variant="outlined"
               v-model="selectedFile"
               accept=".png, .jpg, .jpeg"

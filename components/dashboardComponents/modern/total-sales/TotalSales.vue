@@ -74,7 +74,9 @@ export default defineComponent({
       dataLabels: {
         enabled: true,
         formatter: function (val: number, opts: any) {
-          const count = series.value[opts.seriesIndex];
+
+
+          const count =  series.value[opts.seriesIndex];
           const percentage = Math.floor((val / 100) * totalMembers.value); 
           return `${count} (${percentage}%)`;
         }

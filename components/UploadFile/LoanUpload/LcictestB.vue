@@ -85,9 +85,33 @@
           },
         ],
       });
+      interface ItemData {
+  FID: string;
+  fileName: string;
+  path: string;
+  statussubmit: string;
+  percentage: number;
+  status: string;
+  confirmed: boolean;
+  insertDate: string;
   
+}
+interface Item {
+  FID: string;
+  fileName: string;
+  statussubmit: string;
+  path?: string;
+  confirmed: boolean;
+  status: string;
+  insertDate: string;
+  updateDate: string;
+}
+
+
       const file = ref<File | null>(null);
-      const items = ref([]);
+        const items = ref<ItemData[]>([]);
+        
+
       const headers = ref([
         { text: "ໄອດີ", value: "FID" },
         { text: "ຊື່ພາດ", value: "path" },
@@ -116,8 +140,8 @@
   
       
       items.value = data
-        .filter((item) => item.statussubmit === "1" || item.statussubmit === "0" ||  item.statussubmit === "2")
-        .map((item) => ({
+        .filter((item:Item) => item.statussubmit === "1" || item.statussubmit === "0" ||  item.statussubmit === "2")
+        .map((item:Item) => ({
           ...item,
           FID: item.FID,
           status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
@@ -130,30 +154,7 @@
     }
   };
   
-  // const fetchData = async () => {
-  //       try {
-  //         const config = useRuntimeConfig();
-  //         const response = await fetch(
-  //           ${config.public.strapi.url}api/upload-files2/
-  //         );
-  //         if (!response.ok) {
-  //           throw new Error("Network response was not ok");
-  //         }
-  //         const data = await response.json();
-  //         items.value = data.map((item: any) => ({
-  //           ...item,
-  //           FID: item.FID,
-  //           status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-  //           confirmed: false,
-  //         }));
-  //         sortItemsByUploadDate();
-  //       } catch (error) {
-  //         console.error("Failed to fetch data:", error);
-  //       }
-  //     };
-  
-  
-  
+
   
       const sortItemsByUploadDate = () => {
         items.value.sort(

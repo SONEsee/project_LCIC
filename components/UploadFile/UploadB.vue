@@ -1,8 +1,24 @@
 <template>
   <div></div>
-  <div v-if="user">
+
+  <!-- <div v-if="user">
     {{ user.MID.id }}
   </div>
+  <div cols="4" md="4">
+    <v-row>
+      <v-col md="4" cols="12"
+        ><v-autocomplete
+          :style="{}"
+          label="ເລືອກສະເພາະທະນາຄານ"
+          :items="['California', 'Colorado']"
+          variant="outlined"
+        ></v-autocomplete
+      ></v-col>
+      <v-col md="2" cols="12">
+        <v-btn class="bg-primary">ຄົ້ນຫາ</v-btn>
+      </v-col></v-row
+    >
+  </div> -->
 
   <v-container>
     <v-file-input
@@ -37,7 +53,6 @@
         <th style="color: #0d47a1">Actions</th>
       </template>
 
-      
       <template v-slot:item.path="{ item }">
         <a :href="getFullPath(item.path)" target="_blank">{{
           getFileName(item.path)
@@ -92,10 +107,15 @@ export default defineComponent({
         },
       ],
     });
-
+    interface itemdata {
+      FID: string;
+      fileName: string;
+      status: string;
+      path: string;
+    }
     const user = ref<User | null>(null);
     const file = ref<File | null>(null);
-    const items = ref([]);
+    const items = ref<itemdata[]>([]);
     const headers = ref([
       { title: "ໄອດີ", value: "FID" },
       { title: "ຊື່ພາດ", value: "path" },
@@ -106,29 +126,22 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
-        
         await fetchData();
 
-       
         const userData = localStorage.getItem("user_data");
         console.log("User data:", userData);
 
         if (userData) {
           try {
-            
             user.value = JSON.parse(userData);
             console.log("Parsed user data:", user.value);
 
-            
             const MID = user.value.MID;
 
-          
             if (MID && MID.id) {
-             
               const paddedMID = MID.id.toString().padStart(2, "0");
               console.log("Padded MID.id:", paddedMID);
 
-              
               await fetchDataByUserID(paddedMID);
             }
           } catch (error) {
@@ -154,7 +167,7 @@ export default defineComponent({
         const data = await response.json();
         console.log("Data for user:", data);
 
-        items.value = data.map((item:String) => ({
+        items.value = data.map((item: String) => ({
           ...item,
           FID: item.FID,
           status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
@@ -166,12 +179,14 @@ export default defineComponent({
       }
     };
 
+
+
+
     const fetchData = async () => {
       try {
         const config = useRuntimeConfig();
         const response = await fetch(
           `${config.public.strapi.url}api/upload-files2/`
-
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -189,6 +204,9 @@ export default defineComponent({
       }
     };
 
+
+
+    
     const sortItemsByUploadDate = () => {
       items.value.sort(
         (a: any, b: any) =>
@@ -202,7 +220,6 @@ export default defineComponent({
         file.value = target.files[0];
       }
     };
-    
 
     const uploadFile = async () => {
       if (!file.value) {
@@ -214,7 +231,6 @@ export default defineComponent({
         return;
       }
 
-   
       const formData = new FormData();
       formData.append("file", file.value);
       formData.append("title", file.value.name);
@@ -246,10 +262,9 @@ export default defineComponent({
         status: "ກຳລັງນຳສົ່ງຂໍ້ມູນ",
       };
       items.value.push(newItem);
-const config = useRuntimeConfig();
+      const config = useRuntimeConfig();
       try {
         const response = await axios.post(
-        
           `${config.public.strapi.url}api/upload-files/`,
           formData
         );
@@ -268,9 +283,12 @@ const config = useRuntimeConfig();
           text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ",
         });
 
+      
+
         const response2 = await fetch(
           `${config.public.strapi.url}api/upload-files2/`
         );
+
         const data = await response2.json();
         items.value = data.map((item: any) => ({
           ...item,
@@ -337,10 +355,9 @@ const config = useRuntimeConfig();
         });
         return;
       }
-const config = useRuntimeConfig();
+      const config = useRuntimeConfig();
       try {
         const response = await axios.get(
-          
           `${config.public.strapi.url}api/api/productinfo3/`,
           {
             params: {
