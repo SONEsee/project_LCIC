@@ -92,9 +92,12 @@ onMounted(() => {
     <template v-slot:activator="{ props }">
       <div class="d-flex">
         <!-- User Profile --> 
-        <v-btn icon class="mx-3" color="white" @click="setLocale(locale === 'en' ? 'la' : 'en')">
-  {{ locale }}
+        <v-btn icon class="mx-3" color="white" @click="setLocale(locale === 'en' ? 'lo' : 'en')">
+  <img v-if="locale === 'en'" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Flag_of_the_United_Kingdom_%281-2%29.svg/800px-Flag_of_the_United_Kingdom_%281-2%29.svg.png" style="width: 24px; height: 24px;">
+  <img v-else-if="locale === 'en'" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Flag_of_the_United_Kingdom_%281-2%29.svg/800px-Flag_of_the_United_Kingdom_%281-2%29.svg.png" alt="Laos Flag" style="width: 24px; height: 24px;">
+  <img v-else src="https://laostravel.com/images/2020/12/flag-of-laos-From-1945-to-1946.jpg" alt="Laos Flag" style="width: 24px; height: 24px;">
 </v-btn>
+
 
 <!-- <v-btn icon class="mx-3" color="white" @click="toggleLocale">
     {{ currentLocale }}
