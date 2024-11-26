@@ -161,12 +161,12 @@ export default defineComponent({
       const router = useRouter();
       const collaterals = ref([]);
       const headers = computed(() => [
-  { title: t('no:') },
-  { title: t('imagename') },
-  { title: t('imageaddress') },
-  { title: t('confirm') },
-  { title: t('detail') },
-]);
+        { title: t('no:') },
+        { title: t('imagename') },
+        { title: t('imageaddress') },
+        { title: t('confirm') },
+        { title: t('detail') },
+      ]);
 
   
       const fetchCollaterals = async () => {

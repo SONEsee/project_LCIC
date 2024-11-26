@@ -51,7 +51,7 @@
     @change="onFileChange"
     outlined
   ></v-file-input>
-    <v-btn @click="uploadFile" color="primary">{{ $t("upload") }}</v-btn>
+    <v-btn @click="uploadFile" color="primary">{{ $t("uploads") }}</v-btn>
 
     <v-data-table
       item-value="name"
@@ -133,6 +133,8 @@ import { defineComponent, ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n"; 
+import { computed } from 'vue';
 
 export default defineComponent({
   user_id: "SingleColumnSearchTable",
@@ -171,10 +173,11 @@ export default defineComponent({
       status: string;
       path: string;
     }
+    const {t} = useI18n() 
     const user = ref<User | null>(null);
     const file = ref<File | null>(null);
     const items = ref<itemdata[]>([]);
-    const headers = ref([
+    const headers = computed(() =>[
       { title: "ໄອດີ", value: "FID" },
       { title: "ຊື່ພາດ", value: "path" },
       { title: "ລະຫັດທະນາຄານ", value: "user_id" },

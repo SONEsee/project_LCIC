@@ -92,9 +92,17 @@ onMounted(() => {
     <template v-slot:activator="{ props }">
       <div class="d-flex">
         <!-- User Profile --> 
-        <v-btn icon class="mx-3" color="white" @click="setLocale(locale === 'en' ? 'la' : 'en')">
-  {{ locale }}
-</v-btn>
+        <!-- <v-btn icon class="mx-3" color="white" @click="setLocale(locale === 'en' ? 'lo' : 'en')">
+              {{ locale }}
+        </v-btn> -->
+        <v-avatar>
+        <v-btn icon class="mx-3" color="white" @click="setLocale(locale === 'en' ? 'lo' : 'en')" >
+  <img 
+    :src="locale === 'en' ? '/images/en.png' : '/images/Lo.png'" 
+    alt="Language Icon" 
+    style="width: 100%; height: 100%;" 
+  />
+</v-btn></v-avatar>
 
 <!-- <v-btn icon class="mx-3" color="white" @click="toggleLocale">
     {{ currentLocale }}

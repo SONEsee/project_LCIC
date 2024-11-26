@@ -12,15 +12,28 @@
       @change="onFileChange"
       outlined
     ></v-file-input>
-    <v-btn @click="uploadFile" color="primary">{{ $t("upload") }}</v-btn>
-    
-    <v-data-table :headers="headers" :items="items" class="elevation-1">
-      <template v-slot:item.path="{ item }">
+    <v-btn @click="uploadFile" color="primary">{{ $t("uploads") }}</v-btn>
+   
+    <v-data-table :headers="headers" :items="filteredItems" class="elevation-1 mt-5" >
+      <template v-slot:top>
+        <v-text-field
+          v-if="user && user.MID.id === '01'"
+          density="compact"
+          width="50%"
+          v-model="search"
+          class="pa-2"
+          label="ໃສ່ລະຫັດທະນາຄານ"
+        ></v-text-field>
+      </template>
+
+      <template v-slot:headers.path="{ item }"   >
         <a :href="getFullPath(item.path)" target="_blank">{{
           getFileName(item.path)
         }}</a>
       </template>
-
+      <template v-slot:header.statussubmit>
+        <th style="color: #0d47a1" >{{ $t("status") }}</th>
+      </template>
       <template v-slot:item.percentage="{ item }">
         <span :style="{ color: getPercentageColor(item.percentage) }"
           >{{ item.percentage.toFixed(2) }}%</span
@@ -51,6 +64,8 @@ import { defineComponent, ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n"; 
+import { computed } from 'vue';
 
 export default defineComponent({
   user_id: "SingleColumnSearchTable",
@@ -77,17 +92,17 @@ export default defineComponent({
         },
       ],
     });
-
+    const {t} = useI18n();
     const file = ref<File | null>(null);
     const user = ref<User | null>(null);
     const items = ref([]);
     const search = ref("");
-    const headers = ref([
-      { title: "ໄອດີ", value: "CID" },
-      { title: "ຊື່ພາດ", value: "path" },
-      { title: "ລະຫັດທະນາຄານ", value: "user_id" },
-      { title: "ສະຖານະ", value: "statussubmit" },
-      { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
+    const headers = computed(() =>[
+      { title: t('id'), value: "CID" },
+      { title: t('pathname'), value: "path" },
+      { title: t('bankid'), value: "user_id" },
+      { title: t('status'), value: "statussubmit" },
+      { title: t('percentage'), value: "percentage" },
       { title: "Actions", value: "actions", sortable: false },
     ]);
 
@@ -144,7 +159,7 @@ export default defineComponent({
     //       ...item,
     //       FID: item.CID,
     //       status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-    //       confirmed: false,
+    //       confirmed: false, 
     //     }));
     //     sortItemsByUploadDate();
     //   } catch (error) {
