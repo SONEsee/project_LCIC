@@ -92,7 +92,7 @@ onMounted(() => {
     <template v-slot:activator="{ props }">
       <div class="d-flex">
         <!-- User Profile --> 
-        <v-btn icon class="mx-3" color="white" @click="setLocale(locale === 'en' ? 'lo' : 'en')">
+        <v-btn icon class="mx-3" color="white" @click="setLocale(locale === 'en' ? 'la' : 'en')">
   {{ locale }}
 </v-btn>
 

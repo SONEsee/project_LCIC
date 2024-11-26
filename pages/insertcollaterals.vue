@@ -117,7 +117,7 @@ export default defineComponent({
                 @click="goToTest1(item.pathfile, item.id)"
                 class="bg-indigo-darken-4"
               >
-                ບັນທືກຂໍ້ມູນວິສາຫະກິດ
+                {{ $t("saveenterprice") }}
               </v-btn>
             </td>
             <td>
@@ -136,7 +136,10 @@ export default defineComponent({
   import { defineComponent, ref, onMounted } from "vue";
   import { useRouter } from "vue-router";
   import axios from "axios";
-  import Swal from "sweetalert2"; 
+  import Swal from "sweetalert2";
+  import { useI18n } from "vue-i18n"; 
+  import { computed } from 'vue';
+
   
   export default defineComponent({
     setup() {
@@ -154,16 +157,17 @@ export default defineComponent({
           },
         ],
       });
-  
+      const {t} = useI18n();
       const router = useRouter();
       const collaterals = ref([]);
-      const headers = ref([
-        { title: "ລຳດັບ", value: "id" },
-        { title: "ຊື່ຮູບພາບ", value: "filename" },
-        { title: "ທີ່ຢູ່ຮູບພາບ", value: "pathfile" },
-        { title: "ຢືນຢັນ", value: "confirm" },
-        { title: "ລາຍລະອຽດ", value: "actions" },
-      ]);
+      const headers = computed(() => [
+  { title: t('no:') },
+  { title: t('imagename') },
+  { title: t('imageaddress') },
+  { title: t('confirm') },
+  { title: t('detail') },
+]);
+
   
       const fetchCollaterals = async () => {
     try {
