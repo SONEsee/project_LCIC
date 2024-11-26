@@ -13,32 +13,34 @@
       outlined
     ></v-file-input>
     <v-btn @click="uploadFile" color="primary">ອັບໂຫຼດຟາຍ</v-btn>
-    <v-table class="mt-4">
-      <thead>
-        <tr style="background-color: #5c6bc0; color: aliceblue">
-          <td><b>ID</b></td>
-          <td><b>file Name</b></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td class="text-center ml-2"><b>status</b></td>
-          <td class="mr-5"><b>percentage</b></td>
-          <td><b>action</b></td>
-        </tr>
-      </thead>
-    </v-table>
-    <v-data-table :headers="headers" :items="items" class="elevation-1">
+   
+    <v-data-table :headers="headers" :items="filteredItems" class="elevation-1 mt-5" >
+      <template v-slot:top>
+        <v-text-field
+          v-if="user && user.MID.id === '01'"
+          density="compact"
+          width="50%"
+          v-model="search"
+          class="pa-2"
+          label="ໃສ່ລະຫັດທະນາຄານ"
+        ></v-text-field>
+      </template>
+
       <template v-slot:item.path="{ item }">
         <a :href="getFullPath(item.path)" target="_blank">{{
           getFileName(item.path)
         }}</a>
       </template>
+
       <template v-slot:item.percentage="{ item }">
         <span :style="{ color: getPercentageColor(item.percentage) }"
           >{{ item.percentage.toFixed(2) }}%</span
         >
+      </template>
+      <template v-slot:item.user_id="{ item }">
+        <p :href="getFullPath(item.user_id)" target="_blank" v-if="user && user.MID.id === '01'">
+          {{ getFileName(item.user_id) }}
+        </p>
       </template>
       <template v-slot:item.statussubmit="{ item }">
         <v-chip :color="getStatusColor(item.statussubmit)" dark>{{
@@ -62,6 +64,12 @@ import Swal from "sweetalert2";
 import { useRouter } from "vue-router";
 
 export default defineComponent({
+  user_id: "SingleColumnSearchTable",
+  data() {
+    return {
+      search: "" as string,
+    };
+  },
   setup() {
     definePageMeta({
       layout: "backend",
@@ -84,12 +92,14 @@ export default defineComponent({
     const file = ref<File | null>(null);
     const user = ref<User | null>(null);
     const items = ref([]);
+    const search = ref("");
     const headers = ref([
-      { text: "ໄອດີ", value: "CID" },
-      { text: "ຊື່ພາດ", value: "path" },
-      { text: "ສະຖານະ", value: "statussubmit" },
-      { text: "ວັນທີອັບໂຫຼດ", value: "percentage" },
-      { text: "Actions", value: "actions", sortable: false },
+      { title: "ໄອດີ", value: "CID" },
+      { title: "ຊື່ພາດ", value: "path" },
+      { title: "ລະຫັດທະນາຄານ", value: "user_id" },
+      { title: "ສະຖານະ", value: "statussubmit" },
+      { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
+      { title: "Actions", value: "actions", sortable: false },
     ]);
 
     onMounted(async () => {
@@ -127,10 +137,43 @@ export default defineComponent({
         console.error("Error in onMounted:", error);
       }
     });
+    // const fetchDataByUserID = async (userID: String) => {
+    //   try {
+    //     const config = useRuntimeConfig();
+    //     const url = `${config.public.strapi.url}api/api/upload-filesc2/?user_id=${userID}`;
+    //     const response = await fetch(url);
+    //     console.log("Response:", response);
+
+    //     if (!response.ok) {
+    //       throw new Error("Network response was not ok");
+    //     }
+
+    //     const data = await response.json();
+    //     console.log("Data for user:", data);
+
+    //     items.value = data.map((item:String) => ({
+    //       ...item,
+    //       FID: item.CID,
+    //       status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+    //       confirmed: false,
+    //     }));
+    //     sortItemsByUploadDate();
+    //   } catch (error) {
+    //     console.error("Failed to fetch data:", error);
+    //   }
+    // };
     const fetchDataByUserID = async (userID: String) => {
       try {
         const config = useRuntimeConfig();
-        const url = `${config.public.strapi.url}api/api/upload-filesc2/?user_id=${userID}`;
+        let url = `${config.public.strapi.url}api/api/upload-filesc2/`;
+
+        // ຖ້າ userID ເທົ່າກັບ 01 ສະແດງຂໍ້ມູນທັງໝົດ
+        if (userID === "01") {
+          url += "?all=true";
+        } else {
+          url += `?user_id=${userID}`;
+        }
+
         const response = await fetch(url);
         console.log("Response:", response);
 
@@ -141,7 +184,7 @@ export default defineComponent({
         const data = await response.json();
         console.log("Data for user:", data);
 
-        items.value = data.map((item:String) => ({
+        items.value = data.map((item: any) => ({
           ...item,
           FID: item.CID,
           status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
@@ -153,28 +196,100 @@ export default defineComponent({
       }
     };
 
+    const filteredItems = computed(() =>
+      items.value.filter((item) =>
+        item.user_id.toLowerCase().includes(search.value.toLowerCase())
+      )
+    );
+    
+
+
+
     const fetchData = async (userID: string) => {
       const config = useRuntimeConfig();
+      let url = `${config.public.strapi.url}api/api/upload-filesc2/`;
+
+      // ກວດສອບ userID ເພື່ອຕັ້ງ URL ທີ່ຈະດຶງຂໍ້ມູນ
+      if (userID !== "01") {
+        url += `?user_id=${userID}`;
+      }
+
       try {
-        const response = await fetch(
-          `${config.public.strapi.url}api/api/upload-filesc2/`
-        );
+        const response = await fetch(url);
+
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
+
         const data = await response.json();
-        console.log("data", data);
+        console.log("Data fetched:", data);
+
         items.value = data.map((item: any) => ({
           ...item,
-          CID: item.CID,
+          FID: item.CID,
           status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
           confirmed: false,
         }));
+
         sortItemsByUploadDate();
       } catch (error) {
         console.error("Failed to fetch data:", error);
       }
     };
+
+    // const fetchData = async (userID: string) => {
+    //   const config = useRuntimeConfig();
+    //   try {
+    //     const response = await fetch(
+    //       `${config.public.strapi.url}api/api/upload-filesc2/`
+    //     );
+    //     if (!response.ok) {
+    //       throw new Error("Network response was not ok");
+    //     }
+    //     const data = await response.json();
+    //     console.log("data", data);
+    //     items.value = data.map((item: any) => ({
+    //       ...item,
+    //       CID: item.CID,
+    //       status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+    //       confirmed: false,
+    //     }));
+    //     sortItemsByUploadDate();
+    //   } catch (error) {
+    //     console.error("Failed to fetch data:", error);
+    //   }
+    // };
+
+    //     const fetchData = async (userID: string) => {
+    //   const config = useRuntimeConfig();
+    //   try {
+    //     const response = await fetch(
+    //       `${config.public.strapi.url}api/api/upload-filesc2/`
+    //     );
+    //     if (!response.ok) {
+    //       throw new Error("Network response was not ok");
+    //     }
+    //     const data = await response.json();
+    //     console.log("e")
+
+    //     const filteredData = userID === "01"
+    //       ? data
+
+    //       : data.filter((item: any) => item.userID === userID);
+
+    //     console.log("data", filteredData);
+
+    //     items.value = filteredData.map((item: any) => ({
+    //       ...item,
+    //       CID: item.CID,
+    //       status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+    //       confirmed: false,
+    //     }));
+    //     sortItemsByUploadDate();
+    //   } catch (error) {
+    //     console.error("Failed to fetch data:", error);
+    //   }
+    // };
 
     const sortItemsByUploadDate = () => {
       items.value.sort(
@@ -233,7 +348,7 @@ export default defineComponent({
         const config = useRuntimeConfig();
         const response = await axios.post(
           `${config.public.strapi.url}api/upload-filesC/`,
-          
+
           formData
         );
 
@@ -394,6 +509,7 @@ export default defineComponent({
       uploadFile,
       file,
       user,
+      search,
       items,
       headers,
       getFullPath,
@@ -402,6 +518,7 @@ export default defineComponent({
       getStatusColor,
       getStatusText,
       getFileName,
+      filteredItems,
     };
   },
 });

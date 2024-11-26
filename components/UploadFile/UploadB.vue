@@ -35,24 +35,20 @@
     <v-btn @click="uploadFile" color="primary">ອັບໂຫຼດຟາຍ</v-btn>
 
     <v-data-table
-    item-value="name"
+      item-value="name"
       :headers="headers"
       :items="filteredItems"
       class="custom-header elevation-1"
     >
       <template v-slot:top>
-
-
-        <v-text-field 
-        v-if="user && user.MID.id === '01'"
-        density="compact"
-        width="50%"
+        <v-text-field
+          v-if="user && user.MID.id === '01'"
+          density="compact"
+          width="50%"
           v-model="search"
           class="pa-2"
           label="ໃສ່ລະຫັດທະນາຄານ"
         ></v-text-field>
-
-
       </template>
       <template v-slot:header.FID>
         <th style="color: #0d47a1">ໄອດີ</th>
@@ -61,7 +57,7 @@
         <th style="color: #0d47a1">ຊື່ພາດ</th>
       </template>
       <template v-slot:header.user_id>
-        <th style="color: #0d47a1">ລະຫັດທະນາຄານ</th>
+        <th style="color: #0d47a1" v-if="user && user.MID.id === '01'">ລະຫັດທະນາຄານ</th>
       </template>
       <template v-slot:header.statussubmit>
         <th style="color: #0d47a1">ສະຖານະ</th>
@@ -80,9 +76,12 @@
         }}</a>
       </template>
 
-      <template :custom-filter="filterOnlyCapsText"
-      :search="search" v-slot:item.user_id="{ item }">
-        <p :href="getFullPath(item.user_id)" target="_blank">
+      <template
+        :custom-filter="filterOnlyCapsText"
+        :search="search"
+        v-slot:item.user_id="{ item }"
+      >
+        <p :href="getFullPath(item.user_id)" target="_blank" v-if="user && user.MID.id === '01'">
           {{ getFileName(item.user_id) }}
         </p>
       </template>
@@ -117,7 +116,7 @@ import Swal from "sweetalert2";
 import { useRouter } from "vue-router";
 
 export default defineComponent({
-  user_id: 'SingleColumnSearchTable',
+  user_id: "SingleColumnSearchTable",
   data() {
     return {
       search: "" as string,
@@ -165,7 +164,6 @@ export default defineComponent({
       { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
       { title: "Actions", value: "actions", sortable: false },
     ]);
-
 
     onMounted(async () => {
       try {
@@ -223,47 +221,44 @@ export default defineComponent({
     //   }
     // };
 
+   
+    const fetchDataByUserID = async (userID: string): Promise<void> => {
+      try {
+        const config = useRuntimeConfig();
 
-// Fetch data function
-const fetchDataByUserID = async (userID: string): Promise<void> => {
-try {
-  const config = useRuntimeConfig();
+        const url =
+          userID === "01"
+            ? `${config.public.strapi.url}api/upload-files2/`
+            : `${config.public.strapi.url}api/upload-files2/?user_id=${userID}`;
 
-  const url =
-    userID === "01"
-      ? `${config.public.strapi.url}api/upload-files2/`
-      : `${config.public.strapi.url}api/upload-files2/?user_id=${userID}`;
+        const response = await fetch(url);
 
-  const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error("Failed to fetch data from the server.");
+        }
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch data from the server.");
-  }
+        const data = await response.json();
 
-  const data = await response.json();
+        items.value = data.map((item: any) => ({
+          ...item,
+          FID: item.FID,
+          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ", 
+          confirmed: false, 
+        }));
 
-  items.value = data.map((item: any) => ({
-    ...item,
-    FID: item.FID,
-    status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ", // Success message
-    confirmed: false, // Default value
-  }));
+        sortItemsByUploadDate(); 
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
+    };
 
-  sortItemsByUploadDate(); // Ensure this function is implemented correctly
-} catch (error) {
-  console.error("Failed to fetch data:", error);
-}
-};
-
-// Computed property for filtered items
-const filteredItems = computed(() =>
-items.value.filter((item) =>
-  item.user_id.toLowerCase().includes(search.value.toLowerCase())
-  
-)
-);
-console.log("userid" ,items.value)
-
+    
+    const filteredItems = computed(() =>
+      items.value.filter((item) =>
+        item.user_id.toLowerCase().includes(search.value.toLowerCase())
+      )
+    );
+    console.log("userid", items.value);
 
     // const fetchDataByUserID = async (userID: String) => {
     //   try {
@@ -297,9 +292,6 @@ console.log("userid" ,items.value)
     //   }
     // };
     // const filter = computed(() => fetchDataByUserID)
-    
-   
-
 
     const filterOnlyCapsText = (
       value: string | null,
@@ -313,9 +305,6 @@ console.log("userid" ,items.value)
       );
     };
 
-
-
-    
     const fetchData = async () => {
       try {
         const config = useRuntimeConfig();
@@ -383,11 +372,11 @@ console.log("userid" ,items.value)
         });
         return;
       }
- const filteredItems = computed(() =>
-    items.value.filter((item) =>
-      item.name.toLowerCase().includes(search.value.toLowerCase())
-    )
-  );
+      const filteredItems = computed(() =>
+        items.value.filter((item) =>
+          item.name.toLowerCase().includes(search.value.toLowerCase())
+        )
+      );
       const newItem = {
         fileName: file.value.name,
         fileSize: file.value.size,
