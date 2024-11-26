@@ -1,16 +1,16 @@
 <template>
     <v-container>
       <div>
-        <h1>ການອັບໂຫຼດຮູບພາບ</h1>
-        <div v-if="user">
+        <h1>#{{ $t('imageupload') }}</h1>
+        <!-- <div v-if="user">
           {{ user.MID.id }}
-        </div>
+        </div> -->
         <v-col cols="12">
           <v-file-input
             v-model="files"
             :show-size="1000"
             color="deep-purple-accent-4"
-            label="ອັບໂຫຼດຮູບພາບ"
+            :label="$t('imageupload')"
             placeholder="Select your files"
             prepend-icon="mdi-camera"
             variant="outlined"
@@ -38,19 +38,19 @@
               </template>
             </template>
           </v-file-input>
-          <v-btn color="primary" @click="uploadFiles" class="ml-9">ອັບໂຫຼດ</v-btn>
+          <v-btn color="primary" @click="uploadFiles" class="ml-9">{{$t('uploads')}}</v-btn>
         </v-col>
       </div>
   
       <v-table class="mt-5">
         <thead>
           <tr class="bg-indigo-lighten-1">
-            <th>ລຳດັບ</th>
-            <th>ຊື່ຮູບພາບ</th>
-            <th>ທີ່ຢູ່ຮູບພາບ</th>
-            <th>ສະຖານະ</th>
+            <th>{{$t('no:')}}</th>
+            <th>{{$t('imagename')}}</th>
+            <th>{{$t('imageaddress')}}</th>
+            <th>{{$t('status')}}</th>
             
-            <th>ລາຍລະອຽດ</th>
+            <th>{{$t('detail')}}</th>
           </tr>
         </thead>
         <tbody>
@@ -74,7 +74,7 @@
                 small
                 @click="viewImage(collateral.pathfile)"
                 class="bg-indigo-darken-4"
-                >ເບິ່ງຮູບພາບອັບໂຫຼດ</v-btn
+                >{{$t('viewimage')}}</v-btn
               >
             </td>
           </tr>

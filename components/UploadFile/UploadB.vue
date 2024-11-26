@@ -1,5 +1,28 @@
 <template>
+<<<<<<< HEAD
   <div></div>
+=======
+
+  <!-- <div v-if="user">
+    {{ user.MID.id }}
+  </div>
+  <div cols="4" md="4">
+    <v-row>
+      <v-col md="4" cols="12"
+        ><v-autocomplete
+          :style="{}"
+          label="ເລືອກສະເພາະທະນາຄານ"
+          :items="['California', 'Colorado']"
+          variant="outlined"
+        ></v-autocomplete
+      ></v-col>
+      <v-col md="2" cols="12">
+        <v-btn class="bg-primary">ຄົ້ນຫາ</v-btn>
+      </v-col></v-row
+    >
+  </div> -->
+
+>>>>>>> 465e3ce698306b0ef256cd1c7e4d3588b4e04fff
   <v-container>
     <div v-if="user">
       {{ user.MID.id }}
@@ -25,14 +48,14 @@
     </div> -->
 
     <v-file-input
-      variant="outlined"
-      prepend-icon="mdi-paperclip"
-      label="ອັບໂຫຼດ JSON และ XML ເທົ່ານັ້ນ"
-      accept=".json, .xml"
-      @change="onFileChange"
-      outlined
-    ></v-file-input>
-    <v-btn @click="uploadFile" color="primary">ອັບໂຫຼດຟາຍ</v-btn>
+    variant="outlined"
+    prepend-icon="mdi-paperclip"
+    :label="$t('uploadjson')"
+    accept=".json, .xml"
+    @change="onFileChange"
+    outlined
+  ></v-file-input>
+    <v-btn @click="uploadFile" color="primary">{{ $t("upload") }}</v-btn>
 
     <v-data-table
       item-value="name"
@@ -51,19 +74,19 @@
         ></v-text-field>
       </template>
       <template v-slot:header.FID>
-        <th style="color: #0d47a1">ໄອດີ</th>
+        <th style="color: #0d47a1">{{ $t("id") }}</th>
       </template>
       <template v-slot:header.path>
-        <th style="color: #0d47a1">ຊື່ພາດ</th>
+        <th style="color: #0d47a1">{{ $t("pathname") }}</th>
       </template>
       <template v-slot:header.user_id>
         <th style="color: #0d47a1" v-if="user && user.MID.id === '01'">ລະຫັດທະນາຄານ</th>
       </template>
       <template v-slot:header.statussubmit>
-        <th style="color: #0d47a1">ສະຖານະ</th>
+        <th style="color: #0d47a1">{{ $t("status") }}</th>
       </template>
       <template v-slot:header.percentage>
-        <th style="color: #0d47a1">ສວນຕ່າງຂໍ້ມູນຜິດພາດ</th>
+        <th style="color: #0d47a1">{{ $t("percentage")}}</th>
       </template>
 
       <template v-slot:header.actions>
@@ -99,11 +122,11 @@
       </template>
 
       <template v-slot:item.actions="{ item }">
-        <v-btn @click="viewDetails(item)" color="info">ເບິ່ງລາຍລະອຽດ</v-btn>
+        <v-btn @click="viewDetails(item)" color="info">{{ $t("detail")}}</v-btn>
       </template>
 
       <template v-slot:no-data>
-        <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
+        <v-alert type="info" :value="true">{{ $t("detail")}}</v-alert>
       </template>
     </v-data-table>
   </v-container>

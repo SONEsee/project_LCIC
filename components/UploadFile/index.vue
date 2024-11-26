@@ -1,15 +1,15 @@
 <template>
   <v-card>
     <v-col cols="12">
-      <h3 class="text-primary ml-3">#ການອັບໂຫຼດຂໍ້ມູນ</h3>
+      <h3 class="text-primary ml-3">#{{ $t("upload") }}</h3>
     </v-col>
 
     <v-tabs v-model="tab" fixed-tabs color="primary" stacked>
-      <v-tab value="one">ຂໍ້ມູນຂໍ້ມູນເງິນກູ້ </v-tab>
+      <v-tab value="one">{{ $t("loaninformation") }} </v-tab>
 
-      <v-tab value="three">ອັບໂຫຼດຂໍ້ມູນຫຼັກຊັບ</v-tab>
+      <v-tab value="three">{{ $t("uploadsecuritiesdata")}}</v-tab>
     </v-tabs>
-    <v-card-text>
+    <v-card-text> 
       <v-window v-model="tab">
         <v-window-item value="one">
           <UploadFileUploadB />
