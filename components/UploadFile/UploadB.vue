@@ -1,7 +1,4 @@
 <template>
-<<<<<<< HEAD
-  <div></div>
-=======
 
   <!-- <div v-if="user">
     {{ user.MID.id }}
@@ -22,7 +19,6 @@
     >
   </div> -->
 
->>>>>>> 465e3ce698306b0ef256cd1c7e4d3588b4e04fff
   <v-container>
     <div v-if="user">
       {{ user.MID.id }}
