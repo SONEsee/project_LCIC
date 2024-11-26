@@ -12,7 +12,6 @@
       @change="onFileChange"
       outlined
     ></v-file-input>
-<<<<<<< HEAD
     <v-btn @click="uploadFile" color="primary">ອັບໂຫຼດຟາຍ</v-btn>
    
     <v-data-table :headers="headers" :items="filteredItems" class="elevation-1 mt-5" >
@@ -27,32 +26,6 @@
         ></v-text-field>
       </template>
 
-=======
-    <v-btn @click="uploadFile" color="primary">{{ $t("upload") }}</v-btn>
-    <v-table class="mt-4">
-      <thead>
-        <tr style="background-color: #5c6bc0; color: aliceblue">
-          <td><b>{{ $t("id") }}</b></td>
-          <td></td>
-          <td><b>{{ $t("filename")}}</b></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td class="text-center ml-2"><b>{{ $t("status") }}</b></td>
-          <td></td>
-          <td class="mr-5"><b>{{ $t("percentage")}}</b></td>
-          <td><b>action</b></td>
-        </tr>
-      </thead>
-    </v-table>
-    <v-data-table :headers="headers" :items="items" class="elevation-1">
->>>>>>> 465e3ce698306b0ef256cd1c7e4d3588b4e04fff
       <template v-slot:item.path="{ item }">
         <a :href="getFullPath(item.path)" target="_blank">{{
           getFileName(item.path)
