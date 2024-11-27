@@ -1,164 +1,117 @@
 <template>
-  <div class="image-background">
-    <VCol cols="12" md="12" align="center" justify="center">
-      <VRow no-gutters align="center" justify="center">
-        <VCol cols="12" md="3" class="pa-3 bg-indigo-darken-4 rounded-lg mb-15 ml- " >
-          <VForm
-            @submit.prevent="submit"
-            class="mt-7 rounded-lg bg-indigo-darken-4 "
-          >
-            <div class="mt-1 text-start">
-              <label class="label" for="username">ຊື່ຜູ້ໃຊ້ງານ</label>
-              <VTextField
-                v-model="username"
-                :rules="[ruleRequired]"
-                prepend-inner-icon="mdi-account-outline"
-                id="username"
-                name="username"
-                type="text"
-                class="rounded-lg"
-              />
-            </div>
-            <div class="mt-1 text-start">
-              <label class="label" for="password">ລະຫັດຜ່ານ</label>
-              <VTextField
-                v-model="password"
-                :rules="[ruleRequired, rulePassLen]"
-                prepend-inner-icon="fluent:password-20-regular" 
-                id="password"
-                name="password"
-                type="password"
-              />
-            </div>
-            <div class="mt-5">
-              <VBtn
-                prepend-icon="mdi-login"
-                type="submit"
-            
-                class="login-button"
-                >ເຂົ້າສູ່ລະບົບ</VBtn
-              >
-            </div>
-          </VForm>
-          <p class="text-center mt-4">
-            <!-- <span
-              >ຍັງບໍ່ທັນເປັນສະມາຊິກບໍ?
-              <NuxtLink to="/signup" class="signup-link"
-                >ລົງທະບຽນທີ່ນີ້</NuxtLink
-              ></span
-            > -->
-          </p>
-        </VCol>
-      </VRow>
-    </VCol>
+  <div>
+    <v-col cols="12">
+      
+      <v-row>
+        <v-col
+          cols="12"
+          md="4"
+          v-for="(data, index) in files"
+          :key="index"
+          class="card"
+        >
+          <img
+            v-if="data.fullImagePath"
+            :src="data.fullImagePath"
+            alt="File Image"
+            class="card-image"
+          />
+          <h3>ຊື່ໄຟລ໌: {{ data.filename }}</h3>
+          <p><strong>ໄອດີ:</strong> {{ data.id }}</p>
+          <p><strong>ສະຖານະ:</strong> {{ data.status }}</p>
+          <p><strong>ຜູ້ໃຊ້:</strong> {{ data.user }}</p>
+          <v-btn class="bg-green">View</v-btn>
+        </v-col>
+      </v-row>
+    </v-col>
+
+    <p v-if="files.length === 0">ไม่มีข้อมูลไฟล์ให้แสดง</p>
   </div>
 </template>
 
-<script setup lang="ts">
-useHead({
-  title: "Sign In",
-  meta: [
-    { name: "description", content: "Sign In Nuxt 3, IT Genius Engineering" },
-    { name: "keywords", content: "Sign In, Nuxt 3, Learning Nuxt 3" },
-  ],
-});
+<script lang="ts" setup>
+import { ref, onMounted } from "vue";
+import axios from "axios";
 
-const { $swal } = useNuxtApp();
-const username = ref("");
-const password = ref("");
-const { ruleRequired, rulePassLen } = useFormRules();
-const router = useRouter();
+const files = ref([]);
 
-const submit = async () => {
+const fetchFiles = async () => {
   try {
-    if (ruleRequired(username.value) && rulePassLen(password.value)) {
-      const config = useRuntimeConfig();
-      const { data } = await useFetch(`${config.public.strapi.url}api/login/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: username.value,
-          password: password.value,
-        }),
-      });
+    const config = useRuntimeConfig();
+    const baseURL = config.public.strapi.url;
 
-      if (data.value?.access && data.value?.refresh) {
-        localStorage.setItem("access_token", data.value.access);
-        localStorage.setItem("refresh_token", data.value.refresh);
-        localStorage.setItem("user_data", JSON.stringify(data.value.user));
+    const response = await axios.get(`${baseURL}api/api/get_collaterals/`);
 
-        $swal
-          .fire({
-            title: "ກຳລັງເຂົ້າສູ່ລະບົບ",
-            html: "ກາລຸນາລໍຖ້າອີກ <b></b> ວິນາທີ",
-            timer: 3000,
-            timerProgressBar: true,
-            didOpen: () => {
-              $swal.showLoading();
-              const interval = setInterval(() => {
-                const b = $swal.getHtmlContainer()?.querySelector("b");
-                if (b)
-                  b.textContent = `${Math.round($swal.getTimerLeft() / 1000)}`;
-              }, 100);
-            },
-          })
-          .then(() => router.push("/backend/dashboard"));
-      } else {
-        $swal.fire({
-          icon: "error",
-          title: "ບໍ່ສາມາດເຂົ້າສູ່ລະບົບໄດ້",
-          text: "ຂໍ້ມູນຜູ້ໃຊ້ງານ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ.",
-        });
-      }
-    }
-  } catch (err) {
-    console.error("Login error:", err);
-    $swal.fire({
-      icon: "error",
-      title: "Login Failed",
-      text: "An unexpected error occurred. Please try again.",
-    });
+    files.value = response.data.map((item: any) => ({
+      ...item,
+      fullImagePath: `${baseURL}collaterals/${item.pathfile}`,
+    }));
+
+    console.log("Fetched data:", files.value);
+  } catch (error) {
+    console.error("Error fetching files:", error);
   }
 };
+
+onMounted(() => {
+  fetchFiles();
+});
+
+definePageMeta({
+  layout: "backend",
+});
+
+useHead({
+  title: "Collect Files",
+  meta: [
+    {
+      name: "keywords",
+      content: "Order, Nuxt 3, Backend",
+    },
+    {
+      name: "description",
+      content: "Order Nuxt 3, IT Genius Engineering",
+    },
+  ],
+});
 </script>
 
-<style scoped>
-.image-background {
-  background-image: url("@/assets/images/login/login.png");
-  background-size: cover;
-  background-position: center;
+<style>
+.card-container {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  padding: 16px;
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 100%;
+}
+
+.card-image {
   width: 100%;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
+  max-width: 200px;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 16px;
 }
 
-.image-background::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+.card h3 {
+  margin: 8px 0;
 }
 
-.login-button {
-  background-color: #FFFFFF;
-  color: #000000;
+.card p {
+  margin: 4px 0;
 }
-
-.signup-link {
-  color: #e8eef0;
-  font-family: "Noto Sans Lao";
-}
-
 
 @media (max-width: 768px) {
-  .image-background {
-    background-image: none;
-    background-color: #f5f5f5; 
+  .card-container {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }
 </style>

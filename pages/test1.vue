@@ -1,6 +1,6 @@
 <template>
-<!-- <NooTest/> -->
-<NooTestHuk/>
+<NooTest/>
+<!-- <NooTestHuk/> -->
 </template>
 
 <script lang="ts" setup>
