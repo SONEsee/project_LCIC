@@ -88,7 +88,7 @@
                               v-model="regisDate"
                               :rules="rules"
                               type="date"
-                              label=" ລົງວັນທີ"
+                           label=" ລົງວັນທີ"
                               variant="outlined"
                               persistent-hint
                             ></v-text-field>
