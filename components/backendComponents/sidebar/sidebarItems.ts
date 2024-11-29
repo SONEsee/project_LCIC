@@ -9,16 +9,16 @@ export const getSidebarItems = (t: (key: string) => string) => [
     icon: "mdi-magnify",
     to: "/backend/search",
   },
-  {
-    title: t("searchreport"),
-    icon: "mdi-note-search-outline",
-    to: "/backend/order",
-  },
-  {
-    title: t("reportfees"),
-    icon: "mdi-cash-multiple",
-    to: "/backend/charge",
-  },
+  // {
+  //   title: t("searchreport"),
+  //   icon: "mdi-note-search-outline",
+  //   to: "/backend/order",
+  // },
+  // {
+  //   title: t("reportfees"),
+  //   icon: "mdi-cash-multiple",
+  //   to: "/backend/charge",
+  // },
   {
     title: t("report"),
     icon: "mdi-file-document-multiple-outline",
@@ -44,9 +44,9 @@ export const getSidebarItems = (t: (key: string) => string) => [
     icon: "mdi-image-area",
     to: "/backend/upload/upload_image",
   },
-  {
-    title: t("isuscodelcic"),
-    icon: "mdi-form-select",
-    to: "/insertcollaterals",
-  },
+  // {
+  //   title: t("isuscodelcic"),
+  //   icon: "mdi-form-select",
+  //   to: "/insertcollaterals",
+  // },
 ];

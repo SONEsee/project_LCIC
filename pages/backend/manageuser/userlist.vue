@@ -26,9 +26,40 @@
       <div class="table-responsive">
         <v-data-table
           :items="filteredUsers"
-           items-per-page="5"
+          :headers="headers"
+          items-per-page="12"
           class="bg-grey-lighten-5 rounded-table"
+        >
+        <template v-slot:item.profile="{item}">
+          <v-avatar>
+                  <v-img
+                    alt="John"
+                    src="https://cdn.vuetifyjs.com/images/john.jpg"
+                  ></v-img>
+                </v-avatar>
+        </template>
+        <template v-slot:item.status="{item}">
+          <p v-if="item.is_active" class="custom-box">Active</p>
+          <p v-else>Inactive</p>
+        </template>
+        <template v-slot:item.action="{ item }" >
+          <div class="d-flex justify-end">
+          <NuxtLink :to="`../manageuser/edit_user?UID=${item.UID}`">
+                  <v-icon icon="mdi-pencil" class="mr-2"></v-icon>
+                </NuxtLink>
 
+                <v-icon
+                  icon="mdi-delete-outline"
+                  style="color: red"
+                  @click="deleteUser(item.UID)"
+                ></v-icon></div>
+        </template>
+
+        </v-data-table>
+        <!-- <v-data-table
+          :items="filteredUsers"
+          items-per-page="5"
+          class="bg-grey-lighten-5 rounded-table"
         >
           <thead class="blue darken-4">
             <tr class="bg-header wrap-text custom-width-name">
@@ -85,11 +116,10 @@
               </td>
             </tr>
           </tbody>
-        </v-data-table>
+        </v-data-table> -->
       </div>
     </v-card>
   </div>
- 
 </template>
 
 <style>
@@ -156,12 +186,23 @@ definePageMeta({
   middleware: "auth",
   layout: "backend",
 });
-
+const headers = [
+  { title: "ລະຫັດຜູ້ນຳໃຊ້", value: "UID" },
+  { title: "ລະຫັດທນຄ", value: "bnk_code" },
+  { title: "ສະມາຊິກ", value: "bnk_name" },
+  { title: "ຊື່ຜູ້ນຳໃຊ້", value: "username" },
+  { title: "ສິດທິນຳໃຊ້", value: "Permission" },
+  { title: "ເຂົ້ານຳໃຊ້ລະບົບ", value: "last_login" },
+  { title: "ຮູບໂປຣຟາຍ", value: "profile" },
+  { title: "ສະຖານະ", value: "status" },
+  { title: "ລາຍລະອຽດ", value: "action" },
+];
 export default {
   data(): { users: any[]; filteredUsers: any[] } {
     return {
-      users: [], // Original users list
-      filteredUsers: [], // Filtered users list
+      users: [],
+      filteredUsers: [],
+      headers,
     };
   },
   // components: {
@@ -171,7 +212,6 @@ export default {
     await this.fetchUsers(); // Fetch users on mount
   },
   methods: {
-    // Method to fetch the user list
     async fetchUsers(): Promise<void> {
       try {
         const config = useRuntimeConfig();
@@ -180,18 +220,18 @@ export default {
         );
         const data = await response.json();
         this.users = data.all_user;
-        this.filteredUsers = data.all_user; // Initially, all users are shown
+        this.filteredUsers = data.all_user;
       } catch (error) {
         console.error("Error fetching users:", error);
       }
     },
-    // Method to filter users based on search query
+
     filterUsers(searchQuery: string): void {
       this.filteredUsers = this.users.filter((user) =>
         user.username.toLowerCase().includes(searchQuery.toLowerCase())
       );
     },
-    // Method to delete a user
+
     async deleteUser(UID: number): Promise<void> {
       try {
         const confirmDelete = await Swal.fire({
@@ -221,7 +261,7 @@ export default {
               text: `User with UID ${UID} deleted successfully.`,
               icon: "success",
             });
-            await this.fetchUsers(); // Re-fetch users after successful deletion
+            await this.fetchUsers(); 
           } else {
             const errorData = await response.json();
             Swal.fire({

@@ -103,49 +103,9 @@
           </v-sheet>
         </v-col>
       
-        <div>
-        <h1>ການອັບໂຫຼດຮູບພາບ</h1>
-        <div v-if="user">
-          {{ user.MID.id }}
-        </div>
-        <v-col cols="12">
-          <v-file-input
-            v-model="files"
-            :show-size="1000"
-            color="deep-purple-accent-4"
-            label="ອັບໂຫຼດຮູບພາບ"
-            placeholder="Select your files"
-            prepend-icon="mdi-camera"
-            variant="outlined"
-            counter
-            multiple
-          >
-            <template v-slot:selection="{ fileNames }">
-              <template v-for="(fileName, index) in fileNames" :key="fileName">
-                <v-chip
-                  v-if="index < 2"
-                  class="me-2"
-                  color="deep-purple-accent-4"
-                  size="small"
-                  label
-                >
-                  {{ fileName }}
-                </v-chip>
-  
-                <span
-                  v-else-if="index === 2"
-                  class="text-overline text-grey-darken-3 mx-2"
-                >
-                  +{{ files.length - 2 }} ຮູບ(s)
-                </span>
-              </template>
-            </template>
-          </v-file-input>
-          <v-btn color="primary" @click="uploadFiles" class="ml-9">ອັບໂຫຼດ</v-btn>
-        </v-col>
-      </div>
+        
 
-    <v-btn @click="submitForm">Create User</v-btn></v-row>
+    <v-btn @click="submitForm" class="bg-blue-darken-4">Create User</v-btn></v-row>
   </v-container>
 </template>
 

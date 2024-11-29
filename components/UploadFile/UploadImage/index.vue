@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <div>
-      <h1>#{{ $t("imageupload") }}</h1>
+      <h2>{{ $t("imageupload") }}</h2>
       <!-- <div v-if="user">
           {{ user.MID.id }}
         </div> -->

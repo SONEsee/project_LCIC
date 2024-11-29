@@ -13,12 +13,15 @@
                     height="100%"
                   /> -->
                 <v-container>
+
                   <img
                     width="100%"
                     height="100%"
                     :src="fullImagePath"
                     alt="Uploaded Image"
                   />
+
+
                 </v-container>
                 <h2 class="text-center">ເອກະສານອັບໂຫຼດ</h2>
               </div>
@@ -696,9 +699,7 @@ export default defineComponent({
 
     const fullImagePath = computed(() => {
       const config = useRuntimeConfig();
-      console.log("Route Query Image:", route.query.image);
-      console.log("Route Query ID:", route.query.id);
-      console.log;
+      
       return `${config.public.strapi.url}collaterals/${route.query.image}?id=${route.query.id}`;
     });
 

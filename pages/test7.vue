@@ -37,7 +37,7 @@ export default defineComponent({
         boostClock: '4.9 GHz',
         tdp: '105W',
       },
-      // ຂໍ້ມູນເພີ່ມເຕີມ...
+      
     ]);
 
     const headers = ref([
@@ -49,7 +49,7 @@ export default defineComponent({
       { title: 'TDP (W)', align: 'end', key: 'tdp' },
     ]);
 
-    // Filtered items based on the 'name' column
+   
     const filteredItems = computed(() =>
       items.value.filter((item) =>
         item.name.toLowerCase().includes(search.value.toLowerCase())

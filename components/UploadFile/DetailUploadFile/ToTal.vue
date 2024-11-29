@@ -16,7 +16,7 @@
           </p>
           
 
-          <v-data-table :items="combinedData" :headers="headers1">
+          <v-data-table :items="combinedData" :headers="headers1" density="compact">
             <template v-slot:top> </template>
             <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
@@ -115,7 +115,7 @@
               </v-col>
               
 
-              <v-data-table :items="enterpriseodeerror" :headers="headers2">
+              <v-data-table :items="enterpriseodeerror" :headers="headers2" density="compact">
                 <template v-slot:header.id>
                   <th style="color: #0d47a1">ID</th>
                 </template>
@@ -233,7 +233,7 @@
                   </tr>
                 </thead>
               </v-table>
-              <v-data-table :items="lcicerror" :headers="headers3">
+              <v-data-table :items="lcicerror" :headers="headers3" density="compact">
                 <template v-slot:header>
                   <tr style="color: black; background-color: blue"></tr>
                 </template>
@@ -303,7 +303,7 @@
               </p>
 
             
-              <v-data-table :items="lcicenterpriseerror" :headers="headers4">
+              <v-data-table :items="lcicenterpriseerror" :headers="headers4" density="compact">
                 <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
             </template>
@@ -367,7 +367,7 @@
                 LCICID ແລະ com_enterprise_code ບໍ່ຖືກ
               </h3>
              
-              <v-data-table :items="Cdisputes" :headers="headers5">
+              <v-data-table :items="Cdisputes" :headers="headers5" density="compact">
                 <template v-slot:header>
                   <tr style="color: black; background-color: blue"></tr>
                 </template>
@@ -415,7 +415,7 @@
             ຖືກບັນທຶກລົງຖານຂໍ້ມູນແລ້ວ
           </h1>
           
-          <v-data-table :items="t1" :headers="headers6">
+          <v-data-table :items="t1" :headers="headers6" density="compact">
             <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
             </template>

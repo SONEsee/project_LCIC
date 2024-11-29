@@ -1,5 +1,6 @@
 <template>
-  <v-container>
+  <insert-collaterals/>
+  <!-- <v-container>
     <v-data-table :items="filteredItems" :headers="headers">
       <template v-slot:top>
         <v-text-field
@@ -19,9 +20,7 @@
           <td>{{ item.pathfile }}</td>
           <td>
             <template v-if="item.status === '1'">
-              <!-- <v-btn small @click="confirmImage(item.id)" class="bg-success">
-                {{ $t("confirm") }}
-              </v-btn> -->
+             
               <p style="color: #e65100">ຍັງບໍ່ທັນກວດສອບ</p>
             </template>
             <template v-else>
@@ -40,7 +39,7 @@
         </tr>
       </template>
     </v-data-table>
-  </v-container>
+  </v-container> -->
 </template>
 
 <script lang="ts">
@@ -107,8 +106,6 @@ export default defineComponent({
       }
     });
 
-    // Fetch Collaterals Function
-
     const fetchCollaterals = async (userID: string) => {
       try {
         const config = useRuntimeConfig();
@@ -118,7 +115,6 @@ export default defineComponent({
 
         if (Array.isArray(response.data)) {
           if (userID === "01") {
-            // collaterals.value = response.data;
             collaterals.value = response.data.filter(
               (collateral) => collateral.status === "1"
             );
@@ -155,7 +151,6 @@ export default defineComponent({
       });
     };
 
-    // Confirm Image
     const confirmImage = async (id: number) => {
       try {
         const config = useRuntimeConfig();
@@ -199,7 +194,7 @@ export default defineComponent({
       confirmImage,
       user,
       filteredItems,
-      search
+      search,
     };
   },
 });
