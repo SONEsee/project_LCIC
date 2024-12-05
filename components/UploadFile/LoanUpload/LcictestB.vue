@@ -379,7 +379,7 @@ interface Item {
       };
   
       // const getFullPath = (path: string) => {
-      //   return `http://127.0.0.1:35729/media/${path}`;
+      //   return `http://192.168.45.56:8000/media/${path}`;
       // };
       const config = useRuntimeConfig();
       const getFullPath = (path: string) => `${config.public.strapi.url}${path}`;

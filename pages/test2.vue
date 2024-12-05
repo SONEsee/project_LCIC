@@ -20,7 +20,7 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:35729/api/charge_chart/month/');
+        const response = await axios.get('http://192.168.45.56:8000/api/charge_chart/month/');
         let chartData = response.data.chart_data;
 
         
