@@ -2,14 +2,27 @@
     <v-container>
       <v-data-table :items="filteredItems" :headers="headers">
         <template v-slot:top>
-          <v-text-field
+          <!-- <v-text-field
             v-if="user && user.MID.id === '01'"
             density="compact"
             width="50%"
             v-model="search"
             class="pa-2"
             label="ໃສ່ລະຫັດທະນາຄານ"
-          ></v-text-field>
+          ></v-text-field> -->
+          <v-autocomplete
+        
+        variant="outlined"
+          v-if="user && user.MID.id === '01'"
+          density="compact"
+          width="50%"
+          v-model="search"
+          class="pa-2 mt-5"
+          label="ໃສ່ລະຫັດທະນາຄານ"
+          :items=" uniqueUserIds.map((user) => ({ title: user, value: user }))"
+          item-text="title"
+          item-value="value"
+        />
         </template>
         <template v-slot:item="{ item }">
           <tr>
@@ -144,6 +157,11 @@
             )
           : collaterals.value
       );
+      const uniqueUserIds = computed(() => {
+      return [...new Set(filteredItems.value.map((item) => item.user))];
+    });
+
+
   
       const goToTest1 = (imagePath: string, id: number, status: number) => {
         router.push({
@@ -196,6 +214,7 @@
         user,
         filteredItems,
         search,
+        uniqueUserIds
       };
     },
   });

@@ -5,8 +5,8 @@ import { useI18n } from "vue-i18n";
 
 const {t}= useI18n();
 const items = computed (() => [
-  { title: t("person"), url: "#", backgroundImage: serchinImage },
-  { title: t ('enterprise'), url: "#", backgroundImage: loginImage },
+  { title: t("person"), url: "", backgroundImage: serchinImage },
+  { title: t ('enterprise'), url: "../searchlogreport", backgroundImage: loginImage },
 ]);
 </script>
 

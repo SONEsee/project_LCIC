@@ -1,12 +1,20 @@
-<script lang="ts" setup>
-import { ref, onMounted } from "vue";
+<!-- <script lang="ts" setup>
+import { ref, onMounted, computed } from "vue";
+export default{
 const datafetch = ref<any[]>([]);
 const error = ref<string | null>(null);
 const isloading = ref<boolean>(false);
+const search = ref<string>("");
+
+const config = {
+  public: {
+    strapi: { url: "http://192.168.45.54:35729/" },
+  },
+};
 
 const fetchdata = async () => {
-  isloading.value = true; 
-  error.value = null; 
+  isloading.value = true;
+  error.value = null;
 
   try {
     const response = await fetch(
@@ -16,10 +24,9 @@ const fetchdata = async () => {
       throw new Error(`Error: ${response.statusText}`);
     }
 
-    datafetch.value = await response.json();
+    const rawData = await response.json();
 
-    const config = useRuntimeConfig();
-    datafetch.value = datafetch.value.map((item: any) => ({
+    datafetch.value = rawData.map((item: any) => ({
       ...item,
       fullImagePath: `${config.public.strapi.url}collaterals/${item.pathfile}`,
     }));
@@ -34,26 +41,38 @@ const fetchdata = async () => {
 };
 
 onMounted(fetchdata);
+
+const filteredData = computed(() =>
+  datafetch.value.filter((item) =>
+    item.id.toString().includes(search.value)
+  )
+);
+
+return {
+  datafetch,
+  error,
+  isloading,
+  search,
+  filteredData,
+};}
 </script>
 
+
 <template>
-  <div v-if="isloading">ກຳລັງໂຫຼດ.....</div>
-  <div v-if="error">{{ error }}</div>
-  <div v-else>
-    <div v-for="(data, index) in datafetch" :key="index">
-      {{ data }}
+  <div>
+    <div v-if="isloading">Loading...</div>
+    <div v-else-if="error">{{ error }}</div>
+    <div v-else>
+      <input v-model="search" placeholder="Search..." />
+      <ul>
+        <li v-for="item in datafetch" :key="item.id">
+          <img :src="item.fullImagePath" alt="Collateral Image" />
+          <p>{{ item.id }}</p>
+        </li>
+      </ul>
     </div>
-    <v-col cols="12">
-      <v-row>
-        <v-col cols="4" v-for="(data, index) in datafetch" :key="index">
-          <v-card text-title="test">
-            <p>{{ index + 1 }}</p>
-            <p>{{ data.id }} {{ data.pathfile }}</p>
-            <p>{{ data.status }}</p>
-            <img :src="data.fullImagePath" alt="" />
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-col>
   </div>
+</template> -->
+<template>
+
 </template>
