@@ -3,7 +3,7 @@
     
     <div class="card-content">
       <div>
-      <p class="ml-3 pt-4"><b style="color: #01579B;">- {{ $t('collectfees') }}</b></p>
+      <!-- <p class="ml-3 pt-4"><b style="color: #01579B;">- {{ $t('collectfees') }}</b></p> -->
       </div>
       <v-tabs v-model="tab" fixed-tabs color="primary" stacked>
         <v-tab value="one">{{ $t('creditloans') }}</v-tab>

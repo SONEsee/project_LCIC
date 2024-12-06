@@ -46,7 +46,7 @@ const tab = ref(null);
 <style scoped lang="scss">
 .fullscreen {
   background-image: url("@/assets/images/feed/logo.png");
-  height: 100vh;
+  height: 100;
   position: relative;
   background-size: cover;
   background-position: center;

@@ -12,7 +12,7 @@
             <h3>ຂໍ້ມູນທີ່ອັບໂຫຼດທັງໝົດຂອງ: <b>ຍານພາຫະນະ.</b> </h3>
          
   
-            <v-data-table :items="combinedData" :headers="headers1">
+            <v-data-table :items="combinedData" :headers="headers1" density="compact">
             <template v-slot:top> </template>
             <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
@@ -104,7 +104,7 @@
                   </v-row>
                 </v-col>
                
-                <v-data-table :items="enterpriseodeerror" :headers="headers2">
+                <v-data-table :items="enterpriseodeerror" :headers="headers2" density="compact">
                 <template v-slot:header.id>
                   <th style="color: #0d47a1">ID</th>
                 </template>
@@ -210,7 +210,7 @@
                   </v-row>
                 </v-col>
                 
-                <v-data-table :items="lcicerror" :headers="headers3">
+                <v-data-table :items="lcicerror" :headers="headers3" density="compact">
                 <template v-slot:header>
                   <tr style="color: black; background-color: blue"></tr>
                 </template>
@@ -277,7 +277,7 @@
                 </h3>
   
                
-                <v-data-table :items="lcicenterpriseerror" :headers="headers4">
+                <v-data-table :items="lcicenterpriseerror" :headers="headers4" density="compact">
                 <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
             </template>
@@ -341,7 +341,7 @@
                   LCICID ແລະ com_enterprise_code ບໍ່ຖືກ
                 </h3>
                 
-                <v-data-table :items="Cdisputes" :headers="headers5">
+                <v-data-table :items="Cdisputes" :headers="headers5" density="compact">
                 <template v-slot:header>
                   <tr style="color: black; background-color: blue"></tr>
                 </template>
@@ -388,7 +388,7 @@
                 ຂໍ້ມູນທີ່ອັບໂຫຼດສົມບຸນ ເປັນຂໍ້ມູນທີ່ຜ່ານການກວດສອບ ແລະ
                 ຖືກບັນທຶກລົງຖານຂໍ້ມູນແລ້ວ
               </h1>
-              <v-data-table :items="veh" :headers="headers6">
+              <v-data-table :items="veh" :headers="headers6" density="compact">
             <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
             </template>

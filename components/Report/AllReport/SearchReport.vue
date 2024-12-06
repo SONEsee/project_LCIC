@@ -3,6 +3,7 @@ import individaul from "@/assets/images/report/saerch.png";
 import searchenterprise from '@/assets/images/report/enterprise1.png'
 import { useI18n } from "vue-i18n";
 
+
 const {t}= useI18n();
 const items = computed(() =>[
   { title: t('person'), url: "#", backgroundImage: individaul },
@@ -10,7 +11,8 @@ const items = computed(() =>[
 ]);
 </script>
 <template>
-  <v-card class="hovering-zoom text-center mt-5" style="border: 1px solid #00B0FF">
+  <DashboardComponentsAnalyticaldashActivityTimelineTheActivityTimeline />
+  <!-- <v-card class="hovering-zoom text-center mt-5" style="border: 1px solid #00B0FF">
     <div class="mt-5 mb-5">
       <p style="color: #01579b"><b> {{$t("searchreport")}}</b></p>
     </div>
@@ -63,6 +65,6 @@ const items = computed(() =>[
         </v-row>
       </v-col>
     </div>
-  </v-card>
+  </v-card> -->
 </template>
 <style lang="scss"></style>

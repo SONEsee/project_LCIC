@@ -15,9 +15,9 @@ const items = computed(() =>[
     style="border: 1px #01579B solid"
     color="rgba(255,255,255,0.4)"
   >
-    <div class="mt-5 mb-5">
+    <!-- <div class="mt-5 mb-5">
       <p style="color: #01579b"><b> {{$t("transmissionreport")}}</b></p>
-    </div>
+    </div> -->
     <div class="text-center">
       <v-col cols="12">
         <v-row>

@@ -6,9 +6,10 @@
       :style="{
         border: '3px #0D47A1 solid',
       }"
-      ><div class="mt-5 mb-5">
+      >
+      <!-- <div class="mt-5 mb-5">
         <h3><b>{{ $t("creditscores") }}</b></h3>
-      </div>
+      </div> -->
       <v-row>
         <v-col
           cols="12"

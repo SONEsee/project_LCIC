@@ -25,30 +25,48 @@
     </div> -->
 
     <v-file-input
-    variant="outlined"
-    prepend-icon="mdi-paperclip"
-    :label="$t('uploadjson')"
-    accept=".json, .xml"
-    @change="onFileChange"
-    outlined
-  ></v-file-input>
+      variant="outlined"
+      prepend-icon="mdi-paperclip"
+      :label="$t('uploadjson')"
+      accept=".json, .xml"
+      @change="onFileChange"
+      outlined
+    ></v-file-input>
     <v-btn @click="uploadFile" color="primary">{{ $t("upload") }}</v-btn>
 
     <v-data-table
+    
       item-value="name"
       :headers="headers"
       :items="filteredItems"
       class="custom-header elevation-1"
     >
+      <!-- {{ items }} -->
       <template v-slot:top>
-        <v-text-field
+        <!-- <v-text-field
           v-if="user && user.MID.id === '01'"
           density="compact"
           width="50%"
           v-model="search"
           class="pa-2"
           label="ໃສ່ລະຫັດທະນາຄານ"
-        ></v-text-field>
+        ></v-text-field> -->
+
+        <v-autocomplete
+        
+        variant="outlined"
+          v-if="user && user.MID.id === '01'"
+          density="compact"
+          width="50%"
+          v-model="search"
+          class="pa-2 mt-5"
+          label="ໃສ່ລະຫັດທະນາຄານ"
+          :items="
+            uniqueUserIds.map((user_id) => ({ title: user_id, value: user_id }))
+          "
+          item-text="title"
+          item-value="value"
+        />
       </template>
       <template v-slot:header.FID>
         <th style="color: #0d47a1">{{ $t("id") }}</th>
@@ -57,13 +75,15 @@
         <th style="color: #0d47a1">{{ $t("pathname") }}</th>
       </template>
       <template v-slot:header.user_id>
-        <th style="color: #0d47a1" v-if="user && user.MID.id === '01'">ລະຫັດທະນາຄານ</th>
+        <th style="color: #0d47a1" v-if="user && user.MID.id === '01'">
+          ລະຫັດທະນາຄານ
+        </th>
       </template>
       <template v-slot:header.statussubmit>
         <th style="color: #0d47a1">{{ $t("status") }}</th>
       </template>
       <template v-slot:header.percentage>
-        <th style="color: #0d47a1">{{ $t("percentage")}}</th>
+        <th style="color: #0d47a1">{{ $t("percentage") }}</th>
       </template>
 
       <template v-slot:header.actions>
@@ -81,7 +101,11 @@
         :search="search"
         v-slot:item.user_id="{ item }"
       >
-        <p :href="getFullPath(item.user_id)" target="_blank" v-if="user && user.MID.id === '01'">
+        <p
+          :href="getFullPath(item.user_id)"
+          target="_blank"
+          v-if="user && user.MID.id === '01'"
+        >
           {{ getFileName(item.user_id) }}
         </p>
       </template>
@@ -99,11 +123,13 @@
       </template>
 
       <template v-slot:item.actions="{ item }">
-        <v-btn @click="viewDetails(item)" color="info">{{ $t("detail")}}</v-btn>
+        <v-btn @click="viewDetails(item)" color="info">{{
+          $t("detail")
+        }}</v-btn>
       </template>
 
       <template v-slot:no-data>
-        <v-alert type="info" :value="true">{{ $t("detail")}}</v-alert>
+        <v-alert type="info" :value="true">{{ $t("detail") }}</v-alert>
       </template>
     </v-data-table>
   </v-container>
@@ -155,6 +181,9 @@ export default defineComponent({
     const user = ref<User | null>(null);
     const file = ref<File | null>(null);
     const items = ref<itemdata[]>([]);
+    const fetchbank = ref<any[]>([]);
+    const isloading = ref<boolean>(false);
+    const error = ref<string | null>;
     const headers = ref([
       { title: "ໄອດີ", value: "FID" },
       { title: "ຊື່ພາດ", value: "path" },
@@ -221,7 +250,6 @@ export default defineComponent({
     //   }
     // };
 
-   
     const fetchDataByUserID = async (userID: string): Promise<void> => {
       try {
         const config = useRuntimeConfig();
@@ -242,23 +270,34 @@ export default defineComponent({
         items.value = data.map((item: any) => ({
           ...item,
           FID: item.FID,
-          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ", 
-          confirmed: false, 
+          fileName: item.fileName,
+          path: item.path,
+          user_id: item.user_id,
+          statussubmit: item.statussubmit,
+          percentage: item.percentage || 0,
+          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+          confirmed: false,
         }));
 
-        sortItemsByUploadDate(); 
+        console.log("Fetched data:", items.value);
+
+        sortItemsByUploadDate();
       } catch (error) {
         console.error("Failed to fetch data:", error);
       }
     };
 
-    
     const filteredItems = computed(() =>
       items.value.filter((item) =>
         item.user_id.toLowerCase().includes(search.value.toLowerCase())
       )
     );
-    console.log("userid", items.value);
+
+    const uniqueUserIds = computed(() => {
+      return [...new Set(filteredItems.value.map((item) => item.user_id))];
+    });
+
+    console.log("Unique User IDs:", uniqueUserIds.value);
 
     // const fetchDataByUserID = async (userID: String) => {
     //   try {
@@ -568,6 +607,7 @@ export default defineComponent({
       search,
       filterOnlyCapsText,
       filteredItems,
+      uniqueUserIds,
     };
   },
 });

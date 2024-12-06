@@ -16,14 +16,29 @@
    
     <v-data-table :headers="headers" :items="filteredItems" class="elevation-1 mt-5" >
       <template v-slot:top>
-        <v-text-field
+        <!-- <v-text-field
           v-if="user && user.MID.id === '01'"
           density="compact"
           width="50%"
           v-model="search"
           class="pa-2"
           label="ໃສ່ລະຫັດທະນາຄານ"
-        ></v-text-field>
+        ></v-text-field> -->
+        <v-autocomplete
+        
+        variant="outlined"
+          v-if="user && user.MID.id === '01'"
+          density="compact"
+          width="50%"
+          v-model="search"
+          class="pa-2 mt-5"
+          label="ໃສ່ລະຫັດທະນາຄານ"
+          :items="
+            uniqueUserIds.map((user_id) => ({ title: user_id, value: user_id }))
+          "
+          item-text="title"
+          item-value="value"
+        />
       </template>
 
       <template v-slot:item.path="{ item }">
@@ -186,7 +201,12 @@ export default defineComponent({
 
         items.value = data.map((item: any) => ({
           ...item,
-          FID: item.CID,
+          FID: item.FID,
+          fileName: item.fileName,
+          path: item.path,
+          user_id: item.user_id,
+          statussubmit: item.statussubmit,
+          percentage: item.percentage || 0,
           status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
           confirmed: false,
         }));
@@ -202,7 +222,9 @@ export default defineComponent({
       )
     );
     
-
+    const uniqueUserIds = computed(() => {
+      return [...new Set(filteredItems.value.map((item) => item.user_id))];
+    });
 
 
     const fetchData = async (userID: string) => {
@@ -519,6 +541,7 @@ export default defineComponent({
       getStatusText,
       getFileName,
       filteredItems,
+      uniqueUserIds
     };
   },
 });

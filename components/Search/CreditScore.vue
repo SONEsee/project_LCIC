@@ -13,9 +13,9 @@ const items = computed(() => [
 
 <template>
   <div class="image-background text-center">
-    <div class="highlighted-text">
+    <!-- <div class="highlighted-text">
       <p style="font-size: 24px"><b>{{ $t("creditscores") }}</b></p>
-    </div>
+    </div> -->
     <v-container>
       <v-card
         class="hovering-zoom"

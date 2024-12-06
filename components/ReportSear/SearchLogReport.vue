@@ -101,12 +101,12 @@
       generateLinkSearchLog(bankCode) {
         // Generate the dynamic link based on current filter values
         const { month, year, fromDate, toDate } = this.filters;
-        return `/test6?bank=${bankCode}&month=${month ?? ''}&year=${year ?? ''}&fromDate=${fromDate ?? ''}&toDate=${toDate ?? ''}`;
+        return `/countsearch?bank=${bankCode}&month=${month ?? ''}&year=${year ?? ''}&fromDate=${fromDate ?? ''}&toDate=${toDate ?? ''}`;
       },
       generateLinkRequestCharge(bankCode) {
         // Generate the dynamic link based on current filter values
         const { month, year, fromDate, toDate } = this.filters;
-        return `/test7?bank=${bankCode}&month=${month ?? ''}&year=${year ?? ''}&fromDate=${fromDate ?? ''}&toDate=${toDate ?? ''}`;
+        return `/reportcount?bank=${bankCode}&month=${month ?? ''}&year=${year ?? ''}&fromDate=${fromDate ?? ''}&toDate=${toDate ?? ''}`;
       },
       async fetchCharge() {
         try {

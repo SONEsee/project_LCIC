@@ -12,15 +12,14 @@
         </v-toolbar>
         <v-autocomplete
         
-          variant="outlined"
+        variant="outlined"
+         
           density="compact"
           width="50%"
           v-model="search"
           class="pa-2 mt-5"
           label="ໃສ່ລະຫັດທະນາຄານ"
-          :items="
-            uniqueUserIds.map((user_id) => ({ title: user_id, value: user_id }))
-          "
+          :items=" uniqueUserIds.map((user) => ({ title: user, value: user }))"
           item-text="title"
           item-value="value"
         />
@@ -33,9 +32,6 @@
           getFileName(item.path)
         }}</a>
       </template>
-
-
-      
       <template v-slot:item.percentage="{ item }" class="text-start">
         <span
           :style="{ color: getPercentageColor(item.percentage) }"
@@ -56,7 +52,6 @@
           {{ getFileName(item.user_id) }}
         </p>
       </template>
-
       <template v-slot:item.status="{ item }">
         <v-chip :color="getStatusColor(item.status)" dark>{{
           item.status
@@ -64,13 +59,10 @@
       </template>
       <template v-slot:item.statussubmit="{ item }">
         <div class="d-flex align-center">
-          <template v-if="item.statussubmit === '0' && item.percentage <= 50">
+          <template v-if="item.statussubmit === '0' && item.percentage <= 60">
             <span style="color: green">ຢືນຢັນສຳເລັດແລ້ວ</span>
           </template>
-          <template v-else-if="item.statussubmit === '2'">
-            <span style="color: red">ປະຕິເສດ</span>
-          </template>
-          <template v-else-if="item.percentage > 50">
+          <template v-else-if="item.percentage > 60">
             <span style="color: red">ຂໍ້ຜິດພາດສູງເກີນກຳນົດ</span>
           </template>
           <template v-else>
@@ -95,6 +87,7 @@ import { defineComponent, ref, onMounted } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRouter } from "vue-router";
+import Cookies from "js-cookie";
 
 export default defineComponent({
   user_id: "SingleColumnSearchTable",
@@ -115,7 +108,7 @@ export default defineComponent({
     });
 
     useHead({
-      title: "Submit",
+      title: "Upload File",
       meta: [
         {
           name: "keywords",
@@ -127,102 +120,63 @@ export default defineComponent({
         },
       ],
     });
-    interface ItemData {
-      FID: string;
-      fileName: string;
-      path: string;
-      statussubmit: string;
-      percentage: number;
-      status: string;
-      confirmed: boolean;
-      insertDate: string;
-    }
-    interface Item {
-      FID: string;
-      fileName: string;
-      statussubmit: string;
-      path?: string;
-      confirmed: boolean;
-      status: string;
-      insertDate: string;
-      updateDate: string;
-    }
 
     const file = ref<File | null>(null);
-    const items = ref<ItemData[]>([]);
-  
-
+    const items = ref([]);
     const headers = ref([
-      { title: "ໄອດີ", value: "FID" },
+      { title: "ໄອດີ", value: "CID" },
       { title: "ຊື່ພາດ", value: "path" },
       { title: "ລະຫັດທະນາຄານ", value: "user_id" },
 
       { title: "ສະຖານະການຢືນຢັນ", value: "statussubmit" },
-      { title: "ເປີເຊັນຄວາມຖືກຕອ້ງ", value: "percentage" },
+      { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
       { title: "Actions", value: "actions", sortable: false },
     ]);
 
     // onMounted(async () => {
-    //   await fetchData();
+    //   try {
+    //     const response = await fetch('http://127.0.0.1:35729/api/api/upload-files2/');
+    //     if (!response.ok) {
+    //       throw new Error('Network response was not ok');
+    //     }
+    //     const data = await response.json();
+    //     items.value = data.map((item: any) => ({
+    //       ...item,
+    //       CID: item.FID,
+    //       status: 'ສຳເລັດການນຳສົ່ງຂໍ້ມູນ',
+    //       confirmed: false,
+    //     }));
+    //   } catch (error) {
+    //     console.error('Failed to fetch data:', error);
+    //   }
     // });
+
     onMounted(async () => {
-      try {
-        await fetchData();
-
-        const userData = localStorage.getItem("user_data");
-        console.log("User data:", userData);
-
-        if (userData) {
-          try {
-            user.value = JSON.parse(userData);
-            console.log("Parsed user data:", user.value);
-
-            const MID = user.value.MID;
-
-            if (MID && MID.id) {
-              const paddedMID = MID.id.toString().padStart(2, "0");
-              console.log("Padded MID.id:", paddedMID);
-
-              await fetchDataByUserID(paddedMID);
-            }
-          } catch (error) {
-            console.error("Error parsing user data:", error);
-          }
-        }
-      } catch (error) {
-        console.error("Error in onMounted:", error);
-      }
+      await fetchData();
     });
+
     const fetchData = async () => {
       try {
         const config = useRuntimeConfig();
         const response = await fetch(
-          `${config.public.strapi.url}api/upload-files2/`
+          `${config.public.strapi.url}api/api/upload-filesc2/`
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
-
-        items.value = data
-          .filter(
-            (item: Item) =>
-              item.statussubmit === "1" ||
-              item.statussubmit === "0" ||
-              item.statussubmit === "2"
-          )
-          .map((item: Item) => ({
-            ...item,
-            FID: item.FID,
-            status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-            confirmed: false,
-          }));
-
+        items.value = data.map((item: any) => ({
+          ...item,
+          CID: item.CID,
+          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+          confirmed: false,
+        }));
         sortItemsByUploadDate();
       } catch (error) {
         console.error("Failed to fetch data:", error);
       }
     };
+
     const filteredItems = computed(() =>
       items.value.filter((item) =>
         item.user_id.toLowerCase().includes(search.value.toLowerCase())
@@ -231,7 +185,6 @@ export default defineComponent({
     const uniqueUserIds = computed(() => {
       return [...new Set(filteredItems.value.map((item) => item.user_id))];
     });
-
     const sortItemsByUploadDate = () => {
       items.value.sort(
         (a: any, b: any) =>
@@ -293,12 +246,12 @@ export default defineComponent({
         });
 
         const response2 = await fetch(
-          `${config.public.strapi.url}api/api/upload-files2/`
+          `${config.public.strapi.url}api/api/upload-filesc2/`
         );
         const data = await response2.json();
         items.value = data.map((item: any) => ({
           ...item,
-          FID: item.FID,
+          CID: item.CID,
           fileName: item.fileName,
           path: item.path,
           user_id: item.user_id,
@@ -326,11 +279,11 @@ export default defineComponent({
     const router = useRouter();
 
     const viewDetails = async (item: any) => {
-      if (!item.FID) {
+      if (!item.CID) {
         Swal.fire({
           icon: "error",
           title: "ລົ້ມເຫລວ",
-          text: "ບໍມີຂໍ້ມູນທີ່ກົງກັບ FID ນີ້",
+          text: "ບໍມີຂໍ້ມູນທີ່ກົງກັບ CID ນີ້",
         });
         return;
       }
@@ -338,17 +291,17 @@ export default defineComponent({
       try {
         const config = useRuntimeConfig();
         const response = await axios.get(
-          `${config.public.strapi.url}api/api/productinfo3/`,
+          `${config.public.strapi.url}api/api/productinfoc3/`,
           {
             params: {
-              FID: item.FID,
+              CID: item.CID,
             },
           }
         );
 
         const data = response.data;
         router.push({
-          name: "detailupload",
+          name: "detailupload_c",
           query: { data: JSON.stringify(data) },
         });
       } catch (error) {
@@ -375,11 +328,17 @@ export default defineComponent({
           try {
             const params = new URLSearchParams();
             const config = useRuntimeConfig();
-            params.append("FID", item.FID);
+            const csrfToken = Cookies.get("csrftoken");
+            params.append("CID", item.CID);
 
             const response = await axios.post(
-              `${config.public.strapi.url}api/confirm_upload/`,
-              params
+              `${config.public.strapi.url}api/confirm_uploadc/`,
+              params,
+              {
+                headers: {
+                  "X-CSRFToken": csrfToken,
+                },
+              }
             );
 
             if (response.data.status === "success") {
@@ -403,22 +362,19 @@ export default defineComponent({
             }
           } catch (error) {
             console.error("Failed to confirm upload:", error);
-
             Swal.fire(
               "ຜິດພາດ!",
-              "ທ່ານບໍ່ສາມາດຢືນຢັນການອັບໂຫຼດຂໍ້ມູນຍອ້ນຫຼັງໄດ້.",
+              "ມີຄວາມຜິດພາດເກີດຂຶ້ນໃນຂະນະທີ່ຢືນຢັນການອັບໂຫຼດ.",
               "error"
-            ).then(() => {
-              location.reload();
-            });
+            );
           }
         }
       });
+      const config = useRuntimeConfig();
 
-     
       const response = await axios.post(
-        `${config.public.strapi.url}api/api/update-statussubmit/`,
-        `FID=${item.FID}`
+        `${config.public.strapi.url}api/api/update-statussubmitc/`,
+        `CID=${item.CID}`
       );
 
       if (response.data.status === "success") {
@@ -429,10 +385,8 @@ export default defineComponent({
           confirmedItem.confirmed = true;
           confirmedItem.statussubmit = "0";
         }
-      } else {
       }
     };
-
     const getPercentageColor = (percentage: number) => {
       if (percentage > 15) {
         return "red";
@@ -460,8 +414,8 @@ export default defineComponent({
     //   return `http://127.0.0.1:35729/media/${path}`;
     // };
     const config = useRuntimeConfig();
-    const getFullPath = (path: string) => `${config.public.strapi.url}${path}`;
-   const filterOnlyCapsText = (
+    const getFullPath = (path: string) => `${config.public.strapi.url}/${path}`;
+    const filterOnlyCapsText = (
       value: string | null,
       query: string | null
     ): boolean => {
@@ -472,7 +426,6 @@ export default defineComponent({
         value.toUpperCase().includes(query)
       );
     };
-
     const getFileName = (path: string) => {
       const parts = path.split("/");
       return parts[parts.length - 1];
@@ -493,7 +446,6 @@ export default defineComponent({
       search,
       uniqueUserIds,
       filterOnlyCapsText,
-      
     };
   },
 });

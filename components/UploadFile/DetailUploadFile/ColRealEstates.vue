@@ -14,7 +14,7 @@
           </h3>
           
 
-          <v-data-table :items="combinedData" :headers="headers1">
+          <v-data-table :items="combinedData" :headers="headers1" density="compact">
             <template v-slot:top> </template>
             <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>

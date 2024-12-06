@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <div>
-      <h1>#{{ $t("imageupload") }}</h1>
+      <h2>{{ $t("imageupload") }}</h2>
       <!-- <div v-if="user">
           {{ user.MID.id }}
         </div> -->
@@ -44,16 +44,29 @@
       </v-col>
     </div>
 
-    <v-data-table class="mt-5">
+    <v-data-table class="mt-5"  >
       <template v-slot:top>
-        <v-text-field
+        <!-- <v-text-field
           v-if="user && user.MID.id === '01'"
           density="compact"
           width="50%"
           v-model="search"
           class="pa-2"
           label="ໃສ່ລະຫັດທະນາຄານ"
-        ></v-text-field>
+        ></v-text-field> -->
+        <v-autocomplete
+        
+        variant="outlined"
+          v-if="user && user.MID.id === '01'"
+          density="compact"
+          width="50%"
+          v-model="search"
+          class="pa-2 mt-5"
+          label="ໃສ່ລະຫັດທະນາຄານ"
+          :items=" uniqueUserIds.map((user) => ({ title: user, value: user }))"
+          item-text="title"
+          item-value="value"
+        />
       </template>
       <thead>
         <tr class="bg-indigo-lighten-1">
@@ -274,7 +287,9 @@ export default defineComponent({
       )
     );
     console.log("user", filteredItems);
-
+    const uniqueUserIds = computed(() => {
+      return [...new Set(filteredItems.value.map((item) => item.user))];
+    });
     // const fetchCollaterals = async (userID: string) => {
     //   try {
     //     const config = useRuntimeConfig();
@@ -308,6 +323,7 @@ export default defineComponent({
       user,
       search,
       filteredItems,
+      uniqueUserIds
     };
   },
 });

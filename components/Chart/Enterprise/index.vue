@@ -21,11 +21,11 @@
       <tbody>
         <tr v-for="row in chartData" :key="row.bnk_code">
           <td>{{ row.bnk_code }}</td>
-          <!-- Loop through months 1-12 and display the corresponding amount or '-' if not available -->
+         
           <td v-for="month in months" :key="month">
             {{ row[month] !== undefined ? row[month] : '-' }}
           </td>
-          <td>{{ getTotalAmount(row) }}</td> <!-- Optional total amount calculation -->
+          <td>{{ getTotalAmount(row) }}</td> 
         </tr>
       </tbody>
     </table>
