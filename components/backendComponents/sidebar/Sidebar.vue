@@ -54,7 +54,7 @@ const filteredSidebarItems = computed(() => {
               :class="{ 'active-item': $route.path === item.url }"
             >
               <template v-slot:prepend>
-                <v-icon style="color: #304FFE;"></v-icon>
+                <v-icon :icon="item.icon" style="color: #304FFE;"></v-icon>
               </template>
               <v-list-item-title v-text="item.name"></v-list-item-title>
             </v-list-item>
