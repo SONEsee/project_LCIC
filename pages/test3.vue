@@ -60,7 +60,7 @@ export default defineComponent({
   
     onMounted(async () => {
       try {
-        const response = await fetch('http://127.0.0.1:35729/api/charge-count/');
+        const response = await fetch('http://192.168.45.56:8000/api/charge-count/');
         const data = await response.json();
 
        

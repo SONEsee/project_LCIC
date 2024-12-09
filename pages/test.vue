@@ -98,7 +98,7 @@ export default defineComponent({
     // onMounted(async () => {
     //   try {
     //     const response = await fetch(
-    //       "http://127.0.0.1:35729/api/api/upload-files2/"
+    //       "http://192.168.45.56:8000/api/api/upload-files2/"
     //     );
     //     if (!response.ok) {
     //       throw new Error("Network response was not ok");
@@ -124,7 +124,7 @@ export default defineComponent({
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "http://127.0.0.1:35729/api/api/upload-filesc2/"
+          "http://192.168.45.56:8000/api/api/upload-filesc2/"
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -188,7 +188,7 @@ export default defineComponent({
 
       try {
         const response = await axios.post(
-          "http://127.0.0.1:35729/api/upload-filesC/",
+          "http://192.168.45.56:8000/api/upload-filesC/",
           formData
         );
 
@@ -207,7 +207,7 @@ export default defineComponent({
         });
 
         const response2 = await fetch(
-          "http://127.0.0.1:35729/api/api/upload-filesc2/"
+          "http://192.168.45.56:8000/api/api/upload-filesc2/"
         );
         const data = await response2.json();
         items.value = data.map((item: any) => ({
@@ -246,7 +246,7 @@ export default defineComponent({
 
       try {
         const response = await axios.get(
-          "http://127.0.0.1:35729/api/api/productinfo3/",
+          "http://192.168.45.56:8000/api/api/productinfo3/",
           {
             params: {
               FID: item.FID,
@@ -270,7 +270,7 @@ export default defineComponent({
     };
 
     const getFullPath = (path: string) => {
-      const baseUrl = "http://127.0.0.1:35729/";
+      const baseUrl = "http://192.168.45.56:8000/";
       return `${baseUrl}${path}`;
     };
 
