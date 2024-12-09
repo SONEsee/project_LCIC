@@ -168,6 +168,7 @@ const onCheckboxChange = async (rowIndex, roleId) => {
   const payload = {
     item_type: "sidebar_item",
     name: item.name,
+    icon: item.icon,
     url: item.url,
     roles: item.roles,
   };
