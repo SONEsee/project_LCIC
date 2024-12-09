@@ -1,25 +1,39 @@
-<template>
-<!-- <NooTest/> -->
-<NooTestHuk/>
-</template>
+
 
 <script lang="ts" setup>
-
-    definePageMeta({
-      layout: "backend",
-    });
-
-    useHead({
-      title: "Upload File",
-      meta: [
-        { name: "keywords", content: "Report, Nuxt 3, Backend" },
-        {
-          name: "Description",
-          content: "Report Nuxt 3, IT Genius Engineering",
-        },
-      ],
-    });
+import { ref, onMounted } from "vue";
+const datafetch = ref<any[]>([]);
+const error = ref<string | null>(null);
+const isloading = ref<boolean>(false);
+const fetdata = async () => {
+  isloading.value = true;
+  error.value = null;
+  try {
+    const respons = await fetch(
+      `http://192.168.45.54:35729/api/api/get_collaterals/`
+    );
+    if (!respons.ok) {
+      throw new Error(`Error: ${respons.statusText}`);
+    }
+    datafetch.value = await respons.json();
+  } catch (
+    err: unknown
+   
+  ) {
+    error.value =
+      err instanceof Error ? err.message : "An unexpected error occurred";
+  } finally {
+isloading.value = false
+  }
+};
+onMounted(fetdata)
 </script>
-
-<style>
-</style>
+<template>
+<div v-if="isloading">ກຳລັງອັບໂຫຼດ .....</div>
+<div v-if="error" class="text-red"> ບໍ່ສາມາດດືງຂໍ້ມູນໄດ້ </div>
+<div v-else>
+  <div v-for="(index , item) in datafetch" :key="index">
+    {{ index }}
+  </div>
+</div>
+</template>

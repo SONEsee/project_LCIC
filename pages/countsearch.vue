@@ -1,7 +1,7 @@
 <template>
     <div>
-      <h2 class="head-user">    <h2 class="head-user">ລາຍງານການຄົ້ນຫາ</h2>
-  </h2>
+          <h2 class="head-user">ລາຍງານການຄົ້ນຫາ</h2>
+ 
   
       <div class="table-summary border-md">
         <v-row class="justify-space-between align-center" style="height: 60px;">
