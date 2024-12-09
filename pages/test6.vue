@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-<template>
-  <div>    <h2 class="head-user">ລາຍງານການຄົ້ນຫາ</h2>
->>>>>>> origin/paylay
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";

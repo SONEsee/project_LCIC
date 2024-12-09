@@ -66,15 +66,16 @@
 // // };
 
 
-// composables/useSidebar.ts
 import { useState } from "#app";
 
 export const useSidebar = async () => {
+  const config = useRuntimeConfig();
   const sidebarItems = useState("sidebarItems", () => []);
 
   if (!sidebarItems.value.length) {
+
     try {
-      const response = await fetch("http://192.168.45.56:8000/api/sidebar-items/");
+      const response = await fetch(`${config.public.strapi.url}api/sidebar-items/`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
