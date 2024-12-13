@@ -3,18 +3,24 @@
     <v-col cols="12">
       <v-row>
         <v-col cols="12">
-          <div>
-            <v-file-input
-              label="File input"
-              prepend-icon="mdi-file"
-              variant="outlined"
-              v-model="selectedFile"
-              accept=".png, .jpg, .jpeg"
-            ></v-file-input>
-            <v-btn class="bg-blue-darken-4" @click="uploadFile">
-              ອັບໂຫຼດ
-            </v-btn>
-          </div>
+          <v-row>
+            <v-col cols="12" md="5"
+              ><v-file-input
+              density="compact"
+                label="File input"
+                prepend-icon="mdi-file"
+                variant="outlined"
+                v-model="selectedFile"
+                accept=".png, .jpg, .jpeg"
+              ></v-file-input
+            ></v-col>
+            <v-col cols="12" md="2"
+              ><v-btn class="bg-blue-darken-4" @click="uploadFile">
+                ອັບໂຫຼດ
+              </v-btn></v-col
+            >
+          </v-row>
+          <div></div>
         </v-col>
         <v-col cols="12">
           <v-data-table :items="data" :headers="headers" class="elevation-1">
@@ -24,23 +30,21 @@
               </NuxtLink>
             </template> -->
             <template v-slot:item.nameln="{ item }">
-              <NuxtLink to="../saerchtrue" class=" mr-1" small  style="color: green;">
+              <NuxtLink
+                to="../saerchtrue"
+                class="mr-1"
+                small
+                style="color: green"
+              >
                 {{ item.nameln }}
               </NuxtLink>
             </template>
             <template v-slot:item.locationln="{ item }">
-              <NuxtLink to="../fals" class=" mr-1" small  style="color: red;">
+              <NuxtLink to="../fals" class="mr-1" small style="color: red">
                 {{ item.locationln }}
               </NuxtLink>
             </template>
-            <!-- <template v-slot:item.actions="{ item }">
-              <v-btn class="bg-green mr-1" small @click="editItem(item)">
-                ເປີດ
-              </v-btn>
-              <v-btn class="bg-red" small @click="deleteItem(item)">
-                ລົບ
-              </v-btn>
-            </template> -->
+           
           </v-data-table>
         </v-col>
       </v-row>
@@ -97,7 +101,7 @@ const headers = ref([
   { title: "ຈຳນວນທັງໝົດ", value: "namelao" },
   { title: "ຄົ້ນຫາພົບ", value: "nameln" },
   { title: "ຄົ້ນຫາບໍ່ພົບ", value: "locationln" },
-//   { title: "Actions", value: "actions", sortable: false },
+  //   { title: "Actions", value: "actions", sortable: false },
 ]);
 
 const selectedFile = ref<File | null>(null);
@@ -123,9 +127,7 @@ const deleteItem = (item: any) => {
     alert(`Deleted item: ${item.name}`);
   }
 };
-const link = (item: any) => {
-
-}
+const link = (item: any) => {};
 </script>
 
 <style scoped>

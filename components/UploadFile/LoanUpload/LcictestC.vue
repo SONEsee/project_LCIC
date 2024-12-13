@@ -1,28 +1,26 @@
 <template>
-  <v-container>
-    <v-data-table
-      :headers="headers"
-      :items="filteredItems"
-      class="elevation-1"
-      :items-per-page="12"
-    >
-      <template v-slot:top>
-        <v-toolbar flat>
-          <v-divider class="mx-4" inset vertical></v-divider>
-        </v-toolbar>
-        <v-autocomplete
-        
-        variant="outlined"
-         
+  <v-container> <v-autocomplete
+          variant="outlined"
           density="compact"
           width="50%"
           v-model="search"
-          class="pa-2 mt-5"
+          class=""
           label="ໃສ່ລະຫັດທະນາຄານ"
-          :items=" uniqueUserIds.map((user) => ({ title: user, value: user }))"
+          :items="uniqueUserIds.map((user) => ({ title: user, value: user }))"
           item-text="title"
           item-value="value"
         />
+    <v-data-table
+      :headers="headers"
+      :items="filteredItems"
+      class="elevation-1 d-flex justify-start"
+      :items-per-page="12"
+    >
+      <template v-slot:top>
+        <!-- <v-toolbar flat>
+          <v-divider class="mx-4" inset vertical></v-divider>
+        </v-toolbar> -->
+       
       </template>
       <!-- <template v-slot:item.path="{ item }">
           <a :href="getFullPath(item.path)" target="_blank">{{ item.path }}</a>
@@ -44,11 +42,7 @@
         :search="search"
         v-slot:item.user_id="{ item }"
       >
-        <p
-          :href="getFullPath(item.user_id)"
-          target="_blank"
-          
-        >
+        <p :href="getFullPath(item.user_id)" target="_blank">
           {{ getFileName(item.user_id) }}
         </p>
       </template>

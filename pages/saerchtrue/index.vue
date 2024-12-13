@@ -4,6 +4,9 @@
       <v-row>
         <v-col cols="12"> </v-col>
         <v-col cols="12">
+          <div class="d-flex justify-end">
+            <v-btn class="bg-green mr-5">ເປິດທັງໝົດ</v-btn>
+          </div>
           <v-data-table :items="data" :headers="headers" class="elevation-1">
             <!-- <template v-slot:item.namelao="{ item }">
                 <NuxtLink to="../test1" class=" mr-1" small @click="editItem(item)" >
@@ -27,9 +30,9 @@
               <v-btn class="bg-green mr-1" small @click="editItem(item)">
                 ເປີດ
               </v-btn>
-              <v-btn class="bg-red" small @click="deleteItem(item)">
+              <!-- <v-btn class="bg-red" small @click="deleteItem(item)">
                 ລົບ
-              </v-btn>
+              </v-btn> -->
             </template>
           </v-data-table>
         </v-col>

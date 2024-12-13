@@ -1,39 +1,64 @@
 <template>
-  <div id="chart" class="bg-white mt-5 rounded-lg custom-border">
-    <apexchart type="area" height="350" :options="chartOptions" :series="series" />
+  <v-row>
+    <v-col cols="12" md="9"></v-col>
+    <v-col cols="12" md="3"> 
+    <v-autocomplete
+      label="ເລືອກ"
+      density="compact"
+      width="100%"
+      rounded="lg"
+      variant="outlined"
+      :items="['ວັນ', 'ອາທິດ', 'ເດືອນ']"
+    >
+    </v-autocomplete>
+  </v-col>
+  </v-row>
+
+  <div id="chart">
+    <apexchart
+      type="area"
+      height="350"
+      :options="chartOptions"
+      :series="series"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
-import VueApexCharts from 'vue3-apexcharts';
+import { defineComponent, ref, onMounted } from "vue";
+import VueApexCharts from "vue3-apexcharts";
 
 export default defineComponent({
-  name: 'StockPriceChart',
+  name: "StockPriceChart",
   components: {
     apexchart: VueApexCharts,
   },
   setup() {
-    const series = ref([{ name: 'Charge Count', data: [] as { x: string; y: number }[] }]);
+    const series = ref([
+      { name: "Charge Count", data: [] as { x: string; y: number }[] },
+    ]);
     const chartOptions = ref({
       chart: {
-        type: 'area',
+        type: "area",
         stacked: false,
         height: 350,
         zoom: {
-          type: 'x',
+          type: "x",
           enabled: true,
           autoScaleYaxis: true,
         },
         toolbar: {
-          autoSelected: 'zoom',
+          autoSelected: "zoom",
         },
       },
       dataLabels: { enabled: false },
       markers: { size: 0 },
-      title: { text: 'ການເຄືອນໄຫວ ແລະ ການເໜັງຕີງຂອງການຄົ້ນຫາປະຈຳວັນ', align: 'left' },
+      title: {
+        text: "ການເຄືອນໄຫວ ແລະ ການເໜັງຕີງຂອງການຄົ້ນຫາປະຈຳວັນ",
+        align: "left",
+      },
       fill: {
-        type: 'gradient',
+        type: "gradient",
         gradient: {
           shadeIntensity: 1,
           inverseColors: false,
@@ -46,9 +71,9 @@ export default defineComponent({
         labels: {
           formatter: (val: number) => val.toFixed(0),
         },
-        title: { text: 'Count' },
+        title: { text: "Count" },
       },
-      xaxis: { type: 'category' },
+      xaxis: { type: "category" },
       tooltip: {
         shared: false,
         y: {
@@ -57,20 +82,20 @@ export default defineComponent({
       },
     });
 
-    
     onMounted(async () => {
       try {
         const config = useRuntimeConfig();
-        const response = await fetch(`${config.public.strapi.url}api/charge-count/`);
+        const response = await fetch(
+          `${config.public.strapi.url}api/charge-count/`
+        );
         const data = await response.json();
 
-       
         series.value[0].data = Object.entries(data).map(([hour, count]) => ({
           x: hour,
           y: count as number,
         }));
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
       }
     });
 
@@ -85,7 +110,6 @@ export default defineComponent({
 }
 
 .custom-border {
-  border: 2px solid #1A237E; 
+  border: 2px solid #1a237e;
 }
-
 </style>

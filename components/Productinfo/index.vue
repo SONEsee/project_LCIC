@@ -1,5 +1,5 @@
 <template>
   <div>
-    test
+    <p>ບົດລາຍງານສິນເຊືອຄົບຖວ້ນ ນິຕິບຸກຄົນ</p>
   </div>
 </template>

@@ -2,9 +2,9 @@
 
 
 <template>
-  <div>
+  <div >
     <v-container>
-      <v-card class="bg-indigo-lighten-5 text-start">
+      <v-card class="bg-indigo-lighten-5 text-start ">
         <div class="text-center">
           <p style="font-size: 20px" class="mt-10">ລາຍລະອຽດນິຕິບຸກຄົນ</p>
         </div>
@@ -14,7 +14,7 @@
             <v-col cols="12">
               <v-row>
                 <v-col cols="12" md="6">
-                  <h1>ລາຍການລູກຄ້າທີ່ໄດ້ຜ່ານການສອບຖາມ: -----{{ catalogID  }}</h1>
+                  <h1>ລາຍການລູກຄ້າທີ່ໄດ້ຜ່ານການສອບຖາມ: -----</h1>
                 </v-col>
                 <v-col
                   cols="12"
@@ -135,11 +135,11 @@ const fetchData = async () => {
 
       console.log("Fetched data:", data.value);
     } else if (res.status === 401) {
-      // Handle token expiration by refreshing the token
+     
       const config = useRuntimeConfig();
       const newToken = await refreshAccessToken();
       if (newToken) {
-        // Retry the original request with the new token
+       
         const retryRes = await fetch(`${config.public.strapi.url}api/v1/enterprise-info/search/`,
           {
             method: "POST",
@@ -198,7 +198,7 @@ const refreshAccessToken = async () => {
       text: "Your session has expired. Please log in again.",
       confirmButtonText: "OK",
     });
-    window.location.href = '/'; // Redirect to login if no refresh token
+    window.location.href = '/'; 
     return;
   }
 
@@ -214,7 +214,7 @@ const refreshAccessToken = async () => {
 
     if (response.ok) {
       const data = await response.json();
-      // Update the local storage with the new token
+      
       localStorage.setItem('access_token', data.access);
       Swal.fire({
         icon: "success",
@@ -222,11 +222,11 @@ const refreshAccessToken = async () => {
         text: "Your session has been refreshed.",
         confirmButtonText: "OK",
       });
-      // Redirect to the dashboard after successful token refresh
+      
       window.location.href = '/backend/dashboard'; 
-      return data.access; // Return new access token
+      return data.access; 
     } else {
-      // If the refresh token fails, alert and redirect to login
+      
       Swal.fire({
         icon: "error",
         title: "Session Expired",
@@ -235,7 +235,7 @@ const refreshAccessToken = async () => {
       });
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
-      window.location.href = '/'; // Redirect to login
+      window.location.href = '/'; 
     }
   } catch (error) {
     console.error("Error refreshing token:", error);
@@ -252,17 +252,21 @@ const showDetails = (item: any) => {
   const { LCICID, EnterpriseID, CatalogID } = route.query;
   Swal.fire({
     icon: "info",
+    
+    text: "ທ່ານຕ້ອງການດຳເນີນການຕໍ່ບໍ?",
     showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    confirmButtonText: "Confirm",
-    cancelButtonColor:  "#d33",
-    cancelButtonText: "Cancel",
-    title: `<strong>Do you want to show this report?</strong>`,
+    confirmButtonColor: "#3085d6", // ສີຂອງປຸ່ມຢືນຢັນ
+    confirmButtonText: "ຢືນຢັນ",
+    cancelButtonColor: "#d33", // ສີຂອງປຸ່ມຍົກເລີກ
+    cancelButtonText: "ຍົກເລີກ",
+    background: "#1565C0", 
+    color: "#fff", // ປັບສີຕົວອັກສອນເປັນສີຂາວ
+    title: `<strong>ທ່ານຕອ້ງການບົດລາຍງານນີ້ແທ້ບໍ?</strong>`,
     html: `
       <div>
-        <p><strong>Enterprise Name (Lao):</strong> ${item.enterpriseNameLao}</p>
-        <p><strong>Enterprise Name (English):</strong> ${item.eneterpriseNameEnglish}</p>
-        <p><strong>Report Type:</strong> Full Loan Report ${item.LCICID} ${item.EnterpriseID} </p>
+        <p><strong>ຊື່ບໍລິສັດພາສາລາວ:</strong> ${item.enterpriseNameLao}</p>
+        <p><strong>ຊື່ບໍລິສັດພາສາອັງກິດ:</strong> ${item.eneterpriseNameEnglish}</p>
+       
       </div>
     `,
     preConfirm: () => {

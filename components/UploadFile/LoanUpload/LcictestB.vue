@@ -1,5 +1,18 @@
 <template>
   <v-container>
+    <v-autocomplete
+      variant="outlined"
+      density="compact"
+      width="50%"
+      v-model="search"
+      class="pa-2"
+      label="ໃສ່ລະຫັດທະນາຄານ"
+      :items="
+        uniqueUserIds.map((user_id) => ({ title: user_id, value: user_id }))
+      "
+      item-text="title"
+      item-value="value"
+    />
     <v-data-table
       :headers="headers"
       :items="filteredItems"
@@ -7,23 +20,9 @@
       :items-per-page="12"
     >
       <template v-slot:top>
-        <v-toolbar flat>
+        <!-- <v-toolbar flat>
           <v-divider class="mx-4" inset vertical></v-divider>
-        </v-toolbar>
-        <v-autocomplete
-        
-          variant="outlined"
-          density="compact"
-          width="50%"
-          v-model="search"
-          class="pa-2 mt-5"
-          label="ໃສ່ລະຫັດທະນາຄານ"
-          :items="
-            uniqueUserIds.map((user_id) => ({ title: user_id, value: user_id }))
-          "
-          item-text="title"
-          item-value="value"
-        />
+        </v-toolbar> -->
       </template>
       <!-- <template v-slot:item.path="{ item }">
           <a :href="getFullPath(item.path)" target="_blank">{{ item.path }}</a>
@@ -34,8 +33,6 @@
         }}</a>
       </template>
 
-
-      
       <template v-slot:item.percentage="{ item }" class="text-start">
         <span
           :style="{ color: getPercentageColor(item.percentage) }"
@@ -48,11 +45,7 @@
         :search="search"
         v-slot:item.user_id="{ item }"
       >
-        <p
-          :href="getFullPath(item.user_id)"
-          target="_blank"
-          
-        >
+        <p :href="getFullPath(item.user_id)" target="_blank">
           {{ getFileName(item.user_id) }}
         </p>
       </template>
@@ -150,7 +143,6 @@ export default defineComponent({
 
     const file = ref<File | null>(null);
     const items = ref<ItemData[]>([]);
-  
 
     const headers = ref([
       { title: "ໄອດີ", value: "FID" },
@@ -415,7 +407,6 @@ export default defineComponent({
         }
       });
 
-     
       const response = await axios.post(
         `${config.public.strapi.url}api/api/update-statussubmit/`,
         `FID=${item.FID}`
@@ -434,7 +425,7 @@ export default defineComponent({
     };
 
     const getPercentageColor = (percentage: number) => {
-      if (percentage > 15) {
+      if (percentage > 1) {
         return "red";
       } else if (percentage <= 15) {
         return "green";
@@ -461,7 +452,7 @@ export default defineComponent({
     // };
     const config = useRuntimeConfig();
     const getFullPath = (path: string) => `${config.public.strapi.url}${path}`;
-   const filterOnlyCapsText = (
+    const filterOnlyCapsText = (
       value: string | null,
       query: string | null
     ): boolean => {
@@ -493,7 +484,6 @@ export default defineComponent({
       search,
       uniqueUserIds,
       filterOnlyCapsText,
-      
     };
   },
 });

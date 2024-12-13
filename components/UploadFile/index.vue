@@ -1,26 +1,22 @@
 <template>
-  <v-card>
-    <v-col cols="12">
-      <h3 class="text-primary ml-3">#{{ $t("upload") }}</h3>
-    </v-col>
+  <!-- <v-col cols="12">
+     
+    </v-col> -->
+ <h3 class="text-primary ml-3">{{ $t("upload") }}</h3>
+  <v-tabs v-model="tab" fixed-tabs color="primary" stacked density="compact">
+    <v-tab value="one">{{ $t("loaninformation") }} </v-tab>
+    <v-tab value="three">{{ $t("uploadsecuritiesdata") }}</v-tab>
+  </v-tabs>
 
-    <v-tabs v-model="tab" fixed-tabs color="primary" stacked>
-      <v-tab value="one">{{ $t("loaninformation") }} </v-tab>
+  <v-window v-model="tab">
+    <v-window-item value="one">
+      <UploadFileUploadB />
+    </v-window-item>
 
-      <v-tab value="three">{{ $t("uploadsecuritiesdata")}}</v-tab>
-    </v-tabs>
-    <v-card-text> 
-      <v-window v-model="tab">
-        <v-window-item value="one">
-          <UploadFileUploadB />
-        </v-window-item>
-
-        <v-window-item value="three">
-          <UploadFileUploadC />
-        </v-window-item>
-      </v-window>
-    </v-card-text>
-  </v-card>
+    <v-window-item value="three">
+      <UploadFileUploadC />
+    </v-window-item>
+  </v-window>
 </template>
 
 <script lang="ts">

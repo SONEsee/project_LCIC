@@ -1,50 +1,77 @@
 <template>
   <v-container>
     <div>
-      <h2>{{ $t("imageupload") }}</h2>
+      <h2>{{ $t("Uploadtheenterpriseregistrationform") }}</h2>
       <!-- <div v-if="user">
           {{ user.MID.id }}
         </div> -->
       <v-col cols="12">
-        <v-file-input
-          v-model="files"
-          :show-size="1000"
-          color="deep-purple-accent-4"
-          :label="$t('imageupload')"
-          placeholder="Select your files"
-          prepend-icon="mdi-camera"
-          variant="outlined"
-          counter
-          multiple
-        >
-          <template v-slot:selection="{ fileNames }">
-            <template v-for="(fileName, index) in fileNames" :key="fileName">
-              <v-chip
-                v-if="index < 2"
-                class="me-2"
-                color="deep-purple-accent-4"
-                size="small"
-                label
-              >
-                {{ fileName }}
-              </v-chip>
+        <v-row>
+          <v-col cols="12" md="5">
+            <v-file-input
+            density="compact"
+              v-model="files"
+              :show-size="1000"
+              color="deep-purple-accent-4"
+              :label="$t('imageupload')"
+              placeholder="Select your files"
+              prepend-icon="mdi-camera"
+              variant="outlined"
+              counter
+              multiple
+            >
+              <template v-slot:selection="{ fileNames }">
+                <template
+                  v-for="(fileName, index) in fileNames"
+                  :key="fileName"
+                >
+                  <v-chip
+                    v-if="index < 2"
+                    class="me-2"
+                    color="deep-purple-accent-4"
+                    size="small"
+                    label
+                  >
+                    {{ fileName }}
+                  </v-chip>
 
-              <span
-                v-else-if="index === 2"
-                class="text-overline text-grey-darken-3 mx-2"
-              >
-                +{{ files.length - 2 }} ຮູບ(s)
-              </span>
-            </template>
-          </template>
-        </v-file-input>
-        <v-btn color="primary" @click="uploadFiles" class="ml-9">{{
-          $t("uploads")
-        }}</v-btn>
+                  <span
+                    v-else-if="index === 2"
+                    class="text-overline text-grey-darken-3 mx-2"
+                  >
+                    +{{ files.length - 2 }} ຮູບ(s)
+                  </span>
+                </template>
+              </template>
+            </v-file-input>
+          </v-col>
+          <v-col md="2" cols="12">
+            <div class=" d-flex ">
+               <v-btn color="primary" @click="uploadFiles" class="">{{
+              $t("uploads")
+            }}</v-btn>
+            </div>
+           </v-col
+          >
+          <v-col cols="12" md="4">
+            <v-autocomplete
+          variant="outlined"
+          v-if="user && user.MID.id === '01'"
+          density="compact"
+          width=""
+          v-model="search"
+          class=""
+          label="ໃສ່ລະຫັດທະນາຄານເພື່ຶອຄົ້ນຫາ"
+          :items="uniqueUserIds.map((user) => ({ title: user, value: user }))"
+          item-text="title"
+          item-value="value"
+        />
+          </v-col>
+        </v-row>
       </v-col>
     </div>
-
-    <v-data-table class="mt-5"  >
+    
+    <v-data-table >
       <template v-slot:top>
         <!-- <v-text-field
           v-if="user && user.MID.id === '01'"
@@ -54,19 +81,7 @@
           class="pa-2"
           label="ໃສ່ລະຫັດທະນາຄານ"
         ></v-text-field> -->
-        <v-autocomplete
-        
-        variant="outlined"
-          v-if="user && user.MID.id === '01'"
-          density="compact"
-          width="50%"
-          v-model="search"
-          class="pa-2 mt-5"
-          label="ໃສ່ລະຫັດທະນາຄານ"
-          :items=" uniqueUserIds.map((user) => ({ title: user, value: user }))"
-          item-text="title"
-          item-value="value"
-        />
+    
       </template>
       <thead>
         <tr class="bg-indigo-lighten-1">
@@ -323,7 +338,7 @@ export default defineComponent({
       user,
       search,
       filteredItems,
-      uniqueUserIds
+      uniqueUserIds,
     };
   },
 });

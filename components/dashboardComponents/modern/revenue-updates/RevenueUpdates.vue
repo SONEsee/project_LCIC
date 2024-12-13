@@ -1,6 +1,5 @@
 <template>
-  <div id="wrap" style="width: 100% ;  " class="bg-white   custom-border
- mt-10 rounded-lg " >
+  <div  >
     <div class="d-flex align-center mb-1">
       <div class="ml-auto mt-5 mr-4">
         <select

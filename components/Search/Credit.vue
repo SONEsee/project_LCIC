@@ -88,12 +88,12 @@ const items = computed(() => [
   {
     url: "../backend/individualssearch",
     backgroundImage: serchinImage,
-    title: t("search"),
+    title: t("individual"),
   },
   {
     url: "../backend/searchuser",
     backgroundImage: loginImage,
-    title: t("creditscores"),
+    title: t("Enterprise"),
   },
 ]);
 </script>

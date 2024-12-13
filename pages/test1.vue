@@ -34,6 +34,10 @@ onMounted(fetdata)
 <div v-else>
   <div v-for="(index , item) in datafetch" :key="index">
     {{ index }}
+    <v-card>
+      <title>hi sone seedavanh </title>
+      <img :src="`http://192.168.45.54:35729/collaterals/${index.pathfile}`" alt="">
+    </v-card>
   </div>
 </div>
 </template>

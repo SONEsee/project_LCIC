@@ -1,20 +1,52 @@
 <template>
-  <p class="ml-3 text-primary">* {{ $t("uploadsecuritiesdata")}}</p>
+  <!-- <p class="ml-3 text-primary"> {{ $t("uploadsecuritiesdata")}}</p> -->
   <!-- <div v-if="user">
     {{ user.MID.id }}
   </div> -->
   <v-container>
-    <v-file-input
-      variant="outlined"
-      prepend-icon="mdi-paperclip"
-      :label="$t('uploadjson')"
-      accept=".json, .xml"
-      @change="onFileChange"
-      outlined
-    ></v-file-input>
-    <v-btn @click="uploadFile" color="primary">ອັບໂຫຼດຟາຍ</v-btn>
-   
-    <v-data-table :headers="headers" :items="filteredItems" class="elevation-1 mt-5" >
+    <v-col cols="12" density="compact">
+      <v-row density="compact">
+        <v-col cols="12" md="5" density="compact">
+          <v-file-input
+          v-if="user && user.MID.id !== '01'"
+            density="compact"
+            variant="outlined"
+            prepend-icon="mdi-paperclip"
+            :label="$t('uploadjson')"
+            accept=".json, .xml"
+            @change="onFileChange"
+            outlined
+          ></v-file-input>
+        </v-col>
+        <v-col cols="12" md="2">
+          <v-btn @click="uploadFile" color="primary" v-if="user && user.MID.id !== '01'">ອັບໂຫຼດຟາຍ</v-btn>
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-autocomplete
+            variant="outlined"
+            v-if="user && user.MID.id === '01'"
+            density="compact"
+            width=""
+            v-model="search"
+            label="ໃສ່ລະຫັດທະນາຄານເພື່ອຄົ້ນຫາ"
+            :items="
+              uniqueUserIds.map((user_id) => ({
+                title: user_id,
+                value: user_id,
+              }))
+            "
+            item-text="title"
+            item-value="value"
+          />
+        </v-col>
+      </v-row>
+    </v-col>
+
+    <v-data-table
+      :headers="headers"
+      :items="filteredItems"
+      class="elevation-1"
+    >
       <template v-slot:top>
         <!-- <v-text-field
           v-if="user && user.MID.id === '01'"
@@ -24,21 +56,6 @@
           class="pa-2"
           label="ໃສ່ລະຫັດທະນາຄານ"
         ></v-text-field> -->
-        <v-autocomplete
-        
-        variant="outlined"
-          v-if="user && user.MID.id === '01'"
-          density="compact"
-          width="50%"
-          v-model="search"
-          class="pa-2 mt-5"
-          label="ໃສ່ລະຫັດທະນາຄານ"
-          :items="
-            uniqueUserIds.map((user_id) => ({ title: user_id, value: user_id }))
-          "
-          item-text="title"
-          item-value="value"
-        />
       </template>
 
       <template v-slot:item.path="{ item }">
@@ -53,7 +70,11 @@
         >
       </template>
       <template v-slot:item.user_id="{ item }">
-        <p :href="getFullPath(item.user_id)" target="_blank" v-if="user && user.MID.id === '01'">
+        <p
+          :href="getFullPath(item.user_id)"
+          target="_blank"
+          v-if="user && user.MID.id === '01'"
+        >
           {{ getFileName(item.user_id) }}
         </p>
       </template>
@@ -63,10 +84,12 @@
         }}</v-chip>
       </template>
       <template v-slot:item.actions="{ item }">
-        <v-btn @click="viewDetails(item)" color="info">{{ $t("detail")}}</v-btn>
+        <v-btn @click="viewDetails(item)" color="info">{{
+          $t("detail")
+        }}</v-btn>
       </template>
       <template v-slot:no-data>
-        <v-alert type="info" :value="true">{{ $t("noinformation")}}</v-alert>
+        <v-alert type="info" :value="true">{{ $t("noinformation") }}</v-alert>
       </template>
     </v-data-table>
   </v-container>
@@ -221,11 +244,10 @@ export default defineComponent({
         item.user_id.toLowerCase().includes(search.value.toLowerCase())
       )
     );
-    
+
     const uniqueUserIds = computed(() => {
       return [...new Set(filteredItems.value.map((item) => item.user_id))];
     });
-
 
     const fetchData = async (userID: string) => {
       const config = useRuntimeConfig();
@@ -541,7 +563,7 @@ export default defineComponent({
       getStatusText,
       getFileName,
       filteredItems,
-      uniqueUserIds
+      uniqueUserIds,
     };
   },
 });

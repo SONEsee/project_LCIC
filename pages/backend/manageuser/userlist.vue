@@ -186,6 +186,10 @@ definePageMeta({
   middleware: "auth",
   layout: "backend",
 });
+
+useHead({
+  title: "Manage Users",
+})
 const headers = [
   { title: "ລະຫັດຜູ້ນຳໃຊ້", value: "UID" },
   { title: "ລະຫັດທນຄ", value: "bnk_code" },

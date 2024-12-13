@@ -1,9 +1,46 @@
 <template>
-  <div></div>
   <v-container>
-    <div v-if="user">
+    <v-col cols="12">
+      <v-row>
+        <v-col cols="12" md="5">
+          <v-file-input
+          v-if="user && user.MID.id !== '01'"
+            density="compact"
+            variant="outlined"
+            prepend-icon="mdi-paperclip"
+            :label="$t('uploadjson')"
+            accept=".json, .xml"
+            @change="onFileChange"
+            outlined
+          ></v-file-input>
+        </v-col>
+        <v-col cols="12" md="2" >
+          <v-btn @click="uploadFile" color="primary" v-if="user && user.MID.id !== '01'">{{ $t("upload") }}</v-btn>
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-autocomplete
+            variant="outlined"
+            v-if="user && user.MID.id === '01'"
+            density="compact"
+            width=""
+            v-model="search"
+            class=""
+            label="ໃສ່ລະຫັດທະນາຄານ"
+            :items="
+              uniqueUserIds.map((user_id) => ({
+                title: user_id,
+                value: user_id,
+              }))
+            "
+            item-text="title"
+            item-value="value"
+          />
+        </v-col>
+      </v-row>
+    </v-col>
+    <!-- <div v-if="user">
       {{ user.MID.id }}
-    </div>
+    </div> -->
     <!-- <div cols="4" md="4" class="d-flex justify-end align-end">
       <v-row>
         <v-col md="4" cols="12">
@@ -24,18 +61,7 @@
       >
     </div> -->
 
-    <v-file-input
-      variant="outlined"
-      prepend-icon="mdi-paperclip"
-      :label="$t('uploadjson')"
-      accept=".json, .xml"
-      @change="onFileChange"
-      outlined
-    ></v-file-input>
-    <v-btn @click="uploadFile" color="primary">{{ $t("upload") }}</v-btn>
-
     <v-data-table
-    
       item-value="name"
       :headers="headers"
       :items="filteredItems"
@@ -51,24 +77,8 @@
           class="pa-2"
           label="ໃສ່ລະຫັດທະນາຄານ"
         ></v-text-field> -->
-
-        <v-autocomplete
-        
-        variant="outlined"
-          v-if="user && user.MID.id === '01'"
-          density="compact"
-          width="50%"
-          v-model="search"
-          class="pa-2 mt-5"
-          label="ໃສ່ລະຫັດທະນາຄານ"
-          :items="
-            uniqueUserIds.map((user_id) => ({ title: user_id, value: user_id }))
-          "
-          item-text="title"
-          item-value="value"
-        />
       </template>
-      <template v-slot:header.FID>
+      <template v-slot:header.FID class="">
         <th style="color: #0d47a1">{{ $t("id") }}</th>
       </template>
       <template v-slot:header.path>
@@ -89,6 +99,9 @@
       <template v-slot:header.actions>
         <th style="color: #0d47a1">Actions</th>
       </template>
+
+
+
 
       <template v-slot:item.path="{ item }">
         <a :href="getFullPath(item.path)" target="_blank">{{

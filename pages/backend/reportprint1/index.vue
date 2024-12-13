@@ -62,7 +62,7 @@
             </div>
           </v-col>
         </v-row>
-        <v-col cols="12"  class="mt-5">
+        <!-- <v-col cols="12"  class="mt-5">
          
           <v-col cols="12">
             <v-row>
@@ -85,7 +85,7 @@
 
          </v-row>
           </v-col>
-        </v-col>
+        </v-col> -->
       </section></v-col
     >
     <v-col cols="12">
@@ -104,7 +104,7 @@
         <!-- {{ enterpriseInfo }} -->
         <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.enterpriseNameLao }}</p>
         <!-- <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.regisStrationOfficeType }}</p> -->
-        <p><b>ເລກທີ:</b> {{ enterpriseInfo.EnterpriseID }}</p>
+        <p><b>ເລກທີ:</b>---------</p>
       </v-col>
       <v-col cols="4" v-if="enterpriseInfo">
 <p><b>ວັນທີອອກໃບທະບຽນ:</b> {{ enterpriseInfo.regisDate.slice(0, -18) }}</p>
@@ -112,7 +112,7 @@
 <p><b>ພາກສວນເສດຖະກິດ:</b> --</p>
       </v-col>
       <v-col cols="4" v-if="enterpriseInfo">
-        <p><b >ທຶນຈົດທະບຽນ:</b> {{Number( enterpriseInfo.investmentAmount).toLocaleString() }}</p>
+        <p><b >ທຶນຈົດທະບຽນ:</b> {{Number( enterpriseInfo.investmentAmount).toLocaleString() }} <b v-if="enterpriseInfo.investmentCurrency">{{ enterpriseInfo.investmentCurrency }}</b></p>
         <!-- <td>{{Number( item.lon_credit_line).toLocaleString() }}</td> -->
         <!-- <p><b>ທຶນຈົດທະບຽນ:</b> --</p> -->
         <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ:</b> --</p>
