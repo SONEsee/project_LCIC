@@ -1,62 +1,73 @@
 <template>
   <div class="">
     <h2 class="head-user">ການຈັດການຜູ້ນໍາໃຊ້ລະບົບ</h2>
+    <v-card class="">
+      <v-tabs
+        v-model="tab"
+        class="d-flex justify-center align-center"
+        fixed-tabs
+      >
+        <v-tab value="one">ກຳນົດສິດນຳໃຊ້ລະບົບ</v-tab>
+        <v-tab value="two">ການອອກ User</v-tab>
+      </v-tabs>
 
-    <v-row>
-      <v-col cols="12" md="6">
-        <v-sheet class="pa-2 ma-2">
-          <SearchFilter @searchQuery="filterUsers" />
-        </v-sheet>
-      </v-col>
-      <v-col cols="12" md="6" class="d-flex justify-end">
-        <v-sheet class="pa-2 ma-2">
-          <v-btn
-            :to="'../manageuser/create_user'"
-            color="indigo-darken-4"
-            elevation="2"
-          >
-            <v-icon left class="pr-1">mdi-plus-circle</v-icon>
-            ເພື່ມຜູ້ນໍາໃຊ້
-          </v-btn>
-        </v-sheet>
-      </v-col>
-    </v-row>
+      <v-window v-model="tab">
+        <v-window-item value="one"> <ManageUserModeration /> </v-window-item>
+        <v-window-item value="two">
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-sheet class="pa-2 ma-2">
+                <SearchFilter @searchQuery="filterUsers" />
+              </v-sheet>
+            </v-col>
+            <v-col cols="12" md="6" class="d-flex justify-end">
+              <v-sheet class="pa-2 ma-2">
+                <v-btn
+                  :to="'../manageuser/create_user'"
+                  color="indigo-darken-4"
+                  elevation="2"
+                >
+                  <v-icon left class="pr-1">mdi-plus-circle</v-icon>
+                  ເພື່ມຜູ້ນໍາໃຊ້
+                </v-btn>
+              </v-sheet>
+            </v-col>
+          </v-row>
+          <v-card class="mx-auto my-4" elevation="4" rounded>
+            <div class="table-responsive">
+              <v-data-table
+                :items="filteredUsers"
+                :headers="headers"
+                items-per-page="12"
+                class="bg-grey-lighten-5 rounded-table"
+              >
+                <template v-slot:item.profile="{ item }">
+                  <v-avatar>
+                    <v-img
+                      alt="John"
+                      src="https://cdn.vuetifyjs.com/images/john.jpg"
+                    ></v-img>
+                  </v-avatar>
+                </template>
+                <template v-slot:item.status="{ item }">
+                  <p v-if="item.is_active" class="custom-box">Active</p>
+                  <p v-else>Inactive</p>
+                </template>
+                <template v-slot:item.action="{ item }">
+                  <div class="d-flex justify-end">
+                    <NuxtLink :to="`../manageuser/edit_user?UID=${item.UID}`">
+                      <v-icon icon="mdi-pencil" class="mr-2"></v-icon>
+                    </NuxtLink>
 
-    <v-card class="mx-auto my-4" elevation="4" rounded>
-      <div class="table-responsive">
-        <v-data-table
-          :items="filteredUsers"
-          :headers="headers"
-          items-per-page="12"
-          class="bg-grey-lighten-5 rounded-table"
-        >
-        <template v-slot:item.profile="{item}">
-          <v-avatar>
-                  <v-img
-                    alt="John"
-                    src="https://cdn.vuetifyjs.com/images/john.jpg"
-                  ></v-img>
-                </v-avatar>
-        </template>
-        <template v-slot:item.status="{item}">
-          <p v-if="item.is_active" class="custom-box">Active</p>
-          <p v-else>Inactive</p>
-        </template>
-        <template v-slot:item.action="{ item }" >
-          <div class="d-flex justify-end">
-          <NuxtLink :to="`../manageuser/edit_user?UID=${item.UID}`">
-                  <v-icon icon="mdi-pencil" class="mr-2"></v-icon>
-                </NuxtLink>
-
-                <v-icon
-                  icon="mdi-delete-outline"
-                  style="color: red"
-                  @click="deleteUser(item.UID)"
-                ></v-icon></div>
-        </template>
-
-        </v-data-table>
-        <!-- <v-data-table
+                    <v-icon
+                      icon="mdi-delete-outline"
+                      style="color: red"
+                      @click="deleteUser(item.UID)"
+                    ></v-icon>
+                  </div>
+                </template>
+              </v-data-table>
+              <!-- <v-data-table
           :items="filteredUsers"
           items-per-page="5"
           class="bg-grey-lighten-5 rounded-table"
@@ -117,8 +128,11 @@
             </tr>
           </tbody>
         </v-data-table> -->
-      </div>
-    </v-card>
+            </div>
+          </v-card>
+        </v-window-item>
+      </v-window></v-card
+    >
   </div>
 </template>
 
@@ -179,8 +193,9 @@
 </style>
 
 <script lang="ts">
+const tab = ref(null);
 // import SearchFilter from '@/components/SearchFilter.vue';
-
+import modo from "@/pages/backend/moderation/index.vue";
 import Swal from "sweetalert2";
 definePageMeta({
   middleware: "auth",
@@ -189,9 +204,9 @@ definePageMeta({
 
 useHead({
   title: "Manage Users",
-})
+});
 const headers = [
-  { title: "ລະຫັດຜູ້ນຳໃຊ້", value: "UID" },
+  // { title: "ລະຫັດຜູ້ນຳໃຊ້", value: "UID" },
   { title: "ລະຫັດທນຄ", value: "bnk_code" },
   { title: "ສະມາຊິກ", value: "bnk_name" },
   { title: "ຊື່ຜູ້ນຳໃຊ້", value: "username" },
@@ -207,6 +222,8 @@ export default {
       users: [],
       filteredUsers: [],
       headers,
+      tab,
+      modo,
     };
   },
   // components: {
@@ -265,7 +282,7 @@ export default {
               text: `User with UID ${UID} deleted successfully.`,
               icon: "success",
             });
-            await this.fetchUsers(); 
+            await this.fetchUsers();
           } else {
             const errorData = await response.json();
             Swal.fire({

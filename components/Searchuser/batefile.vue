@@ -96,6 +96,9 @@ const data = ref([
 
 const headers = ref([
   { title: "ລຳດັບ", value: "id" },
+
+
+  
   { title: "ມື້ສົ່ງ", value: "name" },
   { title: "ຊື່ວິສາຫະຫິດ", value: "enterprisename" },
   { title: "ຈຳນວນທັງໝົດ", value: "namelao" },

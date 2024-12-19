@@ -1,11 +1,12 @@
 <template>
     <div class="flex justify-end mb-4">
-      <button
+      <v-btn 
+      class="bg-primary"
         @click="addSidebarItem"
-        class="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600"
+        
       >
-        Add Sidebar Item
-      </button>
+        ແອັດເມນູ
+      </v-btn>
     </div>
   <div class="p-4">
     <!-- Table -->
@@ -164,7 +165,7 @@ const onCheckboxChange = async (rowIndex, roleId) => {
     }
   }
 
-  // Prepare the payload as per the required format
+
   const payload = {
     item_type: "sidebar_item",
     name: item.name,
@@ -175,7 +176,7 @@ const onCheckboxChange = async (rowIndex, roleId) => {
 
   console.log("Sending Payload:", payload);
 
-  // Send the updated data to the API
+  
   try {
     const response = await axios.put(`${updateSidebarApi}${item.id}/`, payload);
     console.log("Updated Successfully:", response.data);
@@ -194,24 +195,24 @@ const onCheckboxChange = async (rowIndex, roleId) => {
 
 const addSidebarItem = async () => {
   const { value: formValues } = await Swal.fire({
-    title: "Add Sidebar Item",
+    title: "ແອັດເມນູ ",
     html: `
       <div class="mb-4">
-        <label class="block text-sm font-bold mb-2">Name</label>
+        <label class="block text-sm font-bold mb-2">ຊື່</label>
         <input
           id="name-input"
           type="text"
           class="swal2-input"
-          placeholder="Enter item name"
+          placeholder="ຊື່ເມນູ"
         />
       </div>
       <div class="mb-4">
-        <label class="block text-sm font-bold mb-2">Icon</label>
+        <label class="block text-sm font-bold mb-2">ໄອຄອ້ນ</label>
         <input
           id="icon-input"
           type="text"
           class="swal2-input"
-          placeholder="Enter icon name"
+          placeholder="ໃສ່ລະຫັດໄອຄອ້ນ"
         />
       </div>
       <div class="mb-4">
@@ -229,7 +230,7 @@ const addSidebarItem = async () => {
           id="roles-input"
           type="text"
           class="swal2-input"
-          placeholder="e.g., 1,3"
+          placeholder="ສິດນຳໃຊ້ e.g., 1,3"
         />
       </div>
     `,

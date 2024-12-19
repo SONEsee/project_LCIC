@@ -6,6 +6,7 @@ import { series, chartOptions, fetchData } from './MonthlyEarningsData';
 onMounted(() => {
   fetchData();
 });
+console.log(onMounted)
 </script>
 
 <template>

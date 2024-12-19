@@ -252,15 +252,17 @@ const showDetails = (item: any) => {
   const { LCICID, EnterpriseID, CatalogID } = route.query;
   Swal.fire({
     icon: "info",
+    iconColor:'blue',
+
     
     text: "ທ່ານຕ້ອງການດຳເນີນການຕໍ່ບໍ?",
     showCancelButton: true,
-    confirmButtonColor: "#3085d6", // ສີຂອງປຸ່ມຢືນຢັນ
+    confirmButtonColor: "#004D40", // ສີຂອງປຸ່ມຢືນຢັນ
     confirmButtonText: "ຢືນຢັນ",
     cancelButtonColor: "#d33", // ສີຂອງປຸ່ມຍົກເລີກ
     cancelButtonText: "ຍົກເລີກ",
-    background: "#1565C0", 
-    color: "#fff", // ປັບສີຕົວອັກສອນເປັນສີຂາວ
+    background: "#80D8FF", 
+    color: "black", // ປັບສີຕົວອັກສອນເປັນສີຂາວ
     title: `<strong>ທ່ານຕອ້ງການບົດລາຍງານນີ້ແທ້ບໍ?</strong>`,
     html: `
       <div>

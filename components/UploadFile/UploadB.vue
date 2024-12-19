@@ -2,9 +2,9 @@
   <v-container>
     <v-col cols="12">
       <v-row>
-        <v-col cols="12" md="5">
+        <v-col cols="12" md="5" v-if="user && user.MID.id !== '01'">
           <v-file-input
-          v-if="user && user.MID.id !== '01'"
+            v-if="user && user.MID.id !== '01'"
             density="compact"
             variant="outlined"
             prepend-icon="mdi-paperclip"
@@ -14,8 +14,13 @@
             outlined
           ></v-file-input>
         </v-col>
-        <v-col cols="12" md="2" >
-          <v-btn @click="uploadFile" color="primary" v-if="user && user.MID.id !== '01'">{{ $t("upload") }}</v-btn>
+        <v-col cols="12" md="2" v-if="user && user.MID.id !== '01'">
+          <v-btn
+            @click="uploadFile"
+            color="primary"
+            v-if="user && user.MID.id !== '01'"
+            >{{ $t("upload") }}</v-btn
+          >
         </v-col>
         <v-col cols="12" md="4">
           <v-autocomplete
@@ -100,9 +105,6 @@
         <th style="color: #0d47a1">Actions</th>
       </template>
 
-
-
-
       <template v-slot:item.path="{ item }">
         <a :href="getFullPath(item.path)" target="_blank">{{
           getFileName(item.path)
@@ -136,7 +138,7 @@
       </template>
 
       <template v-slot:item.actions="{ item }">
-        <v-btn @click="viewDetails(item)" color="info">{{
+        <v-btn @click="viewDetails(item)" color="#304FFE">{{
           $t("detail")
         }}</v-btn>
       </template>

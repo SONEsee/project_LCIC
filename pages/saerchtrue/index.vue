@@ -7,7 +7,11 @@
           <div class="d-flex justify-end">
             <v-btn class="bg-green mr-5">ເປິດທັງໝົດ</v-btn>
           </div>
-          <v-data-table :items="data" :headers="headers" class="elevation-1">
+          <v-data-table :items="data" :headers="headers" class="elevation-1"
+          
+          
+          >
+            
             <!-- <template v-slot:item.namelao="{ item }">
                 <NuxtLink to="../test1" class=" mr-1" small @click="editItem(item)" >
                   {{ item.namelao }}
@@ -222,9 +226,9 @@ const data = ref([
 
 const headers = ref([
   { title: "ລຳດັບ", value: "id" },
-  { title: "ຊື່ວິສາຫະກິດ", value: "name" },
-  { title: "ລະຫັດວິສາຫະກິດ", value: "enterprisename" },
   { title: "ລະຫັດ ຂສລ", value: "namelao" },
+  { title: "ລະຫັດວິສາຫະກິດ", value: "enterprisename" },
+  { title: "ຊື່ວິສາຫະກິດ", value: "name" },
   { title: "ຊື່ເຈົ້າຂອງບໍລິສັດ", value: "nameln" },
   { title: "ຊື່ຜູ້ຈັດການ", value: "locationln" },
   { title: "Actions", value: "actions", sortable: false },

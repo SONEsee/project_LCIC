@@ -55,8 +55,8 @@ const filteredSidebarItems = computed(() => {
                 
               }"
             >
-              <template v-slot:prepend>
-                <v-icon :icon="item.icon" style="color: #304FFE;"></v-icon>
+              <template v-slot:prepend >
+                <v-icon :icon="item.icon" style="color: #304FFE;" class="hover-icon"></v-icon>
               </template>
               <!-- <v-list-item-title v-text="item.name"></v-list-item-title> -->
               <v-list-item-title>{{ $t(item.name) }}</v-list-item-title>
@@ -74,3 +74,13 @@ const filteredSidebarItems = computed(() => {
     </div>
   </div>
 </template>
+<!-- <style>
+.hover-icon {
+  color: #304FFE;
+  transition: color 0.3s;
+}
+
+.hover-icon:hover {
+  color: #FF6F00;
+}
+</style> -->

@@ -6,7 +6,7 @@
   <v-container>
     <v-col cols="12" density="compact">
       <v-row density="compact">
-        <v-col cols="12" md="5" density="compact">
+        <v-col cols="12" md="5" density="compact" v-if="user && user.MID.id !== '01'">
           <v-file-input
           v-if="user && user.MID.id !== '01'"
             density="compact"
@@ -18,7 +18,7 @@
             outlined
           ></v-file-input>
         </v-col>
-        <v-col cols="12" md="2">
+        <v-col cols="12" md="2" v-if="user && user.MID.id !== '01'">
           <v-btn @click="uploadFile" color="primary" v-if="user && user.MID.id !== '01'">ອັບໂຫຼດຟາຍ</v-btn>
         </v-col>
         <v-col cols="12" md="4">

@@ -4,13 +4,13 @@
   </div>
   <v-container class="elevation-4">
     
-      <h3>Personal Name</h3>
+      <h3>ອອກ User ນໍາໃຊ້ລະບົບ</h3>
       <v-row no-gutters>
         <v-col cols="12" md="4">
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.firstnameLao"
-              label="Firstname Lao"
+              label="ຊື່ພາສາລາວ"
             ></v-text-field>
           </v-sheet>
         </v-col>
@@ -18,7 +18,7 @@
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.surnameLao"
-              label="Surname Lao"
+              label="ນາມສະກຸນພາສາລາວ"
             ></v-text-field>
           </v-sheet>
         </v-col>
@@ -28,7 +28,7 @@
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.firstnameEng"
-              label="Firstname English"
+              label="ຊື່ອັງກິດ"
             ></v-text-field>
           </v-sheet>
         </v-col>
@@ -36,7 +36,7 @@
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.surnameEng"
-              label="Surname English"
+              label="ນາມສະກຸນພາສາອັງກິດ"
             ></v-text-field>
           </v-sheet>
         </v-col>
@@ -52,7 +52,7 @@
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.username"
-              label="Username"
+              label="ຊື່ຜູ້ນຳໃຊ້"
             ></v-text-field>
           </v-sheet>
         </v-col>
@@ -60,11 +60,12 @@
           <v-sheet class="ma-2">
             <!-- <v-text-field v-model="form.member" label="Member"></v-text-field> -->
             <v-combobox
+            variant="outlined"
               v-model="form.selectedBank"
               :items="banks"
               item-title="code"
               item-value="id"
-              label="Bank"
+              label="ທະນາຄານ"
               outlined
               return-object
             ></v-combobox>
@@ -74,7 +75,7 @@
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.groupUser"
-              label="GroupUser"
+              label="ກຸ່ມຜູ້ໃຊ້ງານ"
             ></v-text-field>
           </v-sheet>
         </v-col>
@@ -88,7 +89,7 @@
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.password"
-              label="Password"
+              label="ລະຫັດຜ່ານ"
               type="password"
             ></v-text-field>
           </v-sheet>
@@ -97,7 +98,7 @@
           <v-sheet class="ma-2">
             <v-text-field
               v-model="form.confirmPassword"
-              label="Confirm Password"
+              label="ຢືນຢັນລະຫັດຜ່ານ"
               type="password"
             ></v-text-field>
           </v-sheet>
@@ -105,7 +106,7 @@
       
         
 
-    <v-btn @click="submitForm" class="bg-blue-darken-4">Create User</v-btn></v-row>
+    <v-btn @click="submitForm" class="bg-blue-darken-4">ສ້າງຜູ້ໃຊ້ງານ</v-btn></v-row>
   </v-container>
 </template>
 
