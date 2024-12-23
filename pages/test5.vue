@@ -1,78 +1,87 @@
-<!-- <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
-export default{
-const datafetch = ref<any[]>([]);
-const error = ref<string | null>(null);
-const isloading = ref<boolean>(false);
-const search = ref<string>("");
+<script lang="ts">
+import { ref, onMounted, computed, toRaw } from "vue";
+import { useRoute } from "vue-router";
 
-const config = {
-  public: {
-    strapi: { url: "http://192.168.45.54:35729/" },
+interface Result {
+  id: number;
+  lcicID: string | null;
+  com_enterprise_code: string | null;
+  status: string | null;
+  enterpriseNameLao: string | null;
+  investmentCurrency: string | null;
+  created_at: string | null;
+}
+
+export default {
+  setup() {
+    const route = useRoute();
+    const id = ref(route.query.id as string);
+    const results = ref<Result[]>([]);
+
+    const header = ref([
+      { title: "ID", value: "id" },
+      { title: "LCIC ID", value: "lcicID" },
+      { title: "Enterprise Code", value: "com_enterprise_code" },
+      { title: "Status", value: "status" },
+      { title: "Enterprise Name (Lao)", value: "enterpriseNameLao" },
+      { title: "Investment Currency", value: "investmentCurrency" },
+      { title: "Created At", value: "created_at" },
+    ]);
+
+    const processedResults = computed(() =>
+      // results.value.map((item) => ({
+        
+      //   ...item,
+      //   enterpriseNameLao: item.enterpriseNameLao || "N/A",
+      //   investmentCurrency: item.investmentCurrency || "N/A",
+      //   created_at: item.created_at || "N/A",
+      // }))
+      results.value.filter(item => item.status === 'Found')
+    );
+
+    const fetchResults = async () => {
+      try {
+        console.log("Route query ID:", id.value);
+        const config = useRuntimeConfig();
+        const response = await fetch(
+          `${config.public.strapi.url}api/api/get-search-results/${id.value}/`
+        );
+        
+        const data = await response.json();
+
+        if (data.results && Array.isArray(data.results)) {
+          results.value = data.results;
+          console.log("Processed results:", toRaw(results.value));
+        } else {
+          console.warn("Unexpected response format:", data);
+          results.value = [];
+        }
+      } catch (error) {
+        console.error("Error fetching results:", error);
+      }
+    };
+    
+
+    onMounted(fetchResults);
+
+    return {
+      processedResults,
+      header,
+    };
   },
 };
-
-const fetchdata = async () => {
-  isloading.value = true;
-  error.value = null;
-
-  try {
-    const response = await fetch(
-      `http://192.168.45.54:35729/api/api/get_collaterals/`
-    );
-    if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
-    }
-
-    const rawData = await response.json();
-
-    datafetch.value = rawData.map((item: any) => ({
-      ...item,
-      fullImagePath: `${config.public.strapi.url}collaterals/${item.pathfile}`,
-    }));
-
-    console.log("Fetched data:", datafetch.value);
-  } catch (err: unknown) {
-    error.value =
-      err instanceof Error ? err.message : "An unexpected error occurred";
-  } finally {
-    isloading.value = false;
-  }
-};
-
-onMounted(fetchdata);
-
-const filteredData = computed(() =>
-  datafetch.value.filter((item) =>
-    item.id.toString().includes(search.value)
-  )
-);
-
-return {
-  datafetch,
-  error,
-  isloading,
-  search,
-  filteredData,
-};}
 </script>
 
-
 <template>
-  <div>
-    <div v-if="isloading">Loading...</div>
-    <div v-else-if="error">{{ error }}</div>
-    <div v-else>
-      <input v-model="search" placeholder="Search..." />
-      <ul>
-        <li v-for="item in datafetch" :key="item.id">
-          <img :src="item.fullImagePath" alt="Collateral Image" />
-          <p>{{ item.id }}</p>
-        </li>
-      </ul>
-    </div>
+   <v-data-table
+    v-if="processedResults.some(item => item.status === 'Found')"
+    :items="processedResults"
+    :headers="header"
+    item-key="id"
+    items-per-page="10"
+    class="elevation-1"
+  />
+  <div v-else>
+    No items with status "Found" available.
   </div>
-</template> -->
-<template>
-
 </template>

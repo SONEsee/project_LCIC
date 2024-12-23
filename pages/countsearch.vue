@@ -1,11 +1,7 @@
 <template>
     <div>
-<<<<<<< HEAD
           <h2 class="head-user">ລາຍງານການຄົ້ນຫາ</h2>
  
-=======
-  <h2 class="head-user">ລາຍງານການຄົ້ນຫາ</h2>
->>>>>>> origin/paylay
   
       <div class="table-summary border-md">
         <v-row class="justify-space-between align-center" style="height: 60px;">

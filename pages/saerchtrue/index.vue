@@ -1,276 +1,124 @@
-<template>
-  <v-container>
-    <v-col cols="12">
-      <v-row>
-        <v-col cols="12"> </v-col>
-        <v-col cols="12">
-          <div class="d-flex justify-end">
-            <v-btn class="bg-green mr-5">ເປິດທັງໝົດ</v-btn>
-          </div>
-          <v-data-table :items="data" :headers="headers" class="elevation-1"
-          
-          
-          >
-            
-            <!-- <template v-slot:item.namelao="{ item }">
-                <NuxtLink to="../test1" class=" mr-1" small @click="editItem(item)" >
-                  {{ item.namelao }}
-                </NuxtLink>
-              </template> -->
-            <!-- <template v-slot:item.nameln="{ item }">
-                <NuxtLink to="../saerchtrue" class=" mr-1" small  style="color: green;">
-                  {{ item.nameln }}
-                </NuxtLink>
-              </template>
-              <template v-slot:item.locationln="{ item }">
-                <NuxtLink to="../test1" class=" mr-1" small  style="color: red;">
-                  {{ item.locationln }}
-                </NuxtLink>
-              </template> -->
-            <template v-slot:item.id="{ item, index }">
-              {{ index + 1 }}
-            </template>
-            <template v-slot:item.actions="{ item }">
-              <v-btn class="bg-green mr-1" small @click="editItem(item)">
-                ເປີດ
-              </v-btn>
-              <!-- <v-btn class="bg-red" small @click="deleteItem(item)">
-                ລົບ
-              </v-btn> -->
-            </template>
-          </v-data-table>
-        </v-col>
-      </v-row>
-    </v-col>
-  </v-container>
-</template>
+<script lang="ts">
+import { ref, onMounted, computed, toRaw } from "vue";
+import { useRoute } from "vue-router";
 
-<script lang="ts" setup>
-definePageMeta({
-  layout: "backend",
-});
+interface Result {
+  id: number;
+  lcicID: string | null;
+  com_enterprise_code: string | null;
+  status: string | null;
+  enterpriseNameLao: string | null;
+  investmentCurrency: string | null;
+  created_at: string | null;
+}
 
-useHead({
-  title: "Collect fees",
-  meta: [
-    {
-      name: "keywords",
-      content: "Order, Nuxt 3, Backend",
-    },
-    {
-      name: "Description",
-      content: "Order Nuxt 3,  IT Genius Engineering",
-    },
-  ],
-});
-import { ref } from "vue";
+export default {
+  setup() {
+    definePageMeta({
+      layout: "backend",
+      middleware: ["auth"],
+    });
 
-const data = ref([
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-  {
-    id: 1,
-    name: "Sone",
-    age: "18",
-    enterprisename: "test",
-    namelao: "test",
-    nameln: "test",
-    locationln: "test",
-    nameenterprise: "test",
-    manager: "test",
-    talaphone: "91862481",
-  },
-]);
+    useHead({
+      title: "bate file",
+      meta: [
+        {
+          name: "keywords",
+          content: "Report, Nuxt 3, Backend",
+        },
+        {
+          name: "Description",
+          content: "Report Nuxt 3, IT Genius Engineering",
+        },
+      ],
+    });
+    const route = useRoute();
+    const id = ref(route.query.id as string);
+    const results = ref<Result[]>([]);
 
-const headers = ref([
-  { title: "ລຳດັບ", value: "id" },
-  { title: "ລະຫັດ ຂສລ", value: "namelao" },
-  { title: "ລະຫັດວິສາຫະກິດ", value: "enterprisename" },
-  { title: "ຊື່ວິສາຫະກິດ", value: "name" },
-  { title: "ຊື່ເຈົ້າຂອງບໍລິສັດ", value: "nameln" },
-  { title: "ຊື່ຜູ້ຈັດການ", value: "locationln" },
-  { title: "Actions", value: "actions", sortable: false },
-]);
+    const header = ref([
+      { title: "ID", value: "id" },
+      { title: "LCIC ID", value: "lcicID" },
+      { title: "Enterprise Code", value: "com_enterprise_code" },
+      { title: "Enterprise Name (Lao)", value: "enterpriseNameLao" },
+      { title: "Investment Currency", value: "investmentCurrency" },
+      { title: "Created At", value: "created_at" },
+      { title: "Status", value: "status" },
+      { title: "action", value: "action" },
+    ]);
 
-const selectedFile = ref<File | null>(null);
+    const processedResults = computed(() =>
+      // results.value.map((item) => ({
 
-const uploadFile = () => {
-  if (!selectedFile.value) {
-    alert("Please select a file to upload!");
-    return;
-  }
+      //   ...item,
+      //   enterpriseNameLao: item.enterpriseNameLao || "N/A",
+      //   investmentCurrency: item.investmentCurrency || "N/A",
+      //   created_at: item.created_at || "N/A",
+      // }))
+      results.value.filter((item) => item.status === "Found")
+    );
 
-  console.log("Uploading file:", selectedFile.value.name);
-  selectedFile.value = null;
+    const fetchResults = async () => {
+      try {
+        console.log("Route query ID:", id.value);
+        const config = useRuntimeConfig();
+        const response = await fetch(
+          `${config.public.strapi.url}api/api/get-search-results/${id.value}/`
+        );
+
+        const data = await response.json();
+
+        if (data.results && Array.isArray(data.results)) {
+          results.value = data.results;
+          console.log("Processed results:", toRaw(results.value));
+        } else {
+          console.warn("Unexpected response format:", data);
+          results.value = [];
+        }
+      } catch (error) {
+        console.error("Error fetching results:", error);
+      }
+    };
+
+    onMounted(fetchResults);
+
+    return {
+      processedResults,
+      header,
+    };
+  },
 };
-
-const editItem = (item1: any) => {
-  alert(`Editing item: ${item1.name}`);
-};
-
-const deleteItem = (item: any) => {
-  const index = data.value.findIndex((d) => d.id === item.id);
-  if (index !== -1) {
-    data.value.splice(index, 1);
-    alert(`Deleted item: ${item.name}`);
-  }
-};
-const link = (item: any) => {};
 </script>
 
-<style scoped>
-.bg-blue-darken-4 {
-  background-color: #1e88e5;
-  color: white;
-}
-.bg-green {
-  background-color: #4caf50;
-  color: white;
-}
-.bg-red {
-  background-color: #e53935;
-  color: white;
-}
-</style>
+<template>
+  <v-data-table
+    v-if="processedResults.some((item) => item.status === 'Found')"
+    :items="processedResults"
+    :headers="header"
+    item-key="id"
+    items-per-page="10"
+    class="elevation-1"
+  >
+    <template v-slot:top>
+      <v-toolbar flat color="">
+        <v-toolbar-title
+          ><p >ການຄົ້ນຫາທີ່ພົບຂໍ້ມູນໃນຖານຂໍ້ມູນຂອງ ຂສລ</p></v-toolbar-title
+        >
+        <v-btn class="bg-primary"> ເປີດທັງໝົດ </v-btn>
+      </v-toolbar>
+    </template>
+    <template v-slot:item.action="{ item }">
+      <v-btn class="bg-primary">ເປີດ</v-btn>
+    </template>
+    <template v-slot:item.status="{ item }">
+      <v-chip color="success" v-if="item.status === 'Found'"
+        ><p>ເປີດແລ້ວ</p></v-chip
+      >
+      <v-chip color="primary" v-if="item.status === 'Not Found'"
+        ><p>ຍັງບໍ່ທັນເປີດ</p></v-chip
+      >
+    </template>
+  </v-data-table>
+
+  <div v-else>No items with status "Found" available.</div>
+</template>

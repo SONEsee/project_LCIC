@@ -1,41 +1,89 @@
+<script lang="ts">
+import { ref, onMounted, computed, toRaw } from "vue";
+import { useRoute } from "vue-router";
 
-<script setup lang="ts">
-import { ref, onMounted } from "vue";
+interface Result {
+  id: number;
+  lcicID: string | null;
+  com_enterprise_code: string | null;
+  status: string | null;
+  enterpriseNameLao: string | null;
+  investmentCurrency: string | null;
+  created_at: string | null;
+}
 
-const datafetch = ref<any[]>([]);
-const isloading = ref<boolean>(false);
-const error = ref<string | null>(null);
-const fetchdata = async () => {
-  isloading.value = true;
-  error.value = null;
+export default {
+  setup() {
+    const route = useRoute();
+    const id = ref(route.query.id as string);
+    const results = ref<Result[]>([]);
 
-  try {
-    const response = await fetch(
-      `http://192.168.45.54:35729/api/api/get_collaterals/`
+    const header = ref([
+      { title: "ID", value: "id" },
+      { title: "LCIC ID", value: "lcicID" },
+      { title: "Enterprise Code", value: "com_enterprise_code" },
+      // { title: "Status", value: "status" },
+      // { title: "Enterprise Name (Lao)", value: "enterpriseNameLao" },
+      // { title: "Investment Currency", value: "investmentCurrency" },
+      // { title: "Created At", value: "created_at" },
+    ]);
+
+    const processedResults = computed(() =>
+      // results.value.map((item) => ({
+
+      //   ...item,
+      //   enterpriseNameLao: item.enterpriseNameLao || "N/A",
+      //   investmentCurrency: item.investmentCurrency || "N/A",
+      //   created_at: item.created_at || "N/A",
+      // }))
+      results.value.filter((item) => item.status === "Not Found")
     );
 
-    if (!response.ok) {
-      throw new Error(`Error:${response.statusText}`);
-    }
+    const fetchResults = async () => {
+      try {
+        console.log("Route query ID:", id.value);
+        const config = useRuntimeConfig();
+        const response = await fetch(
+          `${config.public.strapi.url}api/api/get-search-results/${id.value}/`
+        );
 
-    datafetch.value = await response.json();
-  } catch (err: unknown) {
-    error.value =
-      err instanceof Error ? err.message : "An unexpected error occurred";
-  } finally {
-    isloading.value = false;
-  }
+        const data = await response.json();
+
+        if (data.results && Array.isArray(data.results)) {
+          results.value = data.results;
+          console.log("Processed results:", toRaw(results.value));
+        } else {
+          console.warn("Unexpected response format:", data);
+          results.value = [];
+        }
+      } catch (error) {
+        console.error("Error fetching results:", error);
+      }
+    };
+
+    onMounted(fetchResults);
+
+    return {
+      processedResults,
+      header,
+    };
+  },
 };
-onMounted(fetchdata);
 </script>
 
 <template>
-<div v-if=" isloading"> ກຳລັງໂຫຼດ..... </div>
-<div v-if="error">{{ error }}</div>
-<div v-else>
-  <div v-for="(item , index) in datafetch" >
-    {{ item }}
-    <img :src="`http://192.168.45.54:35729/collaterals/${item.pathfile}`" alt="Collateral Image" />
+  <div class="d-flex justify-end align-center mr-3 mt-3">
+    <v-btn class="bg-error"
+      >export <v-icon icon="mdi-cloud-braces" class="ml-2"></v-icon>
+    </v-btn>
   </div>
-</div>
+  <v-data-table
+    v-if="processedResults.some((item) => item.status === 'Not Found')"
+    :items="processedResults"
+    :headers="header"
+    item-key="id"
+    items-per-page="10"
+    class="elevation-1"
+  />
+  <div v-else>No items with status "Found" available.</div>
 </template>
