@@ -1,87 +1,72 @@
-<script lang="ts">
-import { ref, onMounted, computed, toRaw } from "vue";
-import { useRoute } from "vue-router";
+<template>
+  <section
+    style="min-height: 100vh"
+    class="d-flex flex-wrap align-center justify-center"
+  >
+    <v-form
+      style="min-width: 40%"
+      class="d-flex justify-center align-center"
+      ref="form"
+      v-model:validate="validate"
+      @submit.prevent="SubmitForm"
+    >
+      <v-row>
+        <v-col cols="12">
+          <v-text-field
+            density="compact"
+            v-model="name"
+            label="Username"
+            :rules="[rules.required, rules.minLength]"
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12">
+          <v-text-field
+            density="compact"
+            v-model="email"
+            label="Email"
+            :rules="[rules.required, rules.email]"
+          ></v-text-field>
+        </v-col>
+        <div class="d-flex justify-center w-100">
+          <v-btn class="mr-2" color="primary" type="submit">ບັນທຶກ</v-btn>
+          <v-btn class="ml-2" color="error" @click="ResetForm">ຍົກເລີກ</v-btn>
+        </div>
+      </v-row>
+    </v-form>
+  </section>
+</template>
 
-interface Result {
-  id: number;
-  lcicID: string | null;
-  com_enterprise_code: string | null;
-  status: string | null;
-  enterpriseNameLao: string | null;
-  investmentCurrency: string | null;
-  created_at: string | null;
-}
+<script lang="ts" setup>
+import { ref } from "vue";
 
-export default {
-  setup() {
-    const route = useRoute();
-    const id = ref(route.query.id as string);
-    const results = ref<Result[]>([]);
+const form = ref();
+const validate = ref(false);
+const name = ref(null);
+const email = ref(null);
 
-    const header = ref([
-      { title: "ID", value: "id" },
-      { title: "LCIC ID", value: "lcicID" },
-      { title: "Enterprise Code", value: "com_enterprise_code" },
-      { title: "Status", value: "status" },
-      { title: "Enterprise Name (Lao)", value: "enterpriseNameLao" },
-      { title: "Investment Currency", value: "investmentCurrency" },
-      { title: "Created At", value: "created_at" },
-    ]);
+const rules = {
+  required: (value: string) => !!value || "ຂໍ້ມູນນີ້ຈຳເປັນ",
+  email: (value: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || "Email ບໍ່ຖືກຕ້ອງ",
+  minLength: (value: string) =>
+    value?.length >= 3 || "ຂໍ້ມູນຕ້ອງມີຢ່າງໜ້ອຍ 3 ຕົວອັກສອນ",
+};
 
-    const processedResults = computed(() =>
-      // results.value.map((item) => ({
-        
-      //   ...item,
-      //   enterpriseNameLao: item.enterpriseNameLao || "N/A",
-      //   investmentCurrency: item.investmentCurrency || "N/A",
-      //   created_at: item.created_at || "N/A",
-      // }))
-      results.value.filter(item => item.status === 'Found')
-    );
+const SubmitForm = async () => {
+  try {
+    const { valid } = await form.value.validate();
+    if (valid) {
+      console.log("Form is valid:", { name: name.value, email: email.value });
+    } else {
+      console.log("Form is invalid.");
+    }
+  } catch (e) {
+    console.error(e);
+  }
+};
 
-    const fetchResults = async () => {
-      try {
-        console.log("Route query ID:", id.value);
-        const config = useRuntimeConfig();
-        const response = await fetch(
-          `${config.public.strapi.url}api/api/get-search-results/${id.value}/`
-        );
-        
-        const data = await response.json();
-
-        if (data.results && Array.isArray(data.results)) {
-          results.value = data.results;
-          console.log("Processed results:", toRaw(results.value));
-        } else {
-          console.warn("Unexpected response format:", data);
-          results.value = [];
-        }
-      } catch (error) {
-        console.error("Error fetching results:", error);
-      }
-    };
-    
-
-    onMounted(fetchResults);
-
-    return {
-      processedResults,
-      header,
-    };
-  },
+const ResetForm = () => {
+  name.value = null;
+  email.value = null;
 };
 </script>
-
-<template>
-   <v-data-table
-    v-if="processedResults.some(item => item.status === 'Found')"
-    :items="processedResults"
-    :headers="header"
-    item-key="id"
-    items-per-page="10"
-    class="elevation-1"
-  />
-  <div v-else>
-    No items with status "Found" available.
-  </div>
-</template>

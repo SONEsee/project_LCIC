@@ -189,6 +189,7 @@ const fetchData = async () => {
   }
 };
 
+
 const refreshAccessToken = async () => {
   const refreshToken = localStorage.getItem('refresh_token');
   if (!refreshToken) {
@@ -257,12 +258,12 @@ const showDetails = (item: any) => {
     
     text: "ທ່ານຕ້ອງການດຳເນີນການຕໍ່ບໍ?",
     showCancelButton: true,
-    confirmButtonColor: "#004D40", // ສີຂອງປຸ່ມຢືນຢັນ
+    confirmButtonColor: "#004D40", 
     confirmButtonText: "ຢືນຢັນ",
-    cancelButtonColor: "#d33", // ສີຂອງປຸ່ມຍົກເລີກ
+    cancelButtonColor: "#d33", 
     cancelButtonText: "ຍົກເລີກ",
     background: "#80D8FF", 
-    color: "black", // ປັບສີຕົວອັກສອນເປັນສີຂາວ
+    color: "black", 
     title: `<strong>ທ່ານຕອ້ງການບົດລາຍງານນີ້ແທ້ບໍ?</strong>`,
     html: `
       <div>
@@ -291,6 +292,7 @@ const showDetails = (item: any) => {
     }
   });
 };
+
 
 const insertSearchLog = async (item: any) => {
   try {

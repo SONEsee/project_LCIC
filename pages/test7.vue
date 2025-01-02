@@ -115,7 +115,7 @@ export default {
       try {
         const config = useRuntimeConfig();
         const response = await fetch(
-          `${config.public.strapi.url}api/api/upload-json/`,
+          `${config.public.strapi.url}api/api/upload-json1/`,
           {
             method: "POST",
             body: formData,

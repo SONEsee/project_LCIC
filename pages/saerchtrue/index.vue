@@ -35,7 +35,6 @@ export default {
     const route = useRoute();
     const id = ref(route.query.id as string);
     const results = ref<Result[]>([]);
-
     const header = ref([
       { title: "ID", value: "id" },
       { title: "LCIC ID", value: "lcicID" },
@@ -102,7 +101,7 @@ export default {
     <template v-slot:top>
       <v-toolbar flat color="">
         <v-toolbar-title
-          ><p >ການຄົ້ນຫາທີ່ພົບຂໍ້ມູນໃນຖານຂໍ້ມູນຂອງ ຂສລ</p></v-toolbar-title
+          ><p>ການຄົ້ນຫາທີ່ພົບຂໍ້ມູນໃນຖານຂໍ້ມູນຂອງ ຂສລ</p></v-toolbar-title
         >
         <v-btn class="bg-primary"> ເປີດທັງໝົດ </v-btn>
       </v-toolbar>

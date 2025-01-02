@@ -18,7 +18,7 @@ onMounted(async () => {
   console.log("Sidebar Items fetched:", sidebarItems.value);
 });
 
-// Fetch user data from localStorage
+
 onMounted(() => {
   const userData = localStorage.getItem("user_data");
   if (userData) {
