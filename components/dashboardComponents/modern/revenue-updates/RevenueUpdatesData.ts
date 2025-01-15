@@ -1,19 +1,13 @@
-
-
 import axios from "axios";
 import { ref } from "vue";
-
 
 interface SeriesData {
   x: string;
   y: number;
 }
 
-
 export const series = ref<{ data: SeriesData[] }[]>([{ data: [] }]);
-
-
-export const selectedMonth = ref("2024-10");
+export const selectedMonth = ref<string>("");
 export const chartData = ref<any[]>([]);
 export const availableMonths = ref<string[]>([]);
 
@@ -22,7 +16,6 @@ export const chartOptions = {
     id: "barYear",
     height: 400,
     type: "bar",
-  
   },
   plotOptions: {
     bar: {
@@ -50,8 +43,6 @@ export const chartOptions = {
     "#8E24AA",
     "#00C853",
   ],
-  // title: { text: "10 ການຄົ້ນຫາຫຼາຍສຸດພາຍໃນເດືອນ" },
-  // subtitle: { text: "(ສະເພາະລາຍເດືອນ)" },
   yaxis: {
     labels: {
       show: true,
@@ -68,40 +59,33 @@ export const fetchData = async () => {
       `${config.public.strapi.url}api/searchlog_chart/`
     );
     chartData.value = response.data.chart_data;
+
+    const monthsSet = new Set<string>();
+    chartData.value.forEach((item: any) => {
+      Object.keys(item).forEach((key: string) => {
+        if (key !== "bnk_code") {
+          monthsSet.add(key);
+        }
+      });
+    });
+
+    availableMonths.value = Array.from(monthsSet).sort();
+    const lastMonthIndex = availableMonths.value.length - 2; 
+    selectedMonth.value = availableMonths.value[lastMonthIndex] || "";
+
     updateChart();
   } catch (error) {
     console.error("Error fetching data:", error);
   }
-
-  const monthsSet = new Set<string>();
-  chartData.value.forEach((item: any) => {
-    Object.keys(item).forEach((key: string) => {
-      if (key !== "bnk_code") {
-        monthsSet.add(key);
-      }
-    });
-  });
-
-  availableMonths.value = Array.from(monthsSet).sort();
-  selectedMonth.value = availableMonths.value[0] || "";
 };
 
-// export const updateChart = () => {
-//   const filteredData = chartData.value.filter(
-//     (item: any) => selectedMonth.value in item
-//   );
-
- 
-//   series.value[0].data = filteredData.map((item: any) => ({
-//     x: item.bnk_code,
-//     y: item[selectedMonth.value],
-//   }));
-// };
 export const updateChart = () => {
+  if (!selectedMonth.value) return;
+
   const filteredData = chartData.value
     .filter((item: any) => selectedMonth.value in item)
-    .sort((a: any, b: any) => b[selectedMonth.value] - a[selectedMonth.value]) 
-    .slice(0, 10); 
+    .sort((a: any, b: any) => b[selectedMonth.value] - a[selectedMonth.value])
+    .slice(0, 10);
 
   series.value[0].data = filteredData.map((item: any) => ({
     x: item.bank_name,

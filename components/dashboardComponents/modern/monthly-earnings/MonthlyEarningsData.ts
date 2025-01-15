@@ -3,7 +3,7 @@ import axios from 'axios';
 
 interface SeriesData {
   name: string;
-  data: number[];
+  data: string[];
 }
 
 export const series = ref<SeriesData[]>([
@@ -71,7 +71,10 @@ export const chartOptions = ref({
     title: {
       text: 'Amount'
     },
-    min: 0
+    min: 0,
+    labels: {
+      formatter: (value: number) => value.toLocaleString()
+    }
   },
   legend: {
     position: 'top',
@@ -89,15 +92,17 @@ export const fetchData = async () => {
     const data = response.data.data;
 
     const months = Object.keys(data);
-    const bankAmounts = months.map(month => data[month].Bank_TotalChgAmount);
-    const mfiAmounts = months.map(month => data[month].MFI_TotalChgAmount);
-    const totalAmounts = months.map(month => data[month].Overall_TotalChgAmount);
+    const bankAmounts = months.map(month => data[month].Bank_TotalChgAmount.toString());
+    const mfiAmounts = months.map(month => data[month].MFI_TotalChgAmount.toString());
+    const totalAmounts = months.map(month => data[month].Overall_TotalChgAmount.toString());
 
     chartOptions.value.xaxis.categories = months;
 
     series.value[0].data = bankAmounts;
     series.value[1].data = mfiAmounts;
     series.value[2].data = totalAmounts;
+    console.log('series:', series.value);
+    console.log('chartOptions:', chartOptions.value);
   } catch (error) {
     console.error('Error fetching data:', error);
   }

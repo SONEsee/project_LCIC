@@ -27,6 +27,23 @@
           :items="summary"
           class="elevation-1"
         >
+        <template v-slot:header.bnk_code="{ column }" >
+            <p style="color: #01579B;">{{ column.title }}</p>
+          </template>
+        <template v-slot:header.bank_name="{ column }" >
+            <p style="color: #01579B;">{{ column.title }}</p>
+          </template>
+        <template v-slot:header.total_records="{ column }" >
+            <p style="color: #01579B;">{{ column.title }}</p>
+          </template>
+        <template v-slot:header.total_chg_amount="{ column }" >
+            <p style="color: #01579B;">{{ column.title }}</p>
+          </template>
+        <template v-slot:header.actions="{ column }" >
+            <p style="color: #01579B;">{{ column.title }}</p>
+          </template>
+
+       
           <template v-slot:item.total_chg_amount="{ item }">
             {{ formatCurrency(item.total_chg_amount) }}
           </template>

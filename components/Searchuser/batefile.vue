@@ -10,11 +10,29 @@
             variant="outlined"
             density="compact"
             width="100%"
+          />
+        </v-col>
+        <v-col cols="12" md="1">
+          <v-btn @click="uploadFile" class="bg-primary">ອັບໂຫຼດ</v-btn>
+        </v-col>
+        <v-col cols="12" md="2">
+
+        </v-col>
+        <v-col cols="12" md="4">
+          <div v-if="user?.MID.id === '01'" class="mb-4">
+        <v-autocomplete
+          v-model="selectedUserId"
+          :items="userIds"
+          label="ຄົ້ນຫາຕາມສະມາຊິກດວ້ຍລະຫັດ"
+          variant="outlined"
+          density="compact"
+          width="100%"
         />
-      </v-col>
-        <v-col cols="12" md="1"
-          ><v-btn @click="uploadFile" class="bg-primary">ອັບໂຫຼດ</v-btn></v-col
-        >
+      </div>
+        </v-col>
+
+ 
+
       </v-row>
     </v-col>
     <div v-if="isloading" class="d-flex justify-center align-center">
@@ -22,8 +40,9 @@
     </div>
     <div v-if="error">ເກິດຂໍ້ຜິດພາດບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້</div>
     <div v-else>
+     
       <v-data-table
-        :items="dataget"
+        :items="filteredData"
         item-key="name"
         items-per-page="10"
         :headers="header"
@@ -32,6 +51,13 @@
           <v-chip color="primary" text-color="white">{{
             Number(item.searchtrue) + Number(item.searchfals)
           }}</v-chip>
+        </template>
+        <template v-slot:item.insertDate
+        ="{ item }">
+          {{ new Date(item.insertDate).toLocaleDateString() }}
+        </template>
+        <template v-slot:item.user_id="{ item }" v-if="user?.MID.id === '01'">
+          {{ item.user_id }}
         </template>
         <template v-slot:item.index="{ index, item }">
           <p>{{ item.index }}</p>
@@ -50,78 +76,113 @@
             }}</v-chip>
           </a>
         </template>
+        <template v-slot:header.user_id v-if="user?.MID.id === '01'">
+          ລະຫັດສະມາຊິກ
+        </template>
       </v-data-table>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import axios from "axios";
+import Swal from "sweetalert2";
+import { ref, computed, onMounted } from "vue";
+
+const userID  = localStorage.getItem("user_data");
+console.log("user", userID);
+
 interface User {
   username: string;
   id: string;
   GID: { GID: number };
   MID: { MID: string; id: string };
-  UID: string
+  UID: string;
 }
-import Swal from "sweetalert2";
-import { ref, onMounted } from "vue";
 
+const user = ref<User | null>(null);
+const dataget = ref<any[]>([]);
+const isloading = ref<boolean>(false);
+const error = ref<string | null>(null);
+const searchQuery = ref<string>("");
+const selectedUserId = ref<string | null>(null);
+const userIds = ref<string[]>([]);
 
-    const user = ref<User | null>(null);
-    const dataget = ref<any[]>([]);
-    const isloading = ref<boolean>(false);
-    const error = ref<string | null>(null);
-    const datafetch = async () => {
-      isloading.value = true;
-      error.value = null;
-      try {
-        const config = useRuntimeConfig();
-        const respons = await fetch(
-          `${config.public.strapi.url}api/api/search-files/`
-        );
-        if (!respons.ok) {
-          throw new Error(`Error:${respons.statusText}`);
-        }
-        dataget.value = await respons.json();
-      } catch (err: unknown) {
-        error.value =
-          err instanceof Error ? err.message : "An unexpected error occurred";
-      } finally {
-        isloading.value = false;
-      }
-    };
-    onMounted(datafetch);
+const filteredData = computed(() => {
+  if (user.value?.MID.id === "01" && selectedUserId.value) {
+    return dataget.value.filter(item => item.user_id.includes(selectedUserId.value));
+  }
+  return dataget.value;
+});
+
+const datafetch = async () => {
+  isloading.value = true;
+  error.value = null;
+  try {
+    const config = useRuntimeConfig();
     const userData = localStorage.getItem("user_data");
-    console.log('data user ', userData);
-
     if (userData) {
-      user.value = JSON.parse(userData);
-      const user_id = user.value?.MID.id;
-      const user_mid = user.value?.UID;
-      const user_gid = user.value?.GID.GID;
-      console.log('GID',user_gid)
-      console.log('UID' , user_mid);
-      console.log('user_id' , user_id);
-    }
-
-    const file = ref<File | null>(null);
-    const results = ref<any[]>([]);
-    const header = ref([
-      { title: "ລຳດັບ", value: "id" },
-      { title: "ມື້ສົ່ງ", value: "insertDate" },
-      { title: "ຊື່ຟາຍ", value: "fileName" },
-      { title: "ຈຳນວນຄົ້ນຫາທັງໝົດ", value: "total" },
-      { title: "ຄົ້ນຫາພົບ", value: "searchtrue" },
-      { title: "ຄົ້ນຫາບໍ່ພົບ", value: "searchfals" },
-    ]);
-
-    const handleFileUpload = (event: Event) => {
-      const target = event.target as HTMLInputElement;
-      if (target.files?.length) {
-        file.value = target.files[0];
+      const user = JSON.parse(userData);
+      const user_id = String(user?.MID?.id);
+      
+      let url = `${config.public.strapi.url}api/api/search-files/`;
+      if (user_id !== "01") {
+        url += `?user_id=${user_id}`;
       }
-    };
-    const uploadFile = async () => {
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+      dataget.value = await response.json();
+      userIds.value = [...new Set(dataget.value.map(item => item.user_id))]; 
+      console.log(dataget.value);
+    } else {
+      throw new Error("User data not found in localStorage");
+    }
+  } catch (err: unknown) {
+    error.value =
+      err instanceof Error ? err.message : "An unexpected error occurred";
+  } finally {
+    isloading.value = false;
+  }
+};
+
+onMounted(datafetch);
+
+const userData = localStorage.getItem("user_data");
+console.log("data user ", userData);
+
+if (userData) {
+  user.value = JSON.parse(userData);
+  const user_id = user.value?.MID.id;
+  const user_mid = user.value?.UID;
+  const user_gid = user.value?.GID.GID;
+  console.log("GID", user_gid);
+  console.log("UID", user_mid);
+  console.log("user_id", user_id);
+}
+
+const file = ref<File | null>(null);
+const results = ref<any[]>([]);
+const header = ref([
+  { title: "ລຳດັບ", value: "id" },
+  { title: "ມື້ສົ່ງ", value: "insertDate" },
+  { title: "ລະຫັດສະມາຊິກ", value: "user_id" },
+  { title: "ຊື່ຟາຍ", value: "fileName" },
+  { title: "ຈຳນວນຄົ້ນຫາທັງໝົດ", value: "total" },
+  { title: "ຄົ້ນຫາພົບ", value: "searchtrue" },
+  { title: "ຄົ້ນຫາບໍ່ພົບ", value: "searchfals" },
+]);
+
+const handleFileUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files?.length) {
+    file.value = target.files[0];
+  }
+};
+
+const uploadFile = async () => {
   if (!file.value) {
     Swal.fire({
       icon: "warning",
@@ -141,21 +202,17 @@ import { ref, onMounted } from "vue";
   const formData = new FormData();
   formData.append("file", file.value);
   formData.append("user_id", user.value.MID.id);
-  formData.append("UID", user.value.UID)
-  
- 
+  formData.append("UID", user.value.UID);
 
   try {
     const config = useRuntimeConfig();
-    
-    
-    const token = localStorage.getItem('token');
+
+    const token = localStorage.getItem("token");
     const response = await fetch(
       `${config.public.strapi.url}api/api/upload-json/`,
       {
         method: "POST",
         body: formData,
-        
       }
     );
     if (!response.ok) {
@@ -163,13 +220,24 @@ import { ref, onMounted } from "vue";
     }
     const data = await response.json();
     results.value = data.results || [];
-    datafetch(); 
 
-   
     Swal.fire({
       icon: "success",
       title: "ອັບໂຫຼດສຳເລັດ!",
       confirmButtonText: "ຕົກລົງ",
+      preConfirm: () => {
+        return new Promise((resolve) => {
+          resolve(true);
+        });
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        results.value.forEach((item) => {
+          if (item.status === "Found") {
+            insertSearchLog(item);
+          }
+        });
+      }
     });
   } catch (error) {
     console.error("Error uploading file:", error);
@@ -180,6 +248,31 @@ import { ref, onMounted } from "vue";
     });
   }
 };
-    
-   
+
+const insertSearchLog = async (item: any) => {
+  try {
+    const token = localStorage.getItem("access_token");
+    const config = useRuntimeConfig();
+    const response = await fetch(`${config.public.strapi.url}api/insert_searchlog/`, { 
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        EnterpriseID: item.com_enterprise_code,
+        LCICID: item.lcicID
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to insert search log');
+    }
+
+    const data = await response.json();
+    console.log('Search log inserted:', data);
+  } catch (error) {
+    console.error('Error inserting search log:', error);
+  }
+};
 </script>

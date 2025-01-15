@@ -3,11 +3,11 @@
     <div v-if="total"></div>
     <v-col cols="12">
       <v-row>
-        <v-col cols="12" md="9"
-          ><p>
+        <v-col cols="12" md="9">
+          <p>
             ຈຳນວນສະມາຊິກທັງໝົດ <b>{{ total }}</b> ແຫ່ງ
-          </p></v-col
-        >
+          </p>
+        </v-col>
         <v-col cols="12" md="3">
           <v-autocomplete
             label="ເລືອກປີ"
@@ -35,11 +35,12 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
-import VueApexCharts from "vue3-apexcharts";
 import axios from "axios";
+import VueApexCharts from "vue3-apexcharts";
+import { fetchTotalSalesData } from './TotalSalesData';
+import type { MemberData } from './TotalSalesData';
 
 const total = ref<number>(0);
-
 const series = ref<number[]>([]);
 const chartOptions = ref({
   chart: {
@@ -136,25 +137,25 @@ const chartOptions = ref({
   },
 });
 
-onMounted(async () => {
+const fetchData = async () => {
   try {
-    const config = useRuntimeConfig();
-    const response = await axios.get(
-      `${config.public.strapi.url}api/member-count/`
-    );
-    console.log("data fetch", response.data);
-    const data = response.data;
-    series.value = data.member_count.map((item: any) => item.count);
-    data.value = data.total_count;
-    console.log("test", data.value);
-    total.value = data.total_count;
+    const data: MemberData[] = await fetchTotalSalesData();
+    series.value = data.map((item: any) => item.count);
+    total.value = series.value.reduce((acc, count) => acc + count, 0);
 
-    chartOptions.value.labels = data.member_count.map(
+    chartOptions.value.labels = data.map(
       (item: any) => `Member Type ${item.memberType_id}`
     );
   } catch (error) {
     console.error("Error fetching data from API:", error);
   }
+};
+
+onMounted(() => {
+  fetchData();
+  setInterval(() => {
+    location.reload();
+  }, 15000);
 });
 </script>
 

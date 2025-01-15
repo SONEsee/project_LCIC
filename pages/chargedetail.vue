@@ -23,6 +23,24 @@
         :items="charge"
         class="elevation-1"
       >
+      <template v-slot:header.bnk_code="{ column }" >
+          <p style="color: #01579B;">{{ column.title }}</p>
+        </template>
+      <template v-slot:header.LCIC_ID="{ column }" >
+          <p style="color: #01579B;">{{ column.title }}</p>
+        </template>
+      <template v-slot:header.chg_code="{ column }" >
+          <p style="color: #01579B;">{{ column.title }}</p>
+        </template>
+      <template v-slot:header.user_sys_id="{ column }" >
+          <p style="color: #01579B;">{{ column.title }}</p>
+        </template>
+      <template v-slot:header.chg_amount="{ column }" >
+          <p style="color: #01579B;">{{ column.title }}</p>
+        </template>
+      <template v-slot:header.rec_insert_date="{ column }" >
+          <p style="color: #01579B;">{{ column.title }}</p>
+        </template>
         <template v-slot:item.rec_insert_date="{ item }">
           {{ formatDate(item.rec_insert_date) }}
         </template>
@@ -73,12 +91,9 @@ export default {
       }).format(total);
     },  
     bankName() {
-      
       // Check if charge and bnk_code exist before accessing
       return this.charge[this.bankInfo.value] ? this.charge[this.bankInfo.value] : null;
-      
     },
-    
     totalRecordCount() {
       return this.charge.length;
     },
@@ -109,61 +124,60 @@ export default {
     },
 
     async fetchChargeReport(filters) {
-  try {
-    const { bank, month, year, fromDate, toDate } = filters;
-    const config = useRuntimeConfig();
-    
-    // Construct the API URL with query parameters
-    const url = new URL(`${config.public.strapi.url}api/charge_report/`);
+      try {
+        const { bank, month, year, fromDate, toDate } = filters;
+        const config = useRuntimeConfig();
+        
+        // Construct the API URL with query parameters
+        const url = new URL(`${config.public.strapi.url}api/charge_report/`);
 
-    // Append query parameters only if they are not 'null' or invalid
-    if (bank) url.searchParams.append('bank', bank ?? '');
-    if (month && month !== 'null') url.searchParams.append('month', month ?? ''); // Ensure it's not 'null'
-    if (year && year !== 'null') {
-        url.searchParams.append('year', year ?? '');
-    } else {
-        console.log("Year is invalid:", year);
-    }
+        // Append query parameters only if they are not 'null' or invalid
+        if (bank) url.searchParams.append('bank', bank ?? '');
+        if (month && month !== 'null') url.searchParams.append('month', month ?? ''); // Ensure it's not 'null'
+        if (year && year !== 'null') {
+            url.searchParams.append('year', year ?? '');
+        } else {
+            console.log("Year is invalid:", year);
+        }
 
-    if (fromDate && fromDate !== 'null') {
-        url.searchParams.append('fromDate', fromDate ?? '');
-    } else {
-        console.log("From Date is invalid:", fromDate);
-    }       
-    
-    if (toDate && toDate !== 'null') {
-        url.searchParams.append('toDate', toDate ?? '');
-    } else {
-        console.log("To Date is invalid:", toDate);
-    }
+        if (fromDate && fromDate !== 'null') {
+            url.searchParams.append('fromDate', fromDate ?? '');
+        } else {
+            console.log("From Date is invalid:", fromDate);
+        }       
+        
+        if (toDate && toDate !== 'null') {
+            url.searchParams.append('toDate', toDate ?? '');
+        } else {
+            console.log("To Date is invalid:", toDate);
+        }
 
-    const response = await fetch(url.toString());
-    const data = await response.json();
-
-    console.log("Final API Call:", url.toString()); // Final API URL
-    console.log("Raw API Response:", data); // Log raw data
-    console.log("From Date:", fromDate);
-    console.log("To Date:", toDate);
-    try {
-        const response = await fetch(url);
+        const response = await fetch(url.toString());
         const data = await response.json();
-        console.log("API Response:", data);
-    } catch (error) {
-        console.error("Error fetching data:", error);
-    }
 
+        console.log("Final API Call:", url.toString()); // Final API URL
+        console.log("Raw API Response:", data); // Log raw data
+        console.log("From Date:", fromDate);
+        console.log("To Date:", toDate);
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            console.log("API Response:", data);
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
 
-    // Update charge only if the API response contains charge data
-    if (data && data.charge) {
-      this.charge = data.charge;
-    } else {
-      console.warn('No charge data found in response:', data);
-      this.charge = []; 
-    }
-  } catch (error) {
-    console.error('Error fetching charge reports:', error);
-  }
-},
+        // Update charge only if the API response contains charge data
+        if (data && data.charge) {
+          this.charge = data.charge;
+        } else {
+          console.warn('No charge data found in response:', data);
+          this.charge = []; 
+        }
+      } catch (error) {
+        console.error('Error fetching charge reports:', error);
+      }
+    },
 
     formatDate(dateStr: string): string {
       const date = new Date(dateStr);

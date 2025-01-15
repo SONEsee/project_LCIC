@@ -14,7 +14,7 @@ const items = computed(() => [
 ]);
 </script>
 <template>
-  <v-tabs v-model="tab" fixed-tabs color="primary" stacked>
+  <v-tabs v-model="tab" fixed-tabs color="primary" stacked class="d-flex justify-start align-start ">
     <v-tab value="one">ທັງໝົດ</v-tab>
     <v-tab value="two">ນິຕິບຸກຄົນ</v-tab>
     <v-tab value="three">ບຸກຄົນ</v-tab>

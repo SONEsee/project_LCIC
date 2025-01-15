@@ -1,4 +1,4 @@
-// define types for product read data from strapi
+
 
 interface ImageDataAttributes {
   name: string
