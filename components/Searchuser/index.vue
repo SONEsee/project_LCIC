@@ -35,7 +35,7 @@
                             color: '#1A237E',
                           }"
                           v-model="id2"
-                          :rules="[ruleRequired]"
+                         
                           prepend-inner-icon="fluent:password-20-regular"
                           id="idcompany"
                           name="idcompany"
@@ -49,7 +49,7 @@
                         </label>
                         <v-text-field
                           v-model="id1"
-                          :rules="[ruleRequired]"
+                         
                           prepend-inner-icon="fluent:password-20-regular"
                           id="idLCIC"
                           name="idLCIC"
@@ -62,7 +62,7 @@
                           v-model="selectedCat"
                           :items="categories"
                           item-value="cat_sys_id"
-                          item-title="cat_name"
+                          item-title="cat_lao_name"
                           :return-object="true"
                           label="Select Category"
                           variant="outlined"
@@ -113,8 +113,8 @@ useHead({
 });
 const selectedCat = ref<Category | null>(null);
 
-const id1 = ref<string>("");
-const id2 = ref<string>("");
+const id1 = ref<string>(""); //EnterpriseID
+const id2 = ref<string>(""); //LCICID
 // const selectedCat = ref<string>("");
 
 const loading = ref<boolean>(false);
@@ -154,7 +154,7 @@ onMounted(async () => {
 });
 
 const submit = async () => {
-  if (id1.value && id2.value && selectedCat.value) {
+  if (id1.value || id2.value || selectedCat.value) {
     loading.value = true;
     Swal.fire({
       title: "ກະລຸນາລໍຖ້າ",
@@ -170,7 +170,7 @@ const submit = async () => {
       const token = localStorage.getItem("access_token");
 
       const res = await fetch(
-        `${config.public.strapi.url}api/enterprisematch/`,
+        `${config.public.strapi.url}api/api/v1/enterprise-info/search/`,
         {
           method: "POST",
           headers: {

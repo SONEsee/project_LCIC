@@ -1,144 +1,138 @@
 <template>
-  <div>
-    <v-col>
-      <v-row>
-        <v-col cols="12" md="5"
-          ><v-file-input
-            type="file"
-            accept=".json"
-            @change="handleFileUpload"
-            variant="outlined"
-            density="compact"
-            width="100%"
-        /></v-col>
-        <v-col cols="12" md="1"
-          ><v-btn @click="uploadFile" class="bg-primary">ອັບໂຫຼດ</v-btn></v-col
+  <div class="border py-2 my-2 rounded-lg">
+    <table class="styled-table">
+      <thead>
+        <tr class="head-th">
+          <th> ທະນາຄານ</th>
+          <th>ສາຂາ</th>
+          <th>ຈໍານວນຜູ້ໃຊ້ງານ</th>
+          <th>ເຫດການ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="(bank, index) in userCounts"
+          :key="index"
+          class="body-row"
         >
-      </v-row>
-    </v-col>
-    <div v-if="isloading" class="d-flex justify-center align-center">
-      <p>ກຳລັງໂຫຼດ....</p>
-    </div>
-    <div v-if="error">ເກິດຂໍ້ຜິດພາດບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້</div>
-    <div v-else>
-      <v-data-table
-        :items="dataget"
-        item-key="name"
-        items-per-page="10"
-        :headers="header"
-      >
-        <template v-slot:item.total="{ item }">
-          <v-chip color="primary" text-color="white">{{
-            Number(item.searchtrue) + Number(item.searchfals)
-          }}</v-chip>
-        </template>
-        <template v-slot:item.index="{ index, item }">
-          <p>{{ item.index }}</p>
-        </template>
-        <template v-slot:item.searchtrue="{ item }">
-          <a :href="`/test5?id=${item.id}`">
-            <v-chip color="success" text-color="white">{{
-              item.searchtrue
-            }}</v-chip></a
-          >
-        </template>
-        <template v-slot:item.searchfals="{ item }">
-  <a :href="`/test6?id=${item.id}`">
-    <v-chip color="error" text-color="white">{{
-      item.searchfals
-    }}</v-chip>
-  </a>
-</template>
-
-
-      </v-data-table>
-    </div>
+          <td>{{ bank.member_code }} - {{ bank.member_nameL }} - ({{ bank.bnk_code }})</td>
+          <td>{{ bank.branch_name }} - ({{ bank.branch_id }})</td>
+          <td>{{ bank.user_count || 'N/A' }}</td>
+          <td>
+            <v-btn
+              @click="viewDetail(bank.bnk_code, bank.branch_id)"
+              class="custom-button pa-1"
+              color="white"
+              small
+            >
+              <v-icon left>mdi-eye</v-icon>
+            </v-btn>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
-export default {
-  setup() {
-    const dataget = ref<any[]>([]);
-    const isloading = ref<boolean>(false);
-    const error = ref<string | null>(null);
-    const datafetch = async () => {
-      isloading.value = true;
-      error.value = null;
-      try {
-        const config = useRuntimeConfig();
-        const respons = await fetch(
-          `${config.public.strapi.url}api/api/search-files/`
-        );
-        if (!respons.ok) {
-          throw new Error(`Error:${respons.statusText}`);
-        }
-        dataget.value = await respons.json();
-      } catch (err: unknown) {
-        error.value =
-          err instanceof Error ? err.message : "An unexpected error occurred";
-      } finally {
-        isloading.value = false;
-      }
-    };
-    onMounted(datafetch);
+definePageMeta({
+  middleware: "auth",
+  layout: "backend",
+});
 
-    const file = ref<File | null>(null);
-    const results = ref<any[]>([]);
-    const header = ref([
-      { title: "ລຳດັບ", value: "id" },
-      { title: "ມື້ສົ່ງ", value: "insertDate" },
-      { title: "ຊື່ຟາຍ", value: "fileName" },
-      { title: "ຈຳນວນຄົ້ນຫາທັງໝົດ", value: "total" },
-      { title: "ຄົ້ນຫາພົບ", value: "searchtrue" },
-      { title: "ຄົ້ນຫາບໍ່ພົບ", value: "searchfals" },
-    ]);
+useHead({
+  title: "Manage Users",
+});
 
-    const handleFileUpload = (event: Event) => {
-      const target = event.target as HTMLInputElement;
-      if (target.files?.length) {
-        file.value = target.files[0];
-      }
-    };
+const userCounts = ref([]);
+const router = useRouter();
+const route = useRoute();
 
-    const uploadFile = async () => {
-      if (!file.value) {
-        alert("Please select a file first.");
-        return;
-      }
+const fetchUserCounts = async () => {
+  try {
+    const bnk_code = route.query.bnk_code || "";
+    const branch_id = route.query.branch_id || "";
 
-      const formData = new FormData();
-      formData.append("file", file.value);
+    let apiUrl = `http://192.168.45.56:8000/api/distinct-bnk-codes/?bnk_code=${bnk_code}`;
+    if (branch_id) {
+      apiUrl += `&branch_id=${branch_id}`;
+    }
 
-      try {
-        const config = useRuntimeConfig();
-        const response = await fetch(
-          `${config.public.strapi.url}api/api/upload-json1/`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-        const data = await response.json();
-        results.value = data.results || [];
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("Upload failed. Please try again.");
-      }
-    };
-
-    return {
-      handleFileUpload,
-      uploadFile,
-      results,
-      header,
-      isloading,
-      error,
-      datafetch,
-      dataget,
-    };
-  },
+    const response = await $fetch(apiUrl);
+    if (response) {
+      userCounts.value = response;
+    } else {
+      console.error("Failed to fetch user counts.");
+    }
+  } catch (error) {
+    console.error("Error fetching user count data:", error);
+  }
 };
+
+const viewDetail = (bnk_code, branch_id) => {
+  const detailUrl = `/test8/?bnk_code=${bnk_code}&branch_id=${branch_id}`;
+  router.push(detailUrl);
+};
+
+onMounted(fetchUserCounts);
 </script>
+
+<style>
+.styled-table {
+  border-collapse: collapse;
+  border-radius: 10px;
+  width: 100%;
+  margin: 20px 0;
+  font-size: 14px;
+  text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.head-th {
+  font-style: normal !important;
+  font-size: 15px !important;
+  color: gray;
+  background-color: #f5f5f5;
+}
+.body-row {
+  border: none;
+  color: black;
+}
+.head-td {
+  font-style: normal !important;
+  color: black;
+}
+
+.styled-table th {
+  background-color: #e0e0e0;
+}
+
+.custom-button {
+  background-color: rgb(248, 248, 248);
+  color: #333; /* Adjust text color */
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.custom-button:hover {
+  background-color: #e0e0e0;
+}
+
+.custom-button i {
+  margin-right: 5px;
+  font-size: 16px;
+}
+</style>
