@@ -40,6 +40,9 @@
         </v-chip>
       </div>
     </template>
+    <!-- <template v-slot:item.created_at="{ item }">
+    {{   new Date(item.created_at).toLocaleDateString() }}
+    </template> -->
 
     <template v-slot:item.status="{ item }">
       <v-chip color="primary" v-if="item.status === 'Found'">

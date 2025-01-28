@@ -274,7 +274,7 @@ class="rounded-lg"
                               <p>
                                 ລົງຂໍ້ມູນວັນທີ:
                                 <b>{{
-                                  collateral.collateral_info.insert_date
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
                                 }}</b>
                               </p>
                               <p>ປະເພດຫຼັກຊັບ:<b>ດີນ</b></p>
@@ -304,7 +304,7 @@ class="rounded-lg"
                               <p>
                                 ລົງຂໍ້ມູນວັນທີ:
                                 <b>{{
-                                  collateral.collateral_info.insert_date
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
                                 }}</b>
                               </p>
                               <p>ປະເພດຫຼັກຊັບ:<b>ເອກະສານມີຄ່າ</b></p>
@@ -334,7 +334,7 @@ class="rounded-lg"
                               <p>
                                 ລົງຂໍ້ມູນວັນທີ:
                                 <b>{{
-                                  collateral.collateral_info.insert_date
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
                                 }}</b>
                               </p>
                               <p>ປະເພດຫຼັກຊັບ:<b>ເຄື່ອງຈັກ</b></p>
@@ -364,7 +364,7 @@ class="rounded-lg"
                               <p>
                                 ລົງຂໍ້ມູນວັນທີ:
                                 <b>{{
-                                  collateral.collateral_info.insert_date
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
                                 }}</b>
                               </p>
                               <p>ປະເພດຫຼັກຊັບ:<b>ໂຄງການ</b></p>
@@ -394,7 +394,7 @@ class="rounded-lg"
                               <p>
                                 ລົງຂໍ້ມູນວັນທີ:
                                 <b>{{
-                                  collateral.collateral_info.insert_date
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
                                 }}</b>
                               </p>
                               <p>ປະເພດຫຼັກຊັບ:<b>ຍານພາຫະນະ</b></p>
@@ -424,7 +424,7 @@ class="rounded-lg"
                               <p>
                                 ລົງຂໍ້ມູນວັນທີ:
                                 <b>{{
-                                  collateral.collateral_info.insert_date
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
                                 }}</b>
                               </p>
                               <p>ປະເພດຫຼັກຊັບ:<b>ບຸກຄົນຄໍ້າ</b></p>
@@ -454,7 +454,7 @@ class="rounded-lg"
                               <p>
                                 ລົງຂໍ້ມູນວັນທີ:
                                 <b>{{
-                                  collateral.collateral_info.insert_date
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
                                 }}</b>
                               </p>
                               <p>ປະເພດຫຼັກຊັບ:<b>ຄໍາ</b></p>
@@ -483,9 +483,11 @@ class="rounded-lg"
                             >
                               <p>
                                 ລົງຂໍ້ມູນວັນທີ:
-                                <b>{{
-                                  collateral.collateral_info.insert_date
-                                }}</b>
+                                <b>
+                                  {{
+                                    new Date(collateral.collateral_info.insert_date).toLocaleDateString()
+                                  }}
+                                </b>
                               </p>
                               <p>ປະເພດຫຼັກຊັບ:<b>ຄໍາ</b></p>
 
@@ -646,6 +648,7 @@ export default {
   },
 
   setup() {
+    
     const tableData = ref([]);
     const loan_detail_inactive = ref([]);
     const loan_detail_active = ref([]);

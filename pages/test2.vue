@@ -1,85 +1,81 @@
 <template>
-  <div class="chart text-red">
-    <apexchart type="bar" :options="chartOptions" :series="series"></apexchart>
+  <div>
+    <input type="file" @change="handleFileUpload" />
+    <p>{{ textContent }}</p>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
-import ApexCharts from 'vue3-apexcharts';
-import axios from 'axios';
+import { defineComponent, ref } from 'vue';
+import Tesseract from 'tesseract.js';
 
 export default defineComponent({
-  name: 'ChartComponent',
-  components: {
-    apexchart: ApexCharts
-  },
   setup() {
-    const chartOptions = ref({});
-    const series = ref([]);
+    const textContent = ref<string | null>(null);
 
-    onMounted(async () => {
-      try {
-        const response = await axios.get('http://192.168.45.56:8000/api/charge_chart/month/');
-        let chartData = response.data.chart_data;
+    const handleFileUpload = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const file = target.files ? target.files[0] : null;
 
-        
-        chartData.sort((a: any, b: any) => b["10-2024"] - a["10-2024"]);
+      if (file) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const image = new Image();
+          image.src = reader.result as string;
 
-        
-        const top10Data = chartData.slice(0, 10);
-
-       
-        const categories = top10Data.map((item: any) => item.bnk_code);
-        const data = top10Data.map((item: any) => item["10-2024"]);
-
-       
-        chartOptions.value = {
-          chart: {
-            type: 'bar',
-            height: 350,
-            toolbar: {
-              show: false
-            }
-          },
-          plotOptions: {
-            bar: {
-              horizontal: true,
-              dataLabels: {
-                position: 'center'
+          image.onload = () => {
+            
+            const canvas = enhanceImage(image);
+            
+            Tesseract.recognize(
+              canvas,
+              'eng+lao+tha', 
+              {
+                langPath: 'path/to/langdata', 
+                logger: m => console.log(m),
+                tessedit_char_whitelist: 'ຂໍ້ຄວາມຂອງພາສາທີ່ທ່ານຕ້ອງການ'
               }
-            }
-          },
-          xaxis: {
-            categories: categories
-          },
-          dataLabels: {
-            enabled: true,
-            formatter: function (val: any) {
-              return val.toLocaleString(); // Format numbers with commas
-            }
-          }
+            ).then(({ data: { text } }) => {
+              textContent.value = text;
+            }).catch(error => {
+              console.error('Error recognizing text:', error);
+            });
+          };
         };
 
-        series.value = [
-          {
-            name: '10-2024',
-            data: data
-          }
-        ];
-      } catch (error) {
-        console.error('Error fetching chart data:', error);
+        reader.onerror = () => {
+          console.error('Error reading file');
+        };
       }
-    });
+    };
 
-    return { chartOptions, series };
+    
+    const enhanceImage = (image: HTMLImageElement): HTMLCanvasElement => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (ctx) {
+        canvas.width = image.width;
+        canvas.height = image.height;
+
+        
+        ctx.drawImage(image, 0, 0);
+
+        
+        ctx.filter = 'brightness(1.2) contrast(1.1)';
+
+        
+        ctx.drawImage(canvas, 0, 0);
+      }
+
+      return canvas;
+    };
+
+    return {
+      handleFileUpload,
+      textContent
+    };
   }
 });
 </script>
-
-<style scoped>
-#chart {
-  max-width: 600px;
-  margin: auto;
-}
-</style>

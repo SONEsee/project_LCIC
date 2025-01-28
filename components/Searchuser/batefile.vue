@@ -15,24 +15,19 @@
         <v-col cols="12" md="1">
           <v-btn @click="uploadFile" class="bg-primary">ອັບໂຫຼດ</v-btn>
         </v-col>
-        <v-col cols="12" md="2">
-
-        </v-col>
+        <v-col cols="12" md="2"> </v-col>
         <v-col cols="12" md="4">
           <div v-if="user?.MID.id === '01'" class="mb-4">
-        <v-autocomplete
-          v-model="selectedUserId"
-          :items="userIds"
-          label="ຄົ້ນຫາຕາມສະມາຊິກດວ້ຍລະຫັດ"
-          variant="outlined"
-          density="compact"
-          width="100%"
-        />
-      </div>
+            <v-autocomplete
+              v-model="selectedUserId"
+              :items="userIds"
+              label="ຄົ້ນຫາຕາມສະມາຊິກດວ້ຍລະຫັດ"
+              variant="outlined"
+              density="compact"
+              width="100%"
+            />
+          </div>
         </v-col>
-
- 
-
       </v-row>
     </v-col>
     <div v-if="isloading" class="d-flex justify-center align-center">
@@ -40,7 +35,6 @@
     </div>
     <div v-if="error">ເກິດຂໍ້ຜິດພາດບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້</div>
     <div v-else>
-     
       <v-data-table
         :items="filteredData"
         item-key="name"
@@ -49,15 +43,23 @@
       >
         <template v-slot:item.total="{ item }">
           <v-chip color="primary" text-color="white">{{
-            Number(item.searchtrue) + Number(item.searchfals)
+            Number(item.searchtrue) +
+            Number(item.searchfals) +
+            Number(item.count_duplicates)
           }}</v-chip>
         </template>
-        <template v-slot:item.insertDate
-        ="{ item }">
+        <template v-slot:item.count_duplicates="{ item }">
+          <a :href="`../duplicates_batefile/?id=${item.id}`">
+            <v-chip color="warning" text-color="white">
+              {{ item.count_duplicates }}
+            </v-chip></a
+          >
+        </template>
+        <template v-slot:item.insertDate="{ item }">
           {{ new Date(item.insertDate).toLocaleDateString() }}
         </template>
-        <template v-slot:item.user_id="{ item }" v-if="user?.MID.id === '01'">
-          {{ item.user_id }}
+        <template v-slot:item.user_id="{ item }">
+          <p v-if="user?.MID.id === '01'">{{ item.user_id }}</p>
         </template>
         <template v-slot:item.index="{ index, item }">
           <p>{{ item.index }}</p>
@@ -76,8 +78,8 @@
             }}</v-chip>
           </a>
         </template>
-        <template v-slot:header.user_id v-if="user?.MID.id === '01'">
-          ລະຫັດສະມາຊິກ
+        <template v-slot:header.user_id style="color: green">
+          <p v-if="user?.MID.id === '01'">ລະຫັດສະມາຊິກ</p>
         </template>
       </v-data-table>
     </div>
@@ -89,7 +91,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { ref, computed, onMounted } from "vue";
 
-const userID  = localStorage.getItem("user_data");
+const userID = localStorage.getItem("user_data");
 console.log("user", userID);
 
 interface User {
@@ -110,7 +112,9 @@ const userIds = ref<string[]>([]);
 
 const filteredData = computed(() => {
   if (user.value?.MID.id === "01" && selectedUserId.value) {
-    return dataget.value.filter(item => item.user_id.includes(selectedUserId.value));
+    return dataget.value.filter((item) =>
+      item.user_id.includes(selectedUserId.value)
+    );
   }
   return dataget.value;
 });
@@ -124,7 +128,7 @@ const datafetch = async () => {
     if (userData) {
       const user = JSON.parse(userData);
       const user_id = String(user?.MID?.id);
-      
+
       let url = `${config.public.strapi.url}api/api/search-files/`;
       if (user_id !== "01") {
         url += `?user_id=${user_id}`;
@@ -135,7 +139,7 @@ const datafetch = async () => {
         throw new Error(`Error: ${response.statusText}`);
       }
       dataget.value = await response.json();
-      userIds.value = [...new Set(dataget.value.map(item => item.user_id))]; 
+      userIds.value = [...new Set(dataget.value.map((item) => item.user_id))];
       console.log(dataget.value);
     } else {
       throw new Error("User data not found in localStorage");
@@ -172,6 +176,7 @@ const header = ref([
   { title: "ຊື່ຟາຍ", value: "fileName" },
   { title: "ຈຳນວນຄົ້ນຫາທັງໝົດ", value: "total" },
   { title: "ຄົ້ນຫາພົບ", value: "searchtrue" },
+  { title: "ຂໍ້ມູນສໍ້າກັນ", value: "count_duplicates" },
   { title: "ຄົ້ນຫາບໍ່ພົບ", value: "searchfals" },
 ]);
 
@@ -253,26 +258,29 @@ const insertSearchLog = async (item: any) => {
   try {
     const token = localStorage.getItem("access_token");
     const config = useRuntimeConfig();
-    const response = await fetch(`${config.public.strapi.url}api/insert_searchlog/`, { 
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        EnterpriseID: item.com_enterprise_code,
-        LCICID: item.lcicID
-      })
-    });
+    const response = await fetch(
+      `${config.public.strapi.url}api/insert_searchlog/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          EnterpriseID: item.com_enterprise_code,
+          LCICID: item.lcicID,
+        }),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error('Failed to insert search log');
+      throw new Error("Failed to insert search log");
     }
 
     const data = await response.json();
-    console.log('Search log inserted:', data);
+    console.log("Search log inserted:", data);
   } catch (error) {
-    console.error('Error inserting search log:', error);
+    console.error("Error inserting search log:", error);
   }
 };
 </script>
