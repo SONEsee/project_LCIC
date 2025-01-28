@@ -42,6 +42,7 @@
       <!-- <v-responsive width="100%"></v-responsive> -->
 
       <!-- <h3>Member Info</h3> -->
+<<<<<<< HEAD
 
       <v-col cols="12" md="4">
         <v-sheet class="ma-2">
@@ -75,6 +76,51 @@
         </v-sheet>
       </v-col>
 
+=======
+      
+        <v-col cols="12" md="4">
+          <v-sheet class="ma-2">
+            <v-text-field
+              v-model="form.username"
+              label="ຊື່ຜູ້ນຳໃຊ້"
+            ></v-text-field>
+          </v-sheet>
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-sheet class="ma-2">
+            
+    <label for="bank">Select Bank:</label>
+    <select
+      id="bank"
+      v-model="form.selectedBank"
+      @change="fetchBranches(form.selectedBank?.bnk_code)"
+    >
+      <option value="" disabled>Select a bank</option>
+      <option v-for="bank in banks" :key="bank.bnk_code" :value="bank">
+        {{ bank.code }}
+      </option>
+    </select>
+
+    <!-- Branch Dropdown -->
+    <label for="branch">Select Branch:</label>
+    <select id="branch" v-model="form.selectedBranch">
+      <option value="" disabled>Select a branch</option>
+      <option v-for="branch in branches" :key="branch.id" :value="branch">
+        {{ branch.branch_name }}
+      </option>
+    </select>
+
+          </v-sheet>
+        </v-col>
+        <v-col cols="12" md="4">
+          <v-sheet class="ma-2">
+            <v-text-field
+              v-model="form.groupUser"
+              label="ກຸ່ມຜູ້ໃຊ້ງານ"
+            ></v-text-field>
+          </v-sheet>
+        </v-col>
+>>>>>>> ed0a9c3ec6d5af9b67a6ec3f50adfc98ffb81924
       <!-- <h3>Password</h3> -->
 
       <v-col cols="12" md="4">
@@ -103,11 +149,19 @@
   </v-container>
 </template>
 
+
+
 <script lang="ts">
+<<<<<<< HEAD
 import axios from "axios";
 import { ref } from "vue";
 import { onMounted } from "vue";
 import Swal from "sweetalert2";
+=======
+import { ref, onMounted } from "vue";
+import Swal from "sweetalert2";
+import axios from "axios";
+>>>>>>> ed0a9c3ec6d5af9b67a6ec3f50adfc98ffb81924
 
 definePageMeta({
   middleware: ["auth"],
@@ -123,10 +177,11 @@ useHead({
     },
     {
       name: "Description",
-      content: "Order Nuxt 3,  IT Genius Engineering",
+      content: "Order Nuxt 3, IT Genius Engineering",
     },
   ],
 });
+<<<<<<< HEAD
 interface User {
   username: string;
   id: string;
@@ -177,6 +232,9 @@ const uploadFiles = async () => {
   }
 };
 
+=======
+
+>>>>>>> ed0a9c3ec6d5af9b67a6ec3f50adfc98ffb81924
 export default {
   setup() {
     const form = ref({
@@ -186,16 +244,63 @@ export default {
       surnameEng: "",
       username: "",
       selectedBank: null,
+      selectedBranch: null,
       groupUser: "",
       password: "",
       confirmPassword: "",
     });
     console.log(form);
 
+    const files = ref<File[]>([]);
+    const collaterals = ref([]);
+    const user = ref<User | null>(null);
     const banks = ref([]);
-    const selectdBank = ref(null);
+    const branches = ref([]);
+
+    // Upload Files
+    const uploadFiles = async () => {
+      const formData = new FormData();
+
+      files.value.forEach((file) => {
+        formData.append("image", file);
+      });
+
+      if (user.value && user.value.MID) {
+        formData.append("user_mid_id", user.value.MID.id);
+      }
+
+      try {
+        const config = useRuntimeConfig();
+        const response = await axios.post(
+          `${config.public.strapi.url}api/api/upload_image/`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+        console.log(response.data);
+        await Swal.fire({
+          title: "ສຳເລັດ!",
+          text: "ອັບໂຫຼດຮູບພາບສຳເລັດແລ້ວ!",
+          icon: "success",
+          confirmButtonText: "OK",
+        }).then(() => {
+          location.reload();
+        });
+        fetchCollaterals();
+      } catch (error) {
+        console.error(error.response ? error.response.data : error.message);
+        Swal.fire({
+          title: "ຜິດພາດ!",
+          text: error.response ? error.response.data : error.message,
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      }
+    };
+
+    // Submit Form
     const submitForm = async () => {
       const config = useRuntimeConfig();
+<<<<<<< HEAD
       const response = await fetch(
         `${config.public.strapi.url}api/create_user/`,
         {
@@ -216,29 +321,83 @@ export default {
           }),
         }
       );
+=======
+      const response = await fetch(`${config.public.strapi.url}api/create_user/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nameL: form.value.firstnameLao,
+          surnameL: form.value.surnameLao,
+          nameE: form.value.firstnameEng,
+          surnameE: form.value.surnameEng,
+          username: form.value.username,
+          MID: form.value.selectedBank?.id,
+          GID: form.value.groupUser,
+          bnk_code:form.value.selectedBank?.bnk_code,
+          branch_id: form.value.selectedBranch?.branch_id,
+          password: form.value.password,
+          confirmPassword: form.value.confirmPassword,
+        }),
+      });
+>>>>>>> ed0a9c3ec6d5af9b67a6ec3f50adfc98ffb81924
 
       if (!response.ok) {
         throw new Error("Failed to create user");
       } else {
         const data = await response.json();
         console.log("User created successfully:", data);
+<<<<<<< HEAD
+=======
+        await Swal.fire({
+          title: "Success!",
+          text: "User created successfully.",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+>>>>>>> ed0a9c3ec6d5af9b67a6ec3f50adfc98ffb81924
       }
     };
 
+    // Fetch Banks
     const fetchBanks = async () => {
       try {
         const config = useRuntimeConfig();
+<<<<<<< HEAD
         const response = await fetch(
           `${config.public.strapi.url}api/memberinfo/`
         );
         const data = await response.json();
         banks.value = data;
+=======
+        const response = await fetch(`${config.public.strapi.url}api/memberinfo/`);
+        banks.value = await response.json();
+>>>>>>> ed0a9c3ec6d5af9b67a6ec3f50adfc98ffb81924
       } catch (error) {
         console.error("Error fetching banks:", error);
       }
     };
 
-    // Fetch bank data when component is mounted
+    // Fetch Branches based on selected bank
+    const fetchBranches = async (bankCode) => {
+      if (!bankCode) {
+        branches.value = [];
+        return;
+      }
+      try {
+        const config = useRuntimeConfig();
+        const response = await fetch(
+          `${config.public.strapi.url}api/branches/?bnk_code=${bankCode}`
+        );
+        branches.value = await response.json();
+        console.log("Branches:", branches.value);
+      } catch (error) {
+        console.error("Error fetching branches:", error);
+      }
+    };
+
+    // Fetch data on component mount
     onMounted(() => {
       fetchBanks();
     });
@@ -246,12 +405,22 @@ export default {
     return {
       form,
       submitForm,
+<<<<<<< HEAD
       banks,
       files,
       uploadFiles,
       collaterals,
 
       user,
+=======
+      files,
+      uploadFiles,
+      collaterals,
+      user,
+      banks,
+      branches,
+      fetchBranches,
+>>>>>>> ed0a9c3ec6d5af9b67a6ec3f50adfc98ffb81924
     };
   },
 };

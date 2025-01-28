@@ -19,6 +19,19 @@
               <v-sheet class="pa-2 ma-2">
                 <SearchFilter @searchQuery="filterUsers" />
               </v-sheet>
+
+              <v-sheet class="pa-2 ma-2">
+                <v-select
+                v-model="selectedMember"
+                :items="members"
+                item-title="code" 
+                item-value="id"
+                label="Select Member"
+                placeholder="Choose a member"
+                outlined
+              ></v-select>
+              </v-sheet>
+
             </v-col>
             <v-col cols="12" md="6" class="d-flex justify-end">
               <v-sheet class="pa-2 ma-2">
@@ -31,6 +44,7 @@
                   ເພື່ມຜູ້ນໍາໃຊ້
                 </v-btn>
               </v-sheet>
+
             </v-col>
           </v-row>
           <v-card class="mx-auto my-4" elevation="4" rounded>
@@ -67,67 +81,6 @@
                   </div>
                 </template>
               </v-data-table>
-              <!-- <v-data-table
-          :items="filteredUsers"
-          items-per-page="5"
-          class="bg-grey-lighten-5 rounded-table"
-        >
-          <thead class="blue darken-4">
-            <tr class="bg-header wrap-text custom-width-name">
-              <th>ລະຫັດຜູ້ນໍາໃຊ້</th>
-              <th>ລະຫັດທນຄ</th>
-              <th>ສະມາຊິກ</th>
-              <th class="wrap-text custom-width-name">ຊື່ຜູ້ນຳໃຊ້</th>
-              <th class="">ນາມສະກຸນ</th>
-              <th>ສິດຜູ້ນໍາໃຊ້</th>
-
-              <th>ເຂົ້າລະບົບ</th>
-              <th>ໂປຣຟາຍ</th>
-              <th>ສະຖານະ</th>
-              <th>ເຫດການ</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr v-for="user in filteredUsers" :key="user.UID" class="">
-              <td>{{ user.UID }}</td>
-              <td class="">{{ user.bnk_code }}</td>
-              <td class="wrap-text custom-width-name">{{ user.bnk_name }}</td>
-              <td class="">{{ user.username }}</td>
-              <td class="wrap-text custom-width-name">
-                {{ user.nameL }} {{ user.surnameL }}
-              </td>
-
-              <td class="wrap-text custom-width-name">
-                {{ user.nameE }} {{ user.surnameE }}
-              </td>
-              <td class="wrap-text custom-width-name">{{ user.last_login }}</td>
-              <td class="wrap-text custom-width-name">
-                <v-avatar>
-                  <v-img
-                    alt="John"
-                    src="https://cdn.vuetifyjs.com/images/john.jpg"
-                  ></v-img>
-                </v-avatar>
-              </td>
-              <td>
-                <p v-if="user.is_active" class="custom-box">Active</p>
-                <p v-else>Inactive</p>
-              </td>
-              <td class="action-icons">
-                <NuxtLink :to="`../manageuser/edit_user?UID=${user.UID}`">
-                  <v-icon icon="mdi-pencil"></v-icon>
-                </NuxtLink>
-
-                <v-icon
-                  icon="mdi-delete-outline"
-                  style="color: red"
-                  @click="deleteUser(user.UID)"
-                ></v-icon>
-              </td>
-            </tr>
-          </tbody>
-        </v-data-table> -->
             </div>
           </v-card>
         </v-window-item>
@@ -216,6 +169,8 @@ const headers = [
   { title: "ສະຖານະ", value: "status" },
   { title: "ລາຍລະອຽດ", value: "action" },
 ];
+const members = ref([]);
+const selectedMember = ref(null);
 export default {
   data(): { users: any[]; filteredUsers: any[] } {
     return {
@@ -224,6 +179,7 @@ export default {
       headers,
       tab,
       modo,
+      members,
     };
   },
   // components: {
@@ -231,6 +187,7 @@ export default {
   // },
   async mounted(): Promise<void> {
     await this.fetchUsers(); // Fetch users on mount
+    await this.fetchMembers();
   },
   methods: {
     async fetchUsers(): Promise<void> {
@@ -244,6 +201,23 @@ export default {
         this.filteredUsers = data.all_user;
       } catch (error) {
         console.error("Error fetching users:", error);
+      }
+    },
+    async fetchMembers(): Promise<void> {
+      try {
+        const config = useRuntimeConfig();
+        const response = await fetch(`${config.public.strapi.url}api/memberinfo/`);
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.statusText}`);
+        }
+        const data = await response.json();
+        // Assuming the response is an array of members
+        members.value = data;
+
+        console.log("===========> Members",members.value);
+        
+      } catch (error) {                               
+        console.error('Error fetching members:', error);
       }
     },
 
