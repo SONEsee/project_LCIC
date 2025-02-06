@@ -101,8 +101,7 @@ export const fetchData = async () => {
     series.value[0].data = bankAmounts;
     series.value[1].data = mfiAmounts;
     series.value[2].data = totalAmounts;
-    console.log('series:', series.value);
-    console.log('chartOptions:', chartOptions.value);
+   
   } catch (error) {
     console.error('Error fetching data:', error);
   }

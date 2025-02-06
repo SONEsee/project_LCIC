@@ -2,26 +2,15 @@
   <div class="border py-2 my-2 rounded-lg">
     <h2 class="mx-4">ໜ້າຕ່າງການຈັດການຜູ້ນໍາໃຊ້</h2>
     <v-btn
-          :to="'backend/manageuser/create_user'"
-          color="indigo-darken-4" 
-          elevation="2"
-          >
-          <v-icon left class="pr-1">mdi-plus-circle</v-icon>
-        ເພື່ມຜູ້ນໍາໃຊ້
+      :to="'../manageuser/create_user'"
+      color="indigo-darken-4"
+      elevation="2"
+    >
+      <v-icon left class="pr-1">mdi-plus-circle</v-icon>
+      ເພື່ມຜູ້ນໍາໃຊ້
     </v-btn>
     <!-- Search and Sort -->
     <div class="filter-container mb-2 pt-4">
-      <!-- <div class="search-box">
-        <span class="mdi mdi-magnify search-icon"></span>
-        <input
-          id="search"
-          v-model="searchQuery"
-          @input="applySearchFilter"
-          type="text"
-          placeholder="ຄົ້ນຫາ"
-        />
-      </div> -->
-
       <div class="search-dropdown-container">
         <!-- Search Box -->
         <div class="search-box">
@@ -45,53 +34,72 @@
             <option value="-bnk_code">ທະນາຄານ ຫຼາຍ</option>
           </select>
         </div>
-
-
-
-
       </div>
     </div>
 
-    <hr class="ma-2">
+    <hr class="ma-2" />
 
     <!-- Table -->
-    <table class="styled-table">
-      <thead>
-        <tr>
-          <th
-            v-for="header in headers"
-            :key="header.value"
-            :class="{ sortable: header.sortable !== false }"
-          >
-            {{ header.title }}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(bank, index) in filteredUserCounts"
-          :key="index"
-        >
-          <td>
-            {{ bank.bnk_code }} - {{ bank.member_code }} - {{ bank.member_nameL }}
-          </td>
-          <td>{{ bank.user_count }}</td>
-          <td>
-            <v-btn
-              @click="viewDetail(bank.bnk_code)"
-              class="custom-button pa-1"
-              color="white"
-              small
+    <!-- <table class="styled-table">
+        <thead>
+          <tr>
+            <th
+              v-for="header in headers"
+              :key="header.value"
+              :class="{ sortable: header.sortable !== false }"
             >
-              <v-icon left>mdi-eye</v-icon>
-            </v-btn>
-          </td>
-        </tr>
-        <tr v-if="filteredUserCounts.length === 0">
-          <td colspan="3" class="no-results">No results found</td>
-        </tr>
-      </tbody>
-    </table>
+              {{ header.title }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(bank, index) in filteredUserCounts"
+            :key="index"
+          >
+            <td>
+              {{ bank.bnk_code }} - {{ bank.member_code }} - {{ bank.member_nameL }}
+            </td>
+            <td>{{ bank.user_count }}</td>
+            <td>
+              <v-btn
+                @click="viewDetail(bank.bnk_code)"
+                class="custom-button pa-1"
+                color="white"
+                small
+              >
+                <v-icon left>mdi-eye</v-icon>
+              </v-btn>
+            </td>
+          </tr>
+          <tr v-if="filteredUserCounts.length === 0">
+            <td colspan="3" class="no-results">No results found</td>
+          </tr>
+        </tbody>
+      </table> -->
+    <div>
+      <v-data-table
+        :headers="headers"
+        :items="filteredUserCounts"
+        :items-per-page="10"
+        class="elevation-1"
+      >
+        <template v-slot:item.user_count="{ item }">
+          {{ item.user_count }}
+        </template>
+        <template v-slot:item.actions="{ item }">
+          <v-btn
+            @click="viewDetail(item.bnk_code)"
+            color=""
+            icon="mdi-eye"
+            flat
+            small
+            class="text-primary"
+          />
+          <!-- <v-icon left>mdi-eye</v-icon> -->
+        </template>
+      </v-data-table>
+    </div>
   </div>
 </template>
 
@@ -99,6 +107,10 @@
 import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
+import { ByBankDataModel } from "~/types";
+const applySearchFilter = () => {
+  console.log("searchQuery", searchQuery.value);
+};
 definePageMeta({
   middleware: "auth",
   layout: "backend",
@@ -108,20 +120,26 @@ useHead({
   title: "Manage Users",
 });
 
-// Headers for the table
+interface Bank {
+  bnk_code: string;
+  member_code: string;
+  member_nameL: string;
+  user_count: number;
+}
+
 const headers = [
-  { title: "ທະນາຄານ", value: "bnk_code - member_code - member_nameL" },
+  { title: "ທະນາຄານ", value: "bnk_code" },
+  { title: "ຊື່ຫຍໍ້", value: "member_code" },
+  { title: "ຊື່ເຕັ່ມ", value: "member_nameL" },
   { title: "ຈໍານວນຜູ້ໃຊ້ງານ", value: "user_count" },
   { title: "ເຫດການ", value: "actions", sortable: false },
 ];
 
-// Reactive variables
-const userCounts = ref([]);
+const userCounts = ref<Bank[]>([]);
 const searchQuery = ref("");
 const selectedSort = ref("user_count");
 const router = useRouter();
 
-// Computed property for filtering
 const filteredUserCounts = computed(() => {
   const search = searchQuery.value.toLowerCase();
   return userCounts.value.filter((bank) => {
@@ -137,11 +155,10 @@ const filteredUserCounts = computed(() => {
   });
 });
 
-// Fetch user data
 const fetchUserCounts = async () => {
   try {
     const config = useRuntimeConfig();
-    const response = await axios.get(
+    const response = await axios.get<Bank[]>(
       `${config.public.strapi.url}api/distinct-bnk-codes/`,
       { params: { sort_by: selectedSort.value } }
     );
@@ -151,27 +168,24 @@ const fetchUserCounts = async () => {
   }
 };
 
-// View detail handler
-const viewDetail = (bnk_code) => {
-  const detailUrl = `test7/?bnk_code=${bnk_code}`;
+const viewDetail = (bnk_code: string) => {
+  const detailUrl = `detail/?bnk_code=${bnk_code}`;
   router.push(detailUrl);
 };
 
-// On mounted
 onMounted(fetchUserCounts);
 </script>
-
 
 <style>
 .styled-table {
   border-collapse: collapse;
   width: 100%;
-  background-color: #ffffff; /* Light blue */
+  background-color: #ffffff;
   border: 1px solid #d3d3d3;
 }
 
 .styled-table th {
-  background-color: #f3f3f3; /* Sky blue */
+  background-color: #f3f3f3;
   color: rgb(138, 138, 138);
   padding: 12px;
   text-align: left;
@@ -261,5 +275,4 @@ onMounted(fetchUserCounts);
   border-color: #003dc0; /* Teal color on focus */
   box-shadow: 0 2px 6px rgba(0, 85, 196, 0.3); /* Teal shadow */
 }
-
 </style>

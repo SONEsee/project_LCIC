@@ -3,4 +3,3 @@ interface User {
   MID: string;
   code:string;
 }
-export { User };

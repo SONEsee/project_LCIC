@@ -8,11 +8,10 @@
         width="100%"
         rounded="lg"
         variant="outlined"
-        :items="['ວັນ', 'ເດືອນ']"
+        :items="['ວັນ', 'ອາທິດ', 'ເດືອນ']"
         v-model="selectedTimeframe"
         @change="fetchData"
-      >
-      </v-autocomplete>
+      />
     </v-col>
   </v-row>
 

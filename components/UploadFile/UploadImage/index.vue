@@ -2,14 +2,11 @@
   <v-container>
     <div>
       <h2>{{ $t("Uploadtheenterpriseregistrationform") }}</h2>
-      <!-- <div v-if="user">
-          {{ user.MID.id }}
-        </div> -->
       <v-col cols="12">
         <v-row>
           <v-col cols="12" md="5">
             <v-file-input
-            density="compact"
+              density="compact"
               v-model="files"
               :show-size="1000"
               color="deep-purple-accent-4"
@@ -21,10 +18,7 @@
               multiple
             >
               <template v-slot:selection="{ fileNames }">
-                <template
-                  v-for="(fileName, index) in fileNames"
-                  :key="fileName"
-                >
+                <template v-for="(fileName, index) in fileNames" :key="fileName">
                   <v-chip
                     v-if="index < 2"
                     class="me-2"
@@ -45,44 +39,38 @@
               </template>
             </v-file-input>
           </v-col>
+          <v-col cols="12" md="3">
+            <v-text-field 
+              density="compact"
+              label="ປອ້ນລະຫັດວິສາຫະກິດ"
+              v-model="enterpriseCode"
+            ></v-text-field>
+          </v-col>
           <v-col md="2" cols="12">
-            <div class=" d-flex ">
-               <v-btn color="primary" @click="uploadFiles" class="">{{
-              $t("uploads")
-            }}</v-btn>
+            <div class="d-flex">
+              <v-btn color="primary" @click="handleUpload" :loading="isLoading">
+                {{ $t("uploads") }}
+              </v-btn>
             </div>
-           </v-col
-          >
+          </v-col>
           <v-col cols="12" md="4">
             <v-autocomplete
-          variant="outlined"
-          v-if="user && user.MID.id === '01'"
-          density="compact"
-          width=""
-          v-model="search"
-          class=""
-          label="ໃສ່ລະຫັດທະນາຄານເພື່ຶອຄົ້ນຫາ"
-          :items="uniqueUserIds.map((user) => ({ title: user, value: user }))"
-          item-text="title"
-          item-value="value"
-        />
+              variant="outlined"
+              v-if="user && user.MID.id === '01'"
+              density="compact"
+              v-model="search"
+              label="ໃສ່ລະຫັດທະນາຄານເພື່ຶອຄົ້ນຫາ"
+              :items="uniqueUserIds.map((user) => ({ title: user, value: user }))"
+              item-text="title"
+              item-value="value"
+            />
           </v-col>
         </v-row>
       </v-col>
     </div>
     
-    <v-data-table >
-      <template v-slot:top>
-        <!-- <v-text-field
-          v-if="user && user.MID.id === '01'"
-          density="compact"
-          width="50%"
-          v-model="search"
-          class="pa-2"
-          label="ໃສ່ລະຫັດທະນາຄານ"
-        ></v-text-field> -->
-    
-      </template>
+    <v-data-table :items="filteredItems">
+      <template v-slot:top></template>
       <thead>
         <tr class="bg-indigo-lighten-1">
           <th>{{ $t("no:") }}</th>
@@ -90,7 +78,6 @@
           <th v-if="user && user.MID.id === '01'">ລະຫັດທະນາຄານ</th>
           <th>{{ $t("imageaddress") }}</th>
           <th>{{ $t("status") }}</th>
-
           <th>{{ $t("detail") }}</th>
         </tr>
       </thead>
@@ -100,13 +87,10 @@
           <td>{{ collateral.filename }}</td>
           <td v-if="user && user.MID.id === '01'">{{ collateral.user }}</td>
           <td>{{ collateral.pathfile }}</td>
-          <!-- <td>{{ collateral.status }}</td> -->
-
           <td>
             <div v-if="collateral.status === '1'">
               <p class="text-warning">ອັບໂຫຼດສຳເລັດ</p>
             </div>
-
             <div v-else>
               <span class="text-success">ຖືກກວດສອບແລ້ວ</span>
             </div>
@@ -116,8 +100,7 @@
               small
               @click="viewImage(collateral.pathfile)"
               class="bg-indigo-darken-4"
-              >{{ $t("viewimage") }}</v-btn
-            >
+            >{{ $t("viewimage") }}</v-btn>
           </td>
         </tr>
       </tbody>
@@ -126,118 +109,151 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted, computed } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useRouter } from "vue-router";
 
 export default defineComponent({
-  user_id: "SingleColumnSearchTable",
-  data() {
-    return {
-      search: "" as string,
-    };
-  },
-  methods: {
-    onSearch(): void {
-      this.$emit("searchQuery", this.search);
-    },
-  },
   setup() {
-    const search = ref("");
-    definePageMeta({
-      layout: "backend",
-      middleware: ["auth"],
-    });
-
-    useHead({
-      title: "Upload Image",
-      meta: [
-        {
-          name: "keywords",
-          content: "Report, Nuxt 3, Backend",
-        },
-        {
-          name: "Description",
-          content: "Report Nuxt 3, IT Genius Engineering",
-        },
-      ],
-    });
-
     const files = ref<File[]>([]);
+    const enterpriseCode = ref("");
     const collaterals = ref([]);
     const user = ref<User | null>(null);
+    const search = ref("");
+    const isLoading = ref(false);
 
-    const uploadFiles = async () => {
-      const formData = new FormData();
+    const checkEnterpriseCode = async () => {
+  try {
+    const config = useRuntimeConfig();
+    isLoading.value = true;
+    const response = await axios.post(
+      `${config.public.strapi.url}api/search/${encodeURIComponent(enterpriseCode.value)}/`
+    );
 
-      files.value.forEach((file) => {
-        formData.append("image", file);
+    if (response.status === 200) {
+      await Swal.fire({
+        title: "ແຈ້ງເຕືອນ!",
+        text: "ມີຂໍ້ມູນຢູ່ໃນຖານຂໍ້ມູນແລ້ວ",
+        icon: "warning",
+        confirmButtonText: "OK",
       });
+      return true;
+    }
+    return false;
+  } catch (error) {
+    if (error.response?.status === 404) {
+      return false;
+    }
+    console.error("Error checking enterprise code:", error);
+    await Swal.fire({
+      title: "ຜິດພາດ!",
+      text: "ເກີດຂໍ້ຜິດພາດໃນການກວດສອບລະຫັດວິສາຫະກິດ",
+      icon: "error",
+      confirmButtonText: "OK",
+    });
+    return true;
+  } finally {
+    isLoading.value = false;
+  }
+};
 
-      if (user.value && user.value.MID) {
-        formData.append("user_mid_id", user.value.MID.id);
+
+
+
+    
+    const handleUpload = async () => {
+      if (!enterpriseCode.value) {
+        await Swal.fire({
+          title: "ແຈ້ງເຕືອນ!",
+          text: "ກະລຸນາປ້ອນລະຫັດວິສາຫະກິດ",
+          icon: "warning",
+          confirmButtonText: "OK",
+        });
+        return;
       }
 
+      if (!files.value || files.value.length === 0) {
+        await Swal.fire({
+          title: "ແຈ້ງເຕືອນ!",
+          text: "ກະລຸນາເລືອກຮູບພາບ",
+          icon: "warning",
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+
+      const exists = await checkEnterpriseCode();
+      if (exists) {
+        return;
+      }
+
+      await uploadFiles();
+    };
+
+    const uploadFiles = async () => {
       try {
+        isLoading.value = true;
+        const formData = new FormData();
+
+        files.value.forEach((file) => {
+          formData.append("image", file);
+        });
+
+        if (user.value && user.value.MID) {
+          formData.append("user_mid_id", user.value.MID.id);
+        }
+        
+        formData.append("enterprise_code", enterpriseCode.value);
+
         const config = useRuntimeConfig();
         const response = await axios.post(
           `${config.public.strapi.url}api/api/upload_image/`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
-        console.log(response.data);
+        
         await Swal.fire({
           title: "ສຳເລັດ!",
           text: "ອັບໂຫຼດຮູບພາບສຳເລັດແລ້ວ!",
           icon: "success",
           confirmButtonText: "OK",
-        }).then(() => {
-          location.reload();
         });
-        fetchCollaterals();
+        
+        await fetchCollaterals();
+        files.value = [];
+        enterpriseCode.value = "";
       } catch (error) {
         console.error(error.response ? error.response.data : error.message);
-        Swal.fire({
+        await Swal.fire({
           title: "ຜິດພາດ!",
           text: error.response ? error.response.data : error.message,
           icon: "error",
           confirmButtonText: "OK",
         });
+      } finally {
+        isLoading.value = false;
       }
     };
 
-    const userID1 = user.value?.MID.id;
-
-    const viewImage = (imagePath: string, id: string) => {
+    const viewImage = (imagePath: string) => {
       const config = useRuntimeConfig();
-      const fullPath = `${config.public.strapi.url}collaterals/${imagePath}?id=${id}`;
+      const fullPath = `${config.public.strapi.url}collaterals/${imagePath}`;
       window.open(fullPath, "_blank");
-      console.log("id image", id);
     };
 
-    const confirmImage = async (id: number) => {
+    const fetchCollaterals = async () => {
       try {
         const config = useRuntimeConfig();
-        const response = await axios.post(
-          `${config.public.strapi.url}api/api/confirm_image/${id}/`
+        const response = await axios.get(
+          `${config.public.strapi.url}api/api/get_collaterals/`
         );
-        console.log(response.data);
-        await Swal.fire({
-          title: "ສຳເລັດ!",
-          text: "ຢືນຢັນຮູບພາບສຳເລັດແລ້ວ!",
-          icon: "success",
-          confirmButtonText: "OK",
-        });
-        fetchCollaterals();
+        
+        const userID = user.value?.MID?.id;
+        collaterals.value = userID === "01" 
+          ? response.data 
+          : response.data.filter((item: any) => item.user === userID);
       } catch (error) {
-        console.error(error.response ? error.response.data : error.message);
-        Swal.fire({
-          title: "ຜິດພາດ!",
-          text: error.response ? error.response.data : error.message,
-          icon: "error",
-          confirmButtonText: "OK",
-        });
+        console.error("Error fetching collaterals:", error);
       }
     };
 
@@ -245,98 +261,32 @@ export default defineComponent({
       const userData = localStorage.getItem("user_data");
       if (userData) {
         user.value = JSON.parse(userData);
-        console.log("User data:", user.value);
       }
-
-      const userID = user.value?.MID?.id;
-      console.log("User ID:", userID);
-
-      // ກວດສອບວ່າ userID ໄດ້ສົ່ງໄປຫາ fetchCollaterals ຢ່າງຖືກຕ້ອງ
-      if (userID) {
-        fetchCollaterals(userID);
-      } else {
-        console.error("User ID is undefined");
+      
+      if (user.value?.MID?.id) {
+        fetchCollaterals();
       }
     });
-
-    // const fetchCollaterals = async (userID: string) => {
-    //   try {
-    //     const config = useRuntimeConfig();
-    //     const response = await axios.get(
-    //       `${config.public.strapi.url}api/api/get_collaterals/`
-    //     );
-
-    //     // ຟິວເອົາຂໍ້ມູນຕາມ userID
-    //     collaterals.value = response.data.filter((item: any) => item.user === userID);
-    //     console.log("Filtered Collaterals:", collaterals.value);
-    //   } catch (error) {
-    //     console.error(error.response ? error.response.data : error.message);
-    //   }
-    // };
-
-    const fetchCollaterals = async (userID: string) => {
-      try {
-        const config = useRuntimeConfig();
-        const response = await axios.get(
-          `${config.public.strapi.url}api/api/get_collaterals/`
-        );
-
-        // ກວດສອບ userID ເພື່ອຈັດການຂໍ້ມູນ
-        collaterals.value =
-          userID === "01"
-            ? response.data // ຖ້າ userID === "01", ສະແດງຂໍ້ມູນທັງໝົດ
-            : response.data.filter((item: any) => item.user === userID); // ຖ້າບໍ່ແມ່ນ "01", ຟິວເອົາຂໍ້ມູນທີ່ກໍານົດ
-
-        console.log("Collaterals:", collaterals.value);
-      } catch (error) {
-        console.error(
-          "Error fetching collaterals:",
-          error.response?.data || error.message
-        );
-      }
-    };
 
     const filteredItems = computed(() =>
       collaterals.value.filter((item: any) =>
         item.user?.toLowerCase().includes(search.value.toLowerCase())
       )
     );
-    console.log("user", filteredItems);
-    const uniqueUserIds = computed(() => {
-      return [...new Set(filteredItems.value.map((item) => item.user))];
-    });
-    // const fetchCollaterals = async (userID: string) => {
-    //   try {
-    //     const config = useRuntimeConfig();
-    //     const response = await axios.get(
-    //       `${config.public.strapi.url}api/api/get_collaterals/`
-    //     );
-    //     if (userID === "01") {
-    //       collaterals.value = response.data;
-    //     } else {
-    //       collaterals.value = response.data.filter(
-    //         (item: any) => item.user === userID
-    //       );
-    //     }
-    //     console.log("Collaterals:", collaterals.value);
-    //   } catch (error) {
-    //     console.error(error.response ? error.response.data : error.message);
-    //   }
-    // };
-    // const filteredItems = computed(() =>
-    //   items.value.filter((item) =>
-    //     item.user.toLowerCase().includes(search.value.toLowerCase())
-    //   )
-    // );
+
+    const uniqueUserIds = computed(() => 
+      [...new Set(filteredItems.value.map((item) => item.user))]
+    );
 
     return {
       files,
-      uploadFiles,
+      enterpriseCode,
       collaterals,
-      viewImage,
-      confirmImage,
       user,
       search,
+      isLoading,
+      handleUpload,
+      viewImage,
       filteredItems,
       uniqueUserIds,
     };
