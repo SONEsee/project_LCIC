@@ -6,12 +6,15 @@ import TotalSales from "@/components/dashboardComponents/modern/total-sales/Tota
 import Test from "@/components/dashboardComponents/modern/test/index.vue";
 import axios from "axios";
 import { ref, onMounted } from "vue";
+import Member from "~/components/dashboardComponents/Member/MemberAcunt/Member.vue";
+
+import LoanCoun from "~/components/dashboardComponents/Member/LoanCoun/LoanCoun.vue";
+
 interface Props {
   item: any[];
 }
 
 defineProps<Props>();
-
 
 interface User {
   MID?: {
@@ -23,19 +26,19 @@ const userData = localStorage.getItem("user_data") || "{}";
 const user = JSON.parse(userData) as User;
 const user_id = user?.MID?.id ?? "";
 const bnk_code = user?.MID?.id ?? "";
-const Getdata = async () => {
-  try {
-    const config = useRuntimeConfig();
-    const res = await axios.get(
-      `${config.public.strapi.url}api/dashboard/loan-count-by-month/?bnk_code=${bnk_code}`
-    );
-    if (res.status === 200) {
-      item.value = res.data;
-      console.log("success");
-    }
-  } catch (error) {}
-};
-onMounted(Getdata);
+// const Getdata = async () => {
+//   try {
+//     const config = useRuntimeConfig();
+//     const res = await axios.get(
+//       `${config.public.strapi.url}api/dashboard/loan-count-by-month/?bnk_code=${bnk_code}`
+//     );
+//     if (res.status === 200) {
+//       item.value = res.data;
+//       console.log("success");
+//     }
+//   } catch (error) {}
+// };
+// onMounted(Getdata);
 console.log("user", user_id);
 definePageMeta({
   layout: "backend",
@@ -60,51 +63,70 @@ useHead({
 <template>
   <div v-if="user_id !== '01'">
     <v-col cols="12">
+      <v-card height="20vh" style="border: 2px #1a237e solid">
+       
+        <v-row>
+          <v-col cols="12" md="4">
+            <v-card
+              class="mb-3 ml-3 mr-3 mt-3"
+              height=""
+              style="border: 2px #1a237e solid"
+            >
+              <Member />
+            </v-card>
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-card
+              width="100%"
+              class="mb-3 ml-3 mr-3 mt-3"
+              height=""
+              style="border: 2px #1a237e solid"
+            >
+              <LazyDashboardComponentsMemberFeeCountFee />
+            </v-card>
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-card
+              width="100%"
+              class=" mr-3 mb-3 mt-3"
+              height=""
+              style="border: 2px #1a237e solid"
+            >
+              <LoanCoun />
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-card>
+    </v-col>
+    <v-col cols="12">
       <v-row>
-        <v-col cols="12" md="6" v-if="item">
-          <v-card
-            height="500"
-            style="border: 2px #1a237e solid"
-            class="d-flex justify-center align-center"
-          >
+        <v-col cols="12" md="6">
+          <v-card height="500" style="border: 2px #1a237e solid">
             <v-container>
-              <div v-if="item.length > 1">
+              <div>
                 <DashboardComponentsMemberLoanCount />
-              </div>
-              <div v-else class="text-center position-relative">
-                <div class="rocket-container">
-                  <div class="smoke-container">
-                    <div v-for="n in 8" :key="n" class="smoke-particle"></div>
-                  </div>
-                  <img
-                    src="../../public/images/robott1.png"
-                    alt=""
-                    size="64"
-                    width="64"
-                    class="rocket-image"
-                  />
-                  <div class="flame"></div>
-                </div>
-                <p class="text-grey-darken-1 text-body-1 mt-16">
-                  ຍັງບໍ່ທັນມີການນຳສົ່ງຂໍ້ມູນຈຶ່ງບໍ່ສາມາດສະແດງການວິເຄາະໄດ້ຂອງການນຳສົ່ງໄດ້
-                </p>
               </div>
             </v-container>
           </v-card>
         </v-col>
 
         <v-col cols="12" md="6">
+          <div>
+            <v-card height="500" style="border: 2px #1a237e solid">
+              <v-container>
+                <DashboardComponentsMemberSearch />
+              </v-container>
+            </v-card>
+          </div>
+        </v-col>
+        <v-col cols="12" md="6">
           <v-card
             height="500"
             style="border: 2px #1a237e solid"
             class="d-flex justify-center align-center"
           >
             <v-container>
-              <p>
-                <AnimationRobot/>
-              </p>
-              <p class="d-flex justify-center align-center mt-10">ກຳລັງພັດທະນາ....</p>
-              
+            <DashboardComponentsMemberSearchGrapf />
             </v-container>
           </v-card>
         </v-col>
@@ -116,23 +138,11 @@ useHead({
           >
             <v-container>
               <p>
-                <AnimationRobot/>
+                <AnimationRobot />
               </p>
-              <p class="d-flex justify-center align-center mt-10">ກຳລັງພັດທະນາ....</p></v-container
-            >
-          </v-card>
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-card
-            height="500"
-            style="border: 2px #1a237e solid"
-            class="d-flex justify-center align-center"
-          >
-            <v-container
-              > <p>
-                <AnimationRobot/>
-              </p>
-              <p class="d-flex justify-center align-center mt-10">ກຳລັງພັດທະນາ....</p></v-container
+              <p class="d-flex justify-center align-center mt-10">
+                ກຳລັງພັດທະນາ....
+              </p></v-container
             >
           </v-card>
         </v-col>

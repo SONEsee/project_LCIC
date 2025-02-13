@@ -155,7 +155,7 @@ onMounted(() => {
   fetchData();
   setInterval(() => {
     location.reload();
-  }, 15000);
+  }, 1500000);
 });
 </script>
 
