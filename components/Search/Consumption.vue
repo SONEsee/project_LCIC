@@ -8,10 +8,11 @@
         color="rgba(255, 255, 255, 0.4)"
         :style="{ border: '1px #90CAF9 solid' }"
       >
+      <utility-serch/>
         <!-- <div style="color: ">
           <h3 class="mt-4 mb-4"><b>{{$t("searchutilityreports")}}</b></h3>
         </div> -->
-        <v-row class="text-center">
+        <!-- <v-row class="text-center">
           <v-col cols="12" md="4" v-for="(item, index) in items" :key="index">
             <nuxt-link :to="item.url" class="card-link">
               <v-hover v-slot:default="{ isHovering, props }">
@@ -52,7 +53,7 @@
               </v-hover>
             </nuxt-link>
           </v-col>
-        </v-row>
+        </v-row> -->
       </v-card>
     </v-container>
   </div>

@@ -2,13 +2,19 @@
 import { useDisplay } from "vuetify";
 import Sidebar from "~/components/backendComponents/sidebar/Sidebar.vue";
 import Header from "~/components/backendComponents/header/Header.vue";
+import {ref} from 'vue';
+const theme = ref('light');
+function onClick() {
+  theme.value = theme.value === 'light' ? 'dark' : 'light';
+}
 
 const drawer = ref(undefined || true);
 const { mdAndUp, mdAndDown } = useDisplay();
 </script>
 <template>
   <div>
-    <v-app >
+    <v-app :theme="theme">
+      
       <!-- ---------------------------------------------- -->
       <!---Header -->
       <!-- ---------------------------------------------- -->
@@ -26,6 +32,12 @@ const { mdAndUp, mdAndDown } = useDisplay();
         </div>
         <v-app-bar-nav-icon class="" @click="drawer = !drawer" />
         <v-spacer />
+        <v-btn
+          :prepend-icon="theme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'"
+         
+          slim
+          @click="onClick"
+        ></v-btn>
         <!-- ---------------------------------------------- -->
         <!-- User Profile -->
         <!-- ---------------------------------------------- -->

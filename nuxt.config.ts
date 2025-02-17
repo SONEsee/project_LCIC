@@ -11,7 +11,7 @@ export default defineNuxtConfig({
     "/backend/**": { ssr: false },
   },
   compatibilityDate: "2024-04-03",
-
+  
   // import vuetify css
   css: ["@/assets/scss/style.scss", "@/assets/backend/style.scss"],
 
@@ -31,6 +31,7 @@ export default defineNuxtConfig({
 
   // modules
   modules: [
+    "@pinia/nuxt",
     "nuxt-icon",
     (options, nuxt) => {
       // @ts-ignore
@@ -49,11 +50,11 @@ export default defineNuxtConfig({
     locales: [
       { code: "en", iso: "en-US", file: "en.json" },
       { code: "lo", iso: "lo-LA", file: "lo.json" },
-    ], // used in URL path prefix
+    ],
     defaultLocale: "en",
   },
 
-  // app config
+  
   app: {
     head: {
       htmlAttrs: {
@@ -88,12 +89,12 @@ export default defineNuxtConfig({
     },
   },
 
-  // runtime config
+ 
 
   runtimeConfig: {
     public: {
       strapi: {
-        url: process.env.STRAPI_URL || "http://192.168.45.56:8000/",
+        url: process.env.STRAPI_URL || "http://192.168.45.54:3729/",
       },
     },
   },

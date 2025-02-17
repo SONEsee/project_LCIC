@@ -22,7 +22,7 @@
       </v-row>
     </v-col>
   </div>
-  <div id="chart" class="chart-container">
+  <div id="chart4" class="chart-container">
     <apexchart
       type="pie"
       :options="chartOptions"
@@ -49,13 +49,13 @@ const chartOptions = ref({
     type: "pie",
   },
   labels: [
-    "ບຸກຄົນ-ນິຕິບຸກຄົນ & ອົງການຈັດຕັ້ງອື່ນ",
+    "ບຸກຄົນ-ນິຕິບຸກຄົນ & ອົງການອື່ນໆ",
     "ທະນາຄານທຸລະກິດ",
-    "ບໍລິສັດເຊົ່າສິນເຊື່ອ",
-    "ສະຖາບັນການເງິນຈຸລະພາກຮັບຝາກ",
-    "ສະຫະກອນສິນເຊື່ອ ແລະ ເງິນຝາກປະຢັດ",
+    "ບໍລິສັດເຊົ່າສິນເຊືອ",
+    "ສະຖາບັນການເງິນຈຸລະພາກຮັບເງິນຝາກ",
+    "ສະຫະກອນສິນເຊືອ ແລະ ເງິນຝາກປະຫຍັດ",
     "ໂຮງຊວດຈຳ",
-    "ສະຖາບັນການເງິນຈຸລະພາກບໍ່ຮັບຝາກ",
+    "ສະຖາບັນການເງິນຈຸລະພາກບໍ່ຮັບເງິນຝາກ",
   ],
   colors: [
     "#6200EA",
@@ -80,44 +80,6 @@ const chartOptions = ref({
       useSeriesColors: true,
     },
   },
-  responsive: [
-    {
-      breakpoint: 1200,
-      options: {
-        chart: {
-          width: "100%",
-        },
-        legend: {
-          position: "bottom",
-          horizontalAlign: "center",
-        },
-      },
-    },
-    {
-      breakpoint: 1000,
-      options: {
-        chart: {
-          width: "100%",
-        },
-        legend: {
-          position: "bottom",
-          horizontalAlign: "center",
-        },
-      },
-    },
-    {
-      breakpoint: 480,
-      options: {
-        chart: {
-          width: "100%",
-        },
-        legend: {
-          position: "bottom",
-          horizontalAlign: "center",
-        },
-      },
-    },
-  ],
   dataLabels: {
     enabled: true,
     formatter: (val: number, opts: any) => {
@@ -142,10 +104,6 @@ const fetchData = async () => {
     const data: MemberData[] = await fetchTotalSalesData();
     series.value = data.map((item: any) => item.count);
     total.value = series.value.reduce((acc, count) => acc + count, 0);
-
-    chartOptions.value.labels = data.map(
-      (item: any) => `Member Type ${item.memberType_id}`
-    );
   } catch (error) {
     console.error("Error fetching data from API:", error);
   }
@@ -165,18 +123,5 @@ onMounted(() => {
   height: auto;
   max-width: 100%;
   padding: 0 15px;
-}
-
-:deep(.apexcharts-legend) {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-}
-
-:deep(.apexcharts-legend-text) {
-  white-space: normal;
-  max-width: 200px;
-  text-align: left;
 }
 </style>

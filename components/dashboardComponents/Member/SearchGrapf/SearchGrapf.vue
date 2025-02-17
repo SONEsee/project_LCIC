@@ -32,8 +32,8 @@ const chart = ref<ApexCharts | null>(null);
 const loading = ref(true);
 const selectedYear = ref<number | null>(null);
 const years = ref<number[]>([]);
-    const User = localStorage.getItem("user_data") || "{}";
-    const bnk_code = JSON.parse(User).MID?.id ?? "";
+const User = localStorage.getItem("user_data") || "{}";
+const bnk_code = JSON.parse(User).MID?.id ?? "";
 const fetchYears = async () => {
   try {
     const config = useRuntimeConfig();

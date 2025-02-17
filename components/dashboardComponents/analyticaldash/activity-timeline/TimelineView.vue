@@ -2,6 +2,20 @@
 import serchinImage from "@/assets/images/serch/one.jpg";
 import loginImage from "@/assets/images/serch/numpapa.webp";
 import { useI18n } from "vue-i18n";
+import { computed, ref } from "vue";
+import { onMounted, watch } from "vue";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
+const isDark = computed(() => theme.global.current.value.dark);
+
+onMounted(() => {
+  document.body.classList.toggle("dark-mode", isDark.value);
+});
+
+watch(isDark, (newVal) => {
+  document.body.classList.toggle("dark-mode", newVal);
+});
 
 const {t}= useI18n();
 const items = computed (() => [
@@ -18,7 +32,7 @@ const items = computed (() => [
   >
   <v-container>
     <div class="mt-3 mb-3">
-      <h3 style="color: #01579b"><b>{{ $t('collectloanfees') }}</b></h3>
+      <h3 style="color: "><b>{{ $t('collectloanfees') }}</b></h3>
     </div>
     <div class="text-center">
       <v-col cols="12">
@@ -32,7 +46,7 @@ const items = computed (() => [
                     height="100%"
                     width="100%"
                     v-bind="props"
-                    :color="isHovering ? '#B3E5FC' : 'white'"
+                    :color="isHovering ? '#B3E5FC' : ''"
                     :style="{
 
                       backgroundSize: 'cover',

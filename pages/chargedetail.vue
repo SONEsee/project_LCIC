@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="text-primary">
     <h2 class="head-user">ລາຍງານຄ່າທໍານຽມ</h2>
 
     <div class="table-summary border-md">

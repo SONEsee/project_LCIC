@@ -1049,7 +1049,7 @@
     which "^3.0.1"
     ws "^8.18.0"
 
-"@nuxt/kit@3.13.2", "@nuxt/kit@^3.0.0", "@nuxt/kit@^3.1.0", "@nuxt/kit@^3.13.1", "@nuxt/kit@^3.13.2", "@nuxt/kit@^3.4.2":
+"@nuxt/kit@3.13.2", "@nuxt/kit@^3.0.0", "@nuxt/kit@^3.1.0", "@nuxt/kit@^3.13.1", "@nuxt/kit@^3.13.2", "@nuxt/kit@^3.4.2", "@nuxt/kit@^3.9.0":
   version "3.13.2"
   resolved "https://registry.npmjs.org/@nuxt/kit/-/kit-3.13.2.tgz"
   integrity sha512-KvRw21zU//wdz25IeE1E5m/aFSzhJloBRAQtv+evcFeZvuroIxpIQuUqhbzuwznaUwpiWbmwlcsp5uOWmi4vwA==
@@ -1325,6 +1325,13 @@
     "@parcel/watcher-win32-arm64" "2.4.1"
     "@parcel/watcher-win32-ia32" "2.4.1"
     "@parcel/watcher-win32-x64" "2.4.1"
+
+"@pinia/nuxt@^0.10.1":
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/@pinia/nuxt/-/nuxt-0.10.1.tgz#74cc5d486667bd87e4c1ccc55a134dc437c5cb89"
+  integrity sha512-xrpkKZHSmshPK6kQzboJ+TZiZ5zj73gBCI5SfiUaJkKKS9gx4B1hLEzJIjxZl0/HS5jRWrIvQ+u9ulvIRlNiow==
+  dependencies:
+    "@nuxt/kit" "^3.9.0"
 
 "@pkgjs/parseargs@^0.11.0":
   version "0.11.0"
@@ -1743,6 +1750,13 @@
   resolved "https://registry.npmjs.org/@vue/devtools-api/-/devtools-api-6.6.4.tgz"
   integrity sha512-sGhTPMuXqZ1rVOk32RylztWkfXTRhuS7vgAKv0zjqk8gbsHkJ7xfFf+jbySxt7tWObEJwyKaHMikV/WGDiQm8g==
 
+"@vue/devtools-api@^7.7.2":
+  version "7.7.2"
+  resolved "https://registry.npmjs.org/@vue/devtools-api/-/devtools-api-7.7.2.tgz"
+  integrity sha512-1syn558KhyN+chO5SjlZIwJ8bV/bQ1nOVTG66t2RbG66ZGekyiYNmRO7X9BJCXQqPsFHlnksqvPhce2qpzxFnA==
+  dependencies:
+    "@vue/devtools-kit" "^7.7.2"
+
 "@vue/devtools-core@7.4.4":
   version "7.4.4"
   resolved "https://registry.npmjs.org/@vue/devtools-core/-/devtools-core-7.4.4.tgz"
@@ -1781,10 +1795,23 @@
     speakingurl "^14.0.1"
     superjson "^2.2.1"
 
-"@vue/devtools-shared@^7.4.4", "@vue/devtools-shared@^7.4.6":
-  version "7.4.6"
-  resolved "https://registry.npmjs.org/@vue/devtools-shared/-/devtools-shared-7.4.6.tgz"
-  integrity sha512-rPeSBzElnHYMB05Cc056BQiJpgocQjY8XVulgni+O9a9Gr9tNXgPteSzFFD+fT/iWMxNuUgGKs9CuW5DZewfIg==
+"@vue/devtools-kit@^7.7.2":
+  version "7.7.2"
+  resolved "https://registry.npmjs.org/@vue/devtools-kit/-/devtools-kit-7.7.2.tgz"
+  integrity sha512-CY0I1JH3Z8PECbn6k3TqM1Bk9ASWxeMtTCvZr7vb+CHi+X/QwQm5F1/fPagraamKMAHVfuuCbdcnNg1A4CYVWQ==
+  dependencies:
+    "@vue/devtools-shared" "^7.7.2"
+    birpc "^0.2.19"
+    hookable "^5.5.3"
+    mitt "^3.0.1"
+    perfect-debounce "^1.0.0"
+    speakingurl "^14.0.1"
+    superjson "^2.2.1"
+
+"@vue/devtools-shared@^7.4.4", "@vue/devtools-shared@^7.4.6", "@vue/devtools-shared@^7.7.2":
+  version "7.7.2"
+  resolved "https://registry.npmjs.org/@vue/devtools-shared/-/devtools-shared-7.7.2.tgz"
+  integrity sha512-uBFxnp8gwW2vD6FrJB8JZLUzVb6PNRG0B0jBnHsOH8uKyva2qINY8PTF5Te4QlTbMDqU5K6qtJDr6cNsKWhbOA==
   dependencies:
     rfdc "^1.4.1"
 
@@ -2120,10 +2147,10 @@ bindings@^1.3.1, bindings@^1.4.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
-birpc@^0.2.17:
-  version "0.2.17"
-  resolved "https://registry.npmjs.org/birpc/-/birpc-0.2.17.tgz"
-  integrity sha512-+hkTxhot+dWsLpp3gia5AkVHIsKlZybNT5gIYiDlNzJrmYPcTM9k5/w2uaj3IPpd7LlEYpmCj4Jj1nC41VhDFg==
+birpc@^0.2.17, birpc@^0.2.19:
+  version "0.2.19"
+  resolved "https://registry.npmjs.org/birpc/-/birpc-0.2.19.tgz"
+  integrity sha512-5WeXXAvTmitV1RqJFppT5QtUiz2p1mRSYU000Jkft5ZUCLJIk4uQriYNO50HknxKwM6jd8utNc66K1qGIwwWBQ==
 
 bl@^1.0.0:
   version "1.2.3"
@@ -2143,7 +2170,7 @@ bl@^2.2.0:
 
 bmp-js@^0.1.0:
   version "0.1.0"
-  resolved "https://registry.yarnpkg.com/bmp-js/-/bmp-js-0.1.0.tgz#e05a63f796a6c1ff25f4771ec7adadc148c07233"
+  resolved "https://registry.npmjs.org/bmp-js/-/bmp-js-0.1.0.tgz"
   integrity sha512-vHdS19CnY3hwiNdkaqk93DvjVLfbEcI8mys4UjuWrlX1haDmroo8o4xCzh4wD6DGV6HxRCyauwhHRqMTfERtjw==
 
 body-parser@1.20.3, body-parser@^1.19.2, body-parser@^1.20.2:
@@ -3812,7 +3839,7 @@ iconv-lite@0.4.24:
 
 idb-keyval@^6.2.0:
   version "6.2.1"
-  resolved "https://registry.yarnpkg.com/idb-keyval/-/idb-keyval-6.2.1.tgz#94516d625346d16f56f3b33855da11bfded2db33"
+  resolved "https://registry.npmjs.org/idb-keyval/-/idb-keyval-6.2.1.tgz"
   integrity sha512-8Sb3veuYCyrZL+VBt9LJfZjLUPWVvqn8tG28VqYNFCo43KHcKuq+b4EiXGeuaLAQWL2YmyDgMp2aSpH9JHsEQg==
 
 ieee754@^1.2.1:
@@ -4013,7 +4040,7 @@ is-stream@^3.0.0:
 
 is-url@^1.2.4:
   version "1.2.4"
-  resolved "https://registry.yarnpkg.com/is-url/-/is-url-1.2.4.tgz#04a4df46d28c4cff3d73d01ff06abeb318a1aa52"
+  resolved "https://registry.npmjs.org/is-url/-/is-url-1.2.4.tgz"
   integrity sha512-ITvGim8FhRiYe4IQ5uHSkj7pVaPDrCTkNd3yq3cV7iZAcJdHTUMPMEHcqSOy9xZ9qFenQCvi+2wjH9a1nXqHww==
 
 is-what@^4.1.8:
@@ -4922,7 +4949,7 @@ openapi-typescript@^6.7.6:
 
 opencollective-postinstall@^2.0.3:
   version "2.0.3"
-  resolved "https://registry.yarnpkg.com/opencollective-postinstall/-/opencollective-postinstall-2.0.3.tgz#7a0fff978f6dbfa4d006238fbac98ed4198c3259"
+  resolved "https://registry.npmjs.org/opencollective-postinstall/-/opencollective-postinstall-2.0.3.tgz"
   integrity sha512-8AV/sCtuzUeTo8gQK5qDZzARrulB3egtLzFgteqB2tcT4Mw7B8Kt7JcDHmltjz6FOAHsvTevk70gZEbhM4ZS9Q==
 
 optional@^0.1.3:
@@ -5063,6 +5090,13 @@ picomatch@^4.0.2:
   version "4.0.2"
   resolved "https://registry.npmjs.org/picomatch/-/picomatch-4.0.2.tgz"
   integrity sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==
+
+pinia@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.npmjs.org/pinia/-/pinia-3.0.1.tgz"
+  integrity sha512-WXglsDzztOTH6IfcJ99ltYZin2mY8XZCXujkYWVIJlBjqsP6ST7zw+Aarh63E1cDVYeyUcPCxPHzJpEOmzB6Wg==
+  dependencies:
+    "@vue/devtools-api" "^7.7.2"
 
 pirates@^4.0.1:
   version "4.0.6"
@@ -5521,7 +5555,7 @@ redis-parser@^3.0.0:
 
 regenerator-runtime@^0.13.3:
   version "0.13.11"
-  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.11.tgz#f6dca3e7ceec20590d07ada785636a90cdca17f9"
+  resolved "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.13.11.tgz"
   integrity sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==
 
 regenerator-runtime@^0.14.0:
@@ -6131,9 +6165,9 @@ tapable@^2.2.0:
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==
 
 tar-fs@^1.13.0:
-  version "1.16.3"
-  resolved "https://registry.yarnpkg.com/tar-fs/-/tar-fs-1.16.3.tgz#966a628841da2c4010406a82167cbd5e0c72d509"
-  integrity sha512-NvCeXpYx7OsmOh8zIOP/ebG55zZmxLE0etfWRbWok+q2Qo8x/vOR/IJT1taADXPe+jsiu9axDb3X4B+iIgNlKw==
+  version "1.16.4"
+  resolved "https://registry.yarnpkg.com/tar-fs/-/tar-fs-1.16.4.tgz#d3f0e1edf164b821f086640b1f0596f004021dc8"
+  integrity sha512-u3XczWoYAIVXe5GOKK6+VeWaHjtc47W7hyuTo3+4cNakcCcuDmlkYiiHEsECwTkcI3h1VUgtwBQ54+RvY6cM4w==
   dependencies:
     chownr "^1.0.1"
     mkdirp "^0.5.1"
@@ -6186,12 +6220,12 @@ terser@^5.17.4:
 
 tesseract.js-core@^6.0.0:
   version "6.0.0"
-  resolved "https://registry.yarnpkg.com/tesseract.js-core/-/tesseract.js-core-6.0.0.tgz#6f25da94f70f8e8f02aff47a43be61d49e6f67c3"
+  resolved "https://registry.npmjs.org/tesseract.js-core/-/tesseract.js-core-6.0.0.tgz"
   integrity sha512-1Qncm/9oKM7xgrQXZXNB+NRh19qiXGhxlrR8EwFbK5SaUbPZnS5OMtP/ghtqfd23hsr1ZvZbZjeuAGcMxd/ooA==
 
 tesseract.js@^6.0.0:
   version "6.0.0"
-  resolved "https://registry.yarnpkg.com/tesseract.js/-/tesseract.js-6.0.0.tgz#62ff7fffc8833b5810430a4067785e49d5ca8e7f"
+  resolved "https://registry.npmjs.org/tesseract.js/-/tesseract.js-6.0.0.tgz"
   integrity sha512-tqYCod1HwJzkeZw1l6XWx+ly2hhisGcBtak9MArhYwDAxL0NgeVhLJcUjqPxZMQtpgtVUzWcpZPryi+hnaQGVw==
   dependencies:
     bmp-js "^0.1.0"
@@ -6722,7 +6756,7 @@ vuetify@^3.6.9:
 
 wasm-feature-detect@^1.2.11:
   version "1.8.0"
-  resolved "https://registry.yarnpkg.com/wasm-feature-detect/-/wasm-feature-detect-1.8.0.tgz#4e9f55b0a64d801f372fbb0324ed11ad3abd0c78"
+  resolved "https://registry.npmjs.org/wasm-feature-detect/-/wasm-feature-detect-1.8.0.tgz"
   integrity sha512-zksaLKM2fVlnB5jQQDqKXXwYHLQUVH9es+5TOOHwGOVJOCeRBCiPjwSg+3tN2AdTCzjgli4jijCH290kXb/zWQ==
 
 webidl-conversions@^3.0.0:
@@ -6874,5 +6908,5 @@ zip-stream@^6.0.1:
 
 zlibjs@^0.3.1:
   version "0.3.1"
-  resolved "https://registry.yarnpkg.com/zlibjs/-/zlibjs-0.3.1.tgz#50197edb28a1c42ca659cc8b4e6a9ddd6d444554"
+  resolved "https://registry.npmjs.org/zlibjs/-/zlibjs-0.3.1.tgz"
   integrity sha512-+J9RrgTKOmlxFSDHo0pI1xM6BLVUv+o0ZT9ANtCxGkjIVCCUdx9alUF8Gm+dGLKbkkkidWIHFDZHDMpfITt4+w==

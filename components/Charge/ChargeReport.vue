@@ -1,6 +1,6 @@
 <template>
-    <div>
-      <h2 class="head-user">ລາຍງານຄ່າທໍານຽມ</h2>
+    <div class="">
+      <h2 class="">ລາຍງານຄ່າທໍານຽມ</h2>
   
       <ChargeReportFilter
         @handfilter-applied="handleFilterApplied"
@@ -174,7 +174,7 @@
     margin-top: 1%;
     border-radius: 12px;
     padding: 10px;
-    background-color: #fff;
+    
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   

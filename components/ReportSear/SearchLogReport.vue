@@ -27,6 +27,18 @@
           :items="charge_report"
           class="elevation-1"
         >
+        <template v-slot:header.bnk_code>
+        <th style="color: #0d47a1">ລະຫັດທນຄ</th>
+      </template>
+        <template v-slot:header.Bank_short_form>
+        <th style="color: #0d47a1">ຊື່ທະນາຄານ</th>
+      </template>
+        <template v-slot:header.searchlog_count>
+        <th style="color: #0d47a1">ຈຳນວນການຄົ້ນຫາ</th>
+      </template>
+        <template v-slot:header.request_log>
+        <th style="color: #0d47a1">ຈຳນວນພິມບົດລາຍງານ</th>
+      </template>
           <template v-slot:item.searchlog_count="{ item }">
             <a :href="generateLinkSearchLog(item.bnk_code)">
               <v-btn color="primary">{{ item.searchlog_count }}</v-btn>

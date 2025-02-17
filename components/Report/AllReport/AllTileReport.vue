@@ -1,5 +1,5 @@
 <template>
-  <v-card class="fullscreen">
+  <v-card class="fullscreen" :class="{ 'bg-black text-white': isDark }">
     <div>
       <p class="ml-3 pt-4"><b style="color: #01579b">- {{$t("report")}}</b></p>
     </div>
@@ -40,17 +40,25 @@ import DeveliveryReport from "./DeveliveryReport.vue";
 import SearchReport from "./SearchReport.vue";
 import FeesReport from "./FeesReport.vue";
 import LoginReport from "./LoginReport.vue";
+import { computed, ref } from "vue";
+import { onMounted, watch } from "vue";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
+const isDark = computed(() => theme.global.current.value.dark);
+
+onMounted(() => {
+  document.body.classList.toggle("dark-mode", isDark.value);
+});
+
+watch(isDark, (newVal) => {
+  document.body.classList.toggle("dark-mode", newVal);
+});
 
 const tab = ref(null);
+
 </script>
 <style scoped lang="scss">
-.fullscreen {
-  background-image: url("@/assets/images/feed/logo.png");
-  height: 100;
-  position: relative;
-  background-size: cover;
-  background-position: center;
-}
 .fullscreen::before {
   content: "";
   position: absolute;
@@ -58,7 +66,11 @@ const tab = ref(null);
   top: 0;
   right: 0;
   bottom: 0;
-  background-color: #ffffffec;
+  background-color: rgba(255, 255, 255, 0.075); 
   z-index: 0;
 }
+.dark-mode .fullscreen::before {
+  background-color: rgba(0, 0, 0, 0.7); 
+}
+
 </style>
