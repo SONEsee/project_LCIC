@@ -136,14 +136,7 @@ useHead({
             style="border: 2px #1a237e solid"
             class="d-flex justify-center align-center"
           >
-            <v-container>
-              <p>
-                <AnimationRobot />
-              </p>
-              <p class="d-flex justify-center align-center mt-10">
-                ກຳລັງພັດທະນາ....
-              </p></v-container
-            >
+            <DashboardComponentsMemberSumToTal />
           </v-card>
         </v-col>
       </v-row>
