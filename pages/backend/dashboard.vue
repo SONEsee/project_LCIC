@@ -64,7 +64,6 @@ useHead({
   <div v-if="user_id !== '01'">
     <v-col cols="12">
       <v-card height="20vh" style="border: 2px #1a237e solid">
-       
         <v-row>
           <v-col cols="12" md="4">
             <v-card
@@ -88,7 +87,7 @@ useHead({
           <v-col cols="12" md="4">
             <v-card
               width="100%"
-              class=" mr-3 mb-3 mt-3"
+              class="mr-3 mb-3 mt-3"
               height=""
               style="border: 2px #1a237e solid"
             >
@@ -126,7 +125,7 @@ useHead({
             class="d-flex justify-center align-center"
           >
             <v-container>
-            <DashboardComponentsMemberSearchGrapf />
+              <DashboardComponentsMemberSearchGrapf />
             </v-container>
           </v-card>
         </v-col>
@@ -142,7 +141,7 @@ useHead({
       </v-row>
     </v-col>
   </div>
-  <v-col cols="12" v-if="user_id === '01'">
+  <v-col cols="12" v-if="user_id === '01'|| user_id === '1002' || user_id === '1003' || user_id === '1004' || user_id === '1005' || user_id === '1006'|| user_id==='1007'">
     <v-row>
       <v-col cols="12" md="6">
         <v-card height="500" style="border: 2px #1a237e solid">

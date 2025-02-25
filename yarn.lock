@@ -4161,7 +4161,7 @@ jwt-decode@^3.1.2:
 
 kafka-node@^5.0.0:
   version "5.0.0"
-  resolved "https://registry.npmjs.org/kafka-node/-/kafka-node-5.0.0.tgz"
+  resolved "https://registry.yarnpkg.com/kafka-node/-/kafka-node-5.0.0.tgz#4b6f65cc1d77ebe565859dfb8f9575ed15d543c0"
   integrity sha512-dD2ga5gLcQhsq1yNoQdy1MU4x4z7YnXM5bcG9SdQuiNr5KKuAmXixH1Mggwdah5o7EfholFbcNDPSVA6BIfaug==
   dependencies:
     async "^2.6.2"
@@ -5093,7 +5093,7 @@ picomatch@^4.0.2:
 
 pinia@^3.0.1:
   version "3.0.1"
-  resolved "https://registry.npmjs.org/pinia/-/pinia-3.0.1.tgz"
+  resolved "https://registry.yarnpkg.com/pinia/-/pinia-3.0.1.tgz#d19f79a04b2b55fd63f78f1395a8c4a714d96941"
   integrity sha512-WXglsDzztOTH6IfcJ99ltYZin2mY8XZCXujkYWVIJlBjqsP6ST7zw+Aarh63E1cDVYeyUcPCxPHzJpEOmzB6Wg==
   dependencies:
     "@vue/devtools-api" "^7.7.2"

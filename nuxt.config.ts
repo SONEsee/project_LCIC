@@ -11,7 +11,7 @@ export default defineNuxtConfig({
     "/backend/**": { ssr: false },
   },
   compatibilityDate: "2024-04-03",
-  
+
   // import vuetify css
   css: ["@/assets/scss/style.scss", "@/assets/backend/style.scss"],
 
@@ -42,6 +42,7 @@ export default defineNuxtConfig({
     },
     "@nuxtjs/i18n",
   ],
+  plugins: ['~/plugins/pinia.ts'],
 
   i18n: {
     lazy: false,
@@ -54,7 +55,6 @@ export default defineNuxtConfig({
     defaultLocale: "en",
   },
 
-  
   app: {
     head: {
       htmlAttrs: {
@@ -88,8 +88,6 @@ export default defineNuxtConfig({
       ],
     },
   },
-
- 
 
   runtimeConfig: {
     public: {
