@@ -1,19 +1,18 @@
-import { defineStore } from "pinia";
 import axios from "axios";
-import { MemberModel } from "~/types";
-
-export const useMemberStore = defineStore("member", {
+import { defineStore } from "pinia";
+import { ManageUser } from "~/types";
+export const useManageUser = defineStore("manage", {
   state() {
     return {
-      response_query_data: null as MemberModel.MemberResponsItems[] | null,
+      response_query_data: null as ManageUser.UserDataRespons[] | null,
     };
   },
   actions: {
-    async Resdata() {
+    async Getdata() {
       try {
         const config = useRuntimeConfig();
-        const res = await axios.get<MemberModel.MemberResponsItems[]>(
-          `${config.public.strapi.url}api/api/get_login3/`
+        const res = await axios.get<ManageUser.UserDataRespons[]>(
+          `${config.public.strapi.url}api/distinct-bnk-codes/`
         );
         this.response_query_data = res.data;
         console.log("Members fetched:", this.response_query_data);

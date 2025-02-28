@@ -1,9 +1,11 @@
+
 import { DuplicatesFalse } from './duplicates_batefile';
 import * as DataModel from './databases'
 import * as FileDataModel from './databasefile'
 import * as ByBankDataModel from './databasefile'
 import * as ByBankDataDetailModel from './userbybankdetail'
 import * as MemberModel from './member'
+import * as ManageUser from './manage'
 export{
     DuplicatesFalse,
     DataModel,
@@ -11,4 +13,5 @@ export{
     ByBankDataModel,
     ByBankDataDetailModel,
     MemberModel,
+    ManageUser,
 }

@@ -94,13 +94,7 @@
                             ></v-text-field>
                           </div>
                           <div cols="12" style="width: 100%">
-                            <!-- <v-autocomplete
-                              v-model="enLocation"
-                              :rules="rules"
-                              label=" ທີ່ຕັ້ງ"
-                              variant="outlined"
-                              persistent-hint
-                            ></v-autocomplete> -->
+                           
 
                             <v-autocomplete
                               v-model="enLocation"
@@ -508,13 +502,18 @@ export default defineComponent({
     const villageName = ref<string>("");
 
 
+    // const formatNumber = (): void => {
+    //   const number = investmentAmount.value.replace(/,/g, "");
+    //   if (!isNaN(Number(number))) {
+    //     investmentAmount.value = Number(number).toLocaleString();
+    //   }
+    // };
     const formatNumber = (): void => {
-      const number = investmentAmount.value.replace(/,/g, "");
-      if (!isNaN(Number(number))) {
-        investmentAmount.value = Number(number).toLocaleString();
-      }
-    };
-
+  const rawNumber = investmentAmount.value.replace(/,/g, ""); // ເອົາຈຸດຄັ່ງພັນອອກ
+  if (!isNaN(Number(rawNumber))) {
+    investmentAmount.value = Number(rawNumber).toLocaleString(); // ຈັດຮູບແບບສະແດງຜົນ
+  }
+};
    
 
     //     const selectedVillage = ref(null);
@@ -570,7 +569,6 @@ export default defineComponent({
       console.log("Selected village name:", selectedVillageName.value);
       console.log("Selected province and district:", title.value);
     };
-
     const submit = async () => {
   const result = await Swal.fire({
     title: "ຢືນຢັນການບັນທຶກ?",
@@ -597,7 +595,8 @@ export default defineComponent({
         }
       }
 
-      const investmentAmountFormatted = parseFloat(investmentAmount.value);
+      // ເອົາຈຸດຄັ່ງພັນອອກ ແລະ ປ່ຽນເປັນຕົວເລກ
+      const investmentAmountFormatted = Number(investmentAmount.value.replace(/,/g, ""));
 
       const response = await axios.post(
         `${config.public.strapi.url}api/api/enterprise-info/`,
@@ -606,7 +605,7 @@ export default defineComponent({
           eneterpriseNameEnglish: eneterpriseNameEnglish.value,
           enLegalStrature: enLegalStrature.value,
           foreigninvestorFlag: foreigninvestorFlag.value,
-          investmentAmount: investmentAmountFormatted,
+          investmentAmount: investmentAmountFormatted, // ໃຊ້ຄ່າທີ່ປ່ຽນແລ້ວ
           investmentCurrency: investmentCurrency.value,
           representativeNationality: representativeNationality.value,
           regisCertificateNumber: regisCertificateNumber.value,
@@ -635,7 +634,7 @@ export default defineComponent({
           await updateCollateralStatus(route.query.id);
         }
       }).then(() => {
-        location.reload();
+        window.location.href = "/backend/upload/lcictest";
       });
     } catch (error) {
       console.error("Error creating enterprise info:", error);
@@ -650,6 +649,86 @@ export default defineComponent({
     }
   }
 };
+//     const submit = async () => {
+//   const result = await Swal.fire({
+//     title: "ຢືນຢັນການບັນທຶກ?",
+//     text: "ເຈົ້າຕ້ອງການບັນທຶກຂໍ້ມູນນີ້ແທ້ຫຼືບໍ?",
+//     icon: "warning",
+//     showCancelButton: true,
+//     confirmButtonText: "ບັນທຶກ",
+//     cancelButtonText: "ຍົກເລີກ",
+//   });
+
+//   if (result.isConfirmed) {
+//     loading.value = true;
+//     try {
+//       const config = useRuntimeConfig();
+//       const csrfToken = Cookies.get("csrftoken");
+
+//       let regisDateFormatted = null;
+//       if (regisDate.value) {
+//         const dateObject = new Date(regisDate.value);
+//         if (!isNaN(dateObject.getTime())) {
+//           regisDateFormatted = dateObject.toISOString();
+//         } else {
+//           throw new Error("Invalid date format for regisDate");
+//         }
+//       }
+
+//       const investmentAmountFormatted = parseFloat(investmentAmount.value);
+
+//       const response = await axios.post(
+//         `${config.public.strapi.url}api/api/enterprise-info/`,
+//         {
+//           enterpriseNameLao: enterpriseNameLao.value,
+//           eneterpriseNameEnglish: eneterpriseNameEnglish.value,
+//           enLegalStrature: enLegalStrature.value,
+//           foreigninvestorFlag: foreigninvestorFlag.value,
+//           investmentAmount: investmentAmountFormatted,
+//           investmentCurrency: investmentCurrency.value,
+//           representativeNationality: representativeNationality.value,
+//           regisCertificateNumber: regisCertificateNumber.value,
+//           regisDate: regisDateFormatted,
+//           enLocation: enLocation.value,
+//           regisStationOfficeCode: regisStationOfficeCode.value,
+//           regisStrationOfficeType: regisStrationOfficeType.value,
+//           EnterpriseID: EnterpriseID.value,
+//           LCICID: LCICID.value,
+//         },
+//         {
+//           headers: {
+//             "X-CSRFToken": csrfToken || "",
+//           },
+//         }
+//       );
+//       console.log("Response:", response.data);
+
+//       Swal.fire({
+//         title: "ສຳເລັດ!",
+//         text: "ສ້າງຂໍ້ມູນວິສາຫະກິດສຳເລັດແລ້ວ!",
+//         icon: "success",
+//         confirmButtonText: "OK",
+//       }).then(async (result) => {
+//         if (result.isConfirmed) {
+//           await updateCollateralStatus(route.query.id);
+//         }
+//       }).then(() => {
+//         window.location.href = "/backend/upload/lcictest";
+        
+//       });
+//     } catch (error) {
+//       console.error("Error creating enterprise info:", error);
+//       Swal.fire({
+//         title: "ຜິດພາດ!",
+//         text: error.message || "ລົ້ມເຫລວໃນການສ້າງຂໍ້ມູນວິສາຫະກິດ.",
+//         icon: "error",
+//         confirmButtonText: "OK",
+//       });
+//     } finally {
+//       loading.value = false;
+//     }
+//   }
+// };
 
 
     const updateCollateralStatus = async (id: number) => {
@@ -699,7 +778,7 @@ export default defineComponent({
       console.log("Route Query Image:", route.query.image);
       console.log("Route Query ID:", route.query.id);
       console.log;
-      return `${config.public.strapi.url}collaterals/${route.query.image}?id=${route.query.id}`;
+      return `${config.public.strapi.url}media/${route.query.image}?id=${route.query.id}`;
     });
 
     const fetchLastLCICID = async () => {
