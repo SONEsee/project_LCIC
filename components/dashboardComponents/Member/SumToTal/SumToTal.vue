@@ -73,7 +73,7 @@ const fetchLoanStats = async () => {
     const response = await fetch(`${config.public.strapi.url}api/dashboard/LoanStatsView/?bnk_code=${bnk_code}`);
     const data: LoanStats[] = await response.json();
     loanData.value = data;
-    console.log('Fetched data:', data);
+    
 
    
     if (data.length > 0) {
@@ -81,7 +81,7 @@ const fetchLoanStats = async () => {
       bankField.value = Object.keys(firstItem).find(
         key => key !== 'year' && key !== 'total_count' && key !== 'percentage' && key !== 'sumtotals'
       ) || '';
-      console.log('Detected bank field:', bankField.value);
+      
     }
 
     years.value = data
@@ -99,7 +99,7 @@ const getChartOptions = (data: LoanStats): ChartOptions => {
   const totalCount = isSummary ? data.sumtotals!.total_count : data.total_count;
   const nonBankCount = totalCount - (bankCount || 0);
 
-  console.log('Bank Field:', bankField.value, 'Bank Count:', bankCount, 'Total Count:', totalCount, 'Non-Bank Count:', nonBankCount);
+ 
 
   return {
     series: [bankCount || 0, nonBankCount || 0],
@@ -155,7 +155,7 @@ const updateChart = () => {
     selectedData = loanData.value.find(item => item.year === Number(selectedYear.value)) || loanData.value[0];
   }
 
-  console.log('Selected Data:', selectedData);
+ 
 
   const options = getChartOptions(selectedData);
 

@@ -51,7 +51,7 @@ const Getdata = async () => {
     const res = await axios.get(`${apiBase}?bnk_code=${bnk_code}`);
     if (res.status === 200) {
       item.value = res.data;
-      console.log("successyyyy", item.value);
+      
     }
   } catch (error) {}
 };

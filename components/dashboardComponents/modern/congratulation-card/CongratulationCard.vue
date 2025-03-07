@@ -92,7 +92,7 @@ export default defineComponent({
           `${config.public.strapi.url}api/charge-count/`
         );
         const data = await response.json();
-        console.log("Fetched data:", data);
+       
 
         const timeframeKey = selectedTimeframe.value === 'ວັນ' ? 'day' :
                              selectedTimeframe.value === 'ອາທິດ' ? 'week' :

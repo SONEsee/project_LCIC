@@ -133,7 +133,7 @@ const fetchData = async () => {
       const result = await res.json();
       data.value = result;
 
-      console.log("Fetched data:", data.value);
+     
     } else if (res.status === 401) {
      
       const config = useRuntimeConfig();
