@@ -250,14 +250,14 @@ import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute, useRouter } from "vue-router";
 
-definePageMeta({
-  middleware: "auth",
-  layout: "backend",
-});
+// definePageMeta({
+//   middleware: "auth",
+//   layout: "backend",
+// });
 
-useHead({
-  title: "Manage Users",
-});
+// useHead({
+//   title: "Manage Users",
+// });
 
 
 const WATER_API_URL = 'http://192.168.45.56:8000/api/water-api/upload-json/';
