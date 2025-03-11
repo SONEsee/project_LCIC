@@ -6,6 +6,7 @@ import * as ByBankDataModel from './databasefile'
 import * as ByBankDataDetailModel from './userbybankdetail'
 import * as MemberModel from './member'
 import * as ManageUser from './manage'
+import * as UtilityModel from './utility'
 export{
     DuplicatesFalse,
     DataModel,
@@ -14,4 +15,5 @@ export{
     ByBankDataDetailModel,
     MemberModel,
     ManageUser,
+    UtilityModel,
 }
