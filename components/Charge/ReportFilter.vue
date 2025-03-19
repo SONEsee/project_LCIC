@@ -201,7 +201,7 @@ export default {
     margin-top: 1%;
     border-radius: 12px;
     padding: 25px;
-    background-color: #fff;
+    
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border: 1px solid #ddd;
   }

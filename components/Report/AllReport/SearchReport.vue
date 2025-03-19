@@ -2,7 +2,20 @@
 import individaul from "@/assets/images/report/saerch.png";
 import searchenterprise from '@/assets/images/report/enterprise1.png'
 import { useI18n } from "vue-i18n";
+import { computed, ref } from "vue";
+import { onMounted, watch } from "vue";
+import { useTheme } from "vuetify";
 
+const theme = useTheme();
+const isDark = computed(() => theme.global.current.value.dark);
+
+onMounted(() => {
+  document.body.classList.toggle("dark-mode", isDark.value);
+});
+
+watch(isDark, (newVal) => {
+  document.body.classList.toggle("dark-mode", newVal);
+});
 
 const {t}= useI18n();
 const items = computed(() =>[

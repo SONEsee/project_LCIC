@@ -9,10 +9,13 @@
       >
         <v-tab value="one">ກຳນົດສິດນຳໃຊ້ລະບົບ</v-tab>
         <v-tab value="two">ການອອກ User</v-tab>
+        <v-tab value="three">ຈັດການ User ຕາມສາຂາ</v-tab>
       </v-tabs>
 
       <v-window v-model="tab">
-        <v-window-item value="one"> <ManageUserModeration /> </v-window-item>
+        <v-window-item value="one">
+          <ManageUserModeration />
+        </v-window-item>
         <v-window-item value="two">
           <v-row>
             <v-col cols="12" md="6">
@@ -22,16 +25,15 @@
 
               <v-sheet class="pa-2 ma-2">
                 <v-select
-                v-model="selectedMember"
-                :items="members"
-                item-title="code" 
-                item-value="id"
-                label="Select Member"
-                placeholder="Choose a member"
-                outlined
-              ></v-select>
+                  v-model="selectedMember"
+                  :items="members"
+                  item-title="code"
+                  item-value="id"
+                  label="Select Member"
+                  placeholder="Choose a member"
+                  outlined
+                ></v-select>
               </v-sheet>
-
             </v-col>
             <v-col cols="12" md="6" class="d-flex justify-end">
               <v-sheet class="pa-2 ma-2">
@@ -44,7 +46,6 @@
                   ເພື່ມຜູ້ນໍາໃຊ້
                 </v-btn>
               </v-sheet>
-
             </v-col>
           </v-row>
           <v-card class="mx-auto my-4" elevation="4" rounded>
@@ -84,8 +85,10 @@
             </div>
           </v-card>
         </v-window-item>
-      </v-window></v-card
-    >
+        <v-window-item value="three">
+          <ManageUserManageUserByBank />
+        </v-window-item> </v-window
+    ></v-card>
   </div>
 </template>
 
@@ -147,6 +150,7 @@
 
 <script lang="ts">
 const tab = ref(null);
+
 // import SearchFilter from '@/components/SearchFilter.vue';
 import modo from "@/pages/backend/moderation/index.vue";
 import Swal from "sweetalert2";
@@ -206,7 +210,9 @@ export default {
     async fetchMembers(): Promise<void> {
       try {
         const config = useRuntimeConfig();
-        const response = await fetch(`${config.public.strapi.url}api/memberinfo/`);
+        const response = await fetch(
+          `${config.public.strapi.url}api/memberinfo/`
+        );
         if (!response.ok) {
           throw new Error(`API Error: ${response.statusText}`);
         }
@@ -214,10 +220,9 @@ export default {
         // Assuming the response is an array of members
         members.value = data;
 
-        console.log("===========> Members",members.value);
-        
-      } catch (error) {                               
-        console.error('Error fetching members:', error);
+        console.log("===========> Members", members.value);
+      } catch (error) {
+        console.error("Error fetching members:", error);
       }
     },
 

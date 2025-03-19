@@ -1,5 +1,6 @@
 <template>
-  <v-card class="bg-lighten-2 card-with-image full-screen-card">
+  <!-- card-with-image -->
+  <v-card class="bg-lighten-2  full-screen-card">
     
     <div class="card-content">
       <div>
@@ -30,11 +31,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+
 import TimelineView from "./TimelineView.vue";
 import TimelineProfile from "./TimelineProfile.vue";
 import TimelineSettings from "./TimelineSettings.vue";
+import { computed, ref } from "vue";
+import { onMounted, watch } from "vue";
+import { useTheme } from "vuetify";
 
+const theme = useTheme();
+const isDark = computed(() => theme.global.current.value.dark);
+
+onMounted(() => {
+  document.body.classList.toggle("dark-mode", isDark.value);
+});
+
+watch(isDark, (newVal) => {
+  document.body.classList.toggle("dark-mode", newVal);
+});
 const tab = ref(null);
 </script>
 
@@ -53,12 +67,15 @@ const tab = ref(null);
 .card-with-image::before {
   content: "";
   position: absolute;
-  top: 0;
   left: 0;
+  top: 0;
   right: 0;
   bottom: 0;
-  background-color: #ffffffee; 
-  z-index: 1;
+  background-color: rgba(255, 255, 255, 0.822); 
+  z-index: 0;
+}
+.dark-mode .fullscreen::before {
+  background-color: rgba(0, 0, 0, 0.7); 
 }
 
 .card-content {

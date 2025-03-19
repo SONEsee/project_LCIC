@@ -133,7 +133,7 @@ const fetchData = async () => {
       const result = await res.json();
       data.value = result;
 
-      console.log("Fetched data:", data.value);
+     
     } else if (res.status === 401) {
      
       const config = useRuntimeConfig();
@@ -254,8 +254,6 @@ const showDetails = (item: any) => {
   Swal.fire({
     icon: "info",
     iconColor:'blue',
-
-    
     text: "ທ່ານຕ້ອງການດຳເນີນການຕໍ່ບໍ?",
     showCancelButton: true,
     confirmButtonColor: "#004D40", 
@@ -265,7 +263,7 @@ const showDetails = (item: any) => {
     background: "#80D8FF", 
     color: "black", 
     title: `<strong>ທ່ານຕອ້ງການບົດລາຍງານນີ້ແທ້ບໍ?</strong>`,
-    html: `
+    htຍml: `
       <div>
         <p><strong>ຊື່ບໍລິສັດພາສາລາວ:</strong> ${item.enterpriseNameLao}</p>
         <p><strong>ຊື່ບໍລິສັດພາສາອັງກິດ:</strong> ${item.eneterpriseNameEnglish}</p>

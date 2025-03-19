@@ -41,12 +41,12 @@ const route = useRoute(); // Access route parameters
 
 const fetchUserDetails = async () => {
   try {
-    // Get parameters from the URL
+    const config = useRuntimeConfig();
     const bnk_code = route.query.bnk_code || "";
     const branch_id = route.query.branch_id || "";
 
-    // Build the API URL
-    let apiUrl = `http://192.168.45.56:8000/api/distinct-bnk-codes/?bnk_code=${bnk_code}`;
+    
+    let apiUrl = `${config.public.strapi.url}api/distinct-bnk-codes/?bnk_code=${bnk_code}`;
     if (branch_id) {
       apiUrl += `&branch_id=${branch_id}`;
     }
@@ -55,8 +55,8 @@ const fetchUserDetails = async () => {
     const response = await $fetch(apiUrl);
 
     if (response) {
-      userDetails.value = response; // Assign response data
-      console.log("Fetched user details:", userDetails.value);
+      userDetails.value = response; 
+      
     } else {
       console.error("Failed to fetch user details.");
     }
@@ -65,7 +65,7 @@ const fetchUserDetails = async () => {
   }
 };
 
-// Fetch data when the component is mounted
+
 onMounted(fetchUserDetails);
 </script>
 

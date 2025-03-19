@@ -142,38 +142,40 @@
   import { ref, onMounted } from 'vue'
   import axios from 'axios'
   
-  // Reactive variables for API data
+  
   const referenceData = ref(null)
   const customerData = ref(null)
   const billData = ref([])
+  const config = useRuntimeConfig()
   
-  // API fetch function
   const fetchUtilityReport = async () => {
     try {
-        const token = localStorage.getItem('access_token') // Retrieve Bearer token
+
+        const token = localStorage.getItem('access_token') 
             if (!token) {
             throw new Error('No access token found')
         }
-        const response = await axios.get('http://192.168.45.56:8000/api/utility-report/?water=10101002', {
+        const response = await axios.get('http://192.168.45.56:8000/api/utility-report/?water=10120879', {
             headers: {
-                Authorization: `Bearer ${token}` // Use Bearer token format
+                Authorization: `Bearer ${token}` 
             }
         })
       const data = response.data
       referenceData.value = data.reference_data
-      customerData.value = data.customer[0] // First item in customer array
+      console.log(data.reference_data)
+      customerData.value = data.customer[0] 
       billData.value = data.bill
     } catch (error) {
       console.error('Error fetching utility report:', error)
     }
   }
   
-  // Fetch data on component mount
+ 
   onMounted(() => {
     fetchUtilityReport()
   })
   </script>
   
   <style scoped>
-  /* Add custom styles if needed */
+  
   </style>

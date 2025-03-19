@@ -15,7 +15,7 @@ const sidebarItems = ref([]);
 onMounted(async () => {
   const fetchedItems = await useSidebar(); // Await the sidebar fetching logic
   sidebarItems.value = fetchedItems.value || []; // Populate the reactive sidebarItems
-  console.log("Sidebar Items fetched:", sidebarItems.value);
+ 
 });
 
 
@@ -23,8 +23,7 @@ onMounted(() => {
   const userData = localStorage.getItem("user_data");
   if (userData) {
     user.value = JSON.parse(userData);
-    console.log("User fetched:", user.value);
-    console.log("User GID:", user.value?.GID?.GID); 
+    
   }
 });
 

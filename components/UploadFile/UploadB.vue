@@ -294,7 +294,7 @@ export default defineComponent({
           confirmed: false,
         }));
 
-        console.log("Fetched data:", items.value);
+        
 
         sortItemsByUploadDate();
       } catch (error) {

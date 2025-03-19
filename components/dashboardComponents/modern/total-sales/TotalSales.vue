@@ -3,11 +3,11 @@
     <div v-if="total"></div>
     <v-col cols="12">
       <v-row>
-        <v-col cols="12" md="9"
-          ><p>
+        <v-col cols="12" md="9">
+          <p>
             ຈຳນວນສະມາຊິກທັງໝົດ <b>{{ total }}</b> ແຫ່ງ
-          </p></v-col
-        >
+          </p>
+        </v-col>
         <v-col cols="12" md="3">
           <v-autocomplete
             label="ເລືອກປີ"
@@ -22,7 +22,7 @@
       </v-row>
     </v-col>
   </div>
-  <div id="chart" class="chart-container">
+  <div id="chart4" class="chart-container">
     <apexchart
       type="pie"
       :options="chartOptions"
@@ -35,11 +35,12 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
-import VueApexCharts from "vue3-apexcharts";
 import axios from "axios";
+import VueApexCharts from "vue3-apexcharts";
+import { fetchTotalSalesData } from './TotalSalesData';
+import type { MemberData } from './TotalSalesData';
 
 const total = ref<number>(0);
-
 const series = ref<number[]>([]);
 const chartOptions = ref({
   chart: {
@@ -48,13 +49,13 @@ const chartOptions = ref({
     type: "pie",
   },
   labels: [
-    "ບຸກຄົນ-ນິຕິບຸກຄົນ & ອົງການຈັດຕັ້ງອື່ນ",
+    "ບຸກຄົນ-ນິຕິບຸກຄົນ & ອົງການອື່ນໆ",
     "ທະນາຄານທຸລະກິດ",
-    "ບໍລິສັດເຊົ່າສິນເຊື່ອ",
-    "ສະຖາບັນການເງິນຈຸລະພາກຮັບຝາກ",
-    "ສະຫະກອນສິນເຊື່ອ ແລະ ເງິນຝາກປະຢັດ",
+    "ບໍລິສັດເຊົ່າສິນເຊືອ",
+    "ສະຖາບັນການເງິນຈຸລະພາກຮັບເງິນຝາກ",
+    "ສະຫະກອນສິນເຊືອ ແລະ ເງິນຝາກປະຫຍັດ",
     "ໂຮງຊວດຈຳ",
-    "ສະຖາບັນການເງິນຈຸລະພາກບໍ່ຮັບຝາກ",
+    "ສະຖາບັນການເງິນຈຸລະພາກບໍ່ຮັບເງິນຝາກ",
   ],
   colors: [
     "#6200EA",
@@ -79,44 +80,6 @@ const chartOptions = ref({
       useSeriesColors: true,
     },
   },
-  responsive: [
-    {
-      breakpoint: 1200,
-      options: {
-        chart: {
-          width: "100%",
-        },
-        legend: {
-          position: "bottom",
-          horizontalAlign: "center",
-        },
-      },
-    },
-    {
-      breakpoint: 1000,
-      options: {
-        chart: {
-          width: "100%",
-        },
-        legend: {
-          position: "bottom",
-          horizontalAlign: "center",
-        },
-      },
-    },
-    {
-      breakpoint: 480,
-      options: {
-        chart: {
-          width: "100%",
-        },
-        legend: {
-          position: "bottom",
-          horizontalAlign: "center",
-        },
-      },
-    },
-  ],
   dataLabels: {
     enabled: true,
     formatter: (val: number, opts: any) => {
@@ -136,25 +99,21 @@ const chartOptions = ref({
   },
 });
 
-onMounted(async () => {
+const fetchData = async () => {
   try {
-    const config = useRuntimeConfig();
-    const response = await axios.get(
-      `${config.public.strapi.url}api/member-count/`
-    );
-    console.log("data fetch", response.data);
-    const data = response.data;
-    series.value = data.member_count.map((item: any) => item.count);
-    data.value = data.total_count;
-    console.log("test", data.value);
-    total.value = data.total_count;
-
-    chartOptions.value.labels = data.member_count.map(
-      (item: any) => `Member Type ${item.memberType_id}`
-    );
+    const data: MemberData[] = await fetchTotalSalesData();
+    series.value = data.map((item: any) => item.count);
+    total.value = series.value.reduce((acc, count) => acc + count, 0);
   } catch (error) {
     console.error("Error fetching data from API:", error);
   }
+};
+
+onMounted(() => {
+  fetchData();
+  setInterval(() => {
+    location.reload();
+  }, 1500000);
 });
 </script>
 
@@ -164,18 +123,5 @@ onMounted(async () => {
   height: auto;
   max-width: 100%;
   padding: 0 15px;
-}
-
-:deep(.apexcharts-legend) {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-}
-
-:deep(.apexcharts-legend-text) {
-  white-space: normal;
-  max-width: 200px;
-  text-align: left;
 }
 </style>

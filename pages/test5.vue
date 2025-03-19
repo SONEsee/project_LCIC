@@ -140,8 +140,9 @@ const filteredUserCounts = computed(() => {
 // Fetch user data
 const fetchUserCounts = async () => {
   try {
+    const config = useRuntimeConfig();
     const response = await axios.get(
-      `http://192.168.45.56:8000/api/distinct-bnk-codes/`,
+      `${config.public.strapi.url}api/distinct-bnk-codes/`,
       { params: { sort_by: selectedSort.value } }
     );
     userCounts.value = response.data;
@@ -183,7 +184,7 @@ onMounted(fetchUserCounts);
 }
 
 .styled-table tr:hover {
-  background-color: #e6f7ff; /* Lighter blue on hover */
+  background-color: #e6f7ff; 
 }
 
 .no-results {
@@ -191,28 +192,28 @@ onMounted(fetchUserCounts);
   color: #888;
 }
 
-/* Container to add spacing between search box and dropdown */
+
 .search-dropdown-container {
   display: flex;
-  align-items: center; /* Align items vertically */
-  justify-content: space-between; /* Space between search box and dropdown */
-  margin-bottom: 16px; /* Optional margin to separate from other content */
+  align-items: center;
+  justify-content: space-between; 
+  margin-bottom: 16px; 
 }
 
 /* Search Box */
 .search-box {
   position: relative;
-  flex: 1; /* Take up available space */
-  margin-right: 16px; /* Space between search box and dropdown */
+  flex: 1; 
+  margin-right: 16px;
 }
 
 .search-box input {
   width: 100%;
   height: 48px;
-  padding: 12px 16px 12px 48px; /* Leave space for icon */
-  border: 1px solid #d1d5db; /* Light gray */
+  padding: 12px 16px 12px 48px; 
+  border: 1px solid #d1d5db; 
   border-radius: 24px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
   font-size: 16px;
   color: #374151; /* Dark gray */
   background-color: #f9fafb;

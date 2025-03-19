@@ -2,6 +2,7 @@ import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  
   // enable ssr for rendering
   ssr: false,
   devtools: {
@@ -31,6 +32,7 @@ export default defineNuxtConfig({
 
   // modules
   modules: [
+    "@pinia/nuxt",
     "nuxt-icon",
     (options, nuxt) => {
       // @ts-ignore
@@ -41,6 +43,7 @@ export default defineNuxtConfig({
     },
     "@nuxtjs/i18n",
   ],
+  plugins: ['~/plugins/pinia.ts'],
 
   i18n: {
     lazy: false,
@@ -49,11 +52,10 @@ export default defineNuxtConfig({
     locales: [
       { code: "en", iso: "en-US", file: "en.json" },
       { code: "lo", iso: "lo-LA", file: "lo.json" },
-    ], // used in URL path prefix
+    ],
     defaultLocale: "en",
   },
 
-  // app config
   app: {
     head: {
       htmlAttrs: {
@@ -88,12 +90,10 @@ export default defineNuxtConfig({
     },
   },
 
-  // runtime config
-
   runtimeConfig: {
     public: {
       strapi: {
-        url: process.env.STRAPI_URL || "http://192.168.45.56:8000/",
+        url: process.env.STRAPI_URL || "http://192.168.45.54:3729/",
       },
     },
   },

@@ -2,13 +2,43 @@
 import { useDisplay } from "vuetify";
 import Sidebar from "~/components/backendComponents/sidebar/Sidebar.vue";
 import Header from "~/components/backendComponents/header/Header.vue";
+import { ref, onMounted } from "vue";
+import { useTheme } from "vuetify";
+
+
+const theme = useTheme();
+
+
+const currentTheme = ref<"light" | "dark">("light");
+
+
+onMounted(() => {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "light" || savedTheme === "dark") {
+    currentTheme.value = savedTheme;
+    theme.global.name.value = savedTheme; 
+  } else {
+   
+    currentTheme.value = "light";
+    theme.global.name.value = "light";
+    localStorage.setItem("theme", "light");
+  }
+});
+
+
+function onClick() {
+  currentTheme.value = currentTheme.value === "light" ? "dark" : "light";
+  theme.global.name.value = currentTheme.value; 
+  localStorage.setItem("theme", currentTheme.value); 
+}
 
 const drawer = ref(undefined || true);
 const { mdAndUp, mdAndDown } = useDisplay();
 </script>
 <template>
   <div>
-    <v-app >
+    <v-app :theme="theme">
+      
       <!-- ---------------------------------------------- -->
       <!---Header -->
       <!-- ---------------------------------------------- -->
@@ -26,6 +56,11 @@ const { mdAndUp, mdAndDown } = useDisplay();
         </div>
         <v-app-bar-nav-icon class="" @click="drawer = !drawer" />
         <v-spacer />
+        <v-btn
+    :prepend-icon="currentTheme === 'light' ? 'mdi-weather-sunny' : 'mdi-weather-night'"
+    slim
+    @click="onClick"
+  ></v-btn>
         <!-- ---------------------------------------------- -->
         <!-- User Profile -->
         <!-- ---------------------------------------------- -->
