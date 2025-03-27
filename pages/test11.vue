@@ -87,14 +87,14 @@
   
       <hr>
   
-     <!-- Bill Payment Data Table (Horizontal) -->
+     
       <h2 class="text-blue">Payment Data</h2>                                                                                          
     <v-row>
       <v-col>
         <v-table dense>
           <thead>
             <tr>
-              <th></th> <!-- Empty cell for row labels -->
+              <th></th> 
               <th v-for="bill in billData" :key="'month-' + bill.BillID">
                 {{ bill.InvoiceMonth }}
               </th>

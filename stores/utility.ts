@@ -8,7 +8,9 @@ export const useUtilityStore = defineStore("utility", {
       respons_query_data_utility: null as UtilityModel.UtilityRespons | null,
       respons_query_data_customer: null as UtilityModel.CustomerIems[] | null,
       respons_query_data_bill: null as UtilityModel.BillIems[] | null,
-      respons_query_data_reference: null as UtilityModel.ReferenceDatumClass[] | null,
+      respons_query_data_reference: null as
+        | UtilityModel.ReferenceDatumClass[]
+        | null,
       loading: false,
       error: false,
       errorMessage: "" as string,
@@ -32,12 +34,14 @@ export const useUtilityStore = defineStore("utility", {
         }
 
         const config = useRuntimeConfig();
-const user = localStorage.getItem("user");
-console.log("user", user);
-const bnk_code = user ? JSON.parse(user).bnk_code : "";
-console.log("bnk_code", bnk_code);
+        const user = localStorage.getItem("user");
+        const users = localStorage.getItem("users");
+        console.log("users", users);
+        console.log("user", user);
+        const bnk_code = user ? JSON.parse(user).bnk_code : "";
+        console.log("bnk_code", bnk_code);
         const response = await axios.get<UtilityModel.UtilityRespons>(
-          `${config.public.strapi.url}api/utility-report/?water=10120879`,
+          `${config.public.strapi.url}api/utility-report/?water=10101019`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

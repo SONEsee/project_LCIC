@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import serchinImage from "@/assets/images/serch/individual.png";
 import { useI18n } from "vue-i18n";
-const {t}= useI18n();
+const { t } = useI18n();
 const items = computed(() => [
   {
     title: t("enterprise"),
@@ -20,10 +20,7 @@ const items = computed(() => [
       <v-card
         class="hovering-zoom"
         color="rgba(255, 255, 255, 0.4)"
-        :style="{ border: '1px #0277BD solid',
-        transition: 'box-shadow 0.3s', 
-         
-        }"
+        :style="{ border: '1px #0277BD solid', transition: 'box-shadow 0.3s' }"
       >
         <v-container>
           <div class="text-center">
@@ -50,7 +47,7 @@ const items = computed(() => [
                             transition: 'box-shadow 0.3s',
                             transform: isHovering ? 'scale(1.05)' : 'scale(1)',
                             border: '1px #0277BD solid',
-                            color:'rgba(255,255,255,0.1)'
+                            color: 'rgba(255,255,255,0.1)',
                           }"
                           class="d-flex justify-center align-center"
                           height="200px"
@@ -65,26 +62,26 @@ const items = computed(() => [
                                   alt=""
                                   width="150"
                                   :style="{
-                                    
-                                    
-                           
-                            boxShadow: isHovering
-                              ? '0 6px 12px rgba(0, 0, 0, 0.2)'
-                              : '0 4px 8px rgba(0, 0, 0, 0.1)',
-                            transition: 'box-shadow 0.3s',
-                            transform: isHovering ? 'scale(1.05)' : 'scale(1)',
-                            border: '1px #0277BD solid',
-                            color:'rgba(255,255,255,0.1)'
+                                    boxShadow: isHovering
+                                      ? '0 6px 12px rgba(0, 0, 0, 0.2)'
+                                      : '0 4px 8px rgba(0, 0, 0, 0.1)',
+                                    transition: 'box-shadow 0.3s',
+                                    transform: isHovering
+                                      ? 'scale(1.05)'
+                                      : 'scale(1)',
+                                    border: '1px #0277BD solid',
+                                    color: 'rgba(255,255,255,0.1)',
                                   }"
                                   class="rounded-lg"
-
                               /></v-col>
                               <v-col
                                 cols="12"
                                 md="6"
                                 class="d-flex justify-center align-center"
                                 ><h3 class="text-black">
-                                  <p><b>{{ item.title }}</b></p>
+                                  <p>
+                                    <b>{{ item.title }}</b>
+                                  </p>
                                 </h3></v-col
                               >
                             </v-row>
