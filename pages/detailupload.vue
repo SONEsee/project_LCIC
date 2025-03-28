@@ -32,11 +32,9 @@
                       <p>
                         ປະຈຳເດືອນ:
                         <b
-                          >{{ combinedData[0].period[0]
-                          }}{{ combinedData[0].period[1] }} /
-                          {{ combinedData[0].period[2]
-                          }}{{ combinedData[0].period[3]
-                          }}{{ combinedData[0].period[4]
+                          >{{ combinedData[0].period[0]}}{{ combinedData[0].period[1] }}{{ combinedData[0].period[2]}}{{ combinedData[0].period[3]
+                          }}/
+                          {{ combinedData[0].period[4]
                           }}{{ combinedData[0].period[5] }}</b
                         >
                       </p>
@@ -308,7 +306,7 @@
                   <tr>
                     <td>{{ index + 1 }}</td>
                     <td style="color: brown">
-                      {{ item.lcicID }}
+                      {{ item.LCIC_code }}
                     </td>
                     <td>{{ item.com_enterprise_code }}</td>
                     <td>{{ item.bnk_code }}</td>
