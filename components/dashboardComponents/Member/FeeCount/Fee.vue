@@ -1,28 +1,5 @@
 <template>
-  <!-- <div>
-    <div v-if="loading">Loading...</div>
-    <div v-else-if="error">{{ error }}</div>
-    <div v-else>
-      <div v-if="data">
-        <v-row>
-            
-          <v-col cols="12"
-            ><div>
-              <h2>ຄ່າທຳນຽມປີ: {{ data.year }}</h2>
-            </div></v-col
-          >
-          <v-col cols="12">
-            <div class="d-flex justify-center align-center">
-              <v-icon
-                icon="mdi-cash-multiple"
-                size="50"
-                color="blue"
-              ></v-icon></div></v-col
-        ></v-row>
-         ປີ: {{ data.year }} | ຄ່າທຳນຽມ: {{ formatNumber(data.total_fee) }} ກີບ 
-      </div>
-    </div>
-  </div> -->
+ 
   <v-container>
   
   <div v-if="data">

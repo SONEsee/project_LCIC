@@ -73,7 +73,7 @@
         <v-window-item value="one">
           <h1>ຂໍ້ມູນທີ່ອັບໂຫຼດທັງໝົດ</h1>
 
-          <v-data-table :items="dataedit" :headers="headers" density="compact">
+          <v-data-table :items="dataedit" :headers="headers" density="compact" items-per-page="20">
             <template v-slot:top> </template>
             <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>

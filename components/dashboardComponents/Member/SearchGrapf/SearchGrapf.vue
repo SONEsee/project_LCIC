@@ -54,9 +54,10 @@ const fetchMonthlyData = async () => {
   if (!selectedYear.value) return;
 
   try {
+    const config = useRuntimeConfig();
     loading.value = true;
     const response = await axios.get(
-      `http://192.168.45.54:35729/api/dashboard/fee_count-by-date/?bnk_code=${bnk_code}&year=${selectedYear.value}`
+      `${config.public.strapi.url}api/dashboard/fee_count-by-date/?bnk_code=${bnk_code}&year=${selectedYear.value}`
     );
     const data: MonthlyData[] = response.data;
 

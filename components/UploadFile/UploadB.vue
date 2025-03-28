@@ -43,28 +43,7 @@
         </v-col>
       </v-row>
     </v-col>
-    <!-- <div v-if="user">
-      {{ user.MID.id }}
-    </div> -->
-    <!-- <div cols="4" md="4" class="d-flex justify-end align-end">
-      <v-row>
-        <v-col md="4" cols="12">
-        
-          <v-text-field
-            v-model="search"
-            density="compact"
-            label="ຄົ້ນຫາຜູ້ນໍາໃຊ້"
-            prepend-inner-icon=""
-            clearable
-            @input="onSearch"
-            class="custom-search-box"
-          ></v-text-field>
-        </v-col>
-        <v-col md="2" cols="12">
-          <v-btn class="bg-primary">ຄົ້ນຫາ</v-btn>
-        </v-col></v-row
-      >
-    </div> -->
+
 
     <v-data-table
       item-value="name"
@@ -72,16 +51,9 @@
       :items="filteredItems"
       class="custom-header elevation-1"
     >
-      <!-- {{ items }} -->
+     
       <template v-slot:top>
-        <!-- <v-text-field
-          v-if="user && user.MID.id === '01'"
-          density="compact"
-          width="50%"
-          v-model="search"
-          class="pa-2"
-          label="ໃສ່ລະຫັດທະນາຄານ"
-        ></v-text-field> -->
+    
       </template>
       <template v-slot:header.FID class="">
         <th style="color: #0d47a1">{{ $t("id") }}</th>
@@ -187,6 +159,15 @@ export default defineComponent({
         },
       ],
     });
+    interface User {
+      MID: {
+        id: string;
+        name: string;
+        email: string;
+        phone: string;
+        role: string;
+      };
+    }
     interface itemdata {
       FID: string;
       fileName: string;
@@ -238,32 +219,7 @@ export default defineComponent({
       }
     });
 
-    // const fetchDataByUserID = async (userID: String) => {
-    //   try {
-    //     const config = useRuntimeConfig();
-    //     const url = `${config.public.strapi.url}api/upload-files2/?user_id=${userID}`;
-    //     const response = await fetch(url);
-    //     console.log("Response:", response);
-    //     console.log("user",userID )
-
-    //     if (!response.ok) {
-    //       throw new Error("Network response was not ok");
-    //     }
-
-    //     const data = await response.json();
-    //     console.log("Data for user:", data);
-
-    //     items.value = data.map((item: String) => ({
-    //       ...item,
-    //       FID: item.FID,
-    //       status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-    //       confirmed: false,
-    //     }));
-    //     sortItemsByUploadDate();
-    //   } catch (error) {
-    //     console.error("Failed to fetch data:", error);
-    //   }
-    // };
+   
 
     const fetchDataByUserID = async (userID: string): Promise<void> => {
       try {
