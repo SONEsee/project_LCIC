@@ -32,8 +32,10 @@
                       <p>
                         ປະຈຳເດືອນ:
                         <b
-                          >{{ combinedData[0].period[0]}}{{ combinedData[0].period[1] }}{{ combinedData[0].period[2]}}{{ combinedData[0].period[3]
-                          }}/
+                          >{{ combinedData[0].period[0]
+                          }}{{ combinedData[0].period[1]
+                          }}{{ combinedData[0].period[2]
+                          }}{{ combinedData[0].period[3] }}/
                           {{ combinedData[0].period[4]
                           }}{{ combinedData[0].period[5] }}</b
                         >
@@ -71,7 +73,12 @@
         <v-window-item value="one">
           <h1>ຂໍ້ມູນທີ່ອັບໂຫຼດທັງໝົດ</h1>
 
-          <v-data-table :items="dataedit" :headers="headers" density="compact" items-per-page="20">
+          <v-data-table
+            :items="dataedit"
+            :headers="headers"
+            density="compact"
+            items-per-page="20"
+          >
             <template v-slot:top> </template>
             <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
@@ -162,7 +169,11 @@
                 </v-row>
               </v-col>
 
-              <v-data-table :items="filteredBDataIsDamaged" :headers="headers2" density="compact">
+              <v-data-table
+                :items="filteredBDataIsDamaged"
+                :headers="headers2"
+                density="compact"
+              >
                 <template v-slot:header.id>
                   <th style="color: #0d47a1">ID</th>
                 </template>
@@ -224,7 +235,6 @@
                 @click="exportToJson"
                 icon="mdi-cloud-braces"
                 class="mt-5 d-flex justify-end mr-6"
-             
                 color="red-lighten-1"
               >
               </v-fab>
@@ -385,7 +395,11 @@
                 LCICID ແລະ com_enterprise_code ບໍ່ຖືກ
               </h3>
 
-              <v-data-table :items="disputese" :headers="headers5" density="compact">
+              <v-data-table
+                :items="disputese"
+                :headers="headers5"
+                density="compact"
+              >
                 <template v-slot:header>
                   <tr style="color: black; background-color: blue"></tr>
                 </template>
@@ -432,7 +446,11 @@
             ຂໍ້ມູນທີ່ອັບໂຫຼດສົມບຸນ ເປັນຂໍ້ມູນທີ່ຜ່ານການກວດສອບ ແລະ
             ຖືກບັນທຶກລົງຖານຂໍ້ມູນແລ້ວ
           </h1>
-          <v-data-table :items="b1Monthly" :headers="headers5" density="compact">
+          <v-data-table
+            :items="b1Monthly"
+            :headers="headers5"
+            density="compact"
+          >
             <template v-slot:header>
               <tr style="color: black; background-color: blue"></tr>
             </template>

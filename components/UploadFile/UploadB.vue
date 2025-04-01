@@ -104,9 +104,20 @@
       </template>
 
       <template v-slot:item.statussubmit="{ item }">
-        <v-chip :color="getStatusColor(item.statussubmit)" dark>{{
+        <!-- <v-chip :color="getStatusColor(item.statussubmit)" dark>
+          {{
           getStatusText(item.statussubmit)
-        }}</v-chip>
+        }}</v-chip> -->
+        <v-chip v-if="item.statussubmit === '0'" class="text-yellow darken-2">
+          
+        ກຳລັງນຳສົ່ຂໍ້ມູນ
+ <v-progress-circular
+      :size="20"
+      color="primary"
+      indeterminate
+    ></v-progress-circular>
+        </v-chip>
+       
       </template>
 
       <template v-slot:item.actions="{ item }">
@@ -513,7 +524,7 @@ export default defineComponent({
     };
     const config = useRuntimeConfig();
     const getFullPath = (path: string) => {
-      const baseUrl = `${config.public.strapi.url}`;
+      const baseUrl = `${config.public.strapi.url}media/`;
       return `${baseUrl}${path}`;
     };
 
@@ -583,3 +594,8 @@ export default defineComponent({
   },
 });
 </script>
+<style scoped>
+.v-progress-circular {
+  margin: 1rem;
+}
+</style>
