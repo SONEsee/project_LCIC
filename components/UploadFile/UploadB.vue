@@ -44,17 +44,13 @@
       </v-row>
     </v-col>
 
-
     <v-data-table
       item-value="name"
       :headers="headers"
       :items="filteredItems"
       class="custom-header elevation-1"
     >
-     
-      <template v-slot:top>
-    
-      </template>
+      <template v-slot:top> </template>
       <template v-slot:header.FID class="">
         <th style="color: #0d47a1">{{ $t("id") }}</th>
       </template>
@@ -108,16 +104,23 @@
           {{
           getStatusText(item.statussubmit)
         }}</v-chip> -->
-        <v-chip v-if="item.statussubmit === '0'" class="text-yellow darken-2">
-          
-        ກຳລັງນຳສົ່ຂໍ້ມູນ
- <v-progress-circular
-      :size="20"
-      color="primary"
-      indeterminate
-    ></v-progress-circular>
+        <v-chip v-if="item.statussubmit === 'Pending'" class="text-green darken-2">
+          ກຳລັງນຳສົ່ຂໍ້ມູນ
+          <v-progress-circular
+            :size="20"
+            color="primary"
+            indeterminate
+          ></v-progress-circular>
         </v-chip>
-       
+        <v-chip v-if="item.statussubmit === '1'" class="text-primary darken-2">
+          ນຳສົ່ຂໍ້ມູນສຳເລັດ
+        </v-chip>
+        <v-chip v-if="item.statussubmit === '2'" class="text-error darken-2">
+          ປະຕິເສດ
+        </v-chip>
+        <v-chip v-if="item.statussubmit === '0'" class="text-success darken-2">
+          ສໍາເລັດການໂຫຼດ
+        </v-chip>
       </template>
 
       <template v-slot:item.actions="{ item }">
@@ -230,8 +233,6 @@ export default defineComponent({
       }
     });
 
-   
-
     const fetchDataByUserID = async (userID: string): Promise<void> => {
       try {
         const config = useRuntimeConfig();
@@ -260,8 +261,6 @@ export default defineComponent({
           status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
           confirmed: false,
         }));
-
-        
 
         sortItemsByUploadDate();
       } catch (error) {
