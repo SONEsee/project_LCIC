@@ -8,6 +8,7 @@ import * as MemberModel from './member'
 import * as ManageUser from './manage'
 import * as UtilityModel from './utility'
 import * as FeeModel from './fee'
+import * as ReportModel from './reportfcr'
 export{
     DuplicatesFalse,
     DataModel,
@@ -17,5 +18,6 @@ export{
     MemberModel,
     ManageUser,
     UtilityModel,
-    FeeModel
+    FeeModel,
+    ReportModel
 }

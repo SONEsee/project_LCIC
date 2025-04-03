@@ -84,7 +84,7 @@
               <th style="color: #0d47a1">ID</th>
             </template>
             <template v-slot:header.lcicID>
-              <th style="color: #0d47a1">LcicID</th>
+              <th style="color: #0d47a1">LCIC_code</th>
             </template>
             <template v-slot:header.com_enterprise_code>
               <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -108,7 +108,7 @@
             <template v-slot:item="{ item, index }">
               <tr>
                 <td>{{ index + 1 }}</td>
-                <td>{{ item.lcicID }}</td>
+                <td>{{ item.LCIC_code }}</td>
                 <td>{{ item.com_enterprise_code }}</td>
                 <td>{{ item.bnk_code }}</td>
                 <td>{{ item.customer_id }}</td>
@@ -178,7 +178,7 @@
                   <th style="color: #0d47a1">ID</th>
                 </template>
                 <template v-slot:header.lcicID>
-                  <th style="color: #0d47a1">LcicID</th>
+                  <th style="color: #0d47a1">LCIC_code</th>
                 </template>
                 <template v-slot:header.com_enterprise_code>
                   <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -205,7 +205,7 @@
                 <template v-slot:item="{ item, index }">
                   <tr>
                     <td>{{ index + 1 }}</td>
-                    <td>{{ item.lcicid }}</td>
+                    <td>{{ item.LCIC_code }}</td>
                     <td style="color: brown">{{ item.com_enterprise_code }}</td>
                     <td>{{ item.bnk_code }}</td>
 
@@ -289,7 +289,7 @@
                   <th style="color: #0d47a1">ID</th>
                 </template>
                 <template v-slot:header.lcicID>
-                  <th style="color: #0d47a1">LcicID</th>
+                  <th style="color: #0d47a1">LCIC_code</th>
                 </template>
                 <template v-slot:header.com_enterprise_code>
                   <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -353,7 +353,7 @@
                   <th style="color: #0d47a1">ID</th>
                 </template>
                 <template v-slot:header.lcicID>
-                  <th style="color: #0d47a1">LcicID</th>
+                  <th style="color: #0d47a1">LCIC_code</th>
                 </template>
                 <template v-slot:header.com_enterprise_code>
                   <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -377,7 +377,7 @@
                 <template v-slot:item="{ item, index }">
                   <tr>
                     <td>{{ index + 1 }}</td>
-                    <td>{{ item.lcicid }}</td>
+                    <td>{{ item.LCIC_code }}</td>
                     <td>{{ item.com_enterprise_code }}</td>
                     <td>{{ item.bnk_code }}</td>
                     <td>{{ item.branch_id }}</td>
@@ -407,7 +407,7 @@
                   <th style="color: #0d47a1">ID</th>
                 </template>
                 <template v-slot:header.lcicID>
-                  <th style="color: #0d47a1">LcicID</th>
+                  <th style="color: #0d47a1">LCIC_code</th>
                 </template>
                 <template v-slot:header.com_enterprise_code>
                   <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -427,7 +427,7 @@
                 <template v-slot:item="{ item, index }">
                   <tr>
                     <td>{{ index + 1 }}</td>
-                    <td>{{ item.lcicID }}</td>
+                    <td>{{ item.LCIC_code }}</td>
                     <td>{{ item.com_enterprise_code }}</td>
                     <td>{{ item.bnk_code }}</td>
                     <td>{{ item.branch_id }}</td>
@@ -458,7 +458,7 @@
               <th style="color: #0d47a1">ID</th>
             </template>
             <template v-slot:header.lcicID>
-              <th style="color: #0d47a1">LcicID</th>
+              <th style="color: #0d47a1">LCIC_code</th>
             </template>
             <template v-slot:header.com_enterprise_code>
               <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -479,7 +479,7 @@
             <template v-slot:item="{ item, index }">
               <tr>
                 <td>{{ index + 1 }}</td>
-                <td>{{ item.lcicID }}</td>
+                <td>{{ item.LCIC_code }}</td>
                 <td>{{ item.com_enterprise_code }}</td>
                 <td>{{ item.bnk_code }}</td>
                 <td>{{ item.branch_id }}</td>

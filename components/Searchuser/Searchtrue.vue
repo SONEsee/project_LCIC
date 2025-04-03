@@ -75,7 +75,7 @@ import { useRoute } from "vue-router";
 
 interface Result {
   id: number;
-  lcicID: string | null;
+  LCIC_code: string | null;
   com_enterprise_code: string | null;
   status: string | null;
   enterpriseNameLao: string | null;
@@ -116,7 +116,7 @@ export default {
 
     const header = ref([
       { title: "ID", value: "id" },
-      { title: "LCIC ID", value: "lcicID" },
+      { title: "LCIC ID", value: "LCIC_code" },
       { title: "ລະຫັດບໍລິສັດ", value: "com_enterprise_code" },
       { title: "ຊື່ບໍລິສັດ (ພາສາລາວ)", value: "enterpriseNameLao" },
       { title: "ສະກຸນເງິນລົງທຶນ", value: "investmentCurrency" },
@@ -199,7 +199,7 @@ export default {
         });
 
        
-        const printUrl = `../backend/reportprint1?EnterpriseID=${item.com_enterprise_code}&LCICID=${item.lcicID}&CatalogID=${item.id}`;
+        const printUrl = `../test3/?EnterpriseID=${item.com_enterprise_code}&LCIC_code=${item.LCIC_code}&CatalogID=${item.id}`;
         window.open(printUrl, '_blank');
 
         
