@@ -1,3 +1,4 @@
+
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { ReportModel } from "~/types";
@@ -12,29 +13,30 @@ export const useReeportFCRStore = defineStore("reportFCR", {
       respon_data_invesinfo: null as ReportModel.InvesInfo[] | null,
       respon_data_loaninfo: null as ReportModel.LoanInfo[] | null,
       respon_data_searchhistory: null as ReportModel.SearchHistory[] | null,
+      respons_lon_class_history: null as ReportModel.LonClassHistory[] | null,
       loading: ref(false),
       error: ref(false),
     };
   },
   actions: {
-    async GetdataReportFCR(enterpriseID: string, LCIC_code: string ,CatalogID: string) {
+    async GetdataReportFCR(
+      enterpriseID: string,
+      LCIC_code: string,
+      CatalogID: string
+    ) {
       this.loading = true;
       this.error = false;
       try {
-        const res = await axios.get(
-          `${this.config.public.strapi.url}api/report/?EnterpriseID=${enterpriseID}&LCIC_code=${LCIC_code}`
+        const res = await axios.get<ReportModel.ReportRespose>(
+          `${this.config.public.strapi.url}api/report/?EnterpriseID=${enterpriseID}&LCIC_code=${LCIC_code}&CatalogID=${CatalogID} `
         );
-        if(res.status ===200){
-          this.respon_data_activeloan = res.data.data.active_loans;
+        if (res.status === 200) {
+          this.respon_data_activeloan = res.data.active_loans;
           console.log("respon_data_activeloan", this.respon_data_activeloan);
-          this.respon_data_enterprisinfo = res.data.data.enterprise_info;
-          console.log("respon_data_enterprisinfo", this.respon_data_enterprisinfo);
-          this.respon_data_invesinfo = res.data.data.inves_info;
-            console.log("respon_data_invesinfo", this.respon_data_invesinfo);
-          this.respon_data_loaninfo = res.data.data.loan_info;
-            console.log("respon_data_loaninfo", this.respon_data_loaninfo);
-          this.respon_data_searchhistory = res.data;
-            console.log("respon_data_searchhistory", this.respon_data_searchhistory);
+          this.respon_data_enterprisinfo = res.data.enterprise_info;
+          this.respon_data_invesinfo = res.data.inves_info;
+          this.respon_data_loaninfo = res.data.loan_info;
+          this.respon_data_searchhistory = res.data.search_history;
         }
         this.loading = false;
       } catch (error: any) {

@@ -1,7 +1,4 @@
-export interface ReportFCR {
-    report: ReportRespose;
-   
-}
+
 export interface ReportRespose {
     enterprise_info: EnterpriseInfo[];
     loan_info:       LoanInfo[];

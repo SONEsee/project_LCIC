@@ -1,154 +1,789 @@
 <script setup lang="ts">
-import { useReeportFCRStore } from '~/stores/reportfcr';
-import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useReeportFCRStore } from "~/stores/reportfcr";
+import { onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
+import dayjs from "dayjs";
 
 const route = useRoute();
-const EnterpriseID = ref(route.query.EnterpriseID as string);
-const LCIC_code = ref(route.query.LCIC_code as string);
-const CatalogID = ref(route.query.CatalogID as string);
-
+const EnterpriseID = (route.query.EnterpriseID as string) || "";
+const LCIC_code = (route.query.LCIC_code as string) || "";
+const CatalogID = (route.query.CatalogID as string) || "";
 const store = useReeportFCRStore();
-
-// Fetch data when component mounts
 onMounted(() => {
-  if (EnterpriseID.value && LCIC_code.value && CatalogID.value) {
-    store.GetdataReportFCR(EnterpriseID.value, LCIC_code.value, CatalogID.value);
+  if (EnterpriseID && LCIC_code && CatalogID) {
+    store.GetdataReportFCR(EnterpriseID, LCIC_code, CatalogID);
   }
 });
+const activeloan = computed(() => {
+  return store.respon_data_activeloan;
+});
+const history = computed(() => {
+  return store.respon_data_searchhistory;
+});
+const enterprisinfo = computed(() => {
+  return store.respon_data_enterprisinfo;
+});
+const loaninfo = computed(() => {
+  return store.respon_data_loaninfo;
+});
+const lon_history = computed(() => {
+  return store.respons_lon_class_history;
+});
+const print = () => {
+  window.print();
+};
+const user = localStorage.getItem("user_data")
+  ? JSON.parse(localStorage.getItem("user_data") as string)
+  : null;
+console.log(user);
+const getCols = (length: number) => {
+  if (length === 1) return 12;
+  if (length === 2) return 6;
+  if (length === 3) return 4;
+  if (length === 4) return 3;
+  if (length === 5) return 2;
+};
+const headers = ref([
+      { title: "ສະມາຊິກ", value: "bnk_code" },
+      { title: "Loan ID", value: "loan_id" },
+      { title: "Loan Open Date", value: "lon_open_date" },
+      { title: "Loan Credit Line", value: "lon_credit_line" },
+      { title: "Outstanding Balance", value: "lon_outstanding_balance" },
+      { title: "Loan Currency Code", value: "lon_currency_code" },
+      { title: "Number of Days Slow", value: "lon_no_days_slow" },
+      { title: "Loan Class", value: "lon_class" },
+      // { title: "Loan Update Date", value: "lon_update_date" },
+      { title: "Loan Status", value: "lon_status" },
+    ]);
+   
+    const mainHeaders = ref([
+      { title: "ສະມາຊິກ", value: "bank" },
+      { title: "Loan ID", value: "id" },
+      { title: "Loan Open Date", value: "lon_open_date" },
+      { title: "Loan Expiry Date", value: "lon_expiry_date" },
+      { title: "Loan Credit Line", value: "lon_credit_line" },
+      { title: "Outstanding Balance", value: "lon_outstanding_balance" },
+      { title: "Currency Code", value: "lon_currency_code" },
+      { title: "Loan Interest Rate", value: "lon_int_rate" },
+      { title: "Loan Purpose Code", value: "lon_purpose_code" },
+      { title: "Number of Days Slow", value: "lon_no_days_slow" },
+      { title: "Loan Class", value: "lon_class" },
+      { title: "Loan Type", value: "lon_type" },
+      { title: "Loan Term", value: "lon_term" },
+      { title: "Loan Status", value: "lon_status" },
+    ]);
+    const subHeaders = ref([
+      { title: "Period", value: "period" },
+      { title: "Credit Line", value: "lon_credit_line" },
+      { title: "Outstanding Balance", value: "lon_outstanding_balance" },
+      { title: "Number of Days Slow", value: "lon_no_days_slow" },
+      { title: "Currency Code", value: "lon_currency_code" },
+      { title: "Loan Class", value: "lon_class" },
+      { title: "Loan Status", value: "lon_status" },
+    ]);
+    const subHeaders_collteral = ref([
+      { title: "col_id", value: "col_id" },
+      { title: "col_type", value: "col_type" },
+      { title: "colleteral_info", value: "related_record.col_value" },
+    ]);
 
-const activeLoans = computed(() => store.respon_data_activeloan);
-const enterpriseInfo = computed(() => store.respon_data_enterprisinfo);
-const investmentInfo = computed(() => store.respon_data_invesinfo);
-const searchHistory = computed(() => store.respon_data_searchhistory);
-const loanInfo = computed(() => store.respon_data_loaninfo);
+    const realEstateHeaders = ref([
+      { title: "Collateral ID", value: "related_record.col_id" },
+      { title: "Collateral Type", value: "related_record.col_type" },
+      { title: "Land No", value: "related_record.land_no" },
+      { title: "Land Map Number", value: "related_record.land_map_no" },
+      { title: "Value", value: "related_record.col_value" },
+    ]);
+    const moneyMiaHeaders = ref([
+      { title: "Collateral ID", value: "related_record.col_id" },
+      { title: "Collateral Type", value: "related_record.col_type" },
+      { title: "Account No", value: "related_record.account_no" },
+      { title: "Account Type", value: "related_record.account_type" },
+      { title: "Value", value: "related_record.value" },
+    ]);
+    const equipmentHeaders = ref([
+      { title: "Collateral ID", value: "related_record.col_id" },
+      { title: "Collateral Type", value: "related_record.col_type" },
+      { title: "Machine No", value: "related_record.machine_no" },
+      { title: "Machine Type", value: "related_record.machine_type" },
+      { title: "Value", value: "related_record.value" },
+    ]);
+    const projectHeaders = ref([
+      { title: "Collateral ID", value: "related_record.col_id" },
+      { title: "Collateral Type", value: "related_record.col_type" },
+      { title: "Ministry Name", value: "related_record.ministry" },
+      { title: "Project No", value: "related_record.project_number" },
+      { title: "Value", value: "related_record.value" },
+    ]);
+    const vehicleHeaders = ref([
+      { title: "Collateral ID", value: "related_record.col_id" },
+      { title: "Collateral Type", value: "related_record.col_type" },
+      { title: "Plate No", value: "related_record.plate_number" },
+      { title: "Engine No", value: "related_record.engine_number" },
+      { title: "Value", value: "related_record.value" },
+    ]);
+    const guarantorHeaders = ref([
+      { title: "Collateral ID", value: "related_record.col_id" },
+      { title: "Collateral Type", value: "related_record.col_type" },
+      { title: "National ID", value: "related_record.national_id" },
+      { title: "Guarantor Name", value: "related_record.surname_english" },
+      { title: "Value", value: "related_record.value" },
+    ]);
+    const goldsilverHeaders = ref([
+      { title: "Collateral ID", value: "related_record.col_id" },
+      { title: "Collateral Type", value: "related_record.col_type" },
+      { title: "Weight", value: "related_record.weight" },
+      { title: "Unit", value: "related_record.unit" },
+      { title: "Value", value: "related_record.value" },
+    ]);
+
 </script>
-
 <template>
- test {{ activeLoans }}
-  {{ enterpriseInfo }}
-  {{ investmentInfo }}
-  {{ searchHistory }}
-  {{ loanInfo }}
-  <div class="report-container">
-    <!-- Loading and error states -->
-    <div v-if="store.loading" class="loading-state">
-      Loading data...
-    </div>
-    <div v-else-if="store.error" class="error-state">
-      Error loading data. Please try again.
-    </div>
-    
-    <!-- Data display when loaded successfully -->
-    <div v-else class="data-content">
-      <!-- Enterprise Information -->
-      <section v-if="enterpriseInfo && enterpriseInfo.length" class="data-section">
-        <h2>Enterprise Information</h2>
-        <div v-for="(item, index) in enterpriseInfo" :key="'enterprise-'+index" class="data-item">
-          <div><strong>Name (ຊື່):</strong> {{ item.enterpriseNameLao }}</div>
-          <div><strong>Name (English):</strong> {{ item.eneterpriseNameEnglish }}</div>
-          <div><strong>Registration #:</strong> {{ item.regisCertificateNumber }}</div>
-          <div><strong>Registration Date:</strong> {{ item.regisDate }}</div>
-          <div><strong>Status:</strong> {{ item.status }}</div>
-        </div>
-      </section>
+  <v-container
+    ><div
+      class="rounded-lg"
+      :style="{
+        border: '1px #2979FF solid',
+      }"
+    >
+      <v-col cols="12">
+        <section class="pa-5" id="main-content">
+          <div>
+            <v-btn class="button" to="../backend/searchuser">
+              <v-icon icon="mdi-arrow-left" style="font-size: 150%"></v-icon>
+            </v-btn>
+          </div>
+          <div class="text-end mt-5 button">
+            <v-btn @click="print" class="bg-indigo-accent-4">
+              <v-icon icon="mdi-printer-outline"></v-icon> ພີມ
+            </v-btn>
+          </div>
 
-      <!-- Active Loans -->
-      <section v-if="activeLoans && activeLoans.length" class="data-section">
-        <h2>Active Loans</h2>
-        <div v-for="(loan, index) in activeLoans" :key="'loan-'+index" class="data-item">
-          <div><strong>Bank:</strong> {{ loan.bank }}</div>
-          <div><strong>Account #:</strong> {{ loan.lon_account_no }}</div>
-          <div><strong>Credit Line:</strong> {{ loan.lon_credit_line }} {{ loan.lon_currency_code }}</div>
-          <div><strong>Outstanding Balance:</strong> {{ loan.lon_outstanding_balance }} {{ loan.lon_currency_code }}</div>
-          <div><strong>Open Date:</strong> {{ new Date(loan.lon_open_date).toLocaleDateString() }}</div>
-          <div><strong>Expiration Date:</strong> {{ new Date(loan.lon_exp_date).toLocaleDateString() }}</div>
-          <div><strong>Status:</strong> {{ loan.lon_status }}</div>
-          <div><strong>Class:</strong> {{ loan.lon_class }}</div>
-        </div>
-      </section>
+          <v-row>
+            <v-col cols="8" class="text-center">
+              <div>
+                <v-row align="center">
+                  <v-col cols="auto">
+                    <v-img
+                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQguq0YjU42M_ijrBwnE9IpgFAFeMZQCDDJVi3yrfOCog&s"
+                      width="70"
+                    ></v-img>
+                  </v-col>
+                  <v-col>
+                    <div class="row-content text-start float-left">
+                      <h4>ບໍລິສັດ ຂໍ້ມູນຂ່າວສານສິນເຊື່ອເເຫ່ງ ສປປ ລາວ</h4>
+                      <hr />
+                      <h4>Lao Credit Information Company</h4>
+                    </div>
+                  </v-col>
+                </v-row>
+              </div>
+            </v-col>
+            <v-col cole="12" class="text-end mt-4">
+              <div class="" v-if="enterprisinfo && enterprisinfo.length > 0">
+                <p>
+                  ລະຫັດວິສາຫະກິດ: <b>{{ enterprisinfo[0].EnterpriseID }}</b>
+                </p>
+                <p>
+                  ລະຫັດຂສລ: <b>{{ enterprisinfo[0].LCIC_code }}</b>
+                </p>
+              </div>
+              <div class="" v-if="user">
+                <p style="font-size: ">
+                  ຜູ້ສອບຖາມ: <b> {{ user.nameE }}</b> ຈາກທະນາຄານ:
+                  <b>{{ user.MID?.code }}</b>
+                </p>
+              </div>
+            </v-col>
+          </v-row>
 
-      <!-- Investment Information -->
-      <section v-if="investmentInfo && investmentInfo.length" class="data-section">
-        <h2>Investor Information</h2>
-        <div v-for="(investor, index) in investmentInfo" :key="'investor-'+index" class="data-item">
-          <div><strong>Name:</strong> {{ investor.investorName }}</div>
-          <div><strong>Nationality:</strong> {{ investor.investorNationality }}</div>
-          <div><strong>Ownership:</strong> {{ investor.investorOwnerPercentage }}%</div>
-          <div><strong>Contact:</strong> {{ investor.investorMobile }}</div>
-        </div>
-      </section>
+          <v-row>
+            <v-col>
+              <div class="text-center">
+                <h3 class="text-md mt-5">
+                  <b>ບົດລາຍງານສິນເຊື່ອຄົບຖວ້ນ(ສໍາລັບນິຕິບຸກຄົນ)</b>
+                </h3>
+              </div>
+            </v-col>
+          </v-row>
+        </section>
+      </v-col>
+      <v-col cols="12">
+        <div class="rounded-lg">
+          <p><b> - ຂໍ້ມູນທົວໄປຜູ້ກູ້</b></p>
+          <div
+            :style="{
+              border: '1px #2979FF solid',
+            }"
+            class="rounded-lg"
+          >
+            <v-row class="mt-2 mb-1 ml-1 mr-1">
+              <v-col cols="4" v-if="enterprisinfo && enterprisinfo.length > 0">
+                <p>
+                  <b>ຊື່ວິສາຫະກິດ:</b> {{ enterprisinfo[0].enterpriseNameLao }}
+                </p>
 
-      <!-- Search History -->
-      <section v-if="searchHistory && searchHistory.length" class="data-section">
-        <h2>Search History</h2>
-        <div v-for="(history, index) in searchHistory" :key="'history-'+index" class="data-item">
-          <div><strong>Date:</strong> {{ new Date(history.id).toLocaleDateString() }}</div>
-          <div><strong>Bank Code:</strong> {{ history.bnk_code }}</div>
-          <div><strong>Purpose:</strong> {{ history.lon_purpose }}</div>
-        </div>
-      </section>
+                <p><b>ເລກທີ:</b>---------</p>
+              </v-col>
+              <v-col cols="4" v-if="enterprisinfo && enterprisinfo.length > 0">
+                <p>
+                  <b>ວັນທີອອກໃບທະບຽນ:</b>
+                  {{ enterprisinfo[0].regisDate.slice(0, -18) }}
+                </p>
+                <p>
+                  <b>ທີ່ຕັ້ງວິສາຫະກິດ:</b> {{ enterprisinfo[0].enLocation }}
+                </p>
+                <p><b>ພາກສວນເສດຖະກິດ:</b> --</p>
+              </v-col>
+              <v-col cols="4" v-if="enterprisinfo && enterprisinfo.length > 0">
+                <p>
+                  <b>ທຶນຈົດທະບຽນ:</b>
+                  {{
+                    Number(enterprisinfo[0].investmentAmount).toLocaleString()
+                  }}
+                  <b v-if="enterprisinfo[0].investmentCurrency">{{
+                    enterprisinfo[0].investmentCurrency
+                  }}</b>
+                </p>
 
-      <!-- Loan Information -->
-      <section v-if="loanInfo && loanInfo.length" class="data-section">
-        <h2>Loan History</h2>
-        <div v-for="(loan, index) in loanInfo" :key="'loaninfo-'+index" class="data-item">
-          <div><strong>Bank Code:</strong> {{ loan.bnk_code }}</div>
-          <div><strong>Loan Type:</strong> {{ loan.lon_type }}</div>
-          <div><strong>Credit Line:</strong> {{ loan.lon_credit_line }} {{ loan.lon_currency_code }}</div>
-          <div><strong>Outstanding Balance:</strong> {{ loan.lon_outstanding_balance }} {{ loan.lon_currency_code }}</div>
-          <div><strong>Class:</strong> {{ loan.lon_class }}</div>
-          <div><strong>Status:</strong> {{ loan.lon_status }}</div>
+                <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ:</b> --</p>
+              </v-col>
+            </v-row>
+          </div>
         </div>
-      </section>
-
-      <!-- No data message -->
-      <div v-if="!activeLoans?.length && !enterpriseInfo?.length && !investmentInfo?.length && !searchHistory?.length && !loanInfo?.length" class="no-data">
-        No data available for this enterprise.
+      </v-col>
+      <p><b>- ຂໍ້ມູນປະຫວັດການເຂົ້າຄົ້ນຫາ</b></p>
+      <div
+        class="rounded-lg"
+        :style="{
+          border: '1px #2979FF solid',
+        }"
+      >
+        <v-table>
+          <thead>
+            <tr>
+              <th>ລຳດັບ</th>
+              <th>ວັນເດືອນທີ່ຄົ້ນຫາ</th>
+              <th>ຜູ້ຄົ້ນຫາ</th>
+              <th>ເຫດຜົນການຄົ້ນຫາ</th>
+              <th>ປະເພດເງິນກູ້</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in history?.slice(-12) || []">
+              <td>{{ index + 1 }}</td>
+              <td>
+                {{
+                  item?.id instanceof Date
+                    ? item.id.toISOString().slice(0, 10)
+                    : item?.id
+                    ? String(item.id).slice(0, -11)
+                    : "–"
+                }}
+              </td>
+              <td>{{ item?.bnk_code || "–" }}</td>
+              <td>{{ item?.lon_purpose || "–" }}</td>
+              <td>--</td>
+            </tr>
+          </tbody>
+        </v-table>
       </div>
+      <v-col cols="12">
+        <p><b>- ລວມວົງເງິນກູ້ທີ່ເຄື່ອນໄຫວທັງໝົດ</b></p>
+        <v-table
+          class="mt-5 elevation-1 v-data-table1 rouded-lg"
+          :style="{
+            border: '1px #2979FF solid',
+          }"
+        >
+          <thead>
+            <tr style="font-size: 90%" class="text-bold">
+              <th><b>ສະມາຊິກ</b></th>
+              <th><b> ລະຫັດເງິນກູ້</b></th>
+              <th><b>ມືເປີດ</b></th>
+              <th>ວົງເງິນກູ້</th>
+              <th>ຍອດເງິນເຫຼືອ</th>
+              <th>ສະກຸນເງິນ</th>
+              <th>ຈຳນວນວັນຄ້າງຈ່າຍ</th>
+              <th>ປະເພດ</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            <tr v-for="(item, index) in loaninfo"  :key="index">
+              <td>{{ item.bnk_code }}</td>
+              <td>{{ item.loan_id }}</td>
+              <td>{{
+                  (new Date(item.lon_open_date)).toLocaleString('en-GB', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                  })
+                }}</td>
+              <td>{{ Number(item.lon_credit_line).toLocaleString() }}</td>
+              <td>
+                {{ Number(item.lon_outstanding_balance).toLocaleString() }}
+              </td>
+
+              <td>{{ item.lon_currency_code }}</td>
+              <td>{{ item.lon_no_days_slow }}</td>
+              <td>{{ item.lon_class }}</td>
+            </tr>
+          </tbody>
+        </v-table>
+      </v-col>
+      <p><b>-ລາຍລະອຽດຂໍ້ມູນເງິນກູ້</b></p>
+    
+    <v-col cols="12">
+      <v-row>
+        <v-col cols="12">
+          <v-row>
+            <v-col
+             
+              class="mt-2"
+              v-for="(item, index) in activeloan"
+              :key="index"
+            >
+              <div
+                class="ml-1 rounded-lg"
+                style="border: 1px solid #1565c0; padding: 10px"
+              >
+
+                <div>
+                  
+                  <p>
+                    <b>- ຂໍ້ມູນລາຍລະອຽດເງິນກູ້ບວ້ງທີ {{ index + 1 }}</b>
+                  </p>
+                  <v-col cols="12">
+                    <v-row>
+                      <v-col cols="4" md="4" >
+                        
+                        <p> <b>ລະຫັດເງິນກູ້: </b>{{ item.id }}</p>
+                        <p> <b>ມື້ເປິດເງິນກູ້: </b>{{dayjs( item.lon_open_date).format("YYYY-MM-DD")}}</p>
+                        <p> <b>ມື້ໝົດສັນຍາເງິນກູ້ເງິນກູ້: </b> {{ dayjs(item.lon_exp_date).format("YYYY-MM-DD") }}</p>
+                      </v-col>
+                      <v-col cols="4" md="4">
+                        <p> <b>ໄລຍະການກູ້ຢືມ:</b> {{ item.lon_term }}</p>
+                        <p> <b>ວົງເງິນໃນອານຸມັດ:</b> {{ item.lon_credit_line.toLocaleString() }} {{  item.lon_currency_code }}</p>
+                        <p> <b>ອັດຕາດອກເບ້ຍ:</b> {{ item.lon_int_rate }}</p>
+                      </v-col>
+                      <v-col cols="4" md="4">
+                        <p><b>ຍອດເງິນເຫຼືອຕົ້ນທຶນ:</b> {{ Number(item.lon_outstanding_balance).toLocaleString() }} {{  item.lon_currency_code }}</p>
+                        <p><b>ເຫດຜົນຫການສິ້ນສຸດໜີ້:</b> -- </p>
+
+                      </v-col>
+                    </v-row>
+
+                  </v-col>
+
+                  <hr
+                    color="indigo"
+                    model-value="100"
+                    rounded
+                  ></hr>
+
+                  <v-col cols="12">
+                    <p v-if="item.collateral_history.length">
+                      <b>- ຂໍ້ມູນຫຼັກຊັບຄໍ້າປະກັນ</b>
+                    </p>
+                    <v-row>
+                      <v-col
+                        v-for="(collateral, index) in item.collateral_history"
+                        class="mt-2"
+                        
+                        style="font-size: 80%"
+                        :cols="getCols(item.collateral_history ? item.collateral_history.length : 1)"
+                      >
+                        <div
+                          style="border: #1565c0 1px solid; padding: 10px"
+                          class="rounded-lg"
+                        >
+                          <v-col cols="12">
+                            <div
+                              v-if="
+                                collateral.col_type === 'C2.1' ||
+                                collateral.col_type === 'c2.1'
+                              "
+                            >
+                              <p>
+                                ລົງຂໍ້ມູນວັນທີ:
+                                <b>{{
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
+                                }}</b>
+                              </p>
+                              <p>ປະເພດຫຼັກຊັບ:<b>ດີນ</b></p>
+
+                              <p>
+                                ເລກທີໃບຕາດິນ:<b>{{
+                                  collateral.related_record.land_no
+                                }}</b>
+                              </p>
+                              <p>
+                                ເລກທີແຜ່ນທີຶ:<b>{{
+                                  collateral.related_record.land_map_no
+                                }}</b>
+                              </p>
+                              <p>
+                                ເນື້ອທີ:<b>{{
+                                  collateral.related_record.col_area
+                                }}</b>
+                              </p>
+                            </div>
+                            <div
+                              v-else-if="
+                                collateral.col_type === 'C2.2' ||
+                                collateral.col_type === 'c2.2'
+                              "
+                            >
+                              <p>
+                                ລົງຂໍ້ມູນວັນທີ:
+                                <b>{{
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
+                                }}</b>
+                              </p>
+                              <p>ປະເພດຫຼັກຊັບ:<b>ເອກະສານມີຄ່າ</b></p>
+
+                              <p>
+                                ເລກເຈົ້າຂອງບັນຊີ:<b>{{
+                                  collateral.related_record.account_no
+                                }}</b>
+                              </p>
+                              <p>
+                                ປະເພດບັນຊີ:<b>{{
+                                  collateral.related_record.account_type
+                                }}</b>
+                              </p>
+                              <p>
+                                ມູນຄ່າ:<b>{{
+                                  collateral.related_record.value
+                                }}</b>
+                              </p>
+                            </div>
+                            <div
+                              v-else-if="
+                                collateral.col_type === 'C2.3' ||
+                                collateral.col_type === 'c2.3'
+                              "
+                            >
+                              <p>
+                                ລົງຂໍ້ມູນວັນທີ:
+                                <b>{{
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
+                                }}</b>
+                              </p>
+                              <p>ປະເພດຫຼັກຊັບ:<b>ເຄື່ອງຈັກ</b></p>
+
+                              <p>
+                                ປະເພດເຄື່ອງຈັກ:<b>{{
+                                  collateral.related_record.machine_type
+                                }}</b>
+                              </p>
+                              <p>
+                                ເລກທີເຄື່ອງຈັກ:<b>{{
+                                  collateral.related_record.machine_no
+                                }}</b>
+                              </p>
+                              <p>
+                                ມູນຄ່າ:<b>{{
+                                  collateral.related_record.value
+                                }}</b>
+                              </p>
+                            </div>
+                            <div
+                              v-else-if="
+                                collateral.col_type === 'C2.4' ||
+                                collateral.col_type === 'c2.4'
+                              "
+                            >
+                              <p>
+                                ລົງຂໍ້ມູນວັນທີ:
+                                <b>{{
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
+                                }}</b>
+                              </p>
+                              <p>ປະເພດຫຼັກຊັບ:<b>ໂຄງການ</b></p>
+
+                              <p>
+                                ຊື່ໂຄງການ:<b>{{
+                                  collateral.related_record.project_number
+                                }}</b>
+                              </p>
+                              <p>
+                                ເລກທີໂຄງການ:<b>{{
+                                  collateral.related_record.machine_type
+                                }}</b>
+                              </p>
+                              <p>
+                                ມູນຄ່າ:<b>{{
+                                  collateral.related_record.value
+                                }}</b>
+                              </p>
+                            </div>
+                            <div
+                              v-else-if="
+                                collateral.col_type === 'C2.5' ||
+                                collateral.col_type === 'c2.5'
+                              "
+                            >
+                              <p>
+                                ລົງຂໍ້ມູນວັນທີ:
+                                <b>{{
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
+                                }}</b>
+                              </p>
+                              <p>ປະເພດຫຼັກຊັບ:<b>ຍານພາຫະນະ</b></p>
+
+                              <p>
+                                ເລກທະບຽນພາຫະນະ:<b>{{
+                                  collateral.related_record.plate_number
+                                }}</b>
+                              </p>
+                              <p>
+                                ເລກຈັກ:<b>{{
+                                  collateral.related_record.engine_number
+                                }}</b>
+                              </p>
+                              <p>
+                                ມູນຄ່າ:<b>{{
+                                  collateral.related_record.value
+                                }}</b>
+                              </p>
+                            </div>
+                            <div
+                              v-else-if="
+                                collateral.col_type === 'C2.6' ||
+                                collateral.col_type === 'c2.6'
+                              "
+                            >
+                              <p>
+                                ລົງຂໍ້ມູນວັນທີ:
+                                <b>{{
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
+                                }}</b>
+                              </p>
+                              <p>ປະເພດຫຼັກຊັບ:<b>ບຸກຄົນຄໍ້າ</b></p>
+
+                              <p>
+                                ເລກບັດປະຈຳຕົວຂອງຜູ້ຄໍ້າປະກັນ:<b>{{
+                                  collateral.related_record.gua_national_id
+                                }}</b>
+                              </p>
+                              <p>
+                                ຊື່ແທ້:<b>{{
+                                  collateral.related_record.gua_lao_name
+                                }}</b>
+                              </p>
+                              <p>
+                                ມູນຄ່າ:<b>{{
+                                  collateral.related_record.value
+                                }}</b>
+                              </p>
+                            </div>
+                            <div
+                              v-else-if="
+                                collateral.col_type === 'C2.7' ||
+                                collateral.col_type === 'c2.7'
+                              "
+                            >
+                              <p>
+                                ລົງຂໍ້ມູນວັນທີ:
+                                <b>{{
+                                  new Date(collateral.collateral_info.insert_date).toLocaleDateString()
+                                }}</b>
+                              </p>
+                              <p>ປະເພດຫຼັກຊັບ:<b>ຄໍາ</b></p>
+
+                              <p>
+                                ລະຫັດຂອງຫຼັກຊັບຄໍ້າປະກັນ:<b>{{
+                                  collateral.related_record.col_id
+                                }}</b>
+                              </p>
+                              <p>
+                                ນໍ້າໜັກ:<b>{{
+                                  collateral.related_record.weight
+                                }}</b>
+                              </p>
+                              <p>
+                                ມູນຄ່າ:<b>{{
+                                  collateral.related_record.value
+                                }}</b>
+                              </p>
+                            </div>
+                            <div
+                              v-else-if="
+                                collateral.col_type === 'C2.7' ||
+                                collateral.col_type === 'c2.7'
+                              "
+                            >
+                              <p>
+                                ລົງຂໍ້ມູນວັນທີ:
+                                <b>
+                                  {{
+                                    new Date(collateral.collateral_info.insert_date).toLocaleDateString()
+                                  }}
+                                </b>
+                              </p>
+                              <p>ປະເພດຫຼັກຊັບ:<b>ຄໍາ</b></p>
+
+                              <p>
+                                ລະຫັດຂອງຫຼັກຊັບຄໍ້າປະກັນ:<b>{{
+                                  collateral.related_record.col_id
+                                }}</b>
+                              </p>
+                              <p>
+                                ລະຫັດວິສາຫະກິດ:<b>{{
+                                  collateral.related_record.gua_enterprise_code
+                                }}</b>
+                              </p>
+                              <p>
+                                ມູນຄ່າ:<b>{{
+                                  collateral.related_record.value
+                                }}</b>
+                              </p>
+                            </div>
+                          </v-col>
+                        </div>
+                      </v-col>
+                    </v-row>
+                  </v-col>
+                </div>
+                <div>
+                  <hr v-if="item.collateral_history.length"
+                    color="indigo"
+                    model-value="100"
+                    rounded
+                  ></hr>
+                  <p v-if="item.lon_class_history.length">
+                    <b>- ປະຫວັດການຊຳລະ</b>
+                  </p>
+                  <v-table>
+                    <thead>
+                      <tr>
+                        <th>ລຳດັບ.</th>
+                        <th>ເດືອນ ,ວັນ</th>
+                        <th>ວົງເງິນກູ້</th>
+                        <th>ຍອດຍັງເຫຼືອ</th>
+                        <th>ຈຳນວນວັນຈ່າຍຊ້າ</th>
+                        <th>ສະກຸນເງິນ</th>
+                        <th>ປະເພດເງິນກູ້</th>
+                        <th>ສະຖານະ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(item , index) in lon_history">
+                        <td>{{index +1}}</td>
+                        <td>{{ item.period.slice(0, 4) + '-' + item.period.slice(4) }}</td>
+                        <td>{{Number( item.lon_credit_line).toLocaleString() }}</td>
+                        <td>{{Number( item.lon_outstanding_balance).toLocaleString() }}</td>
+                        <td>{{ item.lon_no_days_slow }}</td>
+                        <td>{{ item.lon_currency_code }}</td>
+                        <td>{{ item.lon_class }}</td>
+                        <td>{{ item.lon_status }}</td>
+
+                      </tr>
+                    </tbody>
+                  </v-table>
+                
+                </div>
+              </div></v-col
+            >
+          </v-row>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12" class="text-">
+          <div style="border: #1565c0 1px solid; padding: 10px" class="bg-blue-darken-4 rounded-lg">
+<v-col cols="12">
+  <v-row>
+    <v-col cols="6" >
+
+<p> <v-icon icon="mdi-map-marker" style="font-size: 120%; color: red;"></v-icon> 2nd Floor, Lao Security Exchange Building Phonthan  Village, </p><p class="ml-5">Xaysettha District, Vientiane Capital</p>
+
+    </v-col>
+    <v-col cols="6"><p> <v-icon icon="mdi-phone" style="font-size: 100%;color: #1565c0;" class="mr-2"></v-icon>  Telephone: (856)-21-25429</p>
+<p> <v-icon icon=" mdi-email-outline" style="font-size: 100%;" class="mr-2"></v-icon>  Email: info@lcic.com.la</p></v-col>
+    
+  </v-row>
+</v-col>
+          </div>
+        </v-col>
+      </v-row>
+    </v-col>
+
     </div>
-  </div>
+  </v-container>
 </template>
-
 <style scoped>
-.report-container {
-  padding: 20px;
-  font-family: 'Phetsarath OT', Arial, sans-serif;
+@page {
+  size: A4 portrait;
+  margin: 0;
+
+  @bottom-center {
+    width: 100%;
+    content: element(footer);
+  }
 }
 
-.loading-state, .error-state {
-  text-align: center;
-  padding: 40px;
-  font-size: 18px;
-}
+@media print {
+  html,
+  body {
+    width: 210mm;
+    height: 297mm;
+    padding: 4px 10% 0 10%;
+    background: fixed;
+    background-image: fixed;
+    font-size: 10pt !important;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: 11pt !important;
+  }
+  p,
+  div,
+  span,
+  table {
+    font-size: 10pt !important;
+  }
+  .table {
+    font-size: pt !important;
+  }
+  .main-content {
+    width: 210mm;
+    height: 297mm;
+    padding: 15px 3% 0 3%;
+  }
+  .v-data-table1 {
+    font-size: 11pt !important;
+  }
 
-.data-section {
-  margin-bottom: 30px;
-  padding: 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #f9f9f9;
-}
-
-.data-section h2 {
-  color: #0066cc;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 10px;
-  margin-bottom: 15px;
-}
-
-.data-item {
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: white;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.no-data {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-  font-style: italic;
+  .button {
+    display: none;
+  }
+  /* div {
+    page-break-inside: avoid;
+    page-break-before: auto;
+    page-break-after: auto;
+  } */
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  thead {
+    display: table-header-group;
+  }
+  tfoot {
+    display: table-footer-group;
+  }
+  .div.v-data-table__wrapper::-webkit-scrollbar {
+    display: none;
+  }
+  .div.v-data-table__wrapper {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 </style>
