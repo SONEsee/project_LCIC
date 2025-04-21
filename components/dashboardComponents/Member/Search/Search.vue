@@ -55,8 +55,9 @@
   export default defineComponent({
     name: 'StatsChart',
     setup() {
+      const config = useRuntimeConfig()
       const User = localStorage.getItem("user_data") || "{}";
-      const baseUrl = 'http://192.168.45.54:35729/api/dashboard/search-count-by-date'
+      const baseUrl = `${config.public.strapi.url}api/dashboard/search-count-by-date`
       const bankCode = JSON.parse(User).MID?.id ?? "";
   
       let chart = null

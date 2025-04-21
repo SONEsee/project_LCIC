@@ -45,7 +45,7 @@
             <div class=""  v-if="enterpriseInfo">
               <p>ລະຫັດວິສາຫະກິດ: <b>{{ enterpriseInfo.EnterpriseID }}</b></p>
               
-              <p>ລະຫັດຂສລ: <b>{{ enterpriseInfo.LCICID}}</b></p>
+              <p>ລະຫັດຂສລ: <b>{{ enterpriseInfo.LCIC_code}}</b></p>
             </div>
             <div class="" v-if="user">
               <p style="font-size: ;">ຜູ້ສອບຖາມ: <b> {{ user.nameE }}</b> ຈາກທະນາຄານ: <b>{{ user.MID?.code }}</b></p>
@@ -73,7 +73,7 @@
               <v-col cols="12" >
                 <v-row class="ml-2">
                   
-                  <p v-if="enterpriseInfo"><b> LCID:</b> {{ enterpriseInfo.LCICID }},</p>
+                  <p v-if="enterpriseInfo"><b> LCID:</b> {{ enterpriseInfo.LCIC_code }},</p>
                   <p v-if="enterpriseInfo" class="ml-5"><b>  ຊື່ບໍລິສັດພາສາລາວ:</b> {{ enterpriseInfo.enterpriseNameLao}} </p> <br>
                 </v-row>
                 <v-row>
@@ -754,21 +754,21 @@ export default {
 
     onMounted(() => {
       const enterpriseID = route.query.EnterpriseID as string;
-      const lcicID = route.query.LCICID as string;
+      const LCIC_code = route.query.LCIC_code as string;
       const userData = localStorage.getItem("user_data");
       if (userData) {
         user.value = JSON.parse(userData);
         console.log("User data:", user.value);
       }
 
-      fetchData(enterpriseID, lcicID);
+      fetchData(enterpriseID, LCIC_code);
     });
 
-    const fetchData = async (enterpriseID: string, lcicID: string) => {
+    const fetchData = async (enterpriseID: string, LCIC_code: string) => {
       try {
         const config = useRuntimeConfig();
         const response = await fetch(
-          `${config.public.strapi.url}api/report/?EnterpriseID=${enterpriseID}&LCICID=${lcicID}`
+          `${config.public.strapi.url}api/report/?EnterpriseID=${enterpriseID}&LCIC_code=${LCIC_code}`
         );
         if (response.ok) {
           const data = await response.json();

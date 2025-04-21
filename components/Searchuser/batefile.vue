@@ -268,7 +268,7 @@ const insertSearchLog = async (item: any) => {
         },
         body: JSON.stringify({
           EnterpriseID: item.com_enterprise_code,
-          LCICID: item.lcicID,
+          LCIC_code: item.LCIC_code,
         }),
       }
     );

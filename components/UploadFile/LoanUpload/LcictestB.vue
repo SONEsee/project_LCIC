@@ -451,7 +451,7 @@ export default defineComponent({
     //   return `http://127.0.0.1:35729/media/${path}`;
     // };
     const config = useRuntimeConfig();
-    const getFullPath = (path: string) => `${config.public.strapi.url}${path}`;
+    const getFullPath = (path: string) => `${config.public.strapi.url}media/${path}`;
     const filterOnlyCapsText = (
       value: string | null,
       query: string | null

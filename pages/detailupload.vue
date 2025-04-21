@@ -33,10 +33,10 @@
                         ປະຈຳເດືອນ:
                         <b
                           >{{ combinedData[0].period[0]
-                          }}{{ combinedData[0].period[1] }} /
-                          {{ combinedData[0].period[2]
-                          }}{{ combinedData[0].period[3]
-                          }}{{ combinedData[0].period[4]
+                          }}{{ combinedData[0].period[1]
+                          }}{{ combinedData[0].period[2]
+                          }}{{ combinedData[0].period[3] }}/
+                          {{ combinedData[0].period[4]
                           }}{{ combinedData[0].period[5] }}</b
                         >
                       </p>
@@ -73,13 +73,18 @@
         <v-window-item value="one">
           <h1>ຂໍ້ມູນທີ່ອັບໂຫຼດທັງໝົດ</h1>
 
-          <v-data-table :items="dataedit" :headers="headers" density="compact">
+          <v-data-table
+            :items="dataedit"
+            :headers="headers"
+            density="compact"
+            items-per-page="20"
+          >
             <template v-slot:top> </template>
             <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
             </template>
             <template v-slot:header.lcicID>
-              <th style="color: #0d47a1">LcicID</th>
+              <th style="color: #0d47a1">LCIC_code</th>
             </template>
             <template v-slot:header.com_enterprise_code>
               <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -103,7 +108,7 @@
             <template v-slot:item="{ item, index }">
               <tr>
                 <td>{{ index + 1 }}</td>
-                <td>{{ item.lcicID }}</td>
+                <td>{{ item.LCIC_code }}</td>
                 <td>{{ item.com_enterprise_code }}</td>
                 <td>{{ item.bnk_code }}</td>
                 <td>{{ item.customer_id }}</td>
@@ -164,12 +169,16 @@
                 </v-row>
               </v-col>
 
-              <v-data-table :items="filteredBDataIsDamaged" :headers="headers2" density="compact">
+              <v-data-table
+                :items="filteredBDataIsDamaged"
+                :headers="headers2"
+                density="compact"
+              >
                 <template v-slot:header.id>
                   <th style="color: #0d47a1">ID</th>
                 </template>
                 <template v-slot:header.lcicID>
-                  <th style="color: #0d47a1">LcicID</th>
+                  <th style="color: #0d47a1">LCIC_code</th>
                 </template>
                 <template v-slot:header.com_enterprise_code>
                   <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -196,7 +205,7 @@
                 <template v-slot:item="{ item, index }">
                   <tr>
                     <td>{{ index + 1 }}</td>
-                    <td>{{ item.lcicid }}</td>
+                    <td>{{ item.LCIC_code }}</td>
                     <td style="color: brown">{{ item.com_enterprise_code }}</td>
                     <td>{{ item.bnk_code }}</td>
 
@@ -226,7 +235,6 @@
                 @click="exportToJson"
                 icon="mdi-cloud-braces"
                 class="mt-5 d-flex justify-end mr-6"
-             
                 color="red-lighten-1"
               >
               </v-fab>
@@ -281,7 +289,7 @@
                   <th style="color: #0d47a1">ID</th>
                 </template>
                 <template v-slot:header.lcicID>
-                  <th style="color: #0d47a1">LcicID</th>
+                  <th style="color: #0d47a1">LCIC_code</th>
                 </template>
                 <template v-slot:header.com_enterprise_code>
                   <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -308,7 +316,7 @@
                   <tr>
                     <td>{{ index + 1 }}</td>
                     <td style="color: brown">
-                      {{ item.lcicID }}
+                      {{ item.LCIC_code }}
                     </td>
                     <td>{{ item.com_enterprise_code }}</td>
                     <td>{{ item.bnk_code }}</td>
@@ -345,7 +353,7 @@
                   <th style="color: #0d47a1">ID</th>
                 </template>
                 <template v-slot:header.lcicID>
-                  <th style="color: #0d47a1">LcicID</th>
+                  <th style="color: #0d47a1">LCIC_code</th>
                 </template>
                 <template v-slot:header.com_enterprise_code>
                   <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -369,7 +377,7 @@
                 <template v-slot:item="{ item, index }">
                   <tr>
                     <td>{{ index + 1 }}</td>
-                    <td>{{ item.lcicid }}</td>
+                    <td>{{ item.LCIC_code }}</td>
                     <td>{{ item.com_enterprise_code }}</td>
                     <td>{{ item.bnk_code }}</td>
                     <td>{{ item.branch_id }}</td>
@@ -387,7 +395,11 @@
                 LCICID ແລະ com_enterprise_code ບໍ່ຖືກ
               </h3>
 
-              <v-data-table :items="disputese" :headers="headers5" density="compact">
+              <v-data-table
+                :items="disputese"
+                :headers="headers5"
+                density="compact"
+              >
                 <template v-slot:header>
                   <tr style="color: black; background-color: blue"></tr>
                 </template>
@@ -395,7 +407,7 @@
                   <th style="color: #0d47a1">ID</th>
                 </template>
                 <template v-slot:header.lcicID>
-                  <th style="color: #0d47a1">LcicID</th>
+                  <th style="color: #0d47a1">LCIC_code</th>
                 </template>
                 <template v-slot:header.com_enterprise_code>
                   <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -415,7 +427,7 @@
                 <template v-slot:item="{ item, index }">
                   <tr>
                     <td>{{ index + 1 }}</td>
-                    <td>{{ item.lcicID }}</td>
+                    <td>{{ item.LCIC_code }}</td>
                     <td>{{ item.com_enterprise_code }}</td>
                     <td>{{ item.bnk_code }}</td>
                     <td>{{ item.branch_id }}</td>
@@ -434,7 +446,11 @@
             ຂໍ້ມູນທີ່ອັບໂຫຼດສົມບຸນ ເປັນຂໍ້ມູນທີ່ຜ່ານການກວດສອບ ແລະ
             ຖືກບັນທຶກລົງຖານຂໍ້ມູນແລ້ວ
           </h1>
-          <v-data-table :items="b1Monthly" :headers="headers5" density="compact">
+          <v-data-table
+            :items="b1Monthly"
+            :headers="headers5"
+            density="compact"
+          >
             <template v-slot:header>
               <tr style="color: black; background-color: blue"></tr>
             </template>
@@ -442,7 +458,7 @@
               <th style="color: #0d47a1">ID</th>
             </template>
             <template v-slot:header.lcicID>
-              <th style="color: #0d47a1">LcicID</th>
+              <th style="color: #0d47a1">LCIC_code</th>
             </template>
             <template v-slot:header.com_enterprise_code>
               <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -463,7 +479,7 @@
             <template v-slot:item="{ item, index }">
               <tr>
                 <td>{{ index + 1 }}</td>
-                <td>{{ item.lcicID }}</td>
+                <td>{{ item.LCIC_code }}</td>
                 <td>{{ item.com_enterprise_code }}</td>
                 <td>{{ item.bnk_code }}</td>
                 <td>{{ item.branch_id }}</td>

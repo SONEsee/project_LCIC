@@ -178,7 +178,7 @@ const submit = async () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            LCICID: id1.value,
+            LCIC_code: id1.value,
             EnterpriseID: id2.value,
             CatalogID: selectedCat.value.cat_sys_id,
           }),
@@ -190,7 +190,7 @@ const submit = async () => {
       if (res.ok && data.length > 0) {
         Swal.close();
 
-        window.location.href = `/backend/datasearch?LCICID=${id1.value}&EnterpriseID=${id2.value}&CatalogID=${selectedCat.value.cat_sys_id}`;
+        window.location.href = `/backend/datasearch?LCIC_code=${id1.value}&EnterpriseID=${id2.value}&CatalogID=${selectedCat.value.cat_sys_id}`;
       } else {
         Swal.fire({
           icon: "error",

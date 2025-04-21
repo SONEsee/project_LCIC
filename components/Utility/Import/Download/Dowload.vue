@@ -1,179 +1,223 @@
 <template>
-  <v-row class="justify-center">
-    <!-- Water Bill Card -->
-    <v-col cols="12" sm="6" md="4" lg="3">
-      <v-card class="pa-5 d-flex flex-column fill-height" elevation="3">
-        <v-card-title class="text-h6 text-center">ບິນ ນໍ້າປະປາ</v-card-title>
-        <v-card-text class="flex-grow-1">
-          <v-text-field
-            width="100%"
+  <v-container>
+    <v-row class="justify-center">
+      <!-- Water Bill Card -->
+      <v-col cols="12" sm="6" md="4" lg="3">
+        <v-card class="d-flex flex-column fill-height" elevation="3">
+          <v-card-title class="text-h6 mt-5 text-center"
+            >ບິນ ນໍ້າປະປາ</v-card-title
+          >
+          <v-card-text class="">
+            <v-text-field
+              density="compact"
+              v-model="month"
+              label="ປ້ອນຂໍ້ມູນ ເດືອນປີ (MMYYYY)"
+              variant="outlined"
+              clearable
+              prepend-icon="mdi-calendar"
+              placeholder="MM-YYYY"
+              @keypress="onlyMonthYear"
+              @blur="validateMonthYear"
+            />
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              block
+              color="primary"
+              :disabled="!month"
+              @click="downloadJSON"
+            >
+              ດາວໂຫລດ ບິນນໍ້າປະປາ
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+
+      <!-- Customer Info Card -->
+      <v-col cols="12" sm="6" md="4" lg="3">
+        <v-card class="d-flex flex-column fill-height" elevation="3">
+          <v-card-title class="text-h6 text-center mt-5"
+            >ລູກຄ້າ ນໍ້າປະປາ</v-card-title
+          >
+          <v-card-text class="flex-grow-1">
+            <v-text-field
+              density="compact"
+              v-model="customerMonth"
+              label="ປ້ອນຂໍ້ມູນ ເດືອນປີ (MMYYYY)"
+              variant="outlined"
+              clearable
+              prepend-icon="mdi-calendar"
+              placeholder="MM-YYYY"
+              @keypress="onlyMonthYear"
+              @blur="validateCustomerMonthYear(customerMonth)"
+            />
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              block
+              color="info"
+              :disabled="!customerMonth"
+              @click="downloadCustomerInfo"
+            >
+              ດາວໂຫລດ ລູກຄ້ານໍ້າປະປາ
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+
+      <!-- Electric Bill Card -->
+      <v-col cols="12" sm="6" md="4" lg="3">
+        <v-card class="d-flex flex-column fill-height" elevation="3">
+          <v-card-title class="text-h6 mt-5 text-center"
+            >ບິນ ໄຟຟ້າ</v-card-title
+          >
+          <v-card-text class="flex-grow-1">
+            <!-- <v-text-field v-model="province_code" label="ລະຫັດຂວາງ" variant="outlined" clearable prepend-icon="mdi-map-marker" />
+            <v-text-field v-model="district_code" label="ລະຫັດເມືອງ" variant="outlined" clearable prepend-icon="mdi-map-marker-radius" /> -->
+            <v-select
+              density="compact"
+              variant="outlined"
+              v-model="selectedProvince"
+              :items="provinces"
+              item-title="pro_name"
+              item-value="pro_id"
+              label="Select Province"
+              outlined
+              dense
+            ></v-select>
+            <v-select
+              density="compact"
+              variant="outlined"
+              v-model="selectedDistrict"
+              :items="districts"
+              item-title="dis_name"
+              item-value="dis_id"
+              label="Select District"
+              outlined
+              dense
+              :disabled="!selectedProvince"
+            ></v-select>
+            <v-text-field
+              density="compact"
+              v-model="dateRequest"
+              label="ປ້ອນຂໍ້ມູນ ປີເດືອນ (YYYYMM)"
+              variant="outlined"
+              clearable
+              prepend-icon="mdi-calendar"
+              placeholder="YYYYMM"
+            />
+            <v-text-field
+              density="compact"
+              v-model="page"
+              label="Page"
+              type="number"
+              variant="outlined"
+              clearable
+              prepend-icon="mdi-book-open"
+            />
+            <v-text-field
+              density="compact"
+              v-model="limit"
+              label="Limit"
+              type="number"
+              variant="outlined"
+              clearable
+              prepend-icon="mdi-format-list-numbered"
+            />
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              block
+              color="success"
+              class="mt-2"
+              :disabled="!selectedProvince || !selectedDistrict || !dateRequest"
+              @click="downloadJSONWithParams"
+            >
+              ດາວໂຫລດ ບິນໄຟຟ້າ
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+
+      <!-- Electric Customers Card -->
+      <v-col cols="12" sm="6" md="4" lg="3">
+        <v-card class="d-flex flex-column fill-height" elevation="3">
+          <v-card-title class="text-h6 mt-5 text-center"
+            >ລູກຄ້າ ໄຟຟ້າ</v-card-title
+          >
+          <v-card-text class="flex-grow-1">
+            <!-- <v-text-field v-model="cus_province_code" label="ລະຫັດຂວາງ" variant="outlined" clearable prepend-icon="mdi-map-marker" />
+            <v-text-field v-model="cus_district_code" label="ລະຫັດເມືອງ" variant="outlined" clearable prepend-icon="mdi-map-marker-radius" /> -->
+            <v-select
+              density="compact"
+              variant="outlined"
+              v-model="cus_selectedProvince"
+              :items="cus_provinces"
+              item-title="pro_name"
+              item-value="pro_id"
+              label="Select Province"
+              outlined
+              dense
+            ></v-select>
+            <v-select
+              density="compact"
+              variant="outlined"
+              v-model="cus_selectedDistrict"
+              :items="cus_districts"
+              item-title="dis_name"
+              item-value="dis_id"
+              label="Select District"
+              outlined
+              dense
+              :disabled="!cus_selectedProvince"
+            ></v-select>
+            <v-text-field
             density="compact"
-            v-model="month"
-            label="ປ້ອນຂໍ້ມູນ ເດືອນປີ (MMYYYY)"
-            variant="outlined"
-            clearable
-            prepend-inner-icon="mdi-calendar"
-            placeholder="MM-YYYY"
-            @keypress="onlyMonthYear"
-            @blur="validateMonthYear"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn block color="primary" :disabled="!month" @click="downloadJSON">
-            ດາວໂຫລດ ບິນນໍ້າປະປາ
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-col>
-
-    <!-- Customer Info Card -->
-    <v-col cols="12" sm="6" md="4" lg="3">
-      <v-card class="pa-5 d-flex flex-column fill-height" elevation="3">
-        <v-card-title class="text-h6 text-center">ລູກຄ້າ ນໍ້າປະປາ</v-card-title>
-        <v-card-text class="flex-grow-1">
-          <v-text-field
+              v-model="cus_dateRequest"
+              label="ປ້ອນຂໍ້ມູນ ປີເດືອນ (YYYYMM)"
+              variant="outlined"
+              clearable
+              prepend-icon="mdi-calendar"
+              placeholder="YYYYMM"
+            />
+            <v-text-field
             density="compact"
-            v-model="customerMonth"
-            label="ປ້ອນຂໍ້ມູນ ເດືອນປີ (MMYYYY)"
-            variant="outlined"
-            clearable
-            prepend-inner-icon="mdi-calendar"
-            placeholder="MM-YYYY"
-            @keypress="onlyMonthYear"
-            @blur="validateCustomerMonthYear(customerMonth)"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn
-            block
-            color="info"
-            :disabled="!customerMonth"
-            @click="downloadCustomerInfo"
-          >
-            ດາວໂຫລດ ລູກຄ້ານໍ້າປະປາ
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-col>
-
-    <!-- Electric Bill Card -->
-    <v-col cols="12" sm="6" md="4" lg="3">
-      <v-card class="pa-5 d-flex flex-column fill-height" elevation="3">
-        <v-card-title class="text-h6 text-center">ບິນ ໄຟຟ້າ</v-card-title>
-        <v-card-text class="flex-grow-1">
-          <v-text-field
-            v-model="province_code"
-            label="ລະຫັດຂວາງ"
-            variant="outlined"
-            clearable
-            prepend-icon="mdi-map-marker"
-          />
-          <v-text-field
-            v-model="district_code"
-            label="ລະຫັດເມືອງ"
-            variant="outlined"
-            clearable
-            prepend-icon="mdi-map-marker-radius"
-          />
-          <v-text-field
-            v-model="dateRequest"
-            label="ປ້ອນຂໍ້ມູນ ປີເດືອນ (YYYYMM)"
-            variant="outlined"
-            clearable
-            prepend-icon="mdi-calendar"
-            placeholder="YYYYMM"
-          />
-          <v-text-field
-            v-model="page"
-            label="Page"
-            type="number"
-            variant="outlined"
-            clearable
-            prepend-icon="mdi-book-open"
-          />
-          <v-text-field
-            v-model="limit"
-            label="Limit"
-            type="number"
-            variant="outlined"
-            clearable
-            prepend-icon="mdi-format-list-numbered"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn
-            block
-            color="success"
-            class="mt-2"
-            :disabled="!province_code || !district_code || !dateRequest"
-            @click="downloadJSONWithParams"
-          >
-            ດາວໂຫລດ ລູກຄ້າໄຟຟ້າ
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-col>
-
-    <!-- Electric Customers Card -->
-    <v-col cols="12" sm="6" md="4" lg="3">
-      <v-card class="pa-5 d-flex flex-column fill-height" elevation="3">
-        <v-card-title class="text-h6 text-center">ລູກຄ້າ ໄຟຟ້າ</v-card-title>
-        <v-card-text class="flex-grow-1">
-          <v-text-field
-            v-model="cus_province_code"
-            label="ລະຫັດຂວາງ"
-            variant="outlined"
-            clearable
-            prepend-icon="mdi-map-marker"
-          />
-          <v-text-field
-            v-model="cus_district_code"
-            label="ລະຫັດເມືອງ"
-            variant="outlined"
-            clearable
-            prepend-icon="mdi-map-marker-radius"
-          />
-          <v-text-field
-            v-model="cus_dateRequest"
-            label="ປ້ອນຂໍ້ມູນ ປີເດືອນ (YYYYMM)"
-            variant="outlined"
-            clearable
-            prepend-icon="mdi-calendar"
-            placeholder="YYYYMM"
-          />
-          <v-text-field
-            v-model="cus_page"
-            label="Page"
-            type="number"
-            variant="outlined"
-            clearable
-            prepend-icon="mdi-book-open"
-          />
-          <v-text-field
-            v-model="cus_limit"
-            label="Limit"
-            type="number"
-            variant="outlined"
-            clearable
-            prepend-icon="mdi-format-list-numbered"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn
-            block
-            color="success"
-            class="mt-2"
-            :disabled="
-              !cus_province_code || !cus_district_code || !cus_dateRequest
-            "
-            @click="downloadCusJSONWithParams"
-          >
-            ດາວໂຫລດ ລູກຄ້າໄຟຟ້າ
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-col>
-  </v-row>
+              v-model="cus_page"
+              label="Page"
+              type="number"
+              variant="outlined"
+              clearable
+              prepend-icon="mdi-book-open"
+            />
+            <v-text-field
+            density="compact"
+              v-model="cus_limit"
+              label="Limit"
+              type="number"
+              variant="outlined"
+              clearable
+              prepend-icon="mdi-format-list-numbered"
+            />
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              block
+              color="success"
+              class="mt-2"
+              :disabled="
+                !cus_selectedProvince ||
+                !cus_selectedDistrict ||
+                !cus_dateRequest
+              "
+              @click="downloadCusJSONWithParams"
+            >
+              ດາວໂຫລດ ລູກຄ້າໄຟຟ້າ
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script setup>
@@ -195,8 +239,8 @@ const token =
 const month = ref("");
 // EDL_BILL
 const customerMonth = ref("");
-const province_code = ref("");
-const district_code = ref("");
+// const province_code = ref('');
+// const district_code = ref('');
 const dateRequest = ref("");
 const page = ref("");
 const limit = ref("");
@@ -206,6 +250,150 @@ const cus_district_code = ref("");
 const cus_dateRequest = ref("");
 const cus_page = ref("");
 const cus_limit = ref("");
+
+const provinces = ref([]); // Store list of provinces
+const districts = ref([]); // Store list of districts
+const selectedProvince = ref(""); // Selected province
+const selectedDistrict = ref(""); // Selected district
+
+const cus_provinces = ref([]); // Store list of provinces
+const cus_districts = ref([]); // Store list of districts
+const cus_selectedProvince = ref(""); // Selected province
+const cus_selectedDistrict = ref(""); // Selected district
+const config = useRuntimeConfig();
+// Fetch all provinces on component mount
+const fetchProvinces = async () => {
+  try {
+    console.log("Fetching provinces..."); // Log before fetch
+    const { data } = await useFetch(
+      `${config.public.strapi.url}api/province-edl/`
+    );
+    provinces.value = data.value || [];
+    console.log("Provinces fetched:", provinces.value); // Log after fetch
+
+    // If you want to see the raw API response:
+    console.log("Raw API response:", data.value);
+  } catch (error) {
+    console.error("Error fetching provinces:", error);
+  }
+};
+
+// Fetch districts when province changes
+const fetchDistricts = async (pro_id) => {
+  try {
+    console.log("Fetching districts for province:", pro_id); // Log province ID
+    if (!pro_id) {
+      districts.value = [];
+      console.log("No province selected, cleared districts");
+      return;
+    }
+    const { data } = await useFetch(
+      `${config.public.strapi.url}api/province-district/${pro_id}/`
+    );
+    districts.value = data.value?.districts || [];
+    console.log("Districts fetched:", districts.value); // Log after fetch
+
+    // If you want to see the raw API response:
+    console.log("Raw districts API response:", data.value);
+  } catch (error) {
+    console.error("Error fetching districts:", error);
+  }
+};
+
+const fetchCusProvinces = async () => {
+  try {
+    console.log("Fetching Cus provinces..."); // Log before fetch
+    const { data } = await useFetch(
+      `${config.public.strapi.url}api/province-edl/`
+    );
+    cus_provinces.value = data.value || [];
+    console.log("Cus Provinces fetched:", cus_provinces.value); // Log after fetch
+
+    // If you want to see the raw API response:
+    console.log("Raw API response:", data.value);
+  } catch (error) {
+    console.error("Error fetching Cus provinces:", error);
+  }
+};
+// Fetch districts when province changes
+const fetchCusDistricts = async (pro_id) => {
+  try {
+    console.log("Fetching Cus districts for province:", pro_id); // Log province ID
+    if (!pro_id) {
+      cus_districts.value = [];
+      console.log("No Cus province selected, cleared districts");
+      return;
+    }
+    const { data } = await useFetch(
+      `${config.public.strapi.url}api/province-district/${pro_id}/`
+    );
+    cus_districts.value = data.value?.districts || [];
+    console.log("Cus Districts fetched:", cus_districts.value); // Log after fetch
+
+    // If you want to see the raw API response:
+    console.log("Raw Cus districts API response:", data.value);
+  } catch (error) {
+    console.error("Error Cus fetching districts:", error);
+  }
+};
+
+watch(cus_selectedProvince, (newProvince) => {
+  console.log("Cus Province changed to:", newProvince); // Log province change
+  fetchCusDistricts(newProvince);
+});
+watch(cus_districts, (newDistricts) => {
+  console.log("Cus Districts updated:", newDistricts);
+});
+
+// Initial fetch
+console.log("Initializing component...");
+fetchProvinces();
+
+watch(selectedProvince, (newProvince) => {
+  console.log("Province changed to:", newProvince); // Log province change
+  fetchDistricts(newProvince);
+});
+watch(districts, (newDistricts) => {
+  console.log("Districts updated:", newDistricts);
+});
+
+// Initial fetch
+console.log("Initializing component...");
+fetchCusProvinces();
+
+// const provinces = ref([]) // Store list of provinces
+// const districts = ref([])  // Store list of districts
+// const selectedProvince = ref('') // Selected province
+// const selectedDistrict = ref('') // Selected district
+
+// // Fetch all provinces on component mount
+// const fetchProvinces = async () => {
+//   try {
+//     const { data } = await useFetch('http://192.168.45.56:8000/api/province-edl/')
+//     provinces.value = data.value || []
+//   } catch (error) {
+//     console.error('Error fetching provinces:', error)
+//   }
+// }
+
+// // Fetch districts when province changes
+// const fetchDistricts = async (pro_id) => {
+//   try {
+//     if (!pro_id) {
+//       districts.value = []
+//       return
+//     }
+//     const { data } = await useFetch(`http://192.168.45.56:8000/api/province-district/${pro_id}/`)
+//     districts.value = data.value?.districts || []
+//   } catch (error) {
+//     console.error('Error fetching districts:', error)
+//   }
+// }
+
+// watch(selectedProvince, (newProvince) => {
+//   fetchDistricts(newProvince)
+// })
+// fetchProvinces()
 
 const fetchAndDownload = async (url, filename) => {
   try {
@@ -337,34 +525,45 @@ const downloadJSON = () => {
 };
 
 const downloadJSONWithParams = () => {
-  if (!province_code.value || !district_code.value || !dateRequest.value)
+  if (!selectedProvince.value || !selectedDistrict.value || !dateRequest.value)
     return;
   const apiUrl = `https://edl-inside-api.edl.com.la/api_v1/wattmonitor-bol/billing-svc/billing/getpaymenthistory?province_code=${
-    province_code.value
-  }&district_code=${district_code.value}&dateRequest=${
+    selectedProvince.value
+  }&district_code=${selectedDistrict.value}&dateRequest=${
     dateRequest.value
   }&page=${page.value || 1}&limit=${limit.value || 10}`;
   fetchAndDownloadEDL(
     apiUrl,
-    `electric-bill-${province_code.value}-${district_code.value}-${dateRequest.value}.json`
+    `electric-bill-${selectedProvince.value}-${selectedDistrict.value}-${dateRequest.value}.json`
   );
 };
 
+// const downloadJSONWithParams = () => {
+//   if (!selectedProvince.value || !selectedDistrict.value || !dateRequest.value) {
+//     console.error('Missing required fields');
+//     return;
+//   }
+
+//   const apiUrl = `https://edl-inside-api.edl.com.la/api_v1/wattmonitor-bol/billing-svc/billing/getpaymenthistory?province_code=${selectedProvince.value}&district_code=${selectedDistrict.value}&dateRequest=${dateRequest.value}&page=${page.value || 1}&limit=${limit.value || 10}`;
+
+//   fetchAndDownloadEDL(apiUrl, `electric-bill-${selectedProvince.value}-${selectedDistrict.value}-${dateRequest.value}.json`);
+// };
+
 const downloadCusJSONWithParams = () => {
   if (
-    !cus_province_code.value ||
-    !cus_district_code.value ||
+    !cus_selectedProvince.value ||
+    !cus_selectedDistrict.value ||
     !cus_dateRequest.value
   )
     return;
   const apiUrl = `https://edl-inside-api.edl.com.la/api_v1/wattmonitor-bol/billing-svc/billing/getCustomerInfo?province_code=${
-    cus_province_code.value
-  }&district_code=${cus_district_code.value}&dateRequest=${
+    cus_selectedProvince.value
+  }&district_code=${cus_selectedDistrict.value}&dateRequest=${
     cus_dateRequest.value
   }&page=${cus_page.value || 1}&limit=${cus_limit.value || 10}`;
   fetchAndDownloadEDL(
     apiUrl,
-    `electric-bill-${cus_province_code.value}-${cus_district_code.value}-${cus_dateRequest.value}.json`
+    `electric-bill-${cus_selectedProvince.value}-${cus_selectedDistrict.value}-${cus_dateRequest.value}.json`
   );
 };
 

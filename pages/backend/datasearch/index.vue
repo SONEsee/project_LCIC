@@ -20,11 +20,11 @@
                   cols="12"
                   md="6"
                   v-for="item in data"
-                  :key="item.LCICID"
+                  :key="item.LCIC_code"
                   class="text-end mt-3 mp-3"
                 >
                   <p class="text-red">ລະຫັດຂສລ:
-                    <b class="ml-1 mr-3" style="color: black">{{ item.LCICID }}</b>
+                    <b class="ml-1 mr-3" style="color: black">{{ item.LCIC_code }}</b>
                     ລະຫັດວິສາຫະກິດ:
                     <b class="ml-1 mr-3" style="color: black">{{ item.EnterpriseID }}</b>
                 
@@ -47,7 +47,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in data" :key="item.LCICID">
+                <tr v-for="item in data" :key="item.LCIC_code">
                   <td><p>{{ item.EnterpriseID }}</p></td>
                   <td><p>{{ item.enterpriseNameLao }}</p></td>
                   <td><p>{{ item.eneterpriseNameEnglish }}</p></td>
@@ -109,7 +109,7 @@ const catalogID = ref(route.query.CatalogID || '');
 
 
 const fetchData = async () => {
-  const { LCICID, EnterpriseID, CatalogID } = route.query;
+  const { LCIC_code, EnterpriseID, CatalogID } = route.query;
 
   try {
     const config = useRuntimeConfig();
@@ -122,7 +122,7 @@ const fetchData = async () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          LCICID: LCICID,
+          LCIC_code: LCIC_code,
           EnterpriseID: EnterpriseID,
           CatalogID: CatalogID
         }),
@@ -148,7 +148,7 @@ const fetchData = async () => {
               Authorization: `Bearer ${newToken}`,
             },
             body: JSON.stringify({
-              LCICID: LCICID,
+              LCIC_code: LCIC_code,
               EnterpriseID: EnterpriseID,
               CatalogID:CatalogID
             }),
@@ -250,7 +250,7 @@ const refreshAccessToken = async () => {
 };
 
 const showDetails = (item: any) => {
-  const { LCICID, EnterpriseID, CatalogID } = route.query;
+  const { LCIC_code, EnterpriseID, CatalogID } = route.query;
   Swal.fire({
     icon: "info",
     iconColor:'blue',
@@ -282,7 +282,7 @@ const showDetails = (item: any) => {
       console.log("CatalogID:", item.CatalogID); 
       insertSearchLog(item).then(() => {
         
-        const printUrl = `../backend/reportprint1?EnterpriseID=${item.EnterpriseID}&LCICID=${item.LCICID}&CatalogID=${CatalogID}`;
+        const printUrl = `../backend/reportprint1?EnterpriseID=${item.EnterpriseID}&LCIC_code=${item.LCIC_code}&CatalogID=${CatalogID}`;
         window.location.href = printUrl;
       }).catch(error => {
         console.error("Error inserting search log:", error);
@@ -294,7 +294,7 @@ const showDetails = (item: any) => {
 
 const insertSearchLog = async (item: any) => {
   try {
-    const { LCICID, EnterpriseID, CatalogID } = route.query;
+    const { LCIC_code, EnterpriseID, CatalogID } = route.query;
     const token = localStorage.getItem('access_token');
     const config = useRuntimeConfig();
     const response = await fetch(`${config.public.strapi.url}api/insert_searchlog/`, { 
@@ -305,7 +305,7 @@ const insertSearchLog = async (item: any) => {
       },
       body: JSON.stringify({
         EnterpriseID: item.EnterpriseID,
-        LCICID: item.LCICID,
+        LCIC_code: item.LCIC_code,
         CatalogID:CatalogID
         
       })

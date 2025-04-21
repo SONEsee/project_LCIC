@@ -5,7 +5,7 @@ export interface UtilityRespons {
   }
   
   export interface BillIems {
-    BillID: number;
+    BillID: string | number;
     Customer_ID: string;
     InvoiceNo: string;
     TypeOfPro: string;
