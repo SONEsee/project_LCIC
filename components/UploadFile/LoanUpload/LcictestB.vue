@@ -23,9 +23,6 @@
           <v-divider class="mx-4" inset vertical></v-divider>
         </v-toolbar> -->
       </template>
-      <!-- <template v-slot:item.path="{ item }">
-          <a :href="getFullPath(item.path)" target="_blank">{{ item.path }}</a>
-        </template> -->
       <template v-slot:item.path="{ item }">
         <a :href="getFullPath(item.path)" target="_blank">{{
           getFileName(item.path)
@@ -79,7 +76,7 @@
             <v-btn 
               @click="confirmAction(item)" 
               color="success"
-              :disabled="isAnyItemUploading"
+              :disabled="isUserUploading(item.user_id)"
             > 
               ຢືນຢັນ 
             </v-btn>
@@ -201,9 +198,9 @@ export default defineComponent({
     });
     
     const fetchDataByUserID = async (paddedMID: string) => {
-   
+      // Implementation needed based on your requirements
       console.log("Fetching data for user ID:", paddedMID);
-     
+      // Add your implementation here
     };
     
     const fetchData = async () => {
@@ -238,10 +235,10 @@ export default defineComponent({
       }
     };
     
-  
-    const isAnyItemUploading = computed(() => {
-      return items.value.some(item => item.statussubmit === "3");
-    });
+    // Check if a specific user_id is uploading
+    const isUserUploading = (user_id: string) => {
+      return items.value.some(item => item.user_id === user_id && item.statussubmit === "3");
+    };
     
     const filteredItems = computed(() =>
       items.value.filter((item) =>
@@ -382,7 +379,7 @@ export default defineComponent({
     };
 
     const confirmAction = async (item: any) => {
-     
+      // Set the item status to uploading first
       item.statussubmit = "3";
       
       Swal.fire({
@@ -400,12 +397,14 @@ export default defineComponent({
             const params = new URLSearchParams();
             const config = useRuntimeConfig();
             params.append("FID", item.FID);
-
+            
+                location.reload();
+              
             const response = await axios.post(
               `${config.public.strapi.url}api/confirm_upload/`,
               params
             );
-            location.reload();
+            
             if (response.data.status === "success") {
               const confirmedItem = items.value.find(
                 (i) => i.fileName === item.fileName
@@ -423,13 +422,13 @@ export default defineComponent({
                 location.reload();
               });
             } else {
-              
+              // Reset status if failed
               item.statussubmit = "1";
               Swal.fire("ລົ້ມເຫລວ!", "ການຢືນຢັນການອັບໂຫຼດລົ້ມເຫລວ.", "error");
             }
           } catch (error) {
             console.error("Failed to confirm upload:", error);
-            
+            // Reset status if error
             item.statussubmit = "1";
             Swal.fire(
               "ຜິດພາດ!",
@@ -440,7 +439,7 @@ export default defineComponent({
             });
           }
         } else {
-          
+          // Reset status if cancelled
           item.statussubmit = "1";
         }
       });
@@ -461,12 +460,12 @@ export default defineComponent({
             confirmedItem.statussubmit = "0";
           }
         } else {
-          
+          // Reset status if the update failed
           item.statussubmit = "1";
         }
       } catch (error) {
         console.error("Failed to update status:", error);
-        
+        // Reset status if there was an error
         item.statussubmit = "1";
       }
     };
@@ -510,6 +509,7 @@ export default defineComponent({
     };
 
     const getFileName = (path: string) => {
+      if (!path) return '';
       const parts = path.split("/");
       return parts[parts.length - 1];
     };
@@ -530,7 +530,7 @@ export default defineComponent({
       search,
       uniqueUserIds,
       filterOnlyCapsText,
-      isAnyItemUploading, 
+      isUserUploading, // Expose the function to check if a specific user is uploading
     };
   },
 });
