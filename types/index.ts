@@ -9,6 +9,7 @@ import * as ManageUser from './manage'
 import * as UtilityModel from './utility'
 import * as FeeModel from './fee'
 import * as ReportModel from './reportfcr'
+import * as UserDataResponse from './user'
 export{
     DuplicatesFalse,
     DataModel,
@@ -19,5 +20,7 @@ export{
     ManageUser,
     UtilityModel,
     FeeModel,
-    ReportModel
+    ReportModel,
+    UserDataResponse
+
 }

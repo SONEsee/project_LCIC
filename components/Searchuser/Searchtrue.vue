@@ -59,7 +59,7 @@
 
   <div v-else>ບໍ່ມີລາຍການທີ່ມີສະຖານະ "Found" ທີ່ມີຢູ່.</div>
 
-  <!-- Snackbar for notifications -->
+ 
   <v-snackbar
     v-model="snackbar.show"
     :color="snackbar.color"
@@ -160,98 +160,134 @@ export default {
       }
     };
 
-    const processReport = async (item: Result) => {
-      const config = useRuntimeConfig();
-      const token = localStorage.getItem("access_token");
+// ຟັງຊັນສຳລັບປະມວນຜົນລາຍການດຽວ
+const processReport = async (item: Result) => {
+  const config = useRuntimeConfig();
+  const token = localStorage.getItem("access_token");
 
-      try {
-       
-        // const response = await fetch(
-        //   `${config.public.strapi.url}api/insert_searchlog/`,
-        //   {
-        //     method: "POST",
-        //     headers: {
-        //       "Content-Type": "application/json",
-        //       Authorization: `Bearer ${token}`,
-        //     },
-        //     body: JSON.stringify({
-        //       EnterpriseID: item.com_enterprise_code,
-        //       LCICID: item.lcicID,
-        //     }),
-        //   }
-        // );
+  try {
+    // ອັບເດດສະຖານະ
+    await fetch(`${config.public.strapi.url}api/update_searchlog_status/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        id: item.id,
+        status: 3,
+      }),
+    });
 
-        // if (!response.ok) {
-        //   throw new Error("Failed to insert search log");
-        // }
+    // ເປີດລາຍງານໃນແທັບໃໝ່
+    const printUrl = `../test3/?EnterpriseID=${item.com_enterprise_code}&LCIC_code=${item.LCIC_code}&CatalogID=${item.id}`;
+    window.open(printUrl, '_blank');
+    
+    // ອັບເດດສະຖານະທ້ອງຖິ່ນ
+    item.status = '3';
+    
+    return true;
+  } catch (error) {
+    console.error("Error processing report:", error);
+    showNotification('ເກີດຂໍ້ຜິດພາດໃນການດຳເນີນການ', 'error');
+    return false;
+  }
+};
 
-       
-        await fetch(`${config.public.strapi.url}api/update_searchlog_status/`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            id: item.id,
-            status: 3,
-          }),
-        });
+// ຟັງຊັນສຳລັບປະມວນຜົນຫຼາຍລາຍການ
+const processBatchReports = async (items: Result[]) => {
+  const config = useRuntimeConfig();
+  const token = localStorage.getItem("access_token");
 
-       
-        const printUrl = `../test3/?EnterpriseID=${item.com_enterprise_code}&LCIC_code=${item.LCIC_code}&CatalogID=${item.id}`;
-        window.open(printUrl, '_blank');
+  try {
+    // ອັບເດດສະຖານະຂອງທຸກລາຍການ
+    const updatePromises = items.map(item => 
+      fetch(`${config.public.strapi.url}api/update_searchlog_status/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          id: item.id,
+          status: 3,
+        }),
+      })
+    );
+    
+    await Promise.all(updatePromises);
+    
+    // ສ້າງ params ສຳລັບທຸກລາຍການ
+    const params = items.map(item => 
+      `items[]=${encodeURIComponent(JSON.stringify({
+        enterpriseId: item.com_enterprise_code,
+        lcicCode: item.LCIC_code,
+        catalogId: item.id
+      }))}`
+    ).join('&');
+    
+   
+    const batchUrl = `../test3/?${params}`;
+    window.open(batchUrl, '_blank');
+    
+ 
+    items.forEach(item => {
+      item.status = '3';
+    });
+    
+    return items.length;
+  } catch (error) {
+    console.error("Error processing batch reports:", error);
+    showNotification('ເກີດຂໍ້ຜິດພາດໃນການດຳເນີນການແບບກຸ່ມ', 'error');
+    return 0;
+  }
+};
 
-        
-        item.status = '3';
-        
-        return true;
-      } catch (error) {
-        console.error("Error processing report:", error);
-        showNotification('ເກີດຂໍ້ຜິດພາດໃນການດຳເນີນການ', 'error');
-        return false;
-      }
-    };
 
-    const openReport = async (item: Result) => {
-      processingItems.value[item.id] = true;
-      try {
-        await processReport(item);
-      } finally {
-        processingItems.value[item.id] = false;
-      }
-    };
+const openReport = async (item: Result) => {
+  processingItems.value[item.id] = true;
+  try {
+    await processReport(item);
+  } finally {
+    processingItems.value[item.id] = false;
+  }
+};
 
-    const openAllReports = async () => {
-      if (isProcessing.value) return;
+
+const openAllReports = async () => {
+  if (isProcessing.value) return;
+  
+  isProcessing.value = true;
+  let successCount = 0;
+  const eligibleItems = processedResults.value.filter(item => item.status === 'Found');
+  const totalReports = eligibleItems.length;
+
+  try {
+   
+    if (totalReports > 1) {
+      successCount = await processBatchReports(eligibleItems);
+    } else {
       
-      isProcessing.value = true;
-      let successCount = 0;
-      const totalReports = processedResults.value.length;
-
-      try {
-        for (const item of processedResults.value) {
-          if (item.status === 'Found') {
-            const success = await processReport(item);
-            if (success) successCount++;
-          
-            await new Promise(resolve => setTimeout(resolve, 300));
-          }
-        }
-
-        showNotification(
-          `ດຳເນີນການສຳເລັດ ${successCount} ຈາກ ${totalReports} ລາຍການ`,
-          successCount === totalReports ? 'success' : 'warning'
-        );
-      } catch (error) {
-        console.error("Error processing all reports:", error);
-        showNotification('ເກີດຂໍ້ຜິດພາດໃນການດຳເນີນການ', 'error');
-      } finally {
-        isProcessing.value = false;
+      for (const item of eligibleItems) {
+        const success = await processReport(item);
+        if (success) successCount++;
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
-    };
+    }
 
-    onMounted(fetchResults);
+    showNotification(
+      `ດຳເນີນການສຳເລັດ ${successCount} ຈາກ ${totalReports} ລາຍການ`,
+      successCount === totalReports ? 'success' : 'warning'
+    );
+  } catch (error) {
+    console.error("Error processing all reports:", error);
+    showNotification('ເກີດຂໍ້ຜິດພາດໃນການດຳເນີນການ', 'error');
+  } finally {
+    isProcessing.value = false;
+  }
+};
+
+onMounted(fetchResults);
 
     return {
       processedResults,

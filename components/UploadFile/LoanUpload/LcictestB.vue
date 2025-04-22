@@ -10,7 +10,6 @@
       :items="
         uniqueUserIds.map((user_id) => ({ title: user_id, value: user_id }))
       "
-      item-text="title"
       item-value="value"
     />
     <v-data-table
@@ -57,7 +56,17 @@
       </template>
       <template v-slot:item.statussubmit="{ item }">
         <div class="d-flex align-center">
-          <template v-if="item.statussubmit === '0' && item.percentage <= 50">
+          
+          <template v-if="item.statussubmit === '3'">
+            <span style="color: amber-darken-4;">ກຳລັງອັບໂຫຼດ
+              <v-progress-circular
+            :size="20"
+            color="primary"
+            indeterminate
+          ></v-progress-circular>
+            </span>
+          </template>
+          <template v-else-if="item.statussubmit === '0' && item.percentage <= 50">
             <span style="color: green">ຢືນຢັນສຳເລັດແລ້ວ</span>
           </template>
           <template v-else-if="item.statussubmit === '2'">
@@ -67,7 +76,13 @@
             <span style="color: red">ຂໍ້ຜິດພາດສູງເກີນກຳນົດ</span>
           </template>
           <template v-else>
-            <v-btn @click="confirmAction(item)" color="success"> ຢືນຢັນ </v-btn>
+            <v-btn 
+              @click="confirmAction(item)" 
+              color="success"
+              :disabled="isAnyItemUploading"
+            > 
+              ຢືນຢັນ 
+            </v-btn>
           </template>
         </div>
       </template>
@@ -84,7 +99,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted, computed } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRouter } from "vue-router";
@@ -129,6 +144,7 @@ export default defineComponent({
       status: string;
       confirmed: boolean;
       insertDate: string;
+      user_id: string;
     }
     interface Item {
       FID: string;
@@ -139,24 +155,22 @@ export default defineComponent({
       status: string;
       insertDate: string;
       updateDate: string;
+      user_id: string;
     }
 
     const file = ref<File | null>(null);
     const items = ref<ItemData[]>([]);
+    const user = ref<any>({});
 
     const headers = ref([
       { title: "ໄອດີ", value: "FID" },
       { title: "ຊື່ພາດ", value: "path" },
       { title: "ລະຫັດທະນາຄານ", value: "user_id" },
-
       { title: "ສະຖານະການຢືນຢັນ", value: "statussubmit" },
       { title: "ເປີເຊັນຄວາມຖືກຕອ້ງ", value: "percentage" },
       { title: "Actions", value: "actions", sortable: false },
     ]);
 
-    // onMounted(async () => {
-    //   await fetchData();
-    // });
     onMounted(async () => {
       try {
         await fetchData();
@@ -185,6 +199,13 @@ export default defineComponent({
         console.error("Error in onMounted:", error);
       }
     });
+    
+    const fetchDataByUserID = async (paddedMID: string) => {
+   
+      console.log("Fetching data for user ID:", paddedMID);
+     
+    };
+    
     const fetchData = async () => {
       try {
         const config = useRuntimeConfig();
@@ -200,6 +221,7 @@ export default defineComponent({
           .filter(
             (item: Item) =>
               item.statussubmit === "1" ||
+              item.statussubmit === "3" ||
               item.statussubmit === "0" ||
               item.statussubmit === "2"
           )
@@ -215,13 +237,20 @@ export default defineComponent({
         console.error("Failed to fetch data:", error);
       }
     };
+    
+  
+    const isAnyItemUploading = computed(() => {
+      return items.value.some(item => item.statussubmit === "3");
+    });
+    
     const filteredItems = computed(() =>
       items.value.filter((item) =>
         item.user_id.toLowerCase().includes(search.value.toLowerCase())
       )
     );
+    
     const uniqueUserIds = computed(() => {
-      return [...new Set(filteredItems.value.map((item) => item.user_id))];
+      return [...new Set(items.value.map((item) => item.user_id))];
     });
 
     const sortItemsByUploadDate = () => {
@@ -261,7 +290,7 @@ export default defineComponent({
         status: "ກຳລັງນຳສົ່ງຂໍ້ມູນ",
         confirmed: false,
       };
-      items.value.push(newItem);
+      items.value.push(newItem as any);
 
       try {
         const config = useRuntimeConfig();
@@ -353,6 +382,9 @@ export default defineComponent({
     };
 
     const confirmAction = async (item: any) => {
+     
+      item.statussubmit = "3";
+      
       Swal.fire({
         title: "ຢືນຢັນການດຳເນີນການ",
         text: "ທ່ານແນ່ໃຈຫຼືບໍ່ທີ່ຢືນຢັນການອັບໂຫຼດນີ້?",
@@ -373,7 +405,7 @@ export default defineComponent({
               `${config.public.strapi.url}api/confirm_upload/`,
               params
             );
-
+            location.reload();
             if (response.data.status === "success") {
               const confirmedItem = items.value.find(
                 (i) => i.fileName === item.fileName
@@ -391,11 +423,14 @@ export default defineComponent({
                 location.reload();
               });
             } else {
+              
+              item.statussubmit = "1";
               Swal.fire("ລົ້ມເຫລວ!", "ການຢືນຢັນການອັບໂຫຼດລົ້ມເຫລວ.", "error");
             }
           } catch (error) {
             console.error("Failed to confirm upload:", error);
-
+            
+            item.statussubmit = "1";
             Swal.fire(
               "ຜິດພາດ!",
               "ທ່ານບໍ່ສາມາດຢືນຢັນການອັບໂຫຼດຂໍ້ມູນຍອ້ນຫຼັງໄດ້.",
@@ -404,23 +439,35 @@ export default defineComponent({
               location.reload();
             });
           }
+        } else {
+          
+          item.statussubmit = "1";
         }
       });
 
-      const response = await axios.post(
-        `${config.public.strapi.url}api/api/update-statussubmit/`,
-        `FID=${item.FID}`
-      );
-
-      if (response.data.status === "success") {
-        const confirmedItem = items.value.find(
-          (i) => i.fileName === item.fileName
+      try {
+        const config = useRuntimeConfig();
+        const response = await axios.post(
+          `${config.public.strapi.url}api/api/update-statussubmit/`,
+          `FID=${item.FID}`
         );
-        if (confirmedItem) {
-          confirmedItem.confirmed = true;
-          confirmedItem.statussubmit = "0";
+
+        if (response.data.status === "success") {
+          const confirmedItem = items.value.find(
+            (i) => i.fileName === item.fileName
+          );
+          if (confirmedItem) {
+            confirmedItem.confirmed = true;
+            confirmedItem.statussubmit = "0";
+          }
+        } else {
+          
+          item.statussubmit = "1";
         }
-      } else {
+      } catch (error) {
+        console.error("Failed to update status:", error);
+        
+        item.statussubmit = "1";
       }
     };
 
@@ -447,11 +494,9 @@ export default defineComponent({
       }
     };
 
-    // const getFullPath = (path: string) => {
-    //   return `http://127.0.0.1:35729/media/${path}`;
-    // };
     const config = useRuntimeConfig();
     const getFullPath = (path: string) => `${config.public.strapi.url}media/${path}`;
+    
     const filterOnlyCapsText = (
       value: string | null,
       query: string | null
@@ -468,6 +513,7 @@ export default defineComponent({
       const parts = path.split("/");
       return parts[parts.length - 1];
     };
+    
     return {
       file,
       headers,
@@ -484,6 +530,7 @@ export default defineComponent({
       search,
       uniqueUserIds,
       filterOnlyCapsText,
+      isAnyItemUploading, 
     };
   },
 });

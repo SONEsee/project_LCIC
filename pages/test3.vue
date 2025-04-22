@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useReeportFCRStore } from "~/stores/reportfcr";
-import { onMounted, computed } from "vue";
+import { onMounted, computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import dayjs from "dayjs";
 
@@ -9,33 +9,109 @@ const EnterpriseID = (route.query.EnterpriseID as string) || "";
 const LCIC_code = (route.query.LCIC_code as string) || "";
 const CatalogID = (route.query.CatalogID as string) || "";
 const store = useReeportFCRStore();
+const batchItems = ref<any[]>([]);
+const isBatchMode = ref(false);
+const currentBatchIndex = ref(0);
+const isProcessing = ref(false);
+
 onMounted(() => {
-  if (EnterpriseID && LCIC_code && CatalogID) {
+  
+  const urlParams = new URLSearchParams(window.location.search);
+  const itemsParam = urlParams.getAll('items[]');
+  
+  if (itemsParam && itemsParam.length > 0) {
+ 
+    const items = itemsParam.map(item => JSON.parse(decodeURIComponent(item)));
+    batchItems.value = items;
+    isBatchMode.value = true;
+    
+
+    if (items.length > 0) {
+      loadBatchItem(0);
+    }
+  } else if (EnterpriseID && LCIC_code && CatalogID) {
+   
     store.GetdataReportFCR(EnterpriseID, LCIC_code, CatalogID);
   }
 });
+
+
+const loadBatchItem = async (index: number) => {
+  if (index >= batchItems.value.length) return;
+  
+  isProcessing.value = true;
+  currentBatchIndex.value = index;
+  
+  const item = batchItems.value[index];
+  try {
+    await store.GetdataReportFCR(
+      item.enterpriseId, 
+      item.lcicCode, 
+      item.catalogId
+    );
+  } catch (error) {
+    console.error(`Error loading batch item ${index}:`, error);
+  } finally {
+    isProcessing.value = false;
+  }
+};
+
+
+const prevBatchItem = () => {
+  if (currentBatchIndex.value > 0) {
+    loadBatchItem(currentBatchIndex.value - 1);
+  }
+};
+
+
+const nextBatchItem = () => {
+  if (currentBatchIndex.value < batchItems.value.length - 1) {
+    loadBatchItem(currentBatchIndex.value + 1);
+  }
+};
+
+
+const printCurrent = () => {
+  window.print();
+};
+
+
+const printAll = async () => {
+  for (let i = 0; i < batchItems.value.length; i++) {
+    await loadBatchItem(i);
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
+    window.print();
+   
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+};
+
 const activeloan = computed(() => {
   return store.respon_data_activeloan;
 });
+
 const history = computed(() => {
   return store.respon_data_searchhistory;
 });
+
 const enterprisinfo = computed(() => {
   return store.respon_data_enterprisinfo;
 });
+
 const loaninfo = computed(() => {
   return store.respon_data_loaninfo;
 });
+
 const lon_history = computed(() => {
   return store.respons_lon_class_history;
 });
-const print = () => {
-  window.print();
-};
+console.log("loaninfo", history);
+
 const user = localStorage.getItem("user_data")
   ? JSON.parse(localStorage.getItem("user_data") as string)
   : null;
-console.log(user);
+
 const getCols = (length: number) => {
   if (length === 1) return 12;
   if (length === 2) return 6;
@@ -43,100 +119,14 @@ const getCols = (length: number) => {
   if (length === 4) return 3;
   if (length === 5) return 2;
 };
-const headers = ref([
-      { title: "ສະມາຊິກ", value: "bnk_code" },
-      { title: "Loan ID", value: "loan_id" },
-      { title: "Loan Open Date", value: "lon_open_date" },
-      { title: "Loan Credit Line", value: "lon_credit_line" },
-      { title: "Outstanding Balance", value: "lon_outstanding_balance" },
-      { title: "Loan Currency Code", value: "lon_currency_code" },
-      { title: "Number of Days Slow", value: "lon_no_days_slow" },
-      { title: "Loan Class", value: "lon_class" },
-      // { title: "Loan Update Date", value: "lon_update_date" },
-      { title: "Loan Status", value: "lon_status" },
-    ]);
-   
-    const mainHeaders = ref([
-      { title: "ສະມາຊິກ", value: "bank" },
-      { title: "Loan ID", value: "id" },
-      { title: "Loan Open Date", value: "lon_open_date" },
-      { title: "Loan Expiry Date", value: "lon_expiry_date" },
-      { title: "Loan Credit Line", value: "lon_credit_line" },
-      { title: "Outstanding Balance", value: "lon_outstanding_balance" },
-      { title: "Currency Code", value: "lon_currency_code" },
-      { title: "Loan Interest Rate", value: "lon_int_rate" },
-      { title: "Loan Purpose Code", value: "lon_purpose_code" },
-      { title: "Number of Days Slow", value: "lon_no_days_slow" },
-      { title: "Loan Class", value: "lon_class" },
-      { title: "Loan Type", value: "lon_type" },
-      { title: "Loan Term", value: "lon_term" },
-      { title: "Loan Status", value: "lon_status" },
-    ]);
-    const subHeaders = ref([
-      { title: "Period", value: "period" },
-      { title: "Credit Line", value: "lon_credit_line" },
-      { title: "Outstanding Balance", value: "lon_outstanding_balance" },
-      { title: "Number of Days Slow", value: "lon_no_days_slow" },
-      { title: "Currency Code", value: "lon_currency_code" },
-      { title: "Loan Class", value: "lon_class" },
-      { title: "Loan Status", value: "lon_status" },
-    ]);
-    const subHeaders_collteral = ref([
-      { title: "col_id", value: "col_id" },
-      { title: "col_type", value: "col_type" },
-      { title: "colleteral_info", value: "related_record.col_value" },
-    ]);
+const print = () => {
+  window.print();
+};
 
-    const realEstateHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "Land No", value: "related_record.land_no" },
-      { title: "Land Map Number", value: "related_record.land_map_no" },
-      { title: "Value", value: "related_record.col_value" },
-    ]);
-    const moneyMiaHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "Account No", value: "related_record.account_no" },
-      { title: "Account Type", value: "related_record.account_type" },
-      { title: "Value", value: "related_record.value" },
-    ]);
-    const equipmentHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "Machine No", value: "related_record.machine_no" },
-      { title: "Machine Type", value: "related_record.machine_type" },
-      { title: "Value", value: "related_record.value" },
-    ]);
-    const projectHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "Ministry Name", value: "related_record.ministry" },
-      { title: "Project No", value: "related_record.project_number" },
-      { title: "Value", value: "related_record.value" },
-    ]);
-    const vehicleHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "Plate No", value: "related_record.plate_number" },
-      { title: "Engine No", value: "related_record.engine_number" },
-      { title: "Value", value: "related_record.value" },
-    ]);
-    const guarantorHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "National ID", value: "related_record.national_id" },
-      { title: "Guarantor Name", value: "related_record.surname_english" },
-      { title: "Value", value: "related_record.value" },
-    ]);
-    const goldsilverHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "Weight", value: "related_record.weight" },
-      { title: "Unit", value: "related_record.unit" },
-      { title: "Value", value: "related_record.value" },
-    ]);
-
+const batchProgress = computed(() => {
+  if (batchItems.value.length === 0) return 0;
+  return Math.round(((currentBatchIndex.value + 1) / batchItems.value.length) * 100);
+});
 </script>
 <template>
   <v-container
@@ -700,7 +690,7 @@ const headers = ref([
 <p> <v-icon icon="mdi-map-marker" style="font-size: 120%; color: red;"></v-icon> 2nd Floor, Lao Security Exchange Building Phonthan  Village, </p><p class="ml-5">Xaysettha District, Vientiane Capital</p>
 
     </v-col>
-    <v-col cols="6"><p> <v-icon icon="mdi-phone" style="font-size: 100%;color: #1565c0;" class="mr-2"></v-icon>  Telephone: (856)-21-25429</p>
+    <v-col cols="6" ><p> <v-icon icon="mdi-phone" style="font-size: 100%;color: #1565c0;" class="mr-2"></v-icon>  Telephone: (856)-21-25429</p>
 <p> <v-icon icon=" mdi-email-outline" style="font-size: 100%;" class="mr-2"></v-icon>  Email: info@lcic.com.la</p></v-col>
     
   </v-row>
@@ -709,7 +699,21 @@ const headers = ref([
         </v-col>
       </v-row>
     </v-col>
-
+<v-col cols="12">
+  <v-row>
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="text-lg font-semibold">ລາຍງານແບບກຸ່ມ</h2>
+      <span class="text-gray-700">{{ currentBatchIndex + 1 }} / {{ batchItems.length }}</span>
+    </div>
+    
+    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+      <div class="bg-blue-600 h-2.5 rounded-full" :style="`width: ${batchProgress}%`"></div>
+    </div>
+    <v-col cols="6" class="d-flex justify-end"><v-btn @click="prevBatchItem" flat class="text-info d-flex justify-end mr-1" ><v-icon icon="mdi-arrow-left"></v-icon> ກັບຄືນ</v-btn> </v-col>
+    <v-col cols="6"><v-btn @click="nextBatchItem" flat class="text-primary" ><p > ໄປຕໍ່</p>
+      <v-icon icon="mdi-arrow-right" class="ml-1"></v-icon></v-btn> </v-col>
+  </v-row>
+</v-col>
     </div>
   </v-container>
 </template>

@@ -112,7 +112,7 @@
             indeterminate
           ></v-progress-circular>
         </v-chip>
-        <v-chip v-if="item.statussubmit === '1'" class="text-primary darken-2">
+        <v-chip v-if="item.statussubmit === '1' || item.statussubmit ==='3' " class="text-primary darken-2">
           ນຳສົ່ຂໍ້ມູນສຳເລັດ
         </v-chip>
         <v-chip v-if="item.statussubmit === '2'" class="text-error darken-2">
