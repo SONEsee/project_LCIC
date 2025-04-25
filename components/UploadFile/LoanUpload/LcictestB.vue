@@ -7,7 +7,9 @@
       v-model="search"
       class="pa-2"
       label="ໃສ່ລະຫັດທະນາຄານ"
-      :items="uniqueUserIds.map((user_id) => ({ title: user_id, value: user_id }))"
+      :items="
+        uniqueUserIds.map((user_id) => ({ title: user_id, value: user_id }))
+      "
       item-value="value"
     />
     <v-data-table
@@ -16,10 +18,8 @@
       class="elevation-1"
       :items-per-page="12"
     >
-      <template v-slot:top>
-       
-      </template>
-      
+      <template v-slot:top> </template>
+
       <template v-slot:item.path="{ item }">
         <a :href="getFullPath(item.path)" target="_blank">
           {{ getFileName(item.path) }}
@@ -27,11 +27,14 @@
       </template>
 
       <template v-slot:item.percentage="{ item }">
-        <span :style="{ color: getPercentageColor(item.percentage) }" class="text-center">
+        <span
+          :style="{ color: getPercentageColor(item.percentage) }"
+          class="text-center"
+        >
           {{ item.percentage.toFixed(2) }}%
         </span>
       </template>
-      
+
       <template v-slot:item.user_id="{ item }">
         <p>{{ getFileName(item.user_id) }}</p>
       </template>
@@ -41,51 +44,82 @@
           {{ item.status }}
         </v-chip>
       </template>
-      
+
       <template v-slot:item.statussubmit="{ item }">
         <div class="d-flex align-center">
           <template v-if="item.statussubmit === '3'">
             <span class="text-amber-darken-4">
               ກຳລັງອັບໂຫຼດ
-              <v-progress-circular :size="20" color="primary" indeterminate></v-progress-circular>
+              <v-progress-circular
+                :size="20"
+                color="primary"
+                indeterminate
+              ></v-progress-circular>
             </span>
           </template>
-          <template v-else-if="item.statussubmit === '0' && item.percentage <= 50">
+          <template
+            v-else-if="item.statussubmit === '0' && item.percentage <= 50"
+          >
             <span class="text-green">ຢືນຢັນສຳເລັດແລ້ວ</span>
           </template>
           <template v-else-if="item.statussubmit === '2'">
             <span class="text-red">ປະຕິເສດ</span>
           </template>
+          <template v-else-if="item.statussubmit === '4'">
+            <span class="text-red"
+              >ກຳລັງອັນໂຫຼດຂໍ້ມູນອອກ
+              <v-progress-circular
+                :size="20"
+                color="primary"
+                indeterminate
+              ></v-progress-circular
+            ></span>
+          </template>
           <template v-else-if="item.percentage > 50">
             <span class="text-red">ຂໍ້ຜິດພາດສູງເກີນກຳນົດ</span>
           </template>
           <template v-else>
-            <v-btn 
-              @click="confirmAction(item)" 
+            <v-btn
+              @click="confirmAction(item)"
               color="success"
               :disabled="isUserUploading(item.user_id)"
-            > 
-              ຢືນຢັນ 
+            >
+              ຢືນຢັນ
             </v-btn>
           </template>
         </div>
       </template>
-      
+
       <template v-slot:item.actions="{ item }">
         <div class="d-flex gap-2">
-          <v-btn @click="viewDetails(item)" color="info">
-            ເບິ່ງລາຍລະອຽດ
-          </v-btn>
-          <v-btn 
-            @click="unloadUpload(item)" 
-            color="warning"
-            :disabled="item.statussubmit === '3'"
+          <v-btn @click="viewDetails(item)" color="info"> ເບິ່ງລາຍລະອຽດ </v-btn>
+          <template
+            v-if="item.statussubmit === '0' || item.statussubmit === '2'"
           >
-            ອັນໂຫຼດ
-          </v-btn>
+            <v-btn
+              @click="unloadUpload(item)"
+              color="warning"
+              :disabled="isUserUnloading(item.user_id)"
+            >
+              ອັນໂຫຼດ
+            </v-btn></template
+          >
+          <template v-else-if="item.statussubmit === '4'">
+            <span class="text-red"
+              >ກຳລັງອັນໂຫຼດຂໍ້ມູນອອກ
+              <v-progress-circular
+                :size="20"
+                color="primary"
+                indeterminate
+              ></v-progress-circular
+            ></span>
+          </template>
+          <template v-else-if="item.statussubmit === '5'">
+            <span class="text-warning">ຂໍ້ມູນຖືກອັນໂຫຼດອອກແລ້ວ </span>
+          </template>
         </div>
       </template>
-      
+
       <template v-slot:no-data>
         <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
       </template>
@@ -131,7 +165,6 @@ const user = ref<any>({});
 const router = useRouter();
 const config = useRuntimeConfig();
 
-
 const headers = ref([
   { title: "ໄອດີ", value: "FID" },
   { title: "ຊື່ພາດ", value: "path" },
@@ -141,41 +174,46 @@ const headers = ref([
   { title: "Actions", value: "actions", sortable: false },
 ]);
 
-
-const filteredItems = computed(() => 
-  items.value.filter((item) => 
+const filteredItems = computed(() =>
+  items.value.filter((item) =>
     item.user_id.toLowerCase().includes(search.value.toLowerCase())
   )
 );
-
 
 const uniqueUserIds = computed(() => {
   return [...new Set(items.value.map((item) => item.user_id))];
 });
 
-
 const isUserUploading = (user_id: string) => {
-  return items.value.some(item => 
-    item.user_id === user_id && item.statussubmit === "3"
+  return items.value.some(
+    (item) =>
+      (item.user_id === user_id && item.statussubmit === "3") || item.user_id === user_id &&
+      item.statussubmit === "4"
   );
 };
-
+const isUserUnloading = (user_id: string) => {
+  return items.value.some(
+    (item) =>
+      (item.user_id === user_id && item.statussubmit === "4") || item.user_id === user_id &&
+      item.statussubmit === "3"
+  );
+};
 
 const fetchData = async () => {
   try {
     const response = await fetch(
       `${config.public.strapi.url}api/upload-files2/`
     );
-    
+
     if (!response.ok) {
       throw new Error(`Network response was not ok: ${response.status}`);
     }
-    
+
     const data = await response.json();
 
     items.value = data
-      .filter((item: any) => 
-        ["0", "1", "2", "3"].includes(item.statussubmit)
+      .filter((item: any) =>
+        ["1", "3", "0", "2", "4", "5"].includes(item.statussubmit)
       )
       .map((item: any) => ({
         ...item,
@@ -195,24 +233,20 @@ const fetchData = async () => {
   }
 };
 
-
 const fetchDataByUserID = async (paddedMID: string) => {
   try {
-
     console.log("Fetching data for user ID:", paddedMID);
-
   } catch (error) {
     console.error("Error fetching user data:", error);
   }
 };
 
-
 const sortItemsByUploadDate = () => {
-  items.value.sort((a, b) => 
-    new Date(b.insertDate).getTime() - new Date(a.insertDate).getTime()
+  items.value.sort(
+    (a, b) =>
+      new Date(b.insertDate).getTime() - new Date(a.insertDate).getTime()
   );
 };
-
 
 const onFileChange = (e: Event) => {
   const target = e.target as HTMLInputElement;
@@ -220,7 +254,6 @@ const onFileChange = (e: Event) => {
     file.value = target.files[0];
   }
 };
-
 
 const uploadFile = async () => {
   if (!file.value) {
@@ -237,7 +270,6 @@ const uploadFile = async () => {
     formData.append("file", file.value);
     formData.append("title", file.value.name);
 
-
     const newItem = {
       fileName: file.value.name,
       fileSize: file.value.size,
@@ -247,26 +279,24 @@ const uploadFile = async () => {
       status: "ກຳລັງນຳສົ່ງຂໍ້ມູນ",
       confirmed: false,
     } as any;
-    
+
     items.value.push(newItem);
 
-    
     const response = await axios.post(
       `${config.public.strapi.url}api/upload-files/`,
       formData,
       {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          "Content-Type": "multipart/form-data",
         },
-        timeout: 30000 
+        timeout: 30000,
       }
     );
 
-   
     const updatedItem = items.value.find(
       (item) => item.fileName === file.value!.name
     );
-    
+
     if (updatedItem) {
       updatedItem.status = "ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ";
       updatedItem.path = response.data.path;
@@ -278,17 +308,14 @@ const uploadFile = async () => {
       text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນແລ້ວ",
     });
 
- 
     await fetchData();
-    
   } catch (error) {
     console.error("Upload failed:", error);
-    
- 
+
     const updatedItem = items.value.find(
       (item) => item.fileName === file.value!.name
     );
-    
+
     if (updatedItem) {
       updatedItem.status = "ການນຳສົ່ງບໍ່ສົມບູນ";
     }
@@ -300,7 +327,6 @@ const uploadFile = async () => {
     });
   }
 };
-
 
 const viewDetails = async (item: ItemData) => {
   if (!item.FID) {
@@ -317,19 +343,19 @@ const viewDetails = async (item: ItemData) => {
       `${config.public.strapi.url}api/api/productinfo3/`,
       {
         params: { FID: item.FID },
-        timeout: 10000 
+        timeout: 10000,
       }
     );
 
     const data = response.data;
-    
+
     router.push({
       name: "detailupload",
       query: { data: JSON.stringify(data) },
     });
   } catch (error) {
     console.error("Failed to fetch details:", error);
-    
+
     Swal.fire({
       icon: "error",
       title: "ລົ້ມເຫລວ",
@@ -337,7 +363,6 @@ const viewDetails = async (item: ItemData) => {
     });
   }
 };
-
 
 const unloadUpload = async (item: ItemData) => {
   try {
@@ -355,127 +380,126 @@ const unloadUpload = async (item: ItemData) => {
     if (!result.isConfirmed) {
       return;
     }
-    
-  
-    Swal.fire({
-      title: "ກຳລັງດຳເນີນການ",
-      text: "ກຳລັງອັນໂຫຼດຂໍ້ມູນ...",
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-    
- 
+
+    const updateResponse = await axios.post(
+      `${config.public.strapi.url}api/api/unload_statussubmit/`,
+      `FID=${item.FID}`
+    );
+
+    if (updateResponse.data.status !== "success") {
+      item.statussubmit = "1";
+      return Swal.fire("ລົ້ມເຫລວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
+    }
+    // Swal.fire({
+    //   title: "ກຳລັງດຳເນີນການ",
+    //   text: "ກຳລັງອັນໂຫຼດຂໍ້ມູນ...",
+    //   allowOutsideClick: false,
+    //   didOpen: () => {
+    //     Swal.showLoading();
+    //   }
+    // });
+
     const params = new URLSearchParams();
     params.append("FID", item.FID);
-      
+
     const response = await axios.post(
       `${config.public.strapi.url}api/unload-upload/`,
       params
     );
-    
-   
+
     Swal.close();
-    
+
     if (response.data.status === "success") {
-      await Swal.fire(
-        "ສຳເລັດ!",
-        "ການອັນໂຫຼດຂໍ້ມູນໄດ້ສຳເລັດແລ້ວ.",
-        "success"
-      );
-      
-      
+      await Swal.fire("ສຳເລັດ!", "ການອັນໂຫຼດຂໍ້ມູນໄດ້ສຳເລັດແລ້ວ.", "success");
+
       window.location.reload();
     } else {
       Swal.fire(
-        "ລົ້ມເຫລວ!", 
-        response.data.message || "ການອັນໂຫຼດຂໍ້ມູນລົ້ມເຫລວ.", 
+        "ລົ້ມເຫລວ!",
+        response.data.message || "ການອັນໂຫຼດຂໍ້ມູນລົ້ມເຫລວ.",
         "error"
       );
     }
   } catch (error) {
     console.error("Failed to unload upload:", error);
-    
-    Swal.fire(
-      "ຜິດພາດ!",
-      "ເກີດຂໍ້ຜິດພາດໃນການອັນໂຫຼດຂໍ້ມູນ. ກະລຸນາລອງໃໝ່ອີກຄັ້ງ.",
-      "error"
+
+    const result = await Swal.fire({
+      title: "ຜິດພາດ",
+      text: "ບໍ່ສາມາດອັນໂຫຼດຂໍ້ມູນໄດ້ . ກະລຸນາລອງໃໝ່.",
+      icon: "error",
+      showCancelButton: true,
+      confirmButtonColor: "#ff9800",
+      confirmButtonText: "ຕົກລົງ",
+    });
+    const updateResponse = await axios.post(
+      `${config.public.strapi.url}api/api/error_statussubmit/`,
+      `FID=${item.FID}`
     );
   }
 };
 
-
 const confirmAction = async (item: ItemData) => {
-  
-  item.statussubmit = "3";
-  
-  try {
-    const result = await Swal.fire({
-      title: "ຢືນຢັນການດຳເນີນການ",
-      text: "ທ່ານແນ່ໃຈຫຼືບໍ່ທີ່ຢືນຢັນການອັບໂຫຼດນີ້?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "ແນ່ໃຈ, ຢືນຢັນ!",
-      cancelButtonText: "ຍົກເລີກ",
-    });
+  const result = await Swal.fire({
+    title: "ຢືນຢັນການດຳເນີນການ",
+    text: "ທ່ານແນ່ໃຈຫຼືບໍ່ທີ່ຢືນຢັນການອັບໂຫຼດນີ້?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "ແນ່ໃຈ, ຢືນຢັນ!",
+    cancelButtonText: "ຍົກເລີກ",
+  });
 
-    if (!result.isConfirmed) {
-      
-      item.statussubmit = "3";
-      return;
+  if (!result.isConfirmed) {
+    return;
+  }
+
+  item.statussubmit = "3";
+  try {
+    const config = useRuntimeConfig();
+    const updateResponse = await axios.post(
+      `${config.public.strapi.url}api/api/update-statussubmit/`,
+      `FID=${item.FID}`
+    );
+
+    if (updateResponse.data.status !== "success") {
+      item.statussubmit = "1";
+      return Swal.fire("ລົ້ມເຫລວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
     }
-    
-   
+  } catch (error) {
+    console.error("Failed to update status:", error);
+    item.statussubmit = "1";
+    return Swal.fire("ຜິດພາດ!", "ການອັບເດດລົ້ມເຫລວ.", "error");
+  }
+
+  try {
     const params = new URLSearchParams();
     params.append("FID", item.FID);
-      
-    const response = await axios.post(
+
+    const confirmResponse = await axios.post(
       `${config.public.strapi.url}api/confirm_upload/`,
       params
     );
-    
-    if (response.data.status === "success") {
-     
-      const confirmedItem = items.value.find(i => i.FID === item.FID);
+
+    if (confirmResponse.data.status === "success") {
+      const confirmedItem = items.value.find((i) => i.FID === item.FID);
       if (confirmedItem) {
         confirmedItem.confirmed = true;
-        confirmedItem.statussubmit = "3";
+        confirmedItem.statussubmit = "0";
       }
 
-      await Swal.fire(
-        "ຢືນຢັນສຳເລັດ!",
-        "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.",
-        "success"
-      );
-      
-     
+      await Swal.fire("ຢືນຢັນສຳເລັດ!", "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.", "success");
       window.location.reload();
     } else {
-
-      item.statussubmit = "3";
-      
-      Swal.fire(
-        "ລົ້ມເຫລວ!", 
-        "ການຢືນຢັນການອັບໂຫຼດລົ້ມເຫລວ.", 
-        "error"
-      );
+      item.statussubmit = "1";
+      Swal.fire("ລົ້ມເຫລວ!", "ການຢືນຢັນລົ້ມເຫລວ.", "error");
     }
   } catch (error) {
     console.error("Failed to confirm upload:", error);
-    
-    item.statussubmit = "3";
-    
-    Swal.fire(
-      "ຜິດພາດ!",
-      "ການຢືນຢັນການອັບໂຫຼດລົ້ມເຫລວ. ກະລຸນາລອງໃໝ່ອີກຄັ້ງ.",
-      "error"
-    );
+    item.statussubmit = "1";
+    Swal.fire("ຜິດພາດ!", "ການຢືນຢັນລົ້ມເຫລວ. ກະລຸນາລອງໃໝ່.", "error");
   }
 };
-
 
 const getPercentageColor = (percentage: number) => {
   if (percentage > 50) {
@@ -500,31 +524,27 @@ const getStatusColor = (status: string) => {
   }
 };
 
-
 const getFullPath = (path: string) => {
-  if (!path) return '';
+  if (!path) return "";
   return `${config.public.strapi.url}media/${path}`;
 };
 
-
 const getFileName = (path: string) => {
-  if (!path) return '';
+  if (!path) return "";
   const parts = path.split("/");
   return parts[parts.length - 1];
 };
-
 
 onMounted(async () => {
   try {
     await fetchData();
 
-    
     const userData = localStorage.getItem("user_data");
-    
+
     if (userData) {
       try {
         user.value = JSON.parse(userData);
-        
+
         if (user.value.MID && user.value.MID.id) {
           const paddedMID = user.value.MID.id.toString().padStart(2, "0");
           await fetchDataByUserID(paddedMID);
