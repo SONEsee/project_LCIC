@@ -19,8 +19,8 @@
             <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
             </template>
-            <template v-slot:header.lcicID>
-              <th style="color: #0d47a1">LcicID</th>
+            <template v-slot:header.LCIC_code>
+              <th style="color: #0d47a1">LCIC_code</th>
             </template>
             <template v-slot:header.com_enterprise_code>
               <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -43,7 +43,7 @@
             <template v-slot:item="{ item, index }">
               <tr>
                 <td>{{ index + 1 }}</td>
-                <td >{{ item.lcicID }}</td>
+                <td >{{ item.LCIC_code }}</td>
                 <td>{{ item.com_enterprise_code }}</td>
                 <td>{{ item.bank_customer_ID }}</td>
                 <td>{{ item.branch_id_code }}</td>
@@ -59,8 +59,8 @@
         <v-window-item value="two">
           <v-tabs v-model="subTab" fixed-tabs color="secondary">
             <v-tab value="two-one"> Enterprise Code Error</v-tab>
-            <v-tab value="two-two">ບໍ່ມີ LCICID</v-tab>
-            <v-tab value="two-three"> LCICID com_enterprise_code error </v-tab>
+            <v-tab value="two-two">ບໍ່ມີ LCIC_code</v-tab>
+            <v-tab value="two-three"> LCIC_code com_enterprise_code error </v-tab>
             <v-tab value="two-five">error </v-tab>
           </v-tabs>
           <v-window v-model="subTab">
@@ -113,8 +113,8 @@
                 <template v-slot:header.id>
                   <th style="color: #0d47a1">ID</th>
                 </template>
-                <template v-slot:header.lcicID>
-                  <th style="color: #0d47a1">LcicID</th>
+                <template v-slot:header.LCIC_code>
+                  <th style="color: #0d47a1">LCIC_code</th>
                 </template>
                 <template v-slot:header.com_enterprise_code>
                   <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -140,7 +140,7 @@
                 <template v-slot:item="{ item,index }">
                   <tr>
                     <td>{{ index + 1 }}</td>
-                    <td>{{ item.lcicid }}</td>
+                    <td>{{ item.LCIC_code }}</td>
 
                     <td style="color: brown">{{ item.com_enterprise_code }}</td>
 
@@ -177,7 +177,7 @@
               </v-fab>
               <h3 class="mt-5">
                 ຂໍ້ມູນ <b>/ ອາຄານ + ທີ່ດິນ/ ເຮືອນ/ເຮືອນ+ທີ່ດິນ/ ທີ່ດິນ.</b>ບໍຖືກ
-                ແລະບໍ່ມີ LcicID
+                ແລະບໍ່ມີ LCIC_code
               </h3>
               :
               <v-col cols="12">
@@ -226,8 +226,8 @@
                 <template v-slot:header.id>
                   <th style="color: #0d47a1">ID</th>
                 </template>
-                <template v-slot:header.lcicID>
-                  <th style="color: #0d47a1">LcicID</th>
+                <template v-slot:header.LCIC_code>
+                  <th style="color: #0d47a1">LCIC_code</th>
                 </template>
                 <template v-slot:header.com_enterprise_code>
                   <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -245,7 +245,7 @@
                   <th style="color: #0d47a1">Col_id</th>
                 </template>
                 <template v-slot:header.datamatch>
-                  <th style="color: #0d47a1">LcicID</th>
+                  <th style="color: #0d47a1">LCIC_code</th>
                 </template>
                 <template v-slot:header.collateral_status>
                   <th style="color: #0d47a1">status</th>
@@ -254,7 +254,7 @@
                   <tr>
                     <td>{{ index + 1 }}</td>
                     <td style="color: brown" class="text-center">
-                      {{ item.lcicid }}
+                      {{ item.LCIC_code }}
                     </td>
 
                     <td>{{ item.com_enterprise_code }}</td>
@@ -270,9 +270,9 @@
                     <td style="color: crimson" class="text-center">
                       {{
                         item.collateral_status === "13"
-                          ? "lcicID ບໍຖືກ"
+                          ? "LCIC_code ບໍຖືກ"
                           : item.collateral_status === "01"
-                          ? "lcicID ວ່າງ"
+                          ? "LCIC_code ວ່າງ"
                           : item.item.collateral_status
                       }}
                     </td>
@@ -284,7 +284,7 @@
               <h3>
                 ຂໍ້ມູນ
                 <b>/ ອາຄານ + ທີ່ດິນ/ ເຮືອນ/ເຮືອນ+ທີ່ດິນ/ ທີ່ດິນ.</b> ທີ່ມີ
-                LCICID ແລະ com_enterprise_code_error ຜິດ ຫຼື ບໍ່ມີ
+                LCIC_code ແລະ com_enterprise_code_error ຜິດ ຫຼື ບໍ່ມີ
               </h3>
 
               
@@ -292,8 +292,8 @@
                 <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
             </template>
-            <template v-slot:header.lcicID>
-              <th style="color: #0d47a1">LcicID</th>
+            <template v-slot:header.LCIC_code>
+              <th style="color: #0d47a1">LCIC_code</th>
             </template>
             <template v-slot:header.com_enterprise_code>
               <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -317,7 +317,7 @@
                   <tr>
                     <td>{{ index + 1 }}</td>
                     
-                    <td >{{ item.lcicid }}</td>
+                    <td >{{ item.LCIC_code }}</td>
                     
                     <td >{{ item.com_enterprise_code }}</td>
                    
@@ -330,15 +330,15 @@
                     <td style="color: crimson" >
                       {{
                         item.collateral_status === "11"
-                          ? "lcicID ແລະ com_enterprise_code ບໍຖືກ"
+                          ? "LCIC_code ແລະ com_enterprise_code ບໍຖືກ"
                           : item.collateral_status === "33"
-                          ? "lcicID ແລະ com_enterprise_code ວ່າງ"
+                          ? "LCIC_code ແລະ com_enterprise_code ວ່າງ"
                           : item.collateral_status === "44"
-                          ? "lcicID ແລະ com_enterprise_code ບໍ່ແມັດກັນ "
+                          ? "LCIC_code ແລະ com_enterprise_code ບໍ່ແມັດກັນ "
                           : item.collateral_status === "30"
-                          ? "lcicIDບໍ່ຖືກ ແລະ com_enterprise_code ວ່າງ"
+                          ? "LCIC_codeບໍ່ຖືກ ແລະ com_enterprise_code ວ່າງ"
                           : item.collateral_status === "03"
-                          ? "lcicIDວ່າງ ແລະ com_enterprise_code ບໍ່ຖືກ"
+                          ? "LCIC_codeວ່າງ ແລະ com_enterprise_code ບໍ່ຖືກ"
                           : item.item.collateral_status
                       }}
                     </td>
@@ -349,7 +349,7 @@
             <v-window-item value="two-five">
               <h3>
                 ຂໍ້ມູນ <b>/ ອາຄານ + ທີ່ດິນ/ ເຮືອນ/ເຮືອນ+ທີ່ດິນ/ ທີ່ດິນ.</b>ທີ່ມີ
-                bnk_code, branch_id, customer_id, loan_id ແຕ່ມີ LCICID ແລະ
+                bnk_code, branch_id, customer_id, loan_id ແຕ່ມີ LCIC_code ແລະ
                 com_enterprise_code ບໍ່ຖືກ
               </h3>
 
@@ -360,8 +360,8 @@
                 <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
             </template>
-            <template v-slot:header.lcicID>
-              <th style="color: #0d47a1">LcicID</th>
+            <template v-slot:header.LCIC_code>
+              <th style="color: #0d47a1">LCIC_code</th>
             </template>
             <template v-slot:header.com_enterprise_code>
               <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -382,7 +382,7 @@
                 <template v-slot:item="{ item,index }">
                   <tr>
                     <td>{{ index + 1 }}</td>
-                    <td>{{ item.lcicid }}</td>
+                    <td>{{ item.LCIC_code }}</td>
                     <td>{{ item.com_enterprise_code }}</td>
                     <td>{{ item.bank_customer_ID }}</td>
                     <td>{{ item.branch_id_code }}</td>
@@ -404,8 +404,8 @@
             <template v-slot:header.id>
               <th style="color: #0d47a1">ID</th>
             </template>
-            <template v-slot:header.lcicID>
-              <th style="color: #0d47a1">LcicID</th>
+            <template v-slot:header.LCIC_code>
+              <th style="color: #0d47a1">LCIC_code</th>
             </template>
             <template v-slot:header.com_enterprise_code>
               <th style="color: #0d47a1">Com_Enterprise_Code</th>
@@ -426,7 +426,7 @@
             <template v-slot:item="{ item,index }">
               <tr>
                 <td>{{ index + 1 }}</td>
-                <td>{{ item.lcicID }}</td>
+                <td>{{ item.LCIC_code }}</td>
                 <td>{{ item.com_enterprise_code }}</td>
                 <td>{{ item.bank_customer_ID}}</td>
                 <td>{{ item.branch_id_code }}</td>
@@ -481,15 +481,15 @@ export default defineComponent({
 
     const headers = [
       { title: "id_file", value: "id_file" },
-      { title: "lcicID", value: "lcicID" },
+      { title: "LCIC_code", value: "LCIC_code" },
       { title: "com_enterprise_code", value: "com_enterprise_code" },
       { title: "customer_id", value: "customer_id" },
       { title: "branch_id", value: "branch_id" },
-      { title: "lcicID_error", value: "lcicID_error" },
+      { title: "LCIC_code_error", value: "LCIC_code_error" },
     ];
     const headers1 = [
       { title: "id", value: "id" },
-      { title: "lcicID", value: "lcicID" },
+      { title: "LCIC_code", value: "LCIC_code" },
       { title: "com_enterprise_code", value: "com_enterprise_code" },
       { title: "bank_customer_ID", value: "bank_customer_ID" },
       { title: "branch_id_code", value: "branch_id_code" },
@@ -499,7 +499,7 @@ export default defineComponent({
     ];
     const headers2 = [
       { title: "id", value: "id" },
-      { title: "lcicID", value: "lcicID" },
+      { title: "LCIC_code", value: "LCIC_code" },
       { title: "com_enterprise_code", value: "com_enterprise_code" },
       { title: "bank_customer_ID", value: "bank_customer_ID" },
       { title: "branch_id_code", value: "branch_id_code" },
@@ -510,18 +510,18 @@ export default defineComponent({
     ];
     const headers3 = [
       { title: "id", value: "id" },
-      { title: "lcicID", value: "lcicID" },
+      { title: "LCIC_code", value: "LCIC_code" },
       { title: "com_enterprise_code", value: "com_enterprise_code" },
       { title: "bank_customer_ID", value: "bank_customer_ID" },
       { title: "branch_id_code", value: "branch_id_code" },
       { title: "loan_id", value: "loan_id" },
       { title: "col_id", value: "col_id" },
-      { title: "LcicID", value: "datamatch" },
+      { title: "LCIC_code", value: "datamatch" },
       { title: "satus", value: "collateral_status" },
     ];
     const headers4 = [
       { title: "id", value: "id" },
-      { title: "lcicID", value: "lcicID" },
+      { title: "LCIC_code", value: "LCIC_code" },
       { title: "com_enterprise_code", value: "com_enterprise_code" },
       { title: "bank_customer_ID", value: "bank_customer_ID" },
       { title: "branch_id_code", value: "branch_id_code" },
@@ -532,7 +532,7 @@ export default defineComponent({
     ];
     const headers5 = [
       { title: "id", value: "id" },
-      { title: "lcicID", value: "lcicID" },
+      { title: "LCIC_code", value: "LCIC_code" },
       { title: "com_enterprise_code", value: "com_enterprise_code" },
       { title: "bank_customer_ID", value: "bank_customer_ID" },
       { title: "branch_id_code", value: "branch_id_code" },
@@ -543,7 +543,7 @@ export default defineComponent({
     ];
     const headers6 = [
       { title: "id", value: "id" },
-      { title: "lcicID", value: "lcicID" },
+      { title: "LCIC_code", value: "LCIC_code" },
       { title: "com_enterprise_code", value: "com_enterprise_code" },
       { title: "bank_customer_ID", value: "bank_customer_ID" },
       { title: "branch_id_code", value: "branch_id_code" },
@@ -639,13 +639,13 @@ export default defineComponent({
           id,
           period,
           com_enterprise_code_error,
-          lcicID_error,
-          filteredBDataIsDamagedLcicIDError01,
+          LCIC_code_error,
+          filteredBDataIsDamagedLCIC_codeError01,
           ...rest
         } = item;
         return {
           ...rest,
-          lcicID: datamatch,
+          LCIC_code: datamatch,
         };
       });
 

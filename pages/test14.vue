@@ -1,6 +1,6 @@
 <template>
   <v-container class="pa-6" style="max-width: 600px;">
-    <h1 class="text-h5 font-weight-bold mb-6 text-center">Download Payment History</h1>
+    <h1 class="text-h5 font-weight-bold mb-6 text-center">ດາວໂຫຼດປະຫວັດການຈ່າຍເງິນ</h1>
 
     <!-- Form Card -->
     <v-expand-transition>
@@ -15,20 +15,20 @@
                     :items="provinces"
                     item-title="displayText"
                     item-value="pro_id"
-                    label="Province"
+                    label="ເລືອກແຂວງ"
                     placeholder="Select a province"
                     :disabled="isLoadingProvinces"
                     :loading="isLoadingProvinces"
                     variant="outlined"
                     density="compact"
-                    :rules="[v => !!v || 'Province is required']"
+                    :rules="[v => !!v || 'ກະລຸນາເລືອກແຂວງກອ່ນ']"
                     v-bind="attrs"
                     v-on="on"
                   />
 
                   
                 </template>
-                <span>Select a province</span>
+                <span>ເລືອກແຂວງ</span>
               </v-tooltip>
               <v-progress-circular
                 v-if="isLoadingProvinces"
@@ -172,7 +172,7 @@
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 
-// Form data
+
 const form = ref({
   province_code: '',
   dateRequest: '202503',
@@ -180,7 +180,7 @@ const form = ref({
   limit: 10000
 })
 
-// State
+
 const valid = ref(false)
 const isLoading = ref(false)
 const isLoadingProvinces = ref(true)
@@ -190,23 +190,23 @@ const provinces = ref([])
 const provinceDistricts = ref([])
 const totalDistricts = ref(0)
 
-// Table headers
+
 const headers = [
   { text: 'Filename', value: 'filename', sortable: true },
   { text: 'Status', value: 'status', sortable: true },
   { text: 'Details', value: 'error', sortable: false }
 ]
 
-// API base URL
+
 const API_BASE_URL = 'https://edl-inside-api.edl.com.la/api_v1/wattmonitor-bol/billing-svc'
 
-// Function to validate dateRequest format (YYYYMM)
+
 const isValidDateRequest = (dateRequest) => {
   const regex = /^\d{4}(0[1-9]|1[0-2])$/
   return regex.test(dateRequest)
 }
 
-// Function to download file
+
 const downloadFile = (data, filename) => {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
   const link = document.createElement('a')
@@ -217,16 +217,16 @@ const downloadFile = (data, filename) => {
   document.body.removeChild(link)
 }
 
-// Fetch provinces and districts on mount
+
 onMounted(async () => {
   try {
     const response = await axios.get(`http://192.168.45.56:8000/api/province-edldetail/`)
     provinceDistricts.value = response.data
 
-    // Log the response to debug
+    
     console.log('API Response:', response.data)
 
-    // Extract unique provinces and ensure displayText is set
+ 
     const uniqueProvinces = []
     const seenProIds = new Set()
     for (const item of response.data) {
@@ -241,10 +241,10 @@ onMounted(async () => {
     }
     provinces.value = [...uniqueProvinces.sort((a, b) => a.pro_id.localeCompare(b.pro_id))]
 
-    // Log provinces to debug
+    
     console.log('Provinces:', provinces.value)
 
-    // If no provinces are found, set an error
+   
     if (!provinces.value.length) {
       error.value = 'No provinces found from the API.'
     }
@@ -256,27 +256,27 @@ onMounted(async () => {
   }
 })
 
-// Watch provinces to debug rendering
+
 watch(provinces, (newProvinces) => {
   console.log('Provinces updated:', newProvinces)
 })
 
-// Form submission handler
+
 const handleSubmit = async () => {
   error.value = ''
   results.value = []
   isLoading.value = true
 
   try {
-    // Validate dateRequest
+
     if (!isValidDateRequest(form.value.dateRequest)) {
       throw new Error('Invalid date format. Use YYYYMM (e.g., 202503)')
     }
 
-    // Log the selected province_code for debugging
+ 
     console.log('Selected province_code:', form.value.province_code)
 
-    // Get districts for the selected province
+ 
     const districts = provinceDistricts.value
       .filter(item => String(item.pro_id) === String(form.value.province_code))
       .sort((a, b) => a.dis_id.localeCompare(b.dis_id))
@@ -285,9 +285,9 @@ const handleSubmit = async () => {
       throw new Error(`No districts found for province code ${form.value.province_code}`)
     }
 
-    totalDistricts.value = districts.length
+   
 
-    // Loop through each district and download data
+   
     for (const district of districts) {
       const district_code = district.dis_id
       const filename = `electric-bill-${form.value.province_code}-${district_code}-${form.value.dateRequest}.json`
@@ -304,7 +304,7 @@ const handleSubmit = async () => {
           responseType: 'json'
         })
 
-        // Trigger download
+  
         downloadFile(response.data, filename)
 
         results.value.push({
@@ -329,7 +329,7 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-/* Vuetify animations */
+
 .v-expand-transition-enter-active,
 .v-expand-transition-leave-active {
   transition: all 0.5s ease;
@@ -368,7 +368,7 @@ const handleSubmit = async () => {
   }
 }
 
-/* Custom styles to match the screenshot */
+
 .v-text-field--outlined fieldset {
   border-color: #FF5252 !important;
 }

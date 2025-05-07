@@ -1,234 +1,244 @@
 <template>
-  <v-container>
-    <v-row class="justify-center">
-      <!-- Water Bill Card -->
-      <v-col cols="12" sm="6" md="4" lg="3">
-        <v-card class="d-flex flex-column fill-height" elevation="3">
-          <v-card-title class="text-h6 mt-5 text-center"
-            >ບິນ ນໍ້າປະປາ</v-card-title
-          >
-          <v-card-text class="">
-            <v-text-field
-              density="compact"
-              v-model="month"
-              label="ປ້ອນຂໍ້ມູນ ເດືອນປີ (MMYYYY)"
-              variant="outlined"
-              clearable
-              prepend-icon="mdi-calendar"
-              placeholder="MM-YYYY"
-              @keypress="onlyMonthYear"
-              @blur="validateMonthYear"
-            />
-          </v-card-text>
-          <v-card-actions>
-            <v-btn
-              block
-              color="primary"
-              :disabled="!month"
-              @click="downloadJSON"
-            >
-              ດາວໂຫລດ ບິນນໍ້າປະປາ
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
+  <v-row class="justify-center">
+    <v-col cols="12" sm="6" md="4" lg="3">
+      <v-card class="d-flex flex-column fill-height" elevation="3">
+        <v-card-title class="text-h6 mt-5 text-center"
+          >ບິນ ນໍ້າປະປາ</v-card-title
+        >
+        <v-card-text class="">
+          <v-text-field
+            density="compact"
+            v-model="month"
+            label="ປ້ອນຂໍ້ມູນ ເດືອນປີ (MMYYYY)"
+            variant="outlined"
+            clearable
+            prepend-icon="mdi-calendar"
+            placeholder="MM-YYYY"
+            @keypress="onlyMonthYear"
+            @blur="validateMonthYear"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn block color="primary" :disabled="!month" @click="downloadJSON">
+            ດາວໂຫລດ ບິນນໍ້າປະປາ
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
 
-      <!-- Customer Info Card -->
-      <v-col cols="12" sm="6" md="4" lg="3">
-        <v-card class="d-flex flex-column fill-height" elevation="3">
-          <v-card-title class="text-h6 text-center mt-5"
-            >ລູກຄ້າ ນໍ້າປະປາ</v-card-title
+    <v-col cols="12" sm="6" md="4" lg="3">
+      <v-card class="d-flex flex-column fill-height" elevation="3">
+        <v-card-title class="text-h6 text-center mt-5"
+          >ລູກຄ້າ ນໍ້າປະປາ</v-card-title
+        >
+        <v-card-text class="flex-grow-1">
+          <v-text-field
+            density="compact"
+            v-model="customerMonth"
+            label="ປ້ອນຂໍ້ມູນ ເດືອນປີ (MMYYYY)"
+            variant="outlined"
+            clearable
+            prepend-icon="mdi-calendar"
+            placeholder="MM-YYYY"
+            @keypress="onlyMonthYear"
+            @blur="validateCustomerMonthYear(customerMonth)"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            block
+            color="info"
+            :disabled="!customerMonth"
+            @click="downloadCustomerInfo"
           >
-          <v-card-text class="flex-grow-1">
-            <v-text-field
-              density="compact"
-              v-model="customerMonth"
-              label="ປ້ອນຂໍ້ມູນ ເດືອນປີ (MMYYYY)"
-              variant="outlined"
-              clearable
-              prepend-icon="mdi-calendar"
-              placeholder="MM-YYYY"
-              @keypress="onlyMonthYear"
-              @blur="validateCustomerMonthYear(customerMonth)"
-            />
-          </v-card-text>
-          <v-card-actions>
-            <v-btn
-              block
-              color="info"
-              :disabled="!customerMonth"
-              @click="downloadCustomerInfo"
-            >
-              ດາວໂຫລດ ລູກຄ້ານໍ້າປະປາ
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
+            ດາວໂຫລດ ລູກຄ້ານໍ້າປະປາ
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
 
-      <!-- Electric Bill Card -->
-      <v-col cols="12" sm="6" md="4" lg="3">
-        <v-card class="d-flex flex-column fill-height" elevation="3">
-          <v-card-title class="text-h6 mt-5 text-center"
-            >ບິນ ໄຟຟ້າ</v-card-title
-          >
-          <v-card-text class="flex-grow-1">
-            <!-- <v-text-field v-model="province_code" label="ລະຫັດຂວາງ" variant="outlined" clearable prepend-icon="mdi-map-marker" />
-            <v-text-field v-model="district_code" label="ລະຫັດເມືອງ" variant="outlined" clearable prepend-icon="mdi-map-marker-radius" /> -->
-            <v-select
-              density="compact"
-              variant="outlined"
-              v-model="selectedProvince"
-              :items="provinces"
-              item-title="pro_name"
-              item-value="pro_id"
-              label="Select Province"
-              outlined
-              dense
-            ></v-select>
-            <v-select
-              density="compact"
-              variant="outlined"
-              v-model="selectedDistrict"
-              :items="districts"
-              item-title="dis_name"
-              item-value="dis_id"
-              label="Select District"
-              outlined
-              dense
-              :disabled="!selectedProvince"
-            ></v-select>
-            <v-text-field
-              density="compact"
-              v-model="dateRequest"
-              label="ປ້ອນຂໍ້ມູນ ປີເດືອນ (YYYYMM)"
-              variant="outlined"
-              clearable
-              prepend-icon="mdi-calendar"
-              placeholder="YYYYMM"
-            />
-            <v-text-field
-              density="compact"
-              v-model="page"
-              label="Page"
-              type="number"
-              variant="outlined"
-              clearable
-              prepend-icon="mdi-book-open"
-            />
-            <v-text-field
-              density="compact"
-              v-model="limit"
-              label="Limit"
-              type="number"
-              variant="outlined"
-              clearable
-              prepend-icon="mdi-format-list-numbered"
-            />
-          </v-card-text>
-          <v-card-actions>
-            <v-btn
-              block
-              color="success"
-              class="mt-2"
-              :disabled="!selectedProvince || !selectedDistrict || !dateRequest"
-              @click="downloadJSONWithParams"
-            >
-              ດາວໂຫລດ ບິນໄຟຟ້າ
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
+    <v-col cols="12" sm="6" md="4" lg="3">
+      <v-card-actions>
+        <v-btn v-if="step > 1" color="primary" variant="flat" @click="step--">
+          ດາວໂຫຼດເທື່ອລະເມືອງ
+        </v-btn>
+        <v-spacer></v-spacer>
+        <v-btn v-if="step < 2" color="primary" variant="flat" @click="step++">
+          ດາວໂຫຼດຂໍ້ມູນໄຟຟ້າຫຼາຍເມືອງພອ້ມກັນ
+        </v-btn>
+      </v-card-actions>
 
-      <!-- Electric Customers Card -->
-      <v-col cols="12" sm="6" md="4" lg="3">
-        <v-card class="d-flex flex-column fill-height" elevation="3">
-          <v-card-title class="text-h6 mt-5 text-center"
-            >ລູກຄ້າ ໄຟຟ້າ</v-card-title
-          >
-          <v-card-text class="flex-grow-1">
-            <!-- <v-text-field v-model="cus_province_code" label="ລະຫັດຂວາງ" variant="outlined" clearable prepend-icon="mdi-map-marker" />
+      <v-window v-model="step">
+        <v-window-item :value="1">
+          <v-card class="" elevation="">
+            <v-card-text>
+              <v-card-title class="text-center">ບິນ ໄຟຟ້າ</v-card-title>
+              <v-card-text>
+                <v-select
+                  density="compact"
+                  variant="outlined"
+                  v-model="selectedProvince"
+                  :items="provinces"
+                  item-title="pro_name"
+                  item-value="pro_id"
+                  label="Select Province"
+                  outlined
+                  dense
+                ></v-select>
+                <v-select
+                  density="compact"
+                  variant="outlined"
+                  v-model="selectedDistrict"
+                  :items="districts"
+                  item-title="dis_name"
+                  item-value="dis_id"
+                  label="Select District"
+                  outlined
+                  dense
+                  :disabled="!selectedProvince"
+                ></v-select>
+                <v-text-field
+                  density="compact"
+                  v-model="dateRequest"
+                  label="ປ້ອນຂໍ້ມູນ ປີເດືອນ (YYYYMM)"
+                  variant="outlined"
+                  clearable
+                  prepend-icon="mdi-calendar"
+                  placeholder="YYYYMM"
+                />
+                <v-text-field
+                  density="compact"
+                  v-model="page"
+                  label="Page"
+                  type="number"
+                  variant="outlined"
+                  clearable
+                  prepend-icon="mdi-book-open"
+                />
+                <v-text-field
+                  density="compact"
+                  v-model="limit"
+                  label="Limit"
+                  type="number"
+                  variant="outlined"
+                  clearable
+                  prepend-icon="mdi-format-list-numbered"
+                />
+              </v-card-text>
+              <v-card-actions>
+                <v-btn
+                  block
+                  color="success"
+                  class="mt-2"
+                  :disabled="
+                    !selectedProvince || !selectedDistrict || !dateRequest
+                  "
+                  @click="downloadJSONWithParams"
+                >
+                  ດາວໂຫລດ ບິນໄຟຟ້າ
+                </v-btn>
+              </v-card-actions>
+            </v-card-text>
+          </v-card>
+        </v-window-item>
+
+        <v-window-item :value="2">
+          <v-card-text>
+            <AutoDownload />
+          </v-card-text>
+        </v-window-item>
+      </v-window>
+    </v-col>
+
+    <!-- Electric Customers Card -->
+    <v-col cols="12" sm="6" md="4" lg="3">
+      <v-card class="d-flex flex-column fill-height" elevation="3">
+        <v-card-title class="text-h6 mt-5 text-center"
+          >ລູກຄ້າ ໄຟຟ້າ</v-card-title
+        >
+        <v-card-text class="flex-grow-1">
+          <!-- <v-text-field v-model="cus_province_code" label="ລະຫັດຂວາງ" variant="outlined" clearable prepend-icon="mdi-map-marker" />
             <v-text-field v-model="cus_district_code" label="ລະຫັດເມືອງ" variant="outlined" clearable prepend-icon="mdi-map-marker-radius" /> -->
-            <v-select
-              density="compact"
-              variant="outlined"
-              v-model="cus_selectedProvince"
-              :items="cus_provinces"
-              item-title="pro_name"
-              item-value="pro_id"
-              label="Select Province"
-              outlined
-              dense
-            ></v-select>
-            <v-select
-              density="compact"
-              variant="outlined"
-              v-model="cus_selectedDistrict"
-              :items="cus_districts"
-              item-title="dis_name"
-              item-value="dis_id"
-              label="Select District"
-              outlined
-              dense
-              :disabled="!cus_selectedProvince"
-            ></v-select>
-            <v-text-field
+          <v-select
             density="compact"
-              v-model="cus_dateRequest"
-              label="ປ້ອນຂໍ້ມູນ ປີເດືອນ (YYYYMM)"
-              variant="outlined"
-              clearable
-              prepend-icon="mdi-calendar"
-              placeholder="YYYYMM"
-            />
-            <v-text-field
+            variant="outlined"
+            v-model="cus_selectedProvince"
+            :items="cus_provinces"
+            item-title="pro_name"
+            item-value="pro_id"
+            label="Select Province"
+            outlined
+            dense
+          ></v-select>
+          <v-select
             density="compact"
-              v-model="cus_page"
-              label="Page"
-              type="number"
-              variant="outlined"
-              clearable
-              prepend-icon="mdi-book-open"
-            />
-            <v-text-field
+            variant="outlined"
+            v-model="cus_selectedDistrict"
+            :items="cus_districts"
+            item-title="dis_name"
+            item-value="dis_id"
+            label="Select District"
+            outlined
+            dense
+            :disabled="!cus_selectedProvince"
+          ></v-select>
+          <v-text-field
             density="compact"
-              v-model="cus_limit"
-              label="Limit"
-              type="number"
-              variant="outlined"
-              clearable
-              prepend-icon="mdi-format-list-numbered"
-            />
-          </v-card-text>
-          <v-card-actions>
-            <v-btn
-              block
-              color="success"
-              class="mt-2"
-              :disabled="
-                !cus_selectedProvince ||
-                !cus_selectedDistrict ||
-                !cus_dateRequest
-              "
-              @click="downloadCusJSONWithParams"
-            >
-              ດາວໂຫລດ ລູກຄ້າໄຟຟ້າ
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+            v-model="cus_dateRequest"
+            label="ປ້ອນຂໍ້ມູນ ປີເດືອນ (YYYYMM)"
+            variant="outlined"
+            clearable
+            prepend-icon="mdi-calendar"
+            placeholder="YYYYMM"
+          />
+          <v-text-field
+            density="compact"
+            v-model="cus_page"
+            label="Page"
+            type="number"
+            variant="outlined"
+            clearable
+            prepend-icon="mdi-book-open"
+          />
+          <v-text-field
+            density="compact"
+            v-model="cus_limit"
+            label="Limit"
+            type="number"
+            variant="outlined"
+            clearable
+            prepend-icon="mdi-format-list-numbered"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            block
+            color="success"
+            class="mt-2"
+            :disabled="
+              !cus_selectedProvince || !cus_selectedDistrict || !cus_dateRequest
+            "
+            @click="downloadCusJSONWithParams"
+          >
+            ດາວໂຫລດ ລູກຄ້າໄຟຟ້າ
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+  </v-row>
 </template>
 
 <script setup>
 import Swal from "sweetalert2";
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import AutoDownload from "./AutoDownload.vue";
 
 definePageMeta({
   middleware: "auth",
   layout: "backend",
 });
+const step = ref(1);
 
 useHead({
   title: "Manage Users",

@@ -499,7 +499,7 @@ export default defineComponent({
     };
     const config = useRuntimeConfig();
     const getFullPath = (path: string) => {
-      const baseUrl = `${config.public.strapi.url}`;
+      const baseUrl = `${config.public.strapi.url}media/`;
       return `${baseUrl}${path}`;
     };
 

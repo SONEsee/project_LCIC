@@ -1,15 +1,16 @@
 <template>
-  <v-container> <v-autocomplete
-          variant="outlined"
-          density="compact"
-          width="50%"
-          v-model="search"
-          class=""
-          label="ໃສ່ລະຫັດທະນາຄານ"
-          :items="uniqueUserIds.map((user) => ({ title: user, value: user }))"
-          item-text="title"
-          item-value="value"
-        />
+  <v-container>
+    <v-autocomplete
+      variant="outlined"
+      density="compact"
+      width="50%"
+      v-model="search"
+      class=""
+      label="ໃສ່ລະຫັດທະນາຄານ"
+      :items="uniqueUserIds.map((user) => ({ title: user, value: user }))"
+      item-text="title"
+      item-value="value"
+    />
     <v-data-table
       :headers="headers"
       :items="filteredItems"
@@ -20,7 +21,6 @@
         <!-- <v-toolbar flat>
           <v-divider class="mx-4" inset vertical></v-divider>
         </v-toolbar> -->
-       
       </template>
       <!-- <template v-slot:item.path="{ item }">
           <a :href="getFullPath(item.path)" target="_blank">{{ item.path }}</a>
@@ -56,10 +56,20 @@
           <template v-if="item.statussubmit === '0' && item.percentage <= 60">
             <span style="color: green">ຢືນຢັນສຳເລັດແລ້ວ</span>
           </template>
+          <template v-if="item.statussubmit === '3' && item.percentage <= 60">
+            <span class="text-green"
+              >ກຳລັງຢືນຢັນຂໍ້ມູນເຂົ້າຖານຂໍ້ມູນ
+              <v-progress-circular
+                :size="20"
+                color="primary"
+                indeterminate
+              ></v-progress-circular
+            ></span>
+          </template>
           <template v-else-if="item.percentage > 60">
             <span style="color: red">ຂໍ້ຜິດພາດສູງເກີນກຳນົດ</span>
           </template>
-          <template v-else>
+          <template v-else-if="item.statussubmit === '1'">
             <v-btn @click="confirmAction(item)" color="success"> ຢືນຢັນ </v-btn>
           </template>
         </div>
@@ -68,6 +78,9 @@
         <v-btn @click="viewDetails(item)" color="info" class="ml-10"
           >ເບິ່ງລາຍລະອຽດ</v-btn
         >
+        <v-btn @click="uploadDataButton(item)" color="#FF6D00" class="ml-2">
+          ອັນໂຫຼດ
+        </v-btn>
       </template>
       <template v-slot:no-data>
         <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
@@ -83,6 +96,7 @@ import Swal from "sweetalert2";
 import { useRouter } from "vue-router";
 import Cookies from "js-cookie";
 import { useRuntimeConfig } from "#app";
+import { ValidateResponse } from "~/types";
 
 definePageMeta({
   layout: "backend",
@@ -104,7 +118,7 @@ useHead({
 
 const search = ref("");
 const file = ref<File | null>(null);
-const items = ref([]);
+const items = ref<ValidateResponse.items[]>([]);
 const router = useRouter();
 const config = useRuntimeConfig();
 
@@ -123,22 +137,46 @@ onMounted(async () => {
 
 const fetchData = async () => {
   try {
-    const response = await fetch(
+    const response = await axios.get(
       `${config.public.strapi.url}api/api/upload-filesc2/`
     );
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-    const data = await response.json();
-    items.value = data.map((item: any) => ({
-      ...item,
-      CID: item.CID,
-      status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-      confirmed: false,
-    }));
+
+    console.log("API Response:", response.data);
+
+    const data = Array.isArray(response.data)
+      ? response.data
+      : response.data.data
+      ? response.data.data
+      : [];
+
+    items.value = data.map((item: any) => {
+      console.log("Processing item:", item);
+
+      const itemCID = item.CID || item.id_file || item.id || null;
+
+      if (!itemCID) {
+        console.warn("Item missing CID:", item);
+      }
+
+      return {
+        ...item,
+        CID: itemCID,
+        status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+        confirmed: item.confirmed || false,
+        statussubmit: item.statussubmit || "1",
+      };
+    });
+
+    console.log("Processed items:", items.value);
     sortItemsByUploadDate();
   } catch (error) {
     console.error("Failed to fetch data:", error);
+    
+    Swal.fire({
+      title: "ຜິດພາດ!",
+      text: "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້. ກະລຸນາລອງໃໝ່ອີກຄັ້ງ.",
+      icon: "error",
+    });
   }
 };
 
@@ -312,13 +350,11 @@ const confirmAction = async (item: any) => {
             confirmedItem.statussubmit = "0";
           }
 
-          Swal.fire(
-            "ຢືນຢັນສຳເລັດ!",
-            "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.",
-            "success"
-          ).then(() => {
-            location.reload();
-          });
+          Swal.fire("ຢືນຢັນສຳເລັດ!", "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.", "success").then(
+            () => {
+              location.reload();
+            }
+          );
         } else {
           Swal.fire("ລົ້ມເຫລວ!", "ການຢືນຢັນການອັບໂຫຼດລົ້ມເຫລວ.", "error");
         }
@@ -332,20 +368,136 @@ const confirmAction = async (item: any) => {
       }
     }
   });
-  
+
   const response = await axios.post(
     `${config.public.strapi.url}api/api/update-statussubmitc/`,
     `CID=${item.CID}`
   );
 
   if (response.data.status === "success") {
-    const confirmedItem = items.value.find(
-      (i) => i.fileName === item.fileName
-    );
+    const confirmedItem = items.value.find((i) => i.fileName === item.fileName);
     if (confirmedItem) {
       confirmedItem.confirmed = true;
       confirmedItem.statussubmit = "0";
     }
+  }
+};
+
+
+const uploadDataButton = async (item) => {
+  try {
+    Swal.fire({
+      title: "ຢືນຢັນການອັບໂຫຼດຂໍ້ມູນ",
+      text: "ທ່ານແນ່ໃຈບໍ່ທີ່ຈະອັບໂຫຼດຂໍ້ມູນນີ້ແບບອັດຕະໂນມັດ?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "ແນ່ໃຈ, ອັບໂຫຼດເລີຍ!",
+      cancelButtonText: "ຍົກເລີກ",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+     
+        const uploadingItem = items.value.find((i) => i.CID === item.CID);
+        if (uploadingItem) {
+          uploadingItem.statussubmit = "3"; 
+        }
+
+        const params = new URLSearchParams();
+        const csrfToken = Cookies.get("csrftoken");
+        params.append("CID", item.CID);
+
+        try {
+          
+          const response = await axios.post(
+            `${config.public.strapi.url}api/unload_uploadc/`,
+            params,
+            {
+              headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+            }
+          );
+
+          console.log("Response from upload:", response.data);
+
+          if (response.data.status === "success") {
+           
+            const successItem = items.value.find((i) => i.CID === item.CID);
+            if (successItem) {
+              successItem.statussubmit = "0"; 
+            }
+
+            Swal.fire({
+              title: "ສຳເລັດ!",
+              text: `ອັບໂຫຼດຂໍ້ມູນສຳເລັດ. ຈຳນວນລາຍການທີ່ປະມວນຜົນ: ${response.data.processed_count}`,
+              icon: "success",
+            }).then(() => {
+              
+              fetchData();
+            });
+          } else if (response.data.status === "warning") {
+            
+            Swal.fire({
+              title: "ສຳເລັດແຕ່ມີຄຳເຕືອນ",
+              text: response.data.message,
+              icon: "warning",
+              html: `
+                <div>
+                  <p>${response.data.message}</p>
+                  <p>ຈຳນວນລາຍການທີ່ປະມວນຜົນສຳເລັດ: ${response.data.processed_count}</p>
+                  ${response.data.errors && response.data.errors.length ? `
+                    <p>ລາຍລະອຽດຄຳເຕືອນ:</p>
+                    <ul style="text-align: left; max-height: 200px; overflow-y: auto; margin-top: 10px;">
+                      ${response.data.errors.map(error => `<li>${error}</li>`).join('')}
+                    </ul>
+                  ` : ''}
+                </div>
+              `,
+            }).then(() => {
+             
+              fetchData();
+            });
+          } else {
+            
+            const failedItem = items.value.find((i) => i.CID === item.CID);
+            if (failedItem) {
+              failedItem.statussubmit = "1"; 
+            }
+
+            Swal.fire({
+              title: "ບໍ່ສຳເລັດ!",
+              text: response.data.message || "ການອັບໂຫຼດຂໍ້ມູນບໍ່ສຳເລັດ",
+              icon: "error",
+            });
+          }
+        } catch (error) {
+          console.error("Failed to upload data:", error);
+          
+          
+          const errorItem = items.value.find((i) => i.CID === item.CID);
+          if (errorItem) {
+            errorItem.statussubmit = "1"; 
+          }
+
+          const errorMessage = error.response?.data?.message || "ການອັບໂຫຼດຂໍ້ມູນລົ້ມເຫຼວ, ກະລຸນາລອງໃໝ່";
+          
+          Swal.fire({
+            title: "ຜິດພາດ!",
+            text: errorMessage,
+            icon: "error",
+          });
+        }
+      }
+    });
+  } catch (e) {
+    console.error("Error in uploadDataButton function:", e);
+    Swal.fire({
+      title: "ຜິດພາດ!",
+      text: "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ, ກະລຸນາລອງໃໝ່",
+      icon: "error",
+    });
   }
 };
 
@@ -372,34 +524,22 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const getFullPath = (path: string) => `${config.public.strapi.url}/${path}media/`;
-
-const filterOnlyCapsText = (
-  value: string | null,
-  query: string | null
-): boolean => {
-  return (
-    value !== null &&
-    query !== null &&
-    typeof value === "string" &&
-    value.toUpperCase().includes(query)
-  );
-};
+const getFullPath = (path: string) =>
+  `${config.public.strapi.url}media/${path}`;
 
 const getFileName = (path: string) => {
   const parts = path.split("/");
   return parts[parts.length - 1];
 };
 
-// Emit function for search
 const onSearch = () => {
-  emit('searchQuery', search.value);
+  emit("searchQuery", search.value);
 };
 
-const emit = defineEmits(['searchQuery']);
+const emit = defineEmits(["searchQuery"]);
 
 defineExpose({
-  onSearch
+  onSearch,
 });
 </script>
 
