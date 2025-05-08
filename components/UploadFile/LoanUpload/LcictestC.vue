@@ -1,92 +1,114 @@
 <template>
-  <v-container>
-    <v-autocomplete
-      variant="outlined"
-      density="compact"
-      width="50%"
-      v-model="search"
-      class=""
-      label="ໃສ່ລະຫັດທະນາຄານ"
-      :items="uniqueUserIds.map((user) => ({ title: user, value: user }))"
-      item-text="title"
-      item-value="value"
-    />
-    <v-data-table
-      :headers="headers"
-      :items="filteredItems"
-      class="elevation-1 d-flex justify-start"
-      :items-per-page="12"
-    >
-      <template v-slot:top>
-        <!-- <v-toolbar flat>
-          <v-divider class="mx-4" inset vertical></v-divider>
-        </v-toolbar> -->
-      </template>
-      <!-- <template v-slot:item.path="{ item }">
-          <a :href="getFullPath(item.path)" target="_blank">{{ item.path }}</a>
-        </template> -->
-      <template v-slot:item.path="{ item }">
-        <a :href="getFullPath(item.path)" target="_blank">{{
-          getFileName(item.path)
-        }}</a>
-      </template>
-      <template v-slot:item.percentage="{ item }" class="text-start">
-        <span
-          :style="{ color: getPercentageColor(item.percentage) }"
-          class="text-start"
-          ><p class="text-center">{{ item.percentage.toFixed(2) }}%</p></span
-        >
-      </template>
-      <template
-        :custom-filter="filterOnlyCapsText"
-        :search="search"
-        v-slot:item.user_id="{ item }"
+  <v-autocomplete
+    variant="outlined"
+    density="compact"
+    width="30%"
+    v-model="search"
+    class=""
+    label="ໃສ່ລະຫັດທະນາຄານ"
+    :items="uniqueUserIds.map((user) => ({ title: user, value: user }))"
+    item-text="title"
+    item-value="value"
+  />
+  <v-data-table
+    :headers="headers"
+    :items="filteredItems"
+    class="elevation-1 d-flex justify-start"
+    :items-per-page="12"
+  >
+    <template v-slot:top> </template>
+
+    <template v-slot:item.path="{ item }">
+      <a :href="getFullPath(item.path)" target="_blank">{{
+        getFileName(item.path)
+      }}</a>
+    </template>
+    <template v-slot:item.percentage="{ item }" class="text-start">
+      <span
+        :style="{ color: getPercentageColor(item.percentage) }"
+        class="text-start"
+        ><p class="text-center">{{ item.percentage.toFixed(2) }}%</p></span
       >
-        <p :href="getFullPath(item.user_id)" target="_blank">
-          {{ getFileName(item.user_id) }}
-        </p>
-      </template>
-      <template v-slot:item.status="{ item }">
-        <v-chip :color="getStatusColor(item.status)" dark>{{
-          item.status
-        }}</v-chip>
-      </template>
-      <template v-slot:item.statussubmit="{ item }">
-        <div class="d-flex align-center">
-          <template v-if="item.statussubmit === '0' && item.percentage <= 60">
-            <span style="color: green">ຢືນຢັນສຳເລັດແລ້ວ</span>
-          </template>
-          <template v-if="item.statussubmit === '3' && item.percentage <= 60">
-            <span class="text-green"
-              >ກຳລັງຢືນຢັນຂໍ້ມູນເຂົ້າຖານຂໍ້ມູນ
-              <v-progress-circular
-                :size="20"
-                color="primary"
-                indeterminate
-              ></v-progress-circular
-            ></span>
-          </template>
-          <template v-else-if="item.percentage > 60">
-            <span style="color: red">ຂໍ້ຜິດພາດສູງເກີນກຳນົດ</span>
-          </template>
-          <template v-else-if="item.statussubmit === '1'">
-            <v-btn @click="confirmAction(item)" color="success"> ຢືນຢັນ </v-btn>
-          </template>
-        </div>
-      </template>
-      <template v-slot:item.actions="{ item }">
+    </template>
+    <template
+      :custom-filter="filterOnlyCapsText"
+      :search="search"
+      v-slot:item.user_id="{ item }"
+    >
+      <p :href="getFullPath(item.user_id)" target="_blank">
+        {{ getFileName(item.user_id) }}
+      </p>
+    </template>
+    <template v-slot:item.status="{ item }">
+      <v-chip :color="getStatusColor(item.status)" dark>{{
+        item.status
+      }}</v-chip>
+    </template>
+    <template v-slot:item.statussubmit="{ item }">
+      <div class="d-flex align-center">
+        <template v-if="item.statussubmit === '0' && item.percentage <= 60">
+          <span style="color: green">ຢືນຢັນສຳເລັດແລ້ວ</span>
+        </template>
+        <template v-if="item.statussubmit === '3' && item.percentage <= 60">
+          <span class="text-green"
+            >ກຳລັງຢືນຢັນຂໍ້ມູນເຂົ້າຖານຂໍ້ມູນ
+            <v-progress-circular
+              :size="20"
+              color="primary"
+              indeterminate
+            ></v-progress-circular
+          ></span>
+        </template>
+        <template v-if="item.statussubmit === '4' && item.percentage <= 60">
+          <span class="text-warning"
+            >ກຳລັງອັນໂຫຼດຂໍ້ມູນ
+            <v-progress-circular
+              :size="20"
+              color="warning"
+              indeterminate
+            ></v-progress-circular
+          ></span>
+        </template>
+        <template v-if="item.statussubmit === '2'">
+          <span style="color: red">ຂໍ້ຜິດພາດສູງເກີນກຳນົດ</span>
+        </template>
+        <template v-else-if="item.statussubmit === '1' || item.statussubmit === '5'">
+          <v-btn
+            @click="handleConfirmAction(item)"
+            color="success"
+            :disabled="isUserIdProcessing(item.user_id)"
+          >
+            ຢືນຢັນ
+          </v-btn>
+        </template>
+      </div>
+    </template>
+    <template v-slot:item.actions="{ item }">
+      <div>
         <v-btn @click="viewDetails(item)" color="info" class="ml-10"
           >ເບິ່ງລາຍລະອຽດ</v-btn
+        >  <v-btn
+        v-if="item.statussubmit === '0'"
+          @click="uploadDataButton(item)"
+          color="#FF6D00"
+          class="ml-2"
+          :disabled="isUserIdProcessing(item.user_id)"
         >
-        <v-btn @click="uploadDataButton(item)" color="#FF6D00" class="ml-2">
           ອັນໂຫຼດ
         </v-btn>
-      </template>
-      <template v-slot:no-data>
-        <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
-      </template>
-    </v-data-table>
-  </v-container>
+      
+<span v-if="item.statussubmit === '5'"> 
+  <v-chip color="warning">ອັນໂຫຼດຂໍ້ມູນອອກແລ້ວ</v-chip>
+</span>
+       
+       
+      </div>
+      
+    </template>
+    <template v-slot:no-data>
+      <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
+    </template>
+  </v-data-table>
 </template>
 
 <script setup lang="ts">
@@ -171,7 +193,7 @@ const fetchData = async () => {
     sortItemsByUploadDate();
   } catch (error) {
     console.error("Failed to fetch data:", error);
-    
+
     Swal.fire({
       title: "ຜິດພາດ!",
       text: "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້. ກະລຸນາລອງໃໝ່ອີກຄັ້ງ.",
@@ -190,94 +212,32 @@ const uniqueUserIds = computed(() => {
   return [...new Set(filteredItems.value.map((item) => item.user_id))];
 });
 
+const isUserIdProcessing = (userId: string) => {
+  return items.value.some(
+    (item) =>
+      (item.user_id === userId && item.statussubmit === "3") ||
+      (item.user_id === userId && item.statussubmit === "4")
+  );
+};
+
+const handleConfirmAction = (item: any) => {
+  if (isUserIdProcessing(item.user_id)) {
+    Swal.fire({
+      title: "ບໍ່ສາມາດດຳເນີນການໄດ້",
+      text: "ບໍ່ສາມາດຢືນຢັນໄດ້ເນື່ອງຈາກມີລາຍການກຳລັງປະມວນຜົນຢູ່ໃນທະນາຄານດຽວກັນ",
+      icon: "warning",
+    });
+    return;
+  }
+
+  confirmAction(item);
+};
+
 const sortItemsByUploadDate = () => {
   items.value.sort(
     (a: any, b: any) =>
       new Date(b.insertDate).getTime() - new Date(a.insertDate).getTime()
   );
-};
-
-const onFileChange = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  if (target.files && target.files.length > 0) {
-    file.value = target.files[0];
-  }
-};
-
-const uploadFile = async () => {
-  if (!file.value) {
-    Swal.fire({
-      icon: "warning",
-      title: "ບໍ່ໄດ້ເລືອກໄຟລ໌",
-      text: "ກະລຸນາເລືອກໄຟລ໌ກ່ອນ",
-    });
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("file", file.value);
-  formData.append("title", file.value.name);
-
-  const newItem = {
-    fileName: file.value.name,
-    fileSize: file.value.size,
-    path: "",
-    insertDate: new Date().toLocaleString(),
-    updateDate: new Date().toLocaleString(),
-    status: "ກຳລັງນຳສົ່ງຂໍ້ມູນ",
-    confirmed: false,
-  };
-  items.value.push(newItem);
-
-  try {
-    const response = await axios.post(
-      `${config.public.strapi.url}api/upload-files/`,
-      formData
-    );
-
-    const updatedItem = items.value.find(
-      (item) => item.fileName === file.value!.name
-    );
-    if (updatedItem) {
-      updatedItem.status = "ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ";
-      updatedItem.path = response.data.path;
-    }
-
-    Swal.fire({
-      icon: "success",
-      title: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-      text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ",
-    });
-
-    const response2 = await fetch(
-      `${config.public.strapi.url}api/api/upload-filesc2/`
-    );
-    const data = await response2.json();
-    items.value = data.map((item: any) => ({
-      ...item,
-      CID: item.CID,
-      fileName: item.fileName,
-      path: item.path,
-      user_id: item.user_id,
-      status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-      confirmed: false,
-    }));
-  } catch (error) {
-    console.error(error);
-
-    const updatedItem = items.value.find(
-      (item) => item.fileName === file.value!.name
-    );
-    if (updatedItem) {
-      updatedItem.status = "ການນຳສົ່ງບໍ່ສົມບູນ";
-    }
-
-    Swal.fire({
-      icon: "error",
-      title: "ການອັບໂຫຼດລົ້ມເຫລວ",
-      text: "ລົ້ມເຫລວໃນການອັບໂຫຼດໄຟລ໌",
-    });
-  }
 };
 
 const viewDetails = async (item: any) => {
@@ -327,6 +287,29 @@ const confirmAction = async (item: any) => {
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
+        if (isUserIdProcessing(item.user_id)) {
+          Swal.fire({
+            title: "ບໍ່ສາມາດດຳເນີນການໄດ້",
+            text: "ບໍ່ສາມາດຢືນຢັນໄດ້ເນື່ອງຈາກມີລາຍການກຳລັງປະມວນຜົນຢູ່ໃນທະນາຄານດຽວກັນ",
+            icon: "warning",
+          });
+          return;
+        }
+
+        const response1 = await axios.post(
+          `${config.public.strapi.url}api/api/update-statussubmitc/`,
+          `CID=${item.CID}`
+        );
+
+        if (response1.data.status === "success") {
+          const confirmedItem = items.value.find(
+            (i) => i.fileName === item.fileName
+          );
+          if (confirmedItem) {
+            confirmedItem.confirmed = true;
+            confirmedItem.statussubmit = "0";
+          }
+        }
         const params = new URLSearchParams();
         const csrfToken = Cookies.get("csrftoken");
         params.append("CID", item.CID);
@@ -358,34 +341,37 @@ const confirmAction = async (item: any) => {
         } else {
           Swal.fire("ລົ້ມເຫລວ!", "ການຢືນຢັນການອັບໂຫຼດລົ້ມເຫລວ.", "error");
         }
-      } catch (error) {
-        console.error("Failed to confirm upload:", error);
-        Swal.fire(
-          "ຜິດພາດ!",
-          "ມີຄວາມຜິດພາດເກີດຂຶ້ນໃນຂະນະທີ່ຢືນຢັນການອັບໂຫຼດ.",
-          "error"
-        );
-      }
+      }catch (error) {
+  console.error("Failed to confirm upload:", error);
+  if (error.response && error.response.status === 408) {
+    Swal.fire(
+      "ຜິດພາດ!",
+      "ບໍ່ສາມາດຢືນຢັນໄດ້ເນື່ອງຈາກ period ຂອງໄຟລ໌ນ້ອຍກວ່າ period ທີ່ມີຢູ່ແລ້ວ.",
+      "error"
+    );
+  } else {
+    Swal.fire(
+      "ຜິດພາດ!",
+      "ມີຄວາມຜິດພາດເກີດຂຶ້ນໃນຂະນະທີ່ຢືນຢັນການອັບໂຫຼດ.",
+      "error"
+    );
+  }
+}
     }
   });
-
-  const response = await axios.post(
-    `${config.public.strapi.url}api/api/update-statussubmitc/`,
-    `CID=${item.CID}`
-  );
-
-  if (response.data.status === "success") {
-    const confirmedItem = items.value.find((i) => i.fileName === item.fileName);
-    if (confirmedItem) {
-      confirmedItem.confirmed = true;
-      confirmedItem.statussubmit = "0";
-    }
-  }
 };
-
 
 const uploadDataButton = async (item) => {
   try {
+    if (isUserIdProcessing(item.user_id)) {
+      Swal.fire({
+        title: "ບໍ່ສາມາດດຳເນີນການໄດ້",
+        text: "ບໍ່ສາມາດອັບໂຫຼດໄດ້ເນື່ອງຈາກມີລາຍການກຳລັງປະມວນຜົນຢູ່ໃນທະນາຄານດຽວກັນ",
+        icon: "warning",
+      });
+      return;
+    }
+
     Swal.fire({
       title: "ຢືນຢັນການອັບໂຫຼດຂໍ້ມູນ",
       text: "ທ່ານແນ່ໃຈບໍ່ທີ່ຈະອັບໂຫຼດຂໍ້ມູນນີ້ແບບອັດຕະໂນມັດ?",
@@ -397,10 +383,32 @@ const uploadDataButton = async (item) => {
       cancelButtonText: "ຍົກເລີກ",
     }).then(async (result) => {
       if (result.isConfirmed) {
-     
+        if (isUserIdProcessing(item.user_id)) {
+          Swal.fire({
+            title: "ບໍ່ສາມາດດຳເນີນການໄດ້",
+            text: "ບໍ່ສາມາດອັບໂຫຼດໄດ້ເນື່ອງຈາກມີລາຍການກຳລັງປະມວນຜົນຢູ່ໃນທະນາຄານດຽວກັນ",
+            icon: "warning",
+          });
+          return;
+        }
+
+        const response1 = await axios.post(
+          `${config.public.strapi.url}api/api/unload-statussubmitc/`,
+          `CID=${item.CID}`
+        );
+
+        if (response1.data.status === "success") {
+          const confirmedItem = items.value.find(
+            (i) => i.fileName === item.fileName
+          );
+          if (confirmedItem) {
+            confirmedItem.confirmed = true;
+            confirmedItem.statussubmit = "0";
+          }
+        }
         const uploadingItem = items.value.find((i) => i.CID === item.CID);
         if (uploadingItem) {
-          uploadingItem.statussubmit = "3"; 
+          uploadingItem.statussubmit = "3";
         }
 
         const params = new URLSearchParams();
@@ -408,7 +416,6 @@ const uploadDataButton = async (item) => {
         params.append("CID", item.CID);
 
         try {
-          
           const response = await axios.post(
             `${config.public.strapi.url}api/unload_uploadc/`,
             params,
@@ -423,10 +430,9 @@ const uploadDataButton = async (item) => {
           console.log("Response from upload:", response.data);
 
           if (response.data.status === "success") {
-           
             const successItem = items.value.find((i) => i.CID === item.CID);
             if (successItem) {
-              successItem.statussubmit = "0"; 
+              successItem.statussubmit = "0";
             }
 
             Swal.fire({
@@ -434,11 +440,9 @@ const uploadDataButton = async (item) => {
               text: `ອັບໂຫຼດຂໍ້ມູນສຳເລັດ. ຈຳນວນລາຍການທີ່ປະມວນຜົນ: ${response.data.processed_count}`,
               icon: "success",
             }).then(() => {
-              
               fetchData();
             });
           } else if (response.data.status === "warning") {
-            
             Swal.fire({
               title: "ສຳເລັດແຕ່ມີຄຳເຕືອນ",
               text: response.data.message,
@@ -446,24 +450,30 @@ const uploadDataButton = async (item) => {
               html: `
                 <div>
                   <p>${response.data.message}</p>
-                  <p>ຈຳນວນລາຍການທີ່ປະມວນຜົນສຳເລັດ: ${response.data.processed_count}</p>
-                  ${response.data.errors && response.data.errors.length ? `
+                  <p>ຈຳນວນລາຍການທີ່ປະມວນຜົນສຳເລັດ: ${
+                    response.data.processed_count
+                  }</p>
+                  ${
+                    response.data.errors && response.data.errors.length
+                      ? `
                     <p>ລາຍລະອຽດຄຳເຕືອນ:</p>
                     <ul style="text-align: left; max-height: 200px; overflow-y: auto; margin-top: 10px;">
-                      ${response.data.errors.map(error => `<li>${error}</li>`).join('')}
+                      ${response.data.errors
+                        .map((error) => `<li>${error}</li>`)
+                        .join("")}
                     </ul>
-                  ` : ''}
+                  `
+                      : ""
+                  }
                 </div>
               `,
             }).then(() => {
-             
               fetchData();
             });
           } else {
-            
             const failedItem = items.value.find((i) => i.CID === item.CID);
             if (failedItem) {
-              failedItem.statussubmit = "1"; 
+              failedItem.statussubmit = "1";
             }
 
             Swal.fire({
@@ -474,15 +484,16 @@ const uploadDataButton = async (item) => {
           }
         } catch (error) {
           console.error("Failed to upload data:", error);
-          
-          
+
           const errorItem = items.value.find((i) => i.CID === item.CID);
           if (errorItem) {
-            errorItem.statussubmit = "1"; 
+            errorItem.statussubmit = "1";
           }
 
-          const errorMessage = error.response?.data?.message || "ການອັບໂຫຼດຂໍ້ມູນລົ້ມເຫຼວ, ກະລຸນາລອງໃໝ່";
-          
+          const errorMessage =
+            error.response?.data?.message ||
+            "ການອັບໂຫຼດຂໍ້ມູນລົ້ມເຫຼວ, ກະລຸນາລອງໃໝ່";
+
           Swal.fire({
             title: "ຜິດພາດ!",
             text: errorMessage,
@@ -491,14 +502,23 @@ const uploadDataButton = async (item) => {
         }
       }
     });
-  } catch (e) {
-    console.error("Error in uploadDataButton function:", e);
-    Swal.fire({
-      title: "ຜິດພາດ!",
-      text: "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ, ກະລຸນາລອງໃໝ່",
-      icon: "error",
-    });
+  } catch (error) {
+  console.error("Failed to confirm upload:", error);
+  if (error.response && error.response.status === 406) {
+    Swal.fire(
+      "ຜິດພາດ!",
+      "ບໍ່ສາມາດຢືນຢັນໄດ້ເນື່ອງຈາກ period ຂອງໄຟລ໌ນ້ອຍກວ່າ period ທີ່ມີຢູ່ແລ້ວ.",
+      "error"
+    );
+  } else {
+    Swal.fire(
+      "ຜິດພາດ!",
+      "ມີຄວາມຜິດພາດເກີດຂຶ້ນໃນຂະນະທີ່ຢືນຢັນການອັບໂຫຼດ.",
+      "error"
+    );
   }
+}
+  
 };
 
 const getPercentageColor = (percentage: number) => {
