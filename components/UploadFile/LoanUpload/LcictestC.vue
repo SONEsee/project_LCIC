@@ -204,9 +204,16 @@ const fetchData = async () => {
 
 const filteredItems = computed(() =>
   items.value.filter((item) =>
-    item.user_id.toLowerCase().includes(search.value.toLowerCase())
+    item.user_id.toLowerCase().includes(search.value.toLowerCase()) &&
+    (item.statussubmit === "0" ||
+      item.statussubmit === "1" ||
+      item.statussubmit === "2" ||
+      item.statussubmit === "3" ||
+      item.statussubmit === "4" ||
+      item.statussubmit === "5") 
   )
 );
+
 
 const uniqueUserIds = computed(() => {
   return [...new Set(filteredItems.value.map((item) => item.user_id))];
