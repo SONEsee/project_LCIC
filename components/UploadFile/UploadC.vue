@@ -78,6 +78,16 @@
           {{ getFileName(item.user_id) }}
         </p>
       </template>
+      <template v-slot:item.fileSize="{ item }">
+       
+  <span v-if="Number(item.fileSize)/1024/1024 < 1">
+    {{(Number(item.fileSize)/1024).toFixed(2)}} KB
+  </span>
+  <span v-else>
+    {{(Number(item.fileSize)/1024/1024).toFixed(2)}} MB
+  </span>
+
+      </template>
       <template v-slot:item.statussubmit="{ item }">
         <v-chip :color="getStatusColor(item.statussubmit)" dark>{{
           getStatusText(item.statussubmit)
@@ -135,6 +145,7 @@ export default defineComponent({
       { title: "ໄອດີ", value: "CID" },
       { title: "ຊື່ພາດ", value: "path" },
       { title: "ລະຫັດທະນາຄານ", value: "user_id" },
+      { title: "ຂະໜາດຟາຍ", value: "fileSize" },
       { title: "ສະຖານະ", value: "statussubmit" },
       { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
       { title: "Actions", value: "actions", sortable: false },
@@ -142,10 +153,10 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
-        // ດຶງຂໍ້ມູນເພື່ອປະຕິບັດ
+        
         await fetchData();
 
-        // ດຶງຂໍ້ມູນຜູ້ໃຊ້ຈາກ localStorage
+     
         const userData = localStorage.getItem("user_data");
         console.log("User data:", userData);
 

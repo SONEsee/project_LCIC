@@ -13,7 +13,7 @@
   <v-data-table
     :headers="headers"
     :items="filteredItems"
-    class="elevation-1 d-flex justify-start"
+    class="elevation-1  justify-start"
     :items-per-page="12"
   >
     <template v-slot:top> </template>
@@ -44,6 +44,14 @@
         item.status
       }}</v-chip>
     </template>
+    <template v-slot:item.fileSize="{ item }">
+      <span v-if="Number(item.fileSize) / 1024 / 1024 < 1">
+        {{ (Number(item.fileSize) / 1024).toFixed(2) }} KB
+      </span>
+      <span v-else>
+        {{ (Number(item.fileSize) / 1024 / 1024).toFixed(2) }} MB
+      </span>
+    </template>
     <template v-slot:item.statussubmit="{ item }">
       <div class="d-flex align-center">
         <template v-if="item.statussubmit === '0' && item.percentage <= 60">
@@ -72,7 +80,9 @@
         <template v-if="item.statussubmit === '2'">
           <span style="color: red">ຂໍ້ຜິດພາດສູງເກີນກຳນົດ</span>
         </template>
-        <template v-else-if="item.statussubmit === '1' || item.statussubmit === '5'">
+        <template
+          v-else-if="item.statussubmit === '1' || item.statussubmit === '5'"
+        >
           <v-btn
             @click="handleConfirmAction(item)"
             color="success"
@@ -87,8 +97,9 @@
       <div>
         <v-btn @click="viewDetails(item)" color="info" class="ml-10"
           >ເບິ່ງລາຍລະອຽດ</v-btn
-        >  <v-btn
-        v-if="item.statussubmit === '0'"
+        >
+        <v-btn
+          v-if="item.statussubmit === '0'"
           @click="uploadDataButton(item)"
           color="#FF6D00"
           class="ml-2"
@@ -96,14 +107,11 @@
         >
           ອັນໂຫຼດ
         </v-btn>
-      
-<span v-if="item.statussubmit === '5'"> 
-  <v-chip color="warning">ອັນໂຫຼດຂໍ້ມູນອອກແລ້ວ</v-chip>
-</span>
-       
-       
+
+        <span v-if="item.statussubmit === '5'">
+          <v-chip color="warning">ອັນໂຫຼດຂໍ້ມູນອອກແລ້ວ</v-chip>
+        </span>
       </div>
-      
     </template>
     <template v-slot:no-data>
       <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
@@ -148,6 +156,7 @@ const headers = ref([
   { title: "ໄອດີ", value: "CID" },
   { title: "ຊື່ພາດ", value: "path" },
   { title: "ລະຫັດທະນາຄານ", value: "user_id" },
+  { title: "ຂະໜາດຟາຍ", value: "fileSize" },
   { title: "ສະຖານະການຢືນຢັນ", value: "statussubmit" },
   { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
   { title: "Actions", value: "actions", sortable: false },
@@ -203,17 +212,17 @@ const fetchData = async () => {
 };
 
 const filteredItems = computed(() =>
-  items.value.filter((item) =>
-    item.user_id.toLowerCase().includes(search.value.toLowerCase()) &&
-    (item.statussubmit === "0" ||
-      item.statussubmit === "1" ||
-      item.statussubmit === "2" ||
-      item.statussubmit === "3" ||
-      item.statussubmit === "4" ||
-      item.statussubmit === "5") 
+  items.value.filter(
+    (item) =>
+      item.user_id.toLowerCase().includes(search.value.toLowerCase()) &&
+      (item.statussubmit === "0" ||
+        item.statussubmit === "1" ||
+        item.statussubmit === "2" ||
+        item.statussubmit === "3" ||
+        item.statussubmit === "4" ||
+        item.statussubmit === "5")
   )
 );
-
 
 const uniqueUserIds = computed(() => {
   return [...new Set(filteredItems.value.map((item) => item.user_id))];
@@ -348,27 +357,27 @@ const confirmAction = async (item: any) => {
         } else {
           Swal.fire("ລົ້ມເຫລວ!", "ການຢືນຢັນການອັບໂຫຼດລົ້ມເຫລວ.", "error");
         }
-      }catch (error) {
-  console.error("Failed to confirm upload:", error);
-  if (error.response && error.response.status === 408) {
-    Swal.fire(
-      "ຜິດພາດ!",
-      "ບໍ່ສາມາດຢືນຢັນໄດ້ເນື່ອງຈາກ period ຂອງໄຟລ໌ນ້ອຍກວ່າ period ທີ່ມີຢູ່ແລ້ວ.",
-      "error"
-    );
-  } else {
-    Swal.fire(
-      "ຜິດພາດ!",
-      "ມີຄວາມຜິດພາດເກີດຂຶ້ນໃນຂະນະທີ່ຢືນຢັນການອັບໂຫຼດ.",
-      "error"
-    );
-  }
-}
+      } catch (error: any) {
+        console.error("Failed to confirm upload:", error);
+        if (error.response && error.response.status === 408) {
+          Swal.fire(
+            "ຜິດພາດ!",
+            "ບໍ່ສາມາດຢືນຢັນໄດ້ເນື່ອງຈາກ period ຂອງໄຟລ໌ນ້ອຍກວ່າ period ທີ່ມີຢູ່ແລ້ວ.",
+            "error"
+          );
+        } else {
+          Swal.fire(
+            "ຜິດພາດ!",
+            "ມີຄວາມຜິດພາດເກີດຂຶ້ນໃນຂະນະທີ່ຢືນຢັນການອັບໂຫຼດ.",
+            "error"
+          );
+        }
+      }
     }
   });
 };
 
-const uploadDataButton = async (item) => {
+const uploadDataButton = async (item: any) => {
   try {
     if (isUserIdProcessing(item.user_id)) {
       Swal.fire({
@@ -466,7 +475,7 @@ const uploadDataButton = async (item) => {
                     <p>ລາຍລະອຽດຄຳເຕືອນ:</p>
                     <ul style="text-align: left; max-height: 200px; overflow-y: auto; margin-top: 10px;">
                       ${response.data.errors
-                        .map((error) => `<li>${error}</li>`)
+                        .map((error: any) => `<li>${error}</li>`)
                         .join("")}
                     </ul>
                   `
@@ -489,7 +498,7 @@ const uploadDataButton = async (item) => {
               icon: "error",
             });
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error("Failed to upload data:", error);
 
           const errorItem = items.value.find((i) => i.CID === item.CID);
@@ -509,23 +518,22 @@ const uploadDataButton = async (item) => {
         }
       }
     });
-  } catch (error) {
-  console.error("Failed to confirm upload:", error);
-  if (error.response && error.response.status === 406) {
-    Swal.fire(
-      "ຜິດພາດ!",
-      "ບໍ່ສາມາດຢືນຢັນໄດ້ເນື່ອງຈາກ period ຂອງໄຟລ໌ນ້ອຍກວ່າ period ທີ່ມີຢູ່ແລ້ວ.",
-      "error"
-    );
-  } else {
-    Swal.fire(
-      "ຜິດພາດ!",
-      "ມີຄວາມຜິດພາດເກີດຂຶ້ນໃນຂະນະທີ່ຢືນຢັນການອັບໂຫຼດ.",
-      "error"
-    );
+  } catch (error: any) {
+    console.error("Failed to confirm upload:", error);
+    if (error.response && error.response.status === 406) {
+      Swal.fire(
+        "ຜິດພາດ!",
+        "ບໍ່ສາມາດຢືນຢັນໄດ້ເນື່ອງຈາກ period ຂອງໄຟລ໌ນ້ອຍກວ່າ period ທີ່ມີຢູ່ແລ້ວ.",
+        "error"
+      );
+    } else {
+      Swal.fire(
+        "ຜິດພາດ!",
+        "ມີຄວາມຜິດພາດເກີດຂຶ້ນໃນຂະນະທີ່ຢືນຢັນການອັບໂຫຼດ.",
+        "error"
+      );
+    }
   }
-}
-  
 };
 
 const getPercentageColor = (percentage: number) => {

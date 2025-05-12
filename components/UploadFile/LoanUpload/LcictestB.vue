@@ -169,6 +169,7 @@ const headers = ref([
   { title: "ໄອດີ", value: "FID" },
   { title: "ຊື່ພາດ", value: "path" },
   { title: "ລະຫັດທະນາຄານ", value: "user_id" },
+  { title: "ຂະໜາດຟາຍ", value: "fileSize" },
   { title: "ສະຖານະການຢືນຢັນ", value: "statussubmit" },
   { title: "ເປີເຊັນຄວາມຖືກຕອ້ງ", value: "percentage" },
   { title: "Actions", value: "actions", sortable: false },

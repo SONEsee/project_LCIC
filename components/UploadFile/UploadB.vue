@@ -62,6 +62,11 @@
           ລະຫັດທະນາຄານ
         </th>
       </template>
+      <template v-slot:header.fileSize>
+        <th style="color: #0d47a1" v-if="user && user.MID.id === '01'">
+          ຂະໜາດຟາຍ
+        </th>
+      </template>
       <template v-slot:header.statussubmit>
         <th style="color: #0d47a1">{{ $t("status") }}</th>
       </template>
@@ -204,6 +209,7 @@ export default defineComponent({
       { title: "ໄອດີ", value: "FID" },
       { title: "ຊື່ພາດ", value: "path" },
       { title: "ລະຫັດທະນາຄານ", value: "user_id" },
+      { title: "ຂະໜາດຟາຍ", value: "fileSize" },
 
       { title: "ສະຖານະ", value: "statussubmit" },
       { title: "ວັນທີອັບໂຫຼດ", value: "percentage" },
