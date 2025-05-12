@@ -1,31 +1,5 @@
 <script setup lang="ts">
-// import { message, notification, profile } from "./headerItems";
-// import { User } from "@/types/user";
-// import { ref, onMounted } from 'vue';
-// import { useRouter, useCookie } from 'nuxt/app';
 
-// const href = ref(undefined);
-// const messages = ref(message);
-// const notifications = ref(notification);
-// const userprofile = ref(profile);
-
-// const user = ref<User | null>(null);
-
-// onMounted(() => {
-//   const userData = localStorage.getItem('user_data');
-//   if (userData) {
-//     user.value = JSON.parse(userData);
-//     console.log('User data:', user.value);
-//   }
-// });
-
-// const signOut = () => {
-//   const token = useCookie("access_token");
-
-//   token.value = null;
-
-//   useRouter().push({ path: "/" });
-// };
 import { useRouter, useCookie } from "nuxt/app";
 import { onMounted, ref, watch } from "vue";
 import { User } from "@/types/user";
@@ -40,19 +14,7 @@ const userprofile = ref(profile);
 const user = ref<User | null>(null);
 const { locale, setLocale } = useI18n();
 
-// const { locale } = useI18n();
-// const currentLocale = ref(locale.value);
 
-// function toggleLocale() {
-//   const newLocale = currentLocale.value === 'en' ? 'lo' : 'en';
-//   currentLocale.value = newLocale;
-//   locale.value = newLocale;
-// }
-
-// // Watch ເພື່ອໃຫ້ສະແດງພາສາທັນທີໂດຍບໍ່ຕ້ອງ reload ໜ້າ
-// watch(currentLocale, (newLocale) => {
-//   locale.value = newLocale;
-// });
 
 const signOut = () => {
   localStorage.removeItem("access_token");
@@ -81,7 +43,7 @@ onMounted(() => {
   const userData = localStorage.getItem("user_data");
   if (userData) {
     user.value = JSON.parse(userData);
-    // console.log('User data:', user.value);
+   
   }
   setupInactivityTimer();
 });
@@ -91,7 +53,7 @@ onMounted(() => {
   <v-menu anchor="bottom end" origin="auto" min-width="300">
     <template v-slot:activator="{ props }">
       <div class="d-flex">
-        <!-- User Profile -->
+        
         <v-btn
           icon
           class="mx-3"
@@ -111,15 +73,13 @@ onMounted(() => {
           />
           <img
             v-else
-            src="https://laostravel.com/images/2020/12/flag-of-laos-From-1945-to-1946.jpg"
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Flag_of_Laos.svg/1200px-Flag_of_Laos.svg.png"
             alt="Laos Flag"
             style="width: 24px; height: 24px"
           />
         </v-btn>
 
-        <!-- <v-btn icon class="mx-3" color="white" @click="toggleLocale">
-    {{ currentLocale }}
-  </v-btn> -->
+       
         <v-btn icon class="mx-3">
           <v-avatar size="35">
             <img
@@ -128,19 +88,7 @@ onMounted(() => {
               alt="sone"
             />
           </v-avatar>
-          <!-- <v-menu  activator="parent">
-          
-          
-                <v-btn
-                  color="primary"
-                  @click="setLocale(locale === 'en' ? 'lo' : 'en')"
-                >
-                  {{ locale }}</v-btn
-                >
-                {{ $t("hello") }}
-           
-            
-          </v-menu> -->
+       
 
           <v-menu activator="parent">
             <v-list class="pa-6" elevation="10" rounded="lg">

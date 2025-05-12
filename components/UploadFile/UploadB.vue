@@ -118,6 +118,12 @@
         <v-chip v-if="item.statussubmit === '2'" class="text-error darken-2">
           ປະຕິເສດ
         </v-chip>
+        <v-chip v-if="item.statussubmit === '5'" class="text-lime-darken-4 darken-2">
+          ຂໍ້ມູນຖືກອັນໂຫຼດ
+        </v-chip>
+        <v-chip v-if="item.statussubmit === '4'" class="text-lime-darken-4 darken-2">
+          ຂໍ້ມູນຖືກອັນໂຫຼດ
+        </v-chip>
         <v-chip v-if="item.statussubmit === '0'" class="text-success darken-2">
           ສໍາເລັດການໂຫຼດ
         </v-chip>
@@ -540,6 +546,10 @@ export default defineComponent({
           return "green";
         case "2":
           return "red";
+        case "4":
+          return "#827717";
+        case "5":
+          return "#827717";
         case "0":
         case "default":
           return "blue";
@@ -549,11 +559,15 @@ export default defineComponent({
     const getStatusText = (statussubmit: string) => {
       switch (statussubmit) {
         case "Pending":
-          return "ກຳລັງນຳສົ່ຂໍ້ມູນ";
+          return "ກຳລັງນຳສົ່ງຂໍ້ມູນ";
         case "1":
           return "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ";
         case "2":
           return "ປະຕິເສດ";
+        case "4":
+          return "ຂໍ້ມູນກຳລັງຖືກອັນໂຫຼດ";
+        case "5":
+          return "ຂໍ້ມູນຖືກອັນໂຫຼດ";
         case "0":
         case "default":
           return "ສຳເລັດການໂຫຼດ";

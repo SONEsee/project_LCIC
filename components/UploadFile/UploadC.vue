@@ -517,9 +517,9 @@ export default defineComponent({
         case "2":
           return "red";
         case "5":
-          return "yellow";
+          return "#827717";
         case "4":
-          return "yellow";
+          return "#827717";
         case "0":
         case "default":
           return "blue";
@@ -538,7 +538,7 @@ export default defineComponent({
         case "5":
           return "ຂໍ້ມູນຖືກອັນໂຫຼດ";
         case "4":
-          return "ກຳລັງຖືກອັນໂຫຼດ";
+          return "ກຳລັງຖືກອັນໂຫຼດ..";
         case "0":
         case "default":
           return "ສຳເລັດການໂຫຼດ";
