@@ -22,6 +22,7 @@ import { defaults } from "@/helpers/defaults";
 export default defineNuxtPlugin((nuxtApp) => {
   // Create a new Vuetify instance
   const vuetify = createVuetify({
+    
     ssr: true,
     defaults,
     theme: {

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { useRouter, useCookie } from "nuxt/app";
 import { onMounted, ref, watch } from "vue";
 import { User } from "@/types/user";
@@ -13,8 +12,6 @@ const timeout = ref<number | null>(null);
 const userprofile = ref(profile);
 const user = ref<User | null>(null);
 const { locale, setLocale } = useI18n();
-
-
 
 const signOut = () => {
   localStorage.removeItem("access_token");
@@ -43,8 +40,17 @@ onMounted(() => {
   const userData = localStorage.getItem("user_data");
   if (userData) {
     user.value = JSON.parse(userData);
-   
   }
+  console.log(userData, "usertest");
+  const image = localStorage.getItem("profile_image");
+
+  
+  const usertest = localStorage.getItem("user");
+  if (usertest) {
+    user.value = JSON.parse(usertest);
+    console.log(user.value, "user");
+  }
+
   setupInactivityTimer();
 });
 </script>
@@ -53,7 +59,6 @@ onMounted(() => {
   <v-menu anchor="bottom end" origin="auto" min-width="300">
     <template v-slot:activator="{ props }">
       <div class="d-flex">
-        
         <v-btn
           icon
           class="mx-3"
@@ -79,23 +84,21 @@ onMounted(() => {
           />
         </v-btn>
 
-       
         <v-btn icon class="mx-3">
-          <v-avatar size="35">
+          <v-avatar size="35" v-if="user">
             <img
-              src="https://img.freepik.com/free-photo/abstract-autumn-beauty-multi-colored-leaf-vein-pattern-generated-by-ai_188544-9871.jpg?size=626&ext=jpg&ga=GA1.1.2082370165.1716249600&semt=ais_user"
+              :src="user.profile_image"
               width="35"
               alt="sone"
             />
           </v-avatar>
-       
 
           <v-menu activator="parent">
             <v-list class="pa-6" elevation="10" rounded="lg">
               <h4 class="font-weight-medium fs-18">ໂປຟາຍຂອງຂອ້ຍ</h4>
               <div class="d-flex align-center my-4" v-if="user">
                 <img
-                  src="https://img.freepik.com/free-photo/abstract-autumn-beauty-multi-colored-leaf-vein-pattern-generated-by-ai_188544-9871.jpg?size=626&ext=jpg&ga=GA1.1.2082370165.1716249600&semt=ais_user"
+                  :src="user.profile_image"
                   alt="Sone SEEDAVANH"
                   class="rounded-circle"
                   width="100"

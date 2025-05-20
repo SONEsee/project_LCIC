@@ -1,5 +1,5 @@
 <template>
-  <v-card class="background image-background" :style="backgroundStyle">
+  <v-card class="background image-background" :style="backgroundStyle" flat tile>
     <div>
       <p class="ml-3 pt-4"><b style="color: #01579b">- {{ $t("search1") }}</b></p>
     </div>

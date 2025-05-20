@@ -36,12 +36,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class=" d-flex justify-end">
-    <v-btn @click="$router.push('/backend/fee/create')" prepend-icon="mdi-plus" color="primary">
+  <div class="d-flex justify-end">
+    <v-btn
+      @click="$router.push('/backend/fee/create')"
+      prepend-icon="mdi-plus"
+      color="primary"
+      :loading="feestore.loading"
+    >
       ເພີ່ມຂໍ້ມູນຄ່າທຳນຽມ
     </v-btn>
   </div>
-  <v-data-table :items="res" :headers="header">
+  <v-data-table :items="res" :headers="header" :loading="feestore.loading">
     <template v-slot:item.chg_sys_id="{ item }">
       {{ item.chg_sys_id }}
     </template>
@@ -53,10 +58,20 @@ onMounted(() => {
         flat
         @click="$router.push(`/backend/fee/detail/?id=${item.chg_sys_id}`)"
       />
-      <v-btn class="text-info small" icon="mdi-pen" small flat
-       @click="$router.push(`/backend/fee/update/?id=${item.chg_sys_id}`)"
-       />
-      <v-btn class="text-error small" icon="mdi-delete" small flat  @click="deletefee(item.chg_sys_id)"/>
+      <v-btn
+        class="text-info small"
+        icon="mdi-pen"
+        small
+        flat
+        @click="$router.push(`/backend/fee/update/?id=${item.chg_sys_id}`)"
+      />
+      <v-btn
+        class="text-error small"
+        icon="mdi-delete"
+        small
+        flat
+        @click="deletefee(item.chg_sys_id)"
+      />
     </template>
   </v-data-table>
 </template>

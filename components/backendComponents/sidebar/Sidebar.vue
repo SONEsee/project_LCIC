@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { useSidebar } from "./sidebarItems"; // Import the useSidebar composable
+import { useSidebar } from "./sidebarItems"; 
 
 interface User {
   username: string;
@@ -13,8 +13,8 @@ const user = ref<User | null>(null);
 const sidebarItems = ref([]); 
 
 onMounted(async () => {
-  const fetchedItems = await useSidebar(); // Await the sidebar fetching logic
-  sidebarItems.value = fetchedItems.value || []; // Populate the reactive sidebarItems
+  const fetchedItems = await useSidebar(); 
+  sidebarItems.value = fetchedItems.value || []; 
  
 });
 
@@ -44,8 +44,8 @@ const filteredSidebarItems = computed(() => {
       <v-list class="pa-4">
       
         <template v-if="filteredSidebarItems.length > 0">
-          <template v-for="(item, i) in filteredSidebarItems" :key="i">
-            <v-list-item
+          <template v-for="(item, i) in filteredSidebarItems" :key="i" >
+            <v-list-item style="color: #304FFE;"
               :to="item.url"
               rounded="lg"
               class="mb-1"
@@ -57,7 +57,7 @@ const filteredSidebarItems = computed(() => {
               <template v-slot:prepend >
                 <v-icon :icon="item.icon" style="color: #304FFE;" class="hover-icon"></v-icon>
               </template>
-              <!-- <v-list-item-title v-text="item.name"></v-list-item-title> -->
+             
               <v-list-item-title>{{ $t(item.name) }}</v-list-item-title>
             </v-list-item>
           </template>
@@ -73,7 +73,7 @@ const filteredSidebarItems = computed(() => {
     </div>
   </div>
 </template>
-<!-- <style>
+<style>
 .hover-icon {
   color: #304FFE;
   transition: color 0.3s;
@@ -82,4 +82,4 @@ const filteredSidebarItems = computed(() => {
 .hover-icon:hover {
   color: #FF6F00;
 }
-</style> -->
+</style>

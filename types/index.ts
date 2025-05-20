@@ -11,6 +11,8 @@ import * as FeeModel from './fee'
 import * as ReportModel from './reportfcr'
 import * as UserDataResponse from './user'
 import * as ValidateResponse from './validate'
+import * as MemberinfoModel from './meberinfo'
+import * as LochalUserData from './location'
 export{
     DuplicatesFalse,
     DataModel,
@@ -23,6 +25,8 @@ export{
     FeeModel,
     ReportModel,
     UserDataResponse,
-    ValidateResponse
+    ValidateResponse,
+    MemberinfoModel,
+    LochalUserData
 
 }
