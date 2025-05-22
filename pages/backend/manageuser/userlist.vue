@@ -17,7 +17,8 @@
           <ManageUserModeration />
         </v-window-item>
         <v-window-item value="two">
-          <v-row>
+          <user-test/>
+          <!-- <v-row>
             <v-col cols="12" md="6">
               <v-sheet class="pa-2 ma-2">
                 <SearchFilter @searchQuery="filterUsers" />
@@ -46,9 +47,9 @@
                   ເພື່ມຜູ້ນໍາໃຊ້
                 </v-btn>
               </v-sheet>
-            </v-col>
-          </v-row>
-          <v-card class="mx-auto my-4" elevation="4" rounded>
+            </v-col> -->
+          <!-- </v-row> -->
+          <!-- <v-card class="mx-auto my-4" elevation="4" rounded>
             <div class="table-responsive">
               <v-data-table
                 :items="filteredUsers"
@@ -83,7 +84,7 @@
                 </template>
               </v-data-table>
             </div>
-          </v-card>
+          </v-card> -->
         </v-window-item>
         <v-window-item value="three">
           <ManageUserManageUserByBank />
