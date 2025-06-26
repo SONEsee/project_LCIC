@@ -32,6 +32,11 @@ export const useUserManageStore = defineStore("userManage", {
       },
       respons_role_data: null as MemberinfoModel.RoleDetailRespose | null,
       respons_data_bnk: [] as UserDataResponse.BankRespose[],
+      respons_detail_data:
+        null as MemberinfoModel.MemberInfoDetailRespose | null,
+      respons_user_data: null as UserDataResponse.DetailMenmberRespons[] | null,
+      respons_user_data_detail:
+        null as UserDataResponse.DetailMenmberRespons | null,
       loading: false,
       config: useRuntimeConfig(),
     };
@@ -105,6 +110,7 @@ export const useUserManageStore = defineStore("userManage", {
           surnameL: "",
           surnameE: "",
           bnk_code: "",
+          
           profile_image: null,
         };
 
@@ -113,7 +119,7 @@ export const useUserManageStore = defineStore("userManage", {
           title: "ສຳເລັດ",
           text: "ສຳເລັດການເພີ່ມຂໍ້ມູນຜູ້ໃຊ້!",
         });
-        window.location.pathname = "/user";
+        window.location.pathname = "/backend/manageuser/userlist";
       } catch (error: any) {
         console.error("Error creating user:", error);
 
@@ -138,5 +144,150 @@ export const useUserManageStore = defineStore("userManage", {
         this.loading = false;
       }
     },
+    async Getdetail(id: number) {
+      this.loading = true;
+      try {
+        const res = await axios.get<MemberinfoModel.MemberInfoDetailRespose>(
+          `${this.config.public.strapi.url}api/members/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+          }
+        );
+        this.respons_detail_data = res.data;
+      } catch (error) {
+        console.error("Error fetching user detail data:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+    async Getdata() {
+      this.loading = true;
+      try {
+        const res = await axios.get<UserDataResponse.DetailMenmberRespons[]>(
+          `${this.config.public.strapi.url}api/create_user/`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+          }
+        );
+        if (res.status === 200) {
+          this.respons_user_data = res.data;
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    },
+    async getDetailUser(id: number) {
+      this.loading = true;
+      try {
+        const res = await axios.get<UserDataResponse.DetailMenmberRespons>(
+          `${this.config.public.strapi.url}api/get_user/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+          }
+        );
+        if (res.status === 200) {
+          this.respons_user_data_detail = res.data;
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+    async upDateUser(id: number, formData: FormData) {
+      const router = useRouter()
+  this.loading = true;
+  try {
+    const result = await Swal.fire({
+      title: "ຄຳເຕືອນ",
+      text: "ທ່ານຕ້ອງການອັບເດດຂໍ້ມູນ ຫຼື ບໍ່?",
+      showCancelButton: true,
+      icon: "warning",
+      confirmButtonText: "ຕົກລົງ",
+      cancelButtonText: "ຍົກເລີກ",
+    });
+
+    if (result.isConfirmed) {
+      const res = await axios.put(
+        `${this.config.public.strapi.url}api/update_user/${id}/`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+
+      if (res.status === 200) {
+        Swal.fire({
+          title: "ສຳເລັດ",
+          text: "ອັບເດດຂໍ້ມູນສຳເລັດແລ້ວ",
+          icon: "success",
+        });
+         setTimeout(() => {
+            router.push('/backend/manageuser/userlist');
+          }, 1500);
+      }
+    }
+  } catch (error) {
+    Swal.fire({
+      title: "ຂໍ້ມູນບໍ່ຖືກອັບເດດ",
+      text: "ຂໍໍອະໄພສໍາລັບບັນຫາ",
+      icon: "error",
+    });
+    console.error("Error updating user:", error);
+  } finally {
+    this.loading = false;
+  }
+},
+async deleteUser(id: number) {
+  const router = useRouter()
+  this.loading = true;
+  try {
+    const result = await Swal.fire({
+      title: "ຄຳເຕືອນ",
+      text: "ທ່ານຕ້ອງການລົບ ຫຼື ບໍ່?",
+      showCancelButton: true,
+      icon: "warning",
+      confirmButtonText: "ຕົກລົງ",
+      cancelButtonText: "ຍົກເລີກ",
+    });
+
+    if (result.isConfirmed) {
+      const res = await axios.delete(
+        `${this.config.public.strapi.url}api/delete_user/${id}/`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+
+      if (res.status === 200) {
+        Swal.fire({
+          title: "ສຳເລັດ",
+          text: "ລົບ ສໍາເລັດ",
+          icon: "success",
+          
+        });
+       setTimeout(() => {
+             
+          }, 1500);
+       
+      }
+    }
+  } catch (error) {
+    console.error("Error deleting user:", error);
+  } finally {
+    this.loading = false;
+  }
+}
   },
 });
