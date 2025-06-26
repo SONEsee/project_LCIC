@@ -1,17 +1,45 @@
 <template>
   <v-container>
-    <v-autocomplete
-      variant="outlined"
-      density="compact"
-      width="50%"
-      v-model="search"
-      class="pa-2"
-      label="ໃສ່ລະຫັດທະນາຄານ"
-      :items="
-        uniqueUserIds.map((user_id) => ({ title: user_id, value: user_id }))
-      "
-      item-value="value"
-    />
+    <div class="align-center ga-2 mb-4">
+      <v-col cols="12">
+        <v-row>
+          <v-col cols="12" md="6">
+            <v-row>
+              <v-col cols="12" md="10">
+                <v-autocomplete
+                  variant="outlined"
+                  density="compact"
+                  width="90%"
+                  v-model="search"
+                  class="pa-2"
+                  label="ໃສ່ລະຫັດທະນາຄານ"
+                  :items="
+                    uniqueUserIds.map((user_id) => ({
+                      title: user_id,
+                      value: user_id,
+                    }))
+                  "
+                  item-value="value"
+                  @update:model-value="saveFilterToStorage"
+                />
+              </v-col>
+
+              <v-col cols="12" md="2">
+                <v-btn
+                  color="secondary"
+                  @click="clearFilter"
+                  :disabled="!search"
+                  class="ml-2 mt-2"
+                >
+                  ເຄຍ Filter
+                </v-btn></v-col
+              >
+            </v-row>
+          </v-col>
+        </v-row>
+      </v-col>
+    </div>
+
     <v-data-table
       :headers="headers"
       :items="filteredItems"
@@ -165,6 +193,9 @@ const user = ref<any>({});
 const router = useRouter();
 const config = useRuntimeConfig();
 
+// Key ສຳລັບບັນທຶກໃນ localStorage
+const FILTER_STORAGE_KEY = "bank_filter_search";
+
 const headers = ref([
   { title: "ໄອດີ", value: "FID" },
   { title: "ຊື່ພາດ", value: "path" },
@@ -185,18 +216,50 @@ const uniqueUserIds = computed(() => {
   return [...new Set(items.value.map((item) => item.user_id))];
 });
 
+// ຟັງຊັນບັນທຶກການຟິວເຕີ້ໃສ່ localStorage
+const saveFilterToStorage = () => {
+  try {
+    if (search.value) {
+      localStorage.setItem(FILTER_STORAGE_KEY, search.value);
+    } else {
+      localStorage.removeItem(FILTER_STORAGE_KEY);
+    }
+  } catch (error) {
+    console.error("Failed to save filter to localStorage:", error);
+  }
+};
+
+// ຟັງຊັນໂຫຼດການຟິວເຕີ້ຈາກ localStorage
+const loadFilterFromStorage = () => {
+  try {
+    const savedFilter = localStorage.getItem(FILTER_STORAGE_KEY);
+    if (savedFilter) {
+      search.value = savedFilter;
+    }
+  } catch (error) {
+    console.error("Failed to load filter from localStorage:", error);
+  }
+};
+
+// ຟັງຊັນເຄຍການຟິວເຕີ້
+const clearFilter = () => {
+  search.value = "";
+  localStorage.removeItem(FILTER_STORAGE_KEY);
+};
+
 const isUserUploading = (user_id: string) => {
   return items.value.some(
     (item) =>
-      (item.user_id === user_id && item.statussubmit === "3") || item.user_id === user_id &&
-      item.statussubmit === "4"
+      (item.user_id === user_id && item.statussubmit === "3") ||
+      (item.user_id === user_id && item.statussubmit === "4")
   );
 };
+
 const isUserUnloading = (user_id: string) => {
   return items.value.some(
     (item) =>
-      (item.user_id === user_id && item.statussubmit === "4") || item.user_id === user_id &&
-      item.statussubmit === "3"
+      (item.user_id === user_id && item.statussubmit === "4") ||
+      (item.user_id === user_id && item.statussubmit === "3")
   );
 };
 
@@ -391,14 +454,6 @@ const unloadUpload = async (item: ItemData) => {
       item.statussubmit = "1";
       return Swal.fire("ລົ້ມເຫລວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
     }
-    // Swal.fire({
-    //   title: "ກຳລັງດຳເນີນການ",
-    //   text: "ກຳລັງອັນໂຫຼດຂໍ້ມູນ...",
-    //   allowOutsideClick: false,
-    //   didOpen: () => {
-    //     Swal.showLoading();
-    //   }
-    // });
 
     const params = new URLSearchParams();
     params.append("FID", item.FID);
@@ -538,6 +593,8 @@ const getFileName = (path: string) => {
 
 onMounted(async () => {
   try {
+    loadFilterFromStorage();
+
     await fetchData();
 
     const userData = localStorage.getItem("user_data");
@@ -585,5 +642,9 @@ onMounted(async () => {
 
 .text-amber-darken-4 {
   color: #ff6f00;
+}
+
+.ga-2 {
+  gap: 8px;
 }
 </style>

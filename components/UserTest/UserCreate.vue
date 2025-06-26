@@ -15,6 +15,7 @@ const res = computed(() => {
     return [];
   }
 });
+console.log("res", res.value);
 
 const userStore = useUserManageStore();
 const roles = computed<any[]>(() => {
@@ -44,6 +45,7 @@ const handleLogin = async () => {
 };
 </script>
 <template>
+ 
   <v-container>
     <v-form
       style="width: 100%"

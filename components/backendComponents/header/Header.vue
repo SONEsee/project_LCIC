@@ -16,6 +16,9 @@ const { locale, setLocale } = useI18n();
 const signOut = () => {
   localStorage.removeItem("access_token");
   const token = useCookie("access_token");
+
+  localStorage.removeItem('bank_filter_search');
+  localStorage.removeItem('user_data');
   token.value = null;
   router.push({ path: "/" });
 };
