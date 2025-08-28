@@ -15,6 +15,7 @@ const res = computed(() => {
     return [];
   }
 });
+console.log("res", res.value);
 
 const userStore = useUserManageStore();
 const roles = computed<any[]>(() => {
@@ -44,6 +45,7 @@ const handleLogin = async () => {
 };
 </script>
 <template>
+ 
   <v-container>
     <v-form
       style="width: 100%"
@@ -107,7 +109,8 @@ const handleLogin = async () => {
               variant="outlined"
             ></v-text-field
           ></v-col>
-          <v-col cols="12" md="4">
+          <v-col cols="12" md="4" class="d">
+            <!-- <pre>{{ res }}</pre> -->
             <v-autocomplete
               v-model="req.MID"
               density="compact"

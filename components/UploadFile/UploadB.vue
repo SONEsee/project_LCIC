@@ -105,10 +105,7 @@
       </template>
 
       <template v-slot:item.statussubmit="{ item }">
-        <!-- <v-chip :color="getStatusColor(item.statussubmit)" dark>
-          {{
-          getStatusText(item.statussubmit)
-        }}</v-chip> -->
+       
         <v-chip v-if="item.statussubmit === 'Pending'" class="text-green darken-2">
           ກຳລັງນຳສົ່ຂໍ້ມູນ
           <v-progress-circular

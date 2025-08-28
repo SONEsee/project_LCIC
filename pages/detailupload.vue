@@ -208,10 +208,9 @@
                     <td>{{ item.LCIC_code }}</td>
                     <td style="color: brown">{{ item.com_enterprise_code }}</td>
                     <td>{{ item.bnk_code }}</td>
-<td>{{ item.branch_id }}</td>
+                    <td>{{ item.branch_id }}</td>
                     <td>{{ item.customer_id }}</td>
 
-                    
                     <td>{{ item.loan_id }}</td>
 
                     <td style="color: green">
