@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+ <div class="pa-4">
     <v-data-table
       :headers="headers"
       :items="items"
@@ -53,7 +53,7 @@
         <v-alert type="info" :value="true">ບໍ່ມີຂໍ້ມູນ</v-alert>
       </template>
     </v-data-table>
-  </v-container>
+</div>
 </template>
 
 <script lang="ts">

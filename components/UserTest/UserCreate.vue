@@ -109,7 +109,8 @@ const handleLogin = async () => {
               variant="outlined"
             ></v-text-field
           ></v-col>
-          <v-col cols="12" md="4">
+          <v-col cols="12" md="4" class="d">
+            <!-- <pre>{{ res }}</pre> -->
             <v-autocomplete
               v-model="req.MID"
               density="compact"

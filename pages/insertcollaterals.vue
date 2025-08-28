@@ -1,45 +1,6 @@
 <template>
   <insert-collaterals/>
-  <!-- <v-container>
-    <v-data-table :items="filteredItems" :headers="headers">
-      <template v-slot:top>
-        <v-text-field
-          v-if="user && user.MID.id === '01'"
-          density="compact"
-          width="50%"
-          v-model="search"
-          class="pa-2"
-          label="ໃສ່ລະຫັດທະນາຄານ"
-        ></v-text-field>
-      </template>
-      <template v-slot:item="{ item }">
-        <tr>
-          <td>{{ item.id }}</td>
-          <td>{{ item.user }}</td>
-          <td>{{ item.filename }}</td>
-          <td>{{ item.pathfile }}</td>
-          <td>
-            <template v-if="item.status === '1'">
-             
-              <p style="color: #e65100">ຍັງບໍ່ທັນກວດສອບ</p>
-            </template>
-            <template v-else>
-              <p style="color: blue">ກວດສອບແລ້ວ</p>
-            </template>
-          </td>
-          <td>
-            <v-btn
-              small
-              @click="goToTest1(item.pathfile, item.id, item.status)"
-              class="bg-indigo-darken-4"
-            >
-              {{ $t("saveenterprice") }}
-            </v-btn>
-          </td>
-        </tr>
-      </template>
-    </v-data-table>
-  </v-container> -->
+  
 </template>
 
 <script lang="ts">
@@ -179,7 +140,7 @@ export default defineComponent({
           const userID = user.value?.MID?.id;
           if (userID) fetchCollaterals(userID);
         });
-      } catch (error) {
+      } catch (error:any) {
         console.error(
           "Error confirming image:",
           error.response ? error.response.data : error.message
