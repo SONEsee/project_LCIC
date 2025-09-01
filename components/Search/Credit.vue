@@ -18,7 +18,8 @@
           :key="index"
           class="text-center"
         >
-          <nuxt-link :to="item.url">
+          <!-- ປ່ຽນຈາກ nuxt-link ເປັນ div ທີ່ກົດໄດ້ -->
+          <div @click="handleClick(item)" style="cursor: pointer;">
             <v-hover v-slot:default="{ isHovering, props }">
               <v-container>
                 <v-card
@@ -71,7 +72,7 @@
                 </v-card></v-container
               >
             </v-hover>
-          </nuxt-link>
+          </div>
         </v-col>
       </v-row>
     </v-card>
@@ -83,17 +84,38 @@
 import serchinImage from "@/assets/images/serch/saerch.png";
 import loginImage from "@/assets/images/serch/individual.png";
 import { useI18n } from 'vue-i18n';
+import Swal from "sweetalert2";
+
+const { $swal } = useNuxtApp();
 const { t } = useI18n();
+
 const items = computed(() => [
   {
     url: "../backend/individualssearch",
     backgroundImage: serchinImage,
     title: t("individual"),
+    isUnderDevelopment: true 
   },
   {
     url: "../backend/searchuser",
     backgroundImage: loginImage,
     title: t("Enterprise"),
+    isUnderDevelopment: false
   },
 ]);
+
+const handleClick = (item: any) => {
+  if (item.isUnderDevelopment) {
+  Swal.fire({
+        title: "ຂໍອະໄພ!",
+        text: "ຂໍອະໄພ ຄົ້ນກາບຸກຄົນ ກຳລັງຢູ່ໃນຂັ້ນຕອນພັດທະນາ",
+        icon: "info",
+        confirmButtonText: "OK",
+      });
+  } else {
+  
+    window.location.href = item.url;
+   
+  }
+};
 </script>

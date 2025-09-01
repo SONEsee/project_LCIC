@@ -27,6 +27,19 @@
                   <v-form @submit.prevent="submit" class="mt-7">
                     <v-container>
                       <div class="mt-1">
+                        <label class="label text-grey-darken-2" for="idLCIC">
+                          <p>ລະຫັດ ຂສລ*</p>
+                        </label>
+                        <v-text-field
+                          v-model="id1"
+                          prepend-inner-icon="fluent:password-20-regular"
+                          id="idLCIC"
+                          name="idLCIC"
+                          type="text"
+                          placeholder="ປອ້ນລະຫັດ ຂສລ....."
+                        />
+                      </div>
+                      <div class="mt-1">
                         <label class="label text-grey-darken-2" for="idcompany">
                           <p>ລະຫັດວິສາຫະກິດ*</p>
                         </label>
@@ -35,7 +48,6 @@
                             color: '#1A237E',
                           }"
                           v-model="id2"
-                         
                           prepend-inner-icon="fluent:password-20-regular"
                           id="idcompany"
                           name="idcompany"
@@ -43,20 +55,7 @@
                           placeholder="ປອ້ນລະຫັດວິສາຫະກິດ....."
                         />
                       </div>
-                      <div class="mt-1">
-                        <label class="label text-grey-darken-2" for="idLCIC">
-                          <p>ລະຫັດ ຂສລ*</p>
-                        </label>
-                        <v-text-field
-                          v-model="id1"
-                         
-                          prepend-inner-icon="fluent:password-20-regular"
-                          id="idLCIC"
-                          name="idLCIC"
-                          type="text"
-                          placeholder="ປອ້ນລະຫັດ ຂສລ....."
-                        />
-                      </div>
+                      
                       <div class="mt-5">
                         <v-combobox
                           v-model="selectedCat"
