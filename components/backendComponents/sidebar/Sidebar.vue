@@ -45,7 +45,7 @@ const filteredSidebarItems = computed(() => {
       
         <template v-if="filteredSidebarItems.length > 0">
           <template v-for="(item, i) in filteredSidebarItems" :key="i" >
-            <v-list-item style="color: #304FFE;"
+            <v-list-item style="color: #000000;"
               :to="item.url"
               rounded="lg"
               class="mb-1"
@@ -55,7 +55,7 @@ const filteredSidebarItems = computed(() => {
               }"
             >
               <template v-slot:prepend >
-                <v-icon :icon="item.icon" style="color: #304FFE;" class="hover-icon"></v-icon>
+                <v-icon :icon="item.icon" style="color: #000000;" class="hover-icon"></v-icon>
               </template>
              
               <v-list-item-title>{{ $t(item.name) }}</v-list-item-title>
