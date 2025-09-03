@@ -4,8 +4,11 @@ import { useRoute } from "vue-router";
 import Swal from "sweetalert2";
 import { useFeesStore } from "~/stores/fee";
 import { LoCationStore } from "~/stores/location";
+
 const location = LoCationStore();
 const feestore = useFeesStore();
+const consentGiven = ref(false); // ເພີ່ມຕົວແປນີ້
+
 const dataLocation = computed(()=>{
   const data = location.respons_data_location;
   if(Array.isArray(data)){
@@ -16,6 +19,7 @@ const dataLocation = computed(()=>{
   }
   return []
 })
+
 const dataFee = computed(() => {
   const data = feestore.response_data_fee;
   let processedData = [];
@@ -273,10 +277,19 @@ const refreshAccessToken = async () => {
 };
 
 const showDetails = (item: EnterpriseInfo) => {
-  const { CatalogID } = route.query;
+  // ກວດສອບວ່າໄດ້ຢືນຢັນການອະນຸຍາດແລ້ວຫຼືຍັງ
+  if (!consentGiven.value) {
+    Swal.fire({
+      icon: "warning",
+      title: "ກະລຸນາຢືນຢັນ",
+      text: "ກະລຸນາຢືນຢັນການໄດ້ຮັບອະນຸຍາດກ່ອນດຳເນີນການ",
+      confirmButtonText: "ຕົກລົງ",
+    });
+    return;
+  }
 
-  const feeAmount =
-    dataFee.value.length > 0 ? dataFee.value[0].chg_amount : null;
+  const { CatalogID } = route.query;
+  const feeAmount = dataFee.value.length > 0 ? dataFee.value[0].chg_amount : null;
 
   Swal.fire({
     icon: "info",
@@ -291,65 +304,23 @@ const showDetails = (item: EnterpriseInfo) => {
     title: `<strong>ທ່ານຕ້ອງການພິມບົດລາຍງານນີ້ແທ້ບໍ?</strong>`,
     html: `
       <div style="text-align: left; padding: 10px;">
-        <p><strong>ຖ້າຢືນຢັນເອົາບົດລາຍງານນີ້ແມ່ນຈະໄດ້ເສຍຄ່າທຳນຽມ:</strong> ${
-          feeAmount
-            ? new Intl.NumberFormat("lo-LA").format(feeAmount) + " ກີບ"
-            : "ບໍ່ມີຂໍ້ມູນ"
-        }</p>
+       <p><strong>ລະຫັດ ຂສລ:</strong> ${item.LCIC_code}</p>
+        <p><strong>ລະຫັດວິສາຫະກິດ:</strong> ${item.EnterpriseID}</p>
         <p><strong>ຊື່ບໍລິສັດພາສາລາວ:</strong> ${
           item.enterpriseNameLao || "ບໍ່ມີຂໍ້ມູນ"
         }</p>
         <p><strong>ຊື່ບໍລິສັດພາສາອັງກິດ:</strong> ${
           item.eneterpriseNameEnglish || "ບໍ່ມີຂໍ້ມູນ"
         }</p>
-        <p><strong>ລະຫັດ ຂສລ:</strong> ${item.LCIC_code}</p>
-        <p><strong>ລະຫັດວິສາຫະກິດ:</strong> ${item.EnterpriseID}</p>
         <p><strong>ທີ່ຢູ່:</strong> ${item.fullLocation || "ບໍ່ມີຂໍ້ມູນທີ່ຢູ່"}</p>
         <p><strong>ທຶນລົງທຶນ:</strong> ${
           item.investmentAmount 
             ? new Intl.NumberFormat("lo-LA").format(item.investmentAmount) + " " + (item.investmentCurrency || "")
             : "ບໍ່ມີຂໍ້ມູນ"
         }</p>
-        
-        <hr style="margin: 15px 0; border: 1px solid #ddd;">
-        
-        <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 10px 0;">
-          <label style="display: flex; align-items: flex-start; cursor: pointer; font-size: 14px;">
-            <input 
-              type="checkbox" 
-              id="consentCheckbox" 
-              style="margin-right: 10px; margin-top: 2px; transform: scale(1.3);"
-            />
-            <div>
-              <strong style="color: #856404;">ຢືນຢັນການໄດ້ຮັບອານຸຍາດແລະຢີນຍອມຈາກເຈົ້າຂອງຂໍ້ມູນ</strong><br>
-              <span style="color: #856404; line-height: 1.5;">
-                ຂ້າພະເຈົ້າຢືນຢັນວ່າໄດ້ຮັບການຍິນຍອມເປີດເຜີຍຂໍ້ມູນຈາກເຈົ້າຂອງຂໍ້ມູນແລ້ວ 
-                ແລະ ຮັບຮູ້ວ່າການນໍາໃຊ້ຂໍ້ມູນນີ້ຈະເປັນໄປຕາມກົດໝາຍທີ່ກ່ຽວຂ້ອງ
-              </span>
-            </div>
-          </label>
-        </div>
+      
       </div>
     `,
-    didOpen: () => {
-      const checkbox = document.getElementById(
-        "consentCheckbox"
-      ) as HTMLInputElement;
-      const confirmButton = Swal.getConfirmButton();
-
-      confirmButton!.disabled = true;
-      confirmButton!.style.opacity = "0.6";
-
-      checkbox.addEventListener("change", () => {
-        if (checkbox.checked) {
-          confirmButton!.disabled = false;
-          confirmButton!.style.opacity = "1";
-        } else {
-          confirmButton!.disabled = true;
-          confirmButton!.style.opacity = "0.6";
-        }
-      });
-    },
   }).then((result) => {
     if (result.isConfirmed) {
       console.log("Selected item:", item);
@@ -397,7 +368,11 @@ const insertSearchLog = async (item: EnterpriseInfo) => {
         }),
       }
     );
-
+  // <p><strong>ຖ້າຢືນຢັນເອົາບົດລາຍງານນີ້ແມ່ນຈະໄດ້ເສຍຄ່າທຳນຽມ:</strong> ${
+  //         feeAmount
+  //           ? new Intl.NumberFormat("lo-LA").format(feeAmount) + " ກີບ"
+  //           : "ບໍ່ມີຂໍ້ມູນ"
+  //       }</p>
     if (!response.ok) {
       throw new Error(`Failed to insert search log: ${response.status}`);
     }
@@ -417,7 +392,6 @@ const truncateText = (text: string | null | undefined, maxLength: number): strin
   return text.substring(0, maxLength) + "...";
 };
 
-
 const getLocationTooltip = (locationInfo: LocationInfo | null): string => {
   if (!locationInfo) return "ບໍ່ມີຂໍ້ມູນທີ່ຢູ່";
   
@@ -429,7 +403,6 @@ const getLocationTooltip = (locationInfo: LocationInfo | null): string => {
   `;
 };
 
-
 const getInvestmentTooltip = (item:any): string => {
   return `
     ຈຳນວນເງີນ: ${formatAmount(item.investmentAmount)}
@@ -438,20 +411,19 @@ const getInvestmentTooltip = (item:any): string => {
     ໂຄງສ້າງກົດໝາຍ: ${item.enLegalStrature || 'ບໍ່ລະບຸ'}
   `;
 };
+
 const enterpriseDataWithLocation = computed(() => {
   if (!enterpriseData.value || enterpriseData.value.length === 0) {
     return [];
   }
 
   return enterpriseData.value.map(enterprise => {
-  
     const matchedLocation = dataLocation.value.find(location => 
       location.ID.toString() === enterprise.enLocation
     );
 
     return {
       ...enterprise,
-      
       locationInfo: matchedLocation ? {
         Province_Name: matchedLocation.Province_Name,
         District_Name: matchedLocation.District_Name,
@@ -460,22 +432,23 @@ const enterpriseDataWithLocation = computed(() => {
         Dstr_ID: matchedLocation.Dstr_ID,
         Vill_ID: matchedLocation.Vill_ID
       } : null,
-      
       provinceName: matchedLocation?.Province_Name || 'ບໍ່ມີຂໍ້ມູນ',
       districtName: matchedLocation?.District_Name || 'ບໍ່ມີຂໍ້ມູນ',
       villageName: matchedLocation?.Village_Name || 'ບໍ່ມີຂໍ້ມູນ',
       fullLocation: matchedLocation 
-        ? `${matchedLocation.Village_Name}, ${matchedLocation.District_Name}, ${matchedLocation.Province_Name}`
+        ? `ບ້ານ ${matchedLocation.Village_Name}, ເມືອງ ${matchedLocation.District_Name}, ແຂວງ ${matchedLocation.Province_Name}`
         : 'ບໍ່ມີຂໍ້ມູນທີ່ຢູ່'
     };
   });
 });
+
 onMounted(() => {
   location.GetLocation()
   fetchData();
   feestore.Getdata();
 });
 </script>
+
 <template>
   <div>
     <v-container>
@@ -523,7 +496,6 @@ onMounted(() => {
               </thead>
               <tbody class="text-end">
                 <tr v-for="item in enterpriseDataWithLocation" :key="item.LCIC_code">
-                
                   <td>
                     <v-tooltip location="bottom">
                       <template v-slot:activator="{ props }">
@@ -535,7 +507,6 @@ onMounted(() => {
                     </v-tooltip>
                   </td>
 
-            
                   <td>
                     <v-tooltip location="bottom">
                       <template v-slot:activator="{ props }">
@@ -547,7 +518,6 @@ onMounted(() => {
                     </v-tooltip>
                   </td>
 
-                
                   <td>
                     <v-tooltip location="bottom" :disabled="!item.enterpriseNameLao || item.enterpriseNameLao.length <= 30">
                       <template v-slot:activator="{ props }">
@@ -559,7 +529,6 @@ onMounted(() => {
                     </v-tooltip>
                   </td>
 
-                  
                   <td>
                     <v-tooltip location="bottom" :disabled="!item.eneterpriseNameEnglish || item.eneterpriseNameEnglish.length <= 30">
                       <template v-slot:activator="{ props }">
@@ -571,7 +540,6 @@ onMounted(() => {
                     </v-tooltip>
                   </td>
 
-                  
                   <td>
                     <v-tooltip location="bottom" max-width="300">
                       <template v-slot:activator="{ props }">
@@ -595,7 +563,6 @@ onMounted(() => {
                     </v-tooltip>
                   </td>
 
-                 
                   <td>
                     <v-tooltip location="bottom">
                       <template v-slot:activator="{ props }">
@@ -612,7 +579,6 @@ onMounted(() => {
                     </v-tooltip>
                   </td>
 
-                  <!-- ປຸ່ມເລືອກ ມີ tooltip -->
                   <td>
                     <v-tooltip location="top">
                       <template v-slot:activator="{ props }">
@@ -621,18 +587,51 @@ onMounted(() => {
                           @click="showDetails(item)"
                           size="small"
                           v-bind="props"
+                          :disabled="!consentGiven"
                         >
                           ເລືອກ
                         </v-btn>
                       </template>
-                      <span>ກົດເພື່ອເບິ່ງລາຍລະອຽດ ແລະ ພິມບົດລາຍງານ</span>
+                      <span>{{ consentGiven ? 'ກົດເພື່ອເບິ່ງລາຍລະອຽດ ແລະ ພິມບົດລາຍງານ' : 'ກະລຸນາຢືນຢັນການອະນຸຍາດກ່ອນ' }}</span>
                     </v-tooltip>
                   </td>
                 </tr>
               </tbody>
             </v-table>
 
-         
+            
+            <div class="consent-section">
+              <v-card class="consent-card" elevation="2">
+                <v-card-text>
+                  <div class="d-flex align-start">
+                    <v-checkbox
+                      v-model="consentGiven"
+                      color="primary"
+                      class="consent-checkbox"
+                    ></v-checkbox>
+                    <div class="consent-text">
+                      <div class="consent-title">
+                        <v-icon color="warning" class="mr-2">mdi-shield-check</v-icon>
+                        <strong>ຢືນຢັນການໄດ້ຮັບອານຸຍາດແລະຢີນຍອມຈາກເຈົ້າຂອງຂໍ້ມູນ</strong>
+                      </div>
+                      <p class="consent-description">
+                        ຂ້າພະເຈົ້າຢືນຢັນວ່າໄດ້ຮັບການຍິນຍອມເປີດເຜີຍຂໍ້ມູນຈາກເຈົ້າຂອງຂໍ້ມູນແລ້ວ 
+                        ແລະ ຮັບຮູ້ວ່າການນໍາໃຊ້ຂໍ້ມູນນີ້ຈະເປັນໄປຕາມກົດໝາຍທີ່ກ່ຽວຂ້ອງ
+                      </p>
+                       <p class="fee-info">
+                        ຖ້າຢືນຢັນເອົາບົດລາຍງານນີ້ແມ່ນຈະໄດ້ເສຍຄ່າທຳນຽມ: 
+                        <b class="fee-amount">
+                          {{ dataFee.length > 0 && dataFee[0].chg_amount 
+                            ? new Intl.NumberFormat("lo-LA").format(dataFee[0].chg_amount) + " ກີບ"
+                            : "ກຳລັງໂຫຼດຂໍ້ມູນຄ່າທຳນຽມ..." }}
+                        </b>
+                      </p>
+                    </div>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </div>
+
             <div
               v-if="investorNames && investorNames.length > 0"
               class="investor-section"
@@ -658,7 +657,6 @@ onMounted(() => {
             </div>
           </div>
 
-          
           <div v-else class="no-data-container">
             <v-icon size="64" color="grey">mdi-database-search</v-icon>
             <p class="no-data-text">ບໍ່ພົບຂໍ້ມູນທີ່ຕ້ອງການ</p>
@@ -743,6 +741,46 @@ onMounted(() => {
   min-width: 60px;
 }
 
+.select-btn:disabled {
+  opacity: 0.5;
+}
+
+/* Consent section styling */
+.consent-section {
+  margin: 20px 0;
+}
+
+.consent-card {
+  background: linear-gradient(135deg, #fff3cd 0%, #fef9e7 100%);
+  border: 1px solid #ffeaa7;
+  border-radius: 12px;
+}
+
+.consent-checkbox {
+  flex-shrink: 0;
+  margin-top: -5px;
+}
+
+.consent-text {
+  flex: 1;
+  margin-left: 10px;
+}
+
+.consent-title {
+  display: flex;
+  align-items: center;
+  color: #856404;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.consent-description {
+  color: #856404;
+  line-height: 1.6;
+  margin: 0;
+  font-size: 14px;
+}
+
 /* Investor section */
 .investor-section {
   margin-top: 30px;
@@ -789,6 +827,18 @@ onMounted(() => {
 
   .main-title {
     font-size: 20px;
+  }
+
+  .consent-text {
+    margin-left: 5px;
+  }
+
+  .consent-title {
+    font-size: 14px;
+  }
+
+  .consent-description {
+    font-size: 13px;
   }
 }
 </style>

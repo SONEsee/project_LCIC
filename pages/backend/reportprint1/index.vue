@@ -3,6 +3,20 @@ import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import { LoCationStore } from "~/stores/location";
 import { LocationStore } from "~/stores/locationService";
+import { MemberStore} from "@/stores/memberinfo"
+import dayjs from "dayjs";
+const memberinfoStore = MemberStore();
+const dataMemberInfon = computed(()=>{
+  const data = memberinfoStore.respons_data_query;
+  if(Array.isArray(data)){
+    return data
+  }
+  if(data && typeof data==="object"){
+    return [data]
+  }
+  return []
+})
+const loadin  = false;
 const location = LoCationStore();
 const dataLocation = computed(()=>{
   const data = location.respons_data_location;
@@ -174,7 +188,16 @@ interface HeaderItem {
   value: string;
 }
 
-
+interface LocationMapRespons {
+    village:    string;
+    district:   string;
+    province:   string;
+    full:       string;
+    locationId: number;
+    provId:     string;
+    dstrId:     string;
+    villId:     string;
+}
 const tableData = ref<TableDataItem[]>([]);
 const loan_detail_inactive = ref<LoanDetail[]>([]);
 const loan_detail_active = ref<LoanDetail[]>([]);
@@ -478,7 +501,7 @@ onMounted(async () => {
   const enterpriseID = route.query.EnterpriseID as string;
   const LCIC_code = route.query.LCIC_code as string;
   location.GetLocation()
-  
+  memberinfoStore.getMemberInfo();
 
   try {
     const userData = localStorage.getItem("user_data");
@@ -551,6 +574,12 @@ const debugLocationMapping = () => {
   console.log('Matched location:', enterpriseLocation.value);
   console.log('Full address:', fullAddress.value);
 };
+
+const mapdatInfo = (memberinfo:string)=>{
+  if(!memberinfo || !Array.isArray(dataMemberInfon.value)) return "-";
+  const foundItem = dataMemberInfon.value.find((item)=> item.bnk_code === memberinfo);
+  return foundItem ? `${foundItem.bnk_code}-${foundItem.code}-${foundItem.nameL}` : memberinfo;
+}
 </script>
 <template>
   
@@ -560,8 +589,10 @@ const debugLocationMapping = () => {
     border:'1px #2979FF solid'
     
   }">
-    
-  <pre>{{ addressComponents }}</pre>
+   {{  }}
+  <!-- <pre>{{ enterpriseInfo }}</pre> -->
+  <!-- <pre>{{ search_history }}</pre> -->
+   <!-- <pre>{{ dataMemberInfon }}</pre> -->
     <v-col cols="12">
       <section class="pa-5" id="main-content">
         <div>
@@ -634,18 +665,22 @@ const debugLocationMapping = () => {
       <v-col cols="4" v-if="enterpriseInfo" >
         <!-- {{ enterpriseInfo }} -->
         <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.enterpriseNameLao }}</p>
+         <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ (ລາວ):</b> ລໍຖ້າຂໍ້ມູນ</p>
         <!-- <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.regisStrationOfficeType }}</p> -->
-        <p><b>ເລກທີ:</b>---------</p>
+       <p><b>ທີ່ຕັ້ງວິສາຫະກິດ:</b> {{ addressComponents.full }}</p>
       </v-col>
       <v-col cols="4" v-if="enterpriseInfo">
-<p><b>ວັນທີອອກໃບທະບຽນ:</b> {{ enterpriseInfo.regisDate.slice(0, -18) }}</p>
-<p><b>ທີ່ຕັ້ງວິສາຫະກິດ:</b> {{ enterpriseInfo.enLocation }}</p>
-<p><b>ພາກສວນເສດຖະກິດ:</b> --</p>
+         <p><b>ເລກທີ:</b> {{ enterpriseInfo.enLegalStrature ??"ບໍ່ມີຂໍ້ມູນ" }}</p>
+          <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ (ອັງກິດ):</b> ລໍຖ້າຂໍ້ມູນ</p>
+
+
+
       </v-col>
       <v-col cols="4" v-if="enterpriseInfo">
+        <p><b>ວັນທີອອກໃບທະບຽນ:</b> {{ enterpriseInfo.regisDate.slice(0, -18) }}</p>
         <p><b >ທຶນຈົດທະບຽນ:</b> {{Number( enterpriseInfo.investmentAmount).toLocaleString() }} <b v-if="enterpriseInfo.investmentCurrency">{{ enterpriseInfo.investmentCurrency }}</b></p>
-      
-        <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ:</b> --</p>
+      <p><b>ພາກສວນເສດຖະກິດ:</b> --</p>
+       
       </v-col>
      </v-row></div>
 </div>
@@ -660,89 +695,87 @@ class="rounded-lg"
  :style="{
   border:'1px #2979FF solid'
 }">
-    <v-table>
-      <thead>
-        <tr>
+    <v-table density="compact" :loading="loading">
+      <thead class="text-center">
+        <tr >
           <th>ລຳດັບ</th>
-          <th>ວັນເດືອນທີ່ຄົ້ນຫາ</th>
-          <th>ຜູ້ຄົ້ນຫາ</th>
+          <th>ສະມາຊິກທີ່ຄົ້ນຫາ</th>
+          
+          
           <th>ເຫດຜົນການຄົ້ນຫາ</th>
           <th>ປະເພດເງິນກູ້</th>
+          <th>ວັນເດືອນທີ່ຄົ້ນຫາ</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody >
     <tr v-for="(item, index) in search_history.slice(-12)" :key="index">
     
         <td>{{ index + 1 }}</td>
-        <td>{{ item.id.slice(0, -11) }}</td>
-        <td>{{ item.bnk_code }}</td>
-        <td>{{ item.lon_purpose }}</td>
-        <td>--</td>
+        <td>{{ mapdatInfo(item.bnk_code) }}</td>
+        
+        
+        
+        <td>--</td><td>{{ item.lon_purpose }}</td>
+        <!-- <td>{{ item.id.slice(0, -11) }}</td> -->
+        <td>{{ dayjs(item.id).format("DD/MM/YYYY-HH:mm:ss") }}</td>
     </tr>
 </tbody>
-    </v-table></div>
-    <v-col cols="12" >
-      <p><b>- ລວມວົງເງິນກູ້ທີ່ເຄື່ອນໄຫວທັງໝົດ</b></p>
-      <v-table class="mt-5 elevation-1 v-data-table1 rouded-lg"  :style="{
-        border:'1px #2979FF solid'
-      }">
-  <thead 
+    </v-table>
   
-  >
-    <tr style="font-size: 90%;  " class="text-bold" >
-  
-      <th ><b>ສະມາຊິກ</b></th>
-      <th><b> ລະຫັດເງິນກູ້</b></th>
-      <th><b>ມືເປີດ</b></th>
-      <th>ວົງເງິນກູ້</th>
-      <th>ຍອດເງິນເຫຼືອ</th>
-      <th>ສະກຸນເງິນ</th>
-      <th>ຈຳນວນວັນຄ້າງຈ່າຍ</th>
-      <th>ປະເພດ</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr v-for="(item, index) in tableData" :key="index">
-      <td>{{ item.bnk_code }}</td>
-      <td>{{ item.loan_id }}</td>
-      <td>{{ item.lon_open_date.slice(0, -15) }}</td>
-      <td>{{Number( item.lon_credit_line).toLocaleString() }}</td>
-      <td>{{Number( item.lon_outstanding_balance).toLocaleString() }}</td>
-      
-      <td>{{ item.lon_currency_code }}</td>
-      <td>{{ item.lon_no_days_slow }}</td>
-      <td>{{ item.lon_class }}</td>
+  </div>
 
- 
-    </tr>
+
+    <v-col cols="12" class="loan-summary-section">
+  <p><b>- ລວມວົງເງິນກູ້ທີ່ເຄື່ອນໄຫວທັງໝົດ</b></p>
+  <v-table class="mt-5 elevation-1 v-data-table1 rouded-lg"  :style="{
+    border:'1px #2979FF solid'
+  }" density="compact">
+<thead>
+  <tr style="font-size: 90%; " class="text-bold" >
+<th class="text-center"><b>ລະຫັດ</b></th>
+    <th class="text-center"><b>ສະມາຊິກ</b></th>
+    <th class="text-center"><b> ລະຫັດເງິນກູ້</b></th>
+    <!-- <th class="text-center"><b>ມືເປີດ</b></th> -->
+    <th class="text-center"><b>ວົງເງິນກູ້</b></th>
+    <th class="text-center"><b>ຍອດເງິນເຫຼືອ</b></th>
+    <th class="text-center">ສະກຸນເງິນ</th>
+    <th class="text-center"><b>ຈຳນວນວັນຄ້າງຈ່າຍ</b></th>
+    <th class="text-center"><b>ປະເພດ</b></th>
+  </tr>
+</thead>
+<tbody >
+  <tr v-for="(item, index) in tableData" :key="index" >
+    <td>{{ index+1 }}</td>
+    <td class="text-center">{{ mapdatInfo(item.bnk_code) }}</td>
+    <td class="text-end">{{ item.loan_id }}</td>
+    <!-- <td class="text-end">{{ item.lon_open_date.slice(0, -15) }}</td> -->
+    <td class="text-end">{{Number( item.lon_credit_line).toLocaleString() }}</td>
+    <td class="text-end">{{Number( item.lon_outstanding_balance).toLocaleString() }}</td>
     
-  </tbody>
+    <td class="text-end">{{ item.lon_currency_code }}</td>
+    <td class="text-end">{{ item.lon_no_days_slow }}</td>
+    <td class="text-end">{{ item.lon_class }}</td>
+
+  </tr>
+  
+</tbody>
 </v-table>
-
-  
-    </v-col>
-
-
-
-
-
-
-    
+</v-col>
     <p><b>-ລາຍລະອຽດຂໍ້ມູນເງິນກູ້</b></p>
-    
-    <v-col cols="12">
+    <v-col cols="12" >
       <v-row>
         <v-col cols="12">
           <v-row>
             <v-col
+            cols="12"
              
-              class="mt-2"
+              class="mt-1"
               v-for="(item, index) in loan_detail_active"
               :key="index"
             >
               <div
                 class="ml-1 rounded-lg"
-                style="border: 1px solid #1565c0; padding: 10px"
+                style="border: 1px solid #1565c0; padding: 10px" 
               >
 
                 <div>
@@ -755,17 +788,24 @@ class="rounded-lg"
                       <v-col cols="4" md="4" >
                         <!-- {{ item }} -->
                         <p> <b>ລະຫັດເງິນກູ້: </b>{{ item.id }}</p>
-                        <p> <b>ມື້ເປິດເງິນກູ້: </b>{{ item.lon_open_date.slice(0, -10) }}</p>
-                        <p> <b>ມື້ໝົດສັນຍາເງິນກູ້ເງິນກູ້: </b>{{ item.lon_expiry_date }}</p>
+                        <p> <b>ຍອດເຫຼືອດອກເບ້ຍ: </b>----</p>
+                        
+                        <p> <b>ມື້ໝົດສັນຍາ: </b>{{ item.lon_expiry_date }}</p>
+                        <p><b>ເຫດຜົນຫການສິ້ນສຸດໜີ້:</b> -- </p>
                       </v-col>
                       <v-col cols="4" md="4">
-                        <p> <b>ໄລຍະການກູ້ຢືມ:</b> {{ item.lon_term }}</p>
                         <p> <b>ວົງເງິນໃນອານຸມັດ:</b> {{ item.lon_credit_line.toLocaleString() }} {{  item.lon_currency_code }}</p>
-                        <p> <b>ອັດຕາດອກເບ້ຍ:</b> {{ item.lon_int_rate }}</p>
+                        <p> <b>ອັດຕາດອກເບ້ຍ:</b> {{ item.lon_int_rate }} %</p>
+                        <p> <b>ມື້ໝົດຂອງມື້ຕໍ່ສັນຍາ:</b> {{ dayjs(item.lon_ext_date).format("DD-MM-YYYY") }}</p>
+                        
+                        
+                       
                       </v-col>
                       <v-col cols="4" md="4">
                         <p><b>ຍອດເງິນເຫຼືອຕົ້ນທຶນ:</b> {{ Number(item.lon_outstanding_balance).toLocaleString() }} {{  item.lon_currency_code }}</p>
-                        <p><b>ເຫດຜົນຫການສິ້ນສຸດໜີ້:</b> -- </p>
+                        <p> <b>ມື້ເປິດສັນຍາ </b>{{ item.lon_open_date.slice(0, -10) }}</p>
+                        <p> <b>ໄລຍະການກູ້ຢືມ:</b> {{ item.lon_term }}</p>
+                        
 
                       </v-col>
                     </v-row>
@@ -785,7 +825,7 @@ class="rounded-lg"
                     <v-row>
                       <v-col
                         v-for="(collateral, index) in item.collateral_history"
-                        class="mt-2"
+                        class="mt-1"
                         
                         style="font-size: 80%"
                         :cols="getCols(item.collateral_history ? item.collateral_history.length : 1)"
@@ -1052,27 +1092,27 @@ class="rounded-lg"
                   <p v-if="item.lon_class_history.length">
                     <b>- ປະຫວັດການຊຳລະ</b>
                   </p>
-                  <v-table>
+                  <v-table density="compact" class="text-end text-no-warp">
                     <thead>
                       <tr>
-                        <th>ລຳດັບ.</th>
-                        <th>ເດືອນ ,ວັນ</th>
-                        <th>ວົງເງິນກູ້</th>
-                        <th>ຍອດຍັງເຫຼືອ</th>
-                        <th>ຈຳນວນວັນຈ່າຍຊ້າ</th>
-                        <th>ສະກຸນເງິນ</th>
-                        <th>ປະເພດເງິນກູ້</th>
-                        <th>ສະຖານະ</th>
+                        <th class="text-center"><b>ລຳດັບ.</b></th>
+                        <th class="text-center"><b>ປີ, ເດືອນ </b></th>
+                        <th class="text-center"><b>ວົງເງິນກູ້</b></th>
+                        <th class="text-center"><b>ຍອດຍັງເຫຼືອ</b></th>
+                        <th class="text-center"><b>ຈຳນວນວັນຈ່າຍຊ້າ</b></th>
+                        <!-- <th>ສະກຸນເງິນ</th> -->
+                        <th class="text-center"><b>ປະເພດເງິນກູ້</b></th>
+                        <th class="text-center"><b>ສະຖານະ</b></th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr v-for="(items  , index)  in item.lon_class_history">
-                        <td>{{index +1}}</td>
+                        <td class="text-center">{{index +1}}</td>
                         <td>{{ items.period.slice(0, 4) + '-' + item.period.slice(4) }}</td>
                         <td>{{Number( items.lon_credit_line).toLocaleString() }}</td>
                         <td>{{Number( items.lon_outstanding_balance).toLocaleString() }}</td>
                         <td>{{ items.lon_no_days_slow }}</td>
-                        <td>{{ items.lon_currency_code }}</td>
+                        <!-- <td>{{ items.lon_currency_code }}</td> -->
                         <td>{{ items.lon_class }}</td>
                         <td>{{ items.lon_status }}</td>
 
@@ -1176,6 +1216,24 @@ class="rounded-lg"
   .v-data-table1 {
       font-size: 11pt !important;
     }
+
+  /* ບັງຄັບໃຫ້ຕາຕະລາງລວມວົງເງິນກູ້ເຕັມຄວາມກວ້າງ */
+  .loan-summary-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+
+  .loan-summary-section .v-table {
+    width: 100% !important;
+    font-size: 8pt !important;
+  }
+
+  .loan-summary-section .v-table th,
+  .loan-summary-section .v-table td {
+    font-size: 7pt !important;
+    padding: 2px 3px !important;
+  }
 
   .button {
     display: none;
