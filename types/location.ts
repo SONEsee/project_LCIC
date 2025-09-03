@@ -1,3 +1,13 @@
+
+export interface LocationRespons {
+    ID:            number;
+    Prov_ID:       string;
+    Province_Name: string;
+    Dstr_ID:       string;
+    District_Name: string;
+    Vill_ID:       string;
+    Village_Name:  string;
+}
 export interface Province {
     id:   string;
     name: string;

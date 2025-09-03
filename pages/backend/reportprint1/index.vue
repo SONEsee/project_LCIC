@@ -1,3 +1,557 @@
+<script lang="ts" setup>
+import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
+import { LoCationStore } from "~/stores/location";
+import { LocationStore } from "~/stores/locationService";
+const location = LoCationStore();
+const dataLocation = computed(()=>{
+  const data = location.respons_data_location;
+  if(Array.isArray(data)){
+    return data
+  }
+  if(data && typeof data==="object"){
+    return [data]
+  }
+  return []
+})
+interface LonClassHistory {
+  id: number;
+  id_file: string;
+  lcicID: string;
+  period: string;
+  product_type: string;
+  com_enterprise_code: string;
+  segmentType: string;
+  bnk_code: string;
+  customer_id: string;
+  branch_id: string;
+  lon_sys_id: string;
+  loan_id: string;
+  lon_open_date: string;
+  lon_exp_date: string;
+  lon_ext_date: null;
+  lon_int_rate: number;
+  lon_purpose_code: string;
+  lon_credit_line: number;
+  lon_currency_code: string;
+  lon_outstanding_balance: number;
+  lon_account_no: string;
+  lon_no_days_slow: number;
+  lon_class: string;
+  lon_type: string;
+  lon_term: string;
+  lon_status: string;
+  lon_insert_date: string;
+  lon_update_date: null;
+  lon_applied_date: null;
+  user_id: string;
+  is_disputed: number;
+  LCIC_code: string;
+  status_data: string;
+  lon_expiry_date:string;
+}
+
+interface CollateralInfo {
+  insert_date: string;
+  col_id: string;
+  col_type: string;
+  [key: string]: any;
+}
+
+interface RelatedRecord {
+  col_id: string;
+  col_type: string;
+  col_value?: number;
+  land_no?: string;
+  land_map_no?: string;
+  col_area?: string;
+  account_no?: string;
+  account_type?: string;
+  value?: number;
+  machine_no?: string;
+  machine_type?: string;
+  project_number?: string;
+  ministry?: string;
+  plate_number?: string;
+  engine_number?: string;
+  gua_national_id?: string;
+  gua_lao_name?: string;
+  weight?: number;
+  unit?: string;
+  lon_expiry_date:string;
+  gua_enterprise_code?: string;
+  [key: string]: any;
+}
+
+interface CollateralHistory {
+  col_type: string;
+  collateral_info: CollateralInfo;
+  related_record: RelatedRecord;
+}
+
+interface LoanDetail {
+  id: string;
+  lon_update_date: null;
+  bank: string;
+  lon_insert_date: string;
+  lon_credit_line: number;
+  lon_outstanding_balance: number;
+  lon_currency_code: string;
+  lon_no_days_slow: number;
+  lon_class: string;
+  period: string;
+  lon_open_date: string;
+  lon_exp_date: string;
+  lon_ext_date: null;
+  lon_int_rate: number;
+  lon_purpose_code: string;
+  lon_account_no: string;
+  lon_status: string;
+  lon_type: string;
+  lon_term: string;
+  is_disputed: number;
+  lon_applied_date: null;
+  lon_class_history: LonClassHistory[];
+  collateral_history: CollateralHistory[];
+  lon_expiry_date:string;
+}
+
+interface LocationResponse {
+  LCICID: number;
+  EnterpriseID: string;
+  enterpriseNameLao: string;
+  eneterpriseNameEnglish: string;
+  regisCertificateNumber: string;
+  regisDate: string;
+  enLocation: string;
+  regisStrationOfficeType: string;
+  regisStationOfficeCode: string;
+  enLegalStrature: string;
+  foreigninvestorFlag: string;
+  investmentAmount: number;
+  status: number;
+  investmentCurrency: string;
+  representativeNationality: string;
+  LastUpdate: string;
+  CancellationDate: string;
+  InsertDate: string;
+  UpdateDate: string;
+  LCIC_code: string;
+  lon_expiry_date:string;
+  id_file: null;
+}
+
+interface SearchHistoryItem {
+  id: string;
+  bnk_code: string;
+  lon_purpose: string;
+  [key: string]: any;
+}
+
+interface TableDataItem {
+  bnk_code: string;
+  loan_id: string;
+  lon_open_date: string;
+  lon_credit_line: number;
+  lon_outstanding_balance: number;
+  lon_currency_code: string;
+  lon_expiry_date:string;
+  lon_no_days_slow: number;
+  lon_class: string;
+  [key: string]: any;
+}
+
+interface UserData {
+  nameE: string;
+  MID: {
+    code: string;
+  };
+  [key: string]: any;
+}
+
+interface HeaderItem {
+  title: string;
+  value: string;
+}
+
+
+const tableData = ref<TableDataItem[]>([]);
+const loan_detail_inactive = ref<LoanDetail[]>([]);
+const loan_detail_active = ref<LoanDetail[]>([]);
+const search_history = ref<SearchHistoryItem[]>([]);
+const user = ref<UserData | null>(null);
+const enterpriseInfo = ref<LocationResponse | null>(null);
+const invesInfo = ref<any>(null);
+const loading = ref<boolean>(false);
+const error = ref<string | null>(null);
+
+const headers = ref<HeaderItem[]>([
+  { title: "ສະມາຊິກ", value: "bnk_code" },
+  { title: "Loan ID", value: "loan_id" },
+  { title: "Loan Open Date", value: "lon_open_date" },
+  { title: "Loan Credit Line", value: "lon_credit_line" },
+  { title: "Outstanding Balance", value: "lon_outstanding_balance" },
+  { title: "Loan Currency Code", value: "lon_currency_code" },
+  { title: "Number of Days Slow", value: "lon_no_days_slow" },
+  { title: "Loan Class", value: "lon_class" },
+  { title: "Loan Status", value: "lon_status" },
+]);
+
+const mainHeaders = ref<HeaderItem[]>([
+  { title: "ສະມາຊິກ", value: "bank" },
+  { title: "Loan ID", value: "id" },
+  { title: "Loan Open Date", value: "lon_open_date" },
+  { title: "Loan Expiry Date", value: "lon_expiry_date" },
+  { title: "Loan Credit Line", value: "lon_credit_line" },
+  { title: "Outstanding Balance", value: "lon_outstanding_balance" },
+  { title: "Currency Code", value: "lon_currency_code" },
+  { title: "Loan Interest Rate", value: "lon_int_rate" },
+  { title: "Loan Purpose Code", value: "lon_purpose_code" },
+  { title: "Number of Days Slow", value: "lon_no_days_slow" },
+  { title: "Loan Class", value: "lon_class" },
+  { title: "Loan Type", value: "lon_type" },
+  { title: "Loan Term", value: "lon_term" },
+  { title: "Loan Status", value: "lon_status" },
+]);
+
+const subHeaders = ref<HeaderItem[]>([
+  { title: "Period", value: "period" },
+  { title: "Credit Line", value: "lon_credit_line" },
+  { title: "Outstanding Balance", value: "lon_outstanding_balance" },
+  { title: "Number of Days Slow", value: "lon_no_days_slow" },
+  { title: "Currency Code", value: "lon_currency_code" },
+  { title: "Loan Class", value: "lon_class" },
+  { title: "Loan Status", value: "lon_status" },
+]);
+
+const subHeaders_collteral = ref<HeaderItem[]>([
+  { title: "col_id", value: "col_id" },
+  { title: "col_type", value: "col_type" },
+  { title: "colleteral_info", value: "related_record.col_value" },
+]);
+
+const realEstateHeaders = ref<HeaderItem[]>([
+  { title: "Collateral ID", value: "related_record.col_id" },
+  { title: "Collateral Type", value: "related_record.col_type" },
+  { title: "Land No", value: "related_record.land_no" },
+  { title: "Land Map Number", value: "related_record.land_map_no" },
+  { title: "Value", value: "related_record.col_value" },
+]);
+
+const moneyMiaHeaders = ref<HeaderItem[]>([
+  { title: "Collateral ID", value: "related_record.col_id" },
+  { title: "Collateral Type", value: "related_record.col_type" },
+  { title: "Account No", value: "related_record.account_no" },
+  { title: "Account Type", value: "related_record.account_type" },
+  { title: "Value", value: "related_record.value" },
+]);
+
+const equipmentHeaders = ref<HeaderItem[]>([
+  { title: "Collateral ID", value: "related_record.col_id" },
+  { title: "Collateral Type", value: "related_record.col_type" },
+  { title: "Machine No", value: "related_record.machine_no" },
+  { title: "Machine Type", value: "related_record.machine_type" },
+  { title: "Value", value: "related_record.value" },
+]);
+
+const projectHeaders = ref<HeaderItem[]>([
+  { title: "Collateral ID", value: "related_record.col_id" },
+  { title: "Collateral Type", value: "related_record.col_type" },
+  { title: "Ministry Name", value: "related_record.ministry" },
+  { title: "Project No", value: "related_record.project_number" },
+  { title: "Value", value: "related_record.value" },
+]);
+
+const vehicleHeaders = ref<HeaderItem[]>([
+  { title: "Collateral ID", value: "related_record.col_id" },
+  { title: "Collateral Type", value: "related_record.col_type" },
+  { title: "Plate No", value: "related_record.plate_number" },
+  { title: "Engine No", value: "related_record.engine_number" },
+  { title: "Value", value: "related_record.value" },
+]);
+
+const guarantorHeaders = ref<HeaderItem[]>([
+  { title: "Collateral ID", value: "related_record.col_id" },
+  { title: "Collateral Type", value: "related_record.col_type" },
+  { title: "National ID", value: "related_record.national_id" },
+  { title: "Guarantor Name", value: "related_record.surname_english" },
+  { title: "Value", value: "related_record.value" },
+]);
+
+const goldsilverHeaders = ref<HeaderItem[]>([
+  { title: "Collateral ID", value: "related_record.col_id" },
+  { title: "Collateral Type", value: "related_record.col_type" },
+  { title: "Weight", value: "related_record.weight" },
+  { title: "Unit", value: "related_record.unit" },
+  { title: "Value", value: "related_record.value" },
+]);
+
+
+const totalCreditLine = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + (item.lon_credit_line || 0), 0);
+});
+
+const totalOutstandingBalance = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + (item.lon_outstanding_balance || 0), 0);
+});
+
+const formattedRegistrationDate = computed(() => {
+  if (!enterpriseInfo.value?.regisDate) return '--';
+  return formatDate(enterpriseInfo.value.regisDate);
+});
+
+const recentSearchHistory = computed(() => {
+  return search_history.value.slice(-12);
+});
+
+
+const formatAmount = (amount: number | null | undefined): string => {
+  if (!amount || amount === 0) return "-";
+  return new Intl.NumberFormat("lo-LA").format(amount);
+};
+
+const formatDate = (dateString: string): string => {
+  if (!dateString) return '--';
+  try {
+   
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+    
+      return dateString.slice(0, 10);
+    }
+    return date.toLocaleDateString('lo-LA');
+  } catch (error) {
+    return dateString.slice(0, 10);
+  }
+};
+
+const formatPeriod = (period: string): string => {
+  if (!period || period.length < 6) return period;
+  return period.slice(0, 4) + '-' + period.slice(4);
+};
+
+const getCollateralTypeName = (colType: string): string => {
+  const types: { [key: string]: string } = {
+    'c2.1': 'ດີນ',
+    'C2.1': 'ດີນ',
+    'c2.2': 'ເອກະສານມີຄ່າ',
+    'C2.2': 'ເອກະສານມີຄ່າ',
+    'c2.3': 'ເຄື່ອງຈັກ',
+    'C2.3': 'ເຄື່ອງຈັກ',
+    'c2.4': 'ໂຄງການ',
+    'C2.4': 'ໂຄງການ',
+    'c2.5': 'ຍານພາຫະນະ',
+    'C2.5': 'ຍານພາຫະນະ',
+    'c2.6': 'ບຸກຄົນຄໍ້າ',
+    'C2.6': 'ບຸກຄົນຄໍ້າ',
+    'c2.7': 'ຄໍາ/ເງີນ',
+    'C2.7': 'ຄໍາ/ເງີນ',
+  };
+  return types[colType] || colType;
+};
+
+
+const getCols = (length: number): number => {
+  switch (length) {
+    case 1:
+      return 12;
+    case 2:
+      return 6;
+    case 3:
+      return 4;
+    case 4:
+      return 3;
+    default:
+      return 3;
+  }
+};
+
+const getCols1 = (length: number): number => {
+  switch (length) {
+    case 1:
+      return 6;
+    case 2:
+      return 6;
+    case 3:
+      return 4;
+    case 4:
+      return 2;
+    default:
+      return 2;
+  }
+};
+
+const getCollateralHeaders = (col_type: string): HeaderItem[] => {
+  switch (col_type.toLowerCase()) {
+    case "c2.1":
+      return realEstateHeaders.value;
+    case "c2.2":
+      return moneyMiaHeaders.value;
+    case "c2.3":
+      return equipmentHeaders.value;
+    case "c2.4":
+      return projectHeaders.value;
+    case "c2.5":
+      return vehicleHeaders.value;
+    case "c2.6":
+      return guarantorHeaders.value;
+    case "c2.7":
+      return goldsilverHeaders.value;
+    default:
+      return subHeaders_collteral.value;
+  }
+};
+
+
+const fetchData = async (enterpriseID: string, LCIC_code: string): Promise<void> => {
+  if (!enterpriseID || !LCIC_code) {
+    error.value = "ຂາດຂໍ້ມູນ EnterpriseID ຫຼື LCIC_code";
+    return;
+  }
+
+  loading.value = true;
+  error.value = null;
+
+  try {
+    const config = useRuntimeConfig();
+    const response = await fetch(
+      `${config.public.strapi.url}api/report/?EnterpriseID=${enterpriseID}&LCIC_code=${LCIC_code}`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+  
+    tableData.value = Array.isArray(data.loan_info) ? data.loan_info : [];
+    loan_detail_inactive.value = Array.isArray(data.inactive_loans) ? data.inactive_loans : [];
+    loan_detail_active.value = Array.isArray(data.active_loans) ? data.active_loans : [];
+    search_history.value = Array.isArray(data.search_history) ? data.search_history : [];
+    
+    console.log("Search history:", search_history.value);
+
+
+    if (data.enterprise_info) {
+      if (Array.isArray(data.enterprise_info) && data.enterprise_info.length > 0) {
+        enterpriseInfo.value = data.enterprise_info[0] as LocationResponse;
+      } else if (typeof data.enterprise_info === 'object') {
+        enterpriseInfo.value = data.enterprise_info as LocationResponse;
+      }
+    }
+
+ 
+    if (data.inves_info) {
+      if (Array.isArray(data.inves_info) && data.inves_info.length > 0) {
+        invesInfo.value = data.inves_info[0];
+      } else {
+        invesInfo.value = data.inves_info;
+      }
+    }
+
+    console.log("Fetched enterprise_info:", enterpriseInfo.value);
+    console.log("Fetched inves_info:", invesInfo.value);
+    console.log("Fetched loan_detail:", loan_detail_active.value);
+    
+  } catch (err) {
+    console.error("Error occurred while fetching data:", err);
+    error.value = err instanceof Error ? err.message : "ເກີດຂໍ້ຜິດພາດໃນການດຶງຂໍ້ມູນ";
+  } finally {
+    loading.value = false;
+  }
+};
+
+
+const print = (): void => {
+  window.print();
+};
+
+const goBack = (): void => {
+  window.history.back();
+};
+
+
+const route = useRoute();
+
+onMounted(async () => {
+  const enterpriseID = route.query.EnterpriseID as string;
+  const LCIC_code = route.query.LCIC_code as string;
+  location.GetLocation()
+  
+
+  try {
+    const userData = localStorage.getItem("user_data");
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      user.value = parsedUser;
+      console.log("User data:", user.value);
+    }
+  } catch (err) {
+    console.error("Error parsing user data:", err);
+  }
+
+  
+  await fetchData(enterpriseID, LCIC_code);
+});
+
+const enterpriseLocation = computed(() => {
+  if (!enterpriseInfo.value?.enLocation || !dataLocation.value.length) {
+    return null;
+  }
+
+ 
+  const locationId = parseInt(enterpriseInfo.value.enLocation);
+  
+ 
+  const location = dataLocation.value.find(loc => loc.ID === locationId);
+  
+  return location || null;
+});
+
+
+const fullAddress = computed(() => {
+  const location = enterpriseLocation.value;
+  if (!location) {
+    return enterpriseInfo.value?.enLocation ? `Location ID: ${enterpriseInfo.value.enLocation}` : '--';
+  }
+
+ 
+  return `${location.Village_Name}, ${location.District_Name}, ${location.Province_Name}`;
+});
+
+
+const addressComponents = computed(() => {
+  const location = enterpriseLocation.value;
+  if (!location) {
+    return {
+      village: '--',
+      district: '--',
+      province: '--',
+      full: enterpriseInfo.value?.enLocation ? `Location ID: ${enterpriseInfo.value.enLocation}` : '--'
+    };
+  }
+
+  return {
+    village: location.Village_Name || '--',
+    district: location.District_Name || '--', 
+    province: location.Province_Name || '--',
+    full: `ບ້ານ ${location.Village_Name}, ເມືອງ ${location.District_Name}, ແຂວງ ${location.Province_Name}`,
+    locationId: location.ID,
+    provId: location.Prov_ID,
+    dstrId: location.Dstr_ID,
+    villId: location.Vill_ID
+  };
+});
+
+
+const debugLocationMapping = () => {
+  console.log('Enterprise enLocation:', enterpriseInfo.value?.enLocation);
+  console.log('Available locations:', dataLocation.value);
+  console.log('Matched location:', enterpriseLocation.value);
+  console.log('Full address:', fullAddress.value);
+};
+</script>
 <template>
   
   <v-container><div 
@@ -7,7 +561,7 @@
     
   }">
     
-  
+  <pre>{{ addressComponents }}</pre>
     <v-col cols="12">
       <section class="pa-5" id="main-content">
         <div>
@@ -48,7 +602,7 @@
               <p>ລະຫັດຂສລ: <b>{{ enterpriseInfo.LCIC_code}}</b></p>
             </div>
             <div class="" v-if="user">
-              <p style="font-size: ;">ຜູ້ສອບຖາມ: <b> {{ user.nameE }}</b> ຈາກທະນາຄານ: <b>{{ user.MID?.code }}</b></p>
+              <p style="">ຜູ້ສອບຖາມ: <b> {{ user.nameE }}</b> ຈາກທະນາຄານ: <b>{{ user.MID?.code }}</b></p>
             </div>
           </v-col>
         </v-row>
@@ -62,30 +616,7 @@
             </div>
           </v-col>
         </v-row>
-        <!-- <v-col cols="12"  class="mt-5">
-         
-          <v-col cols="12">
-            <v-row>
-
-          
-          <v-col cols="12" >
-            <v-row justify="center  justify-space-between" >
-              <v-col cols="12" >
-                <v-row class="ml-2">
-                  
-                  <p v-if="enterpriseInfo"><b> LCID:</b> {{ enterpriseInfo.LCIC_code }},</p>
-                  <p v-if="enterpriseInfo" class="ml-5"><b>  ຊື່ບໍລິສັດພາສາລາວ:</b> {{ enterpriseInfo.enterpriseNameLao}} </p> <br>
-                </v-row>
-                <v-row>
-                   <p v-if="enterpriseInfo" class="ml-5"><b>  ຊື່ຜູ້ຈັດການທົ່ວໄປ:</b> --- </p>
-                </v-row>
-              </v-col>
-            </v-row>
-          </v-col>
-
-         </v-row>
-          </v-col>
-        </v-col> -->
+      
       </section></v-col
     >
     <v-col cols="12">
@@ -113,8 +644,7 @@
       </v-col>
       <v-col cols="4" v-if="enterpriseInfo">
         <p><b >ທຶນຈົດທະບຽນ:</b> {{Number( enterpriseInfo.investmentAmount).toLocaleString() }} <b v-if="enterpriseInfo.investmentCurrency">{{ enterpriseInfo.investmentCurrency }}</b></p>
-        <!-- <td>{{Number( item.lon_credit_line).toLocaleString() }}</td> -->
-        <!-- <p><b>ທຶນຈົດທະບຽນ:</b> --</p> -->
+      
         <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ:</b> --</p>
       </v-col>
      </v-row></div>
@@ -536,15 +1066,15 @@ class="rounded-lg"
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="(item , index) in item.lon_class_history">
+                      <tr v-for="(items  , index)  in item.lon_class_history">
                         <td>{{index +1}}</td>
-                        <td>{{ item.period.slice(0, 4) + '-' + item.period.slice(4) }}</td>
-                        <td>{{Number( item.lon_credit_line).toLocaleString() }}</td>
-                        <td>{{Number( item.lon_outstanding_balance).toLocaleString() }}</td>
-                        <td>{{ item.lon_no_days_slow }}</td>
-                        <td>{{ item.lon_currency_code }}</td>
-                        <td>{{ item.lon_class }}</td>
-                        <td>{{ item.lon_status }}</td>
+                        <td>{{ items.period.slice(0, 4) + '-' + item.period.slice(4) }}</td>
+                        <td>{{Number( items.lon_credit_line).toLocaleString() }}</td>
+                        <td>{{Number( items.lon_outstanding_balance).toLocaleString() }}</td>
+                        <td>{{ items.lon_no_days_slow }}</td>
+                        <td>{{ items.lon_currency_code }}</td>
+                        <td>{{ items.lon_class }}</td>
+                        <td>{{ items.lon_status }}</td>
 
                       </tr>
                     </tbody>
@@ -608,243 +1138,6 @@ class="rounded-lg"
       </v-row>
     </v-col></div></v-container>
 </template>
-
-<script lang="ts">
-import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
-
-export default {
-  methods: {
-    getCols(length) {
-      switch (length) {
-        case 1:
-          return 12;
-        case 2:
-          return 6;
-        case 3:
-          return 4;
-        case 4:
-          return 3;
-
-        default:
-          return 3;
-      }
-    },
-    getCols1(length) {
-      switch (length) {
-        case 1:
-          return 6;
-        case 2:
-          return 6;
-        case 3:
-          return 4;
-        case 4:
-          return 2;
-
-        default:
-          return 2;
-      }
-    },
-  },
-
-  setup() {
-    
-    const tableData = ref([]);
-    const loan_detail_inactive = ref([]);
-    const loan_detail_active = ref([]);
-    const search_history = ref([]);
-    const user = ref({});
-    const enterpriseInfo = ref(null);
-    const invesInfo = ref(null);
-    const headers = ref([
-      { title: "ສະມາຊິກ", value: "bnk_code" },
-      { title: "Loan ID", value: "loan_id" },
-      { title: "Loan Open Date", value: "lon_open_date" },
-      { title: "Loan Credit Line", value: "lon_credit_line" },
-      { title: "Outstanding Balance", value: "lon_outstanding_balance" },
-      { title: "Loan Currency Code", value: "lon_currency_code" },
-      { title: "Number of Days Slow", value: "lon_no_days_slow" },
-      { title: "Loan Class", value: "lon_class" },
-      // { title: "Loan Update Date", value: "lon_update_date" },
-      { title: "Loan Status", value: "lon_status" },
-    ]);
-   
-    const mainHeaders = ref([
-      { title: "ສະມາຊິກ", value: "bank" },
-      { title: "Loan ID", value: "id" },
-      { title: "Loan Open Date", value: "lon_open_date" },
-      { title: "Loan Expiry Date", value: "lon_expiry_date" },
-      { title: "Loan Credit Line", value: "lon_credit_line" },
-      { title: "Outstanding Balance", value: "lon_outstanding_balance" },
-      { title: "Currency Code", value: "lon_currency_code" },
-      { title: "Loan Interest Rate", value: "lon_int_rate" },
-      { title: "Loan Purpose Code", value: "lon_purpose_code" },
-      { title: "Number of Days Slow", value: "lon_no_days_slow" },
-      { title: "Loan Class", value: "lon_class" },
-      { title: "Loan Type", value: "lon_type" },
-      { title: "Loan Term", value: "lon_term" },
-      { title: "Loan Status", value: "lon_status" },
-    ]);
-    const subHeaders = ref([
-      { title: "Period", value: "period" },
-      { title: "Credit Line", value: "lon_credit_line" },
-      { title: "Outstanding Balance", value: "lon_outstanding_balance" },
-      { title: "Number of Days Slow", value: "lon_no_days_slow" },
-      { title: "Currency Code", value: "lon_currency_code" },
-      { title: "Loan Class", value: "lon_class" },
-      { title: "Loan Status", value: "lon_status" },
-    ]);
-    const subHeaders_collteral = ref([
-      { title: "col_id", value: "col_id" },
-      { title: "col_type", value: "col_type" },
-      { title: "colleteral_info", value: "related_record.col_value" },
-    ]);
-
-    const realEstateHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "Land No", value: "related_record.land_no" },
-      { title: "Land Map Number", value: "related_record.land_map_no" },
-      { title: "Value", value: "related_record.col_value" },
-    ]);
-    const moneyMiaHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "Account No", value: "related_record.account_no" },
-      { title: "Account Type", value: "related_record.account_type" },
-      { title: "Value", value: "related_record.value" },
-    ]);
-    const equipmentHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "Machine No", value: "related_record.machine_no" },
-      { title: "Machine Type", value: "related_record.machine_type" },
-      { title: "Value", value: "related_record.value" },
-    ]);
-    const projectHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "Ministry Name", value: "related_record.ministry" },
-      { title: "Project No", value: "related_record.project_number" },
-      { title: "Value", value: "related_record.value" },
-    ]);
-    const vehicleHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "Plate No", value: "related_record.plate_number" },
-      { title: "Engine No", value: "related_record.engine_number" },
-      { title: "Value", value: "related_record.value" },
-    ]);
-    const guarantorHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "National ID", value: "related_record.national_id" },
-      { title: "Guarantor Name", value: "related_record.surname_english" },
-      { title: "Value", value: "related_record.value" },
-    ]);
-    const goldsilverHeaders = ref([
-      { title: "Collateral ID", value: "related_record.col_id" },
-      { title: "Collateral Type", value: "related_record.col_type" },
-      { title: "Weight", value: "related_record.weight" },
-      { title: "Unit", value: "related_record.unit" },
-      { title: "Value", value: "related_record.value" },
-    ]);
-
-    const route = useRoute();
-
-    onMounted(() => {
-      const enterpriseID = route.query.EnterpriseID as string;
-      const LCIC_code = route.query.LCIC_code as string;
-      const userData = localStorage.getItem("user_data");
-      if (userData) {
-        user.value = JSON.parse(userData);
-        console.log("User data:", user.value);
-      }
-
-      fetchData(enterpriseID, LCIC_code);
-    });
-
-    const fetchData = async (enterpriseID: string, LCIC_code: string) => {
-      try {
-        const config = useRuntimeConfig();
-        const response = await fetch(
-          `${config.public.strapi.url}api/report/?EnterpriseID=${enterpriseID}&LCIC_code=${LCIC_code}`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          tableData.value = data.loan_info;
-          loan_detail_inactive.value = data.inactive_loans;
-          loan_detail_active.value = data.active_loans;
-          search_history.value = data.search_history;
-          console.log("searchsone",search_history)
-
-          enterpriseInfo.value = data.enterprise_info;
-          invesInfo.value = data.inves_info;
-
-
-          if (data.enterprise_info.length > 0) {
-            enterpriseInfo.value = data.enterprise_info[0];
-          }
-
-          if (data.inves_info.length > 0) {
-            invesInfo.value = data.inves_info[0];
-          }
-
-          console.log("Fetched enterprise_info:", enterpriseInfo.value);
-          console.log("Fetched inves_info:", invesInfo.value);
-          console.log("Fetched loan_detail:", loan_detail_active.value);
-        } else {
-          console.error("Error fetching data:", response.statusText);
-        }
-      } catch (error) {
-        console.error("Error occurred while fetching data:", error);
-      }
-    };
-    const getCollateralHeaders = (col_type) => {
-      if (col_type === "c2.1") {
-        return realEstateHeaders.value;
-      } else if (col_type === "c2.2") {
-        return moneyMiaHeaders.value;
-      } else if (col_type === "c2.3") {
-        return equipmentHeaders.value;
-      } else if (col_type === "c2.4") {
-        return projectHeaders.value;
-      } else if (col_type === "c2.5") {
-        return vehicleHeaders.value;
-      } else if (col_type === "c2.6") {
-        return guarantorHeaders.value;
-      } else if (col_type === "c2.7") {
-        return goldsilverHeaders.value;
-      }
-
-      return subHeaders_collteral.value; 
-    };
-
-    const print = () => {
-      window.print();
-    };
-
-    return {
-      headers,
-      tableData,
-
-      enterpriseInfo,
-      invesInfo,
-      user,
-      loan_detail_inactive,
-      loan_detail_active,
-      search_history,
-      mainHeaders,
-      subHeaders,
-      subHeaders_collteral,
-      getCollateralHeaders,
-      print,
-      
-    };
-  },
-};
-</script>
-
 <style scoped>
 @page {
   size: A4 portrait;
