@@ -38,7 +38,15 @@
                           type="text"
                           placeholder="ປອ້ນລະຫັດ ຂສລ....."
                           class="input-field"
+                          @input="onLCICChange"
+                          :loading="fetchingEnterprise"
                         />
+                        <div v-if="fetchingEnterprise" class="text-caption text-blue">
+                          ກຳລັງຄົ້ນຫາລະຫັດວິສາຫະກິດ...
+                        </div>
+                        <div v-if="enterpriseNameFromLCIC" class="text-caption text-green mt-1">
+                          ວິສາຫະກິດ: {{ enterpriseNameFromLCIC }}
+                        </div>
                       </div>
                       <div class="mt-1">
                         <label class="field-label" for="idcompany">
@@ -52,7 +60,15 @@
                           type="text"
                           placeholder="ປອ້ນລະຫັດວິສາຫະກິດ....."
                           class="input-field"
+                          @input="onEnterpriseChange"
+                          :loading="fetchingLCIC"
                         />
+                        <div v-if="fetchingLCIC" class="text-caption text-blue">
+                          ກຳລັງຄົ້ນຫາລະຫັດ ຂສລ...
+                        </div>
+                        <div v-if="enterpriseNameFromID" class="text-caption text-green mt-1">
+                          ວິສາຫະກິດ: {{ enterpriseNameFromID }}
+                        </div>
                       </div>
                       
                       <div class="mt-5">
@@ -118,7 +134,15 @@ const selectedCat = ref<Category | null>(null);
 const id1 = ref<string>(""); 
 const id2 = ref<string>(""); 
 const loading = ref<boolean>(false);
+const fetchingEnterprise = ref<boolean>(false);
+const fetchingLCIC = ref<boolean>(false);
+const enterpriseNameFromLCIC = ref<string>(""); 
+const enterpriseNameFromID = ref<string>(""); 
 const ruleRequired = (v: any) => !!v || "ຈຳເປັນຕ້ອງໃສ່";
+
+
+let lcicTimeout: NodeJS.Timeout | null = null;
+let enterpriseTimeout: NodeJS.Timeout | null = null;
 
 const categories = ref<any[]>([]);
 interface Category {
@@ -153,8 +177,122 @@ onMounted(async () => {
   }
 });
 
+
+const fetchEnterpriseByLCIC = async (lcicCode: string) => {
+  if (!lcicCode.trim() || lcicCode.length < 3) return;
+  
+  fetchingEnterprise.value = true;
+  enterpriseNameFromLCIC.value = ""; 
+  try {
+    const config = useRuntimeConfig();
+    const token = localStorage.getItem("access_token");
+
+    const response = await fetch(
+      `${config.public.strapi.url}api/api/v1/enterprise-info/by-lcic/${lcicCode}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data && data.enterprise_id) {
+        id2.value = data.enterprise_id;
+        enterpriseNameFromLCIC.value = data.enterprise_name || "";
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching enterprise by LCIC:", error);
+  } finally {
+    fetchingEnterprise.value = false;
+  }
+};
+
+
+const fetchLCICByEnterprise = async (enterpriseId: string) => {
+  if (!enterpriseId.trim() || enterpriseId.length < 3) return;
+  
+  fetchingLCIC.value = true;
+  enterpriseNameFromID.value = "";
+  try {
+    const config = useRuntimeConfig();
+    const token = localStorage.getItem("access_token");
+
+    const response = await fetch(
+      `${config.public.strapi.url}api/api/v1/enterprise-info/by-enterprise/${enterpriseId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data && data.lcic_code) {
+        id1.value = data.lcic_code;
+        enterpriseNameFromID.value = data.enterprise_name || "";
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching LCIC by enterprise:", error);
+  } finally {
+    fetchingLCIC.value = false;
+  }
+};
+
+
+const onLCICChange = (event: any) => {
+  const value = event.target.value;
+  
+  // ລຶບ timeout ເກົ່າ
+  if (lcicTimeout) {
+    clearTimeout(lcicTimeout);
+  }
+  
+  
+  if (!value.trim()) {
+    id2.value = "";
+    enterpriseNameFromLCIC.value = "";
+    return;
+  }
+  
+
+  lcicTimeout = setTimeout(() => {
+    fetchEnterpriseByLCIC(value);
+  }, 800);
+};
+
+
+const onEnterpriseChange = (event: any) => {
+  const value = event.target.value;
+  
+  // ລຶບ timeout ເກົ່າ
+  if (enterpriseTimeout) {
+    clearTimeout(enterpriseTimeout);
+  }
+  
+ 
+  if (!value.trim()) {
+    id1.value = "";
+    enterpriseNameFromID.value = "";
+    return;
+  }
+  
+  
+  enterpriseTimeout = setTimeout(() => {
+    fetchLCICByEnterprise(value);
+  }, 800);
+};
+
 const submit = async () => {
-  // ກວດສອບວ່າມີການໃສ່ຂໍ້ມູນຫຼືບໍ່
+ 
   if (!id1.value?.trim() && !id2.value?.trim()) {
     Swal.fire({
       icon: "warning", 
@@ -208,21 +346,17 @@ const submit = async () => {
     const data = await res.json();
     console.log("Response data:", data);
 
-   
     if (res.ok && data.enterprise_info && data.enterprise_info.length > 0) {
       Swal.close();
 
-     
       const params = new URLSearchParams();
       if (id1.value?.trim()) params.append('LCIC_code', id1.value.trim());
       if (id2.value?.trim()) params.append('EnterpriseID', id2.value.trim());
       if (selectedCat.value?.cat_sys_id) params.append('CatalogID', selectedCat.value.cat_sys_id);
 
-    
       await navigateTo(`/backend/datasearch?${params.toString()}`);
       
     } else if (res.ok && (!data.enterprise_info || data.enterprise_info.length === 0)) {
-      
       Swal.fire({
         icon: "warning",
         title: "ບໍ່ພົບຂໍ້ມູນ",
@@ -230,7 +364,6 @@ const submit = async () => {
         confirmButtonText: "ຕົກລົງ",
       });
     } else {
-     
       throw new Error(`HTTP error! status: ${res.status}`);
     }
 
@@ -358,5 +491,14 @@ button {
 h2 {
   margin-top: 20px;
   font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+}
+
+.text-blue {
+  color: #1976d2 !important;
+}
+
+.text-green {
+  color: #4caf50 !important;
+  font-weight: 500;
 }
 </style>

@@ -523,7 +523,7 @@ onMounted(() => {
               </thead>
               <tbody class="text-end">
                 <tr v-for="item in enterpriseDataWithLocation" :key="item.LCIC_code">
-                  <!-- ລະຫັດ ຂສລ ມີ tooltip -->
+                
                   <td>
                     <v-tooltip location="bottom">
                       <template v-slot:activator="{ props }">
@@ -535,7 +535,7 @@ onMounted(() => {
                     </v-tooltip>
                   </td>
 
-                  <!-- ລະຫັດວິສາຫະກິດ ມີ tooltip -->
+            
                   <td>
                     <v-tooltip location="bottom">
                       <template v-slot:activator="{ props }">
@@ -547,7 +547,7 @@ onMounted(() => {
                     </v-tooltip>
                   </td>
 
-                  <!-- ຊື່ບໍລິສັດລາວ ມີ tooltip ສະແດງຊື່ເຕັມ -->
+                
                   <td>
                     <v-tooltip location="bottom" :disabled="!item.enterpriseNameLao || item.enterpriseNameLao.length <= 30">
                       <template v-slot:activator="{ props }">
@@ -559,7 +559,7 @@ onMounted(() => {
                     </v-tooltip>
                   </td>
 
-                  <!-- ຊື່ບໍລິສັດອັງກິດ ມີ tooltip ສະແດງຊື່ເຕັມ -->
+                  
                   <td>
                     <v-tooltip location="bottom" :disabled="!item.eneterpriseNameEnglish || item.eneterpriseNameEnglish.length <= 30">
                       <template v-slot:activator="{ props }">
@@ -571,7 +571,7 @@ onMounted(() => {
                     </v-tooltip>
                   </td>
 
-                  <!-- ທີ່ຢູ່ ມີ tooltip ສະແດງທີ່ຢູ່ເຕັມ ແລະ ແຍກລາຍລະອຽດ -->
+                  
                   <td>
                     <v-tooltip location="bottom" max-width="300">
                       <template v-slot:activator="{ props }">
@@ -595,7 +595,7 @@ onMounted(() => {
                     </v-tooltip>
                   </td>
 
-                  <!-- ທຶນລົງທຶນ ມີ tooltip ສະແດງລາຍລະອຽດເພີ່ມເຕີມ -->
+                 
                   <td>
                     <v-tooltip location="bottom">
                       <template v-slot:activator="{ props }">
@@ -632,7 +632,7 @@ onMounted(() => {
               </tbody>
             </v-table>
 
-            <!-- ສະແດງຊື່ນັກລົງທຶນ ມີ tooltip -->
+         
             <div
               v-if="investorNames && investorNames.length > 0"
               class="investor-section"
@@ -658,7 +658,7 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- ສະແດງເມື່ອບໍ່ມີຂໍ້ມູນ -->
+          
           <div v-else class="no-data-container">
             <v-icon size="64" color="grey">mdi-database-search</v-icon>
             <p class="no-data-text">ບໍ່ພົບຂໍ້ມູນທີ່ຕ້ອງການ</p>

@@ -194,13 +194,13 @@ const processReport = async (item: Result) => {
   }
 };
 
-// ຟັງຊັນສຳລັບປະມວນຜົນຫຼາຍລາຍການ
+
 const processBatchReports = async (items: Result[]) => {
   const config = useRuntimeConfig();
   const token = localStorage.getItem("access_token");
 
   try {
-    // ອັບເດດສະຖານະຂອງທຸກລາຍການ
+  
     const updatePromises = items.map(item => 
       fetch(`${config.public.strapi.url}api/update_searchlog_status/`, {
         method: "POST",
