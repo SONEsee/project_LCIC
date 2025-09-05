@@ -1,4 +1,31 @@
 
+export interface BatfileRespons {
+    id:               number;
+    user_id:          string;
+    duplicates:       string;
+    count_duplicates: number;
+    duplicates_false: string;
+    UID:              string;
+    file_id:          string;
+    fileName:         string;
+    fileUpload:       string;
+    fileSize:         string;
+    path:             string;
+    insertDate:       string;
+    updateDate:       string;
+    period:           string;
+    status:           string;
+    statussubmit:     string;
+    searchtrue:       string;
+    searchfals:       string;
+    status_upload:    string;
+    FileType:         string;
+    percentage:       number;
+    MID:              null;
+    GID:              null;
+    SType:            null;
+    UType:            null;
+}
 
 export interface JSONRespons {
     id:            number;

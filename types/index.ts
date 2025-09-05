@@ -14,6 +14,7 @@ import * as ValidateResponse from './validate'
 import * as MemberinfoModel from './meberinfo'
 import * as LochalUserData from './location'
 import * as InVestorInfoModels from './investorinfo'
+import * as BafileModel from './batefile'
 export{
     DuplicatesFalse,
     DataModel,
@@ -30,5 +31,6 @@ export{
     MemberinfoModel,
     LochalUserData,
     InVestorInfoModels,
+    BafileModel,
 
 }
