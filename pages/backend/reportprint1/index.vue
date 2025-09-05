@@ -1274,7 +1274,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
 @media print {
   * {
     -webkit-print-color-adjust: exact !important;
-    color-adjust: exact !important;
+  
     print-color-adjust: exact !important;
   }
   
