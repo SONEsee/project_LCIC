@@ -313,7 +313,7 @@ const showDetails = (item: EnterpriseInfo) => {
           item.eneterpriseNameEnglish || "ບໍ່ມີຂໍ້ມູນ"
         }</p>
         <p><strong>ທີ່ຢູ່:</strong> ${item.fullLocation || "ບໍ່ມີຂໍ້ມູນທີ່ຢູ່"}</p>
-        <p><strong>ທຶນລົງທຶນ:</strong> ${
+        <p><strong>ທຶນຈົົດທະບຽນ:</strong> ${
           item.investmentAmount 
             ? new Intl.NumberFormat("lo-LA").format(item.investmentAmount) + " " + (item.investmentCurrency || "")
             : "ບໍ່ມີຂໍ້ມູນ"
@@ -490,7 +490,7 @@ onMounted(() => {
                   <th><p>ຊື່ບໍລິສັດ(ພາສາລາວ)</p></th>
                   <th><p>ຊື່ບໍລິສັດ(ພາສາອັງກິດ)</p></th>
                   <th><p>ທີ່ຢູ່ເປັນ(ພາສາລາວ)</p></th>
-                  <th><p>ທຶນລົງທຶນ</p></th>
+                  <th><p>ທຶນຈົົດທະບຽນ</p></th>
                   <th><p>ລາຍລະອຽດ</p></th>
                 </tr>
               </thead>
