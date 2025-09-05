@@ -1,96 +1,22 @@
-<template>
-  <div>
-    <v-col>
-      <v-row>
-        <v-col cols="12" md="5">
-          <v-file-input
-            type="file"
-            accept=".json"
-            @change="handleFileUpload"
-            variant="outlined"
-            density="compact"
-            width="100%"
-          />
-        </v-col>
-        <v-col cols="12" md="1">
-          <v-btn @click="uploadFile" class="bg-primary">ອັບໂຫຼດ</v-btn>
-        </v-col>
-        <v-col cols="12" md="2"> </v-col>
-        <v-col cols="12" md="4">
-          <div v-if="user?.MID.id === '01'" class="mb-4">
-            <v-autocomplete
-              v-model="selectedUserId"
-              :items="userIds"
-              label="ຄົ້ນຫາຕາມສະມາຊິກດວ້ຍລະຫັດ"
-              variant="outlined"
-              density="compact"
-              width="100%"
-            />
-          </div>
-        </v-col>
-      </v-row>
-    </v-col>
-    <div v-if="isloading" class="d-flex justify-center align-center">
-      <p>ກຳລັງໂຫຼດ....</p>
-    </div>
-    <div v-if="error">ເກິດຂໍ້ຜິດພາດບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້</div>
-    <div v-else>
-      <v-data-table
-        :items="filteredData"
-        item-key="name"
-        items-per-page="10"
-        :headers="header"
-      >
-        <template v-slot:item.total="{ item }">
-          <v-chip color="primary" text-color="white">{{
-            Number(item.searchtrue) +
-            Number(item.searchfals) +
-            Number(item.count_duplicates)
-          }}</v-chip>
-        </template>
-        <template v-slot:item.count_duplicates="{ item }">
-          <a :href="`../duplicates_batefile/?id=${item.id}`">
-            <v-chip color="warning" text-color="white">
-              {{ item.count_duplicates }}
-            </v-chip></a
-          >
-        </template>
-        <template v-slot:item.insertDate="{ item }">
-          {{ new Date(item.insertDate).toLocaleDateString() }}
-        </template>
-        <template v-slot:item.user_id="{ item }">
-          <p v-if="user?.MID.id === '01'">{{ item.user_id }}</p>
-        </template>
-        <template v-slot:item.index="{ index, item }">
-          <p>{{ item.index }}</p>
-        </template>
-        <template v-slot:item.searchtrue="{ item }">
-          <a :href="`../saerchtrue?id=${item.id}`">
-            <v-chip color="success" text-color="white">{{
-              item.searchtrue
-            }}</v-chip></a
-          >
-        </template>
-        <template v-slot:item.searchfals="{ item }">
-          <a :href="`../fals?id=${item.id}`">
-            <v-chip color="error" text-color="white">{{
-              item.searchfals
-            }}</v-chip>
-          </a>
-        </template>
-        <template v-slot:header.user_id style="color: green">
-          <p v-if="user?.MID.id === '01'">ລະຫັດສະມາຊິກ</p>
-        </template>
-      </v-data-table>
-    </div>
-  </div>
-</template>
-
 <script lang="ts" setup>
 import axios from "axios";
 import Swal from "sweetalert2";
 import { ref, computed, onMounted } from "vue";
+import { MemberStore } from "@/stores/memberinfo";
+import { useMemberInfo } from "@/composables/memberInfo";
+const memberinfoStore = MemberStore();
+const dataMemberInfon = computed(() => {
+  const data = memberinfoStore.respons_data_query;
+  if (Array.isArray(data)) {
+    return data;
+  }
+  if (data && typeof data === "object") {
+    return [data];
+  }
+  return [];
+});
 
+const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 const userID = localStorage.getItem("user_data");
 console.log("user", userID);
 
@@ -152,7 +78,15 @@ const datafetch = async () => {
   }
 };
 
-onMounted(datafetch);
+// const mapdatInfo = (memberinfo:string)=>{
+//   if(!memberinfo || !Array.isArray(dataMemberInfon.value)) return "-";
+//   const foundItem = dataMemberInfon.value.find((item)=> item.user_id === memberinfo);
+//   return foundItem ? `${foundItem.bnk_code}-${foundItem.code}-${foundItem.nameL}` : memberinfo;
+// }
+onMounted(() => {
+  datafetch();
+  memberinfoStore.getMemberInfo();
+});
 
 const userData = localStorage.getItem("user_data");
 console.log("data user ", userData);
@@ -171,13 +105,14 @@ const file = ref<File | null>(null);
 const results = ref<any[]>([]);
 const header = ref([
   { title: "ລຳດັບ", value: "id" },
-  { title: "ມື້ສົ່ງ", value: "insertDate" },
+
   { title: "ລະຫັດສະມາຊິກ", value: "user_id" },
   { title: "ຊື່ຟາຍ", value: "fileName" },
   { title: "ຈຳນວນຄົ້ນຫາທັງໝົດ", value: "total" },
   { title: "ຄົ້ນຫາພົບ", value: "searchtrue" },
   { title: "ຂໍ້ມູນສໍ້າກັນ", value: "count_duplicates" },
   { title: "ຄົ້ນຫາບໍ່ພົບ", value: "searchfals" },
+  { title: "ມື້ສົ່ງ", value: "insertDate" },
 ]);
 
 const handleFileUpload = (event: Event) => {
@@ -284,3 +219,94 @@ const insertSearchLog = async (item: any) => {
   }
 };
 </script>
+<template>
+  <div>
+    <!-- <pre>{{ filteredData }}</pre> -->
+    <v-col>
+      <v-row>
+        <v-col cols="12" md="5">
+          <v-file-input
+            type="file"
+            accept=".json"
+            @change="handleFileUpload"
+            variant="outlined"
+            density="compact"
+            width="100%"
+          />
+        </v-col>
+        <v-col cols="12" md="1">
+          <v-btn @click="uploadFile" class="bg-primary">ອັບໂຫຼດ</v-btn>
+        </v-col>
+        <v-col cols="12" md="2"> </v-col>
+        <v-col cols="12" md="4">
+          <div v-if="user?.MID.id === '01'" class="mb-4">
+            <v-autocomplete
+              v-model="selectedUserId"
+              :items="userIds"
+              label="ຄົ້ນຫາຕາມສະມາຊິກດວ້ຍລະຫັດ"
+              variant="outlined"
+              density="compact"
+              width="100%"
+            />
+          </div>
+        </v-col>
+      </v-row>
+    </v-col>
+    <div v-if="isloading" class="d-flex justify-center align-center">
+      <p>ກຳລັງໂຫຼດ....</p>
+    </div>
+    <div v-if="error">ເກິດຂໍ້ຜິດພາດບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້</div>
+    <div v-else>
+      <v-data-table
+        :items="filteredData"
+        item-key="name"
+        items-per-page="10"
+        :headers="header"
+      >
+        <template v-slot:item.user_id="{ item }">
+          {{ mapMemberInfo(item.user_id) }}
+        </template>
+        <template v-slot:item.total="{ item }">
+          <v-chip color="primary" text-color="white">{{
+            Number(item.searchtrue) +
+            Number(item.searchfals) +
+            Number(item.count_duplicates)
+          }}</v-chip>
+        </template>
+        <template v-slot:item.count_duplicates="{ item }">
+          <a :href="`../duplicates_batefile/?id=${item.id}`">
+            <v-chip color="warning" text-color="white">
+              {{ item.count_duplicates }}
+            </v-chip></a
+          >
+        </template>
+        <template v-slot:item.insertDate="{ item }">
+          {{ new Date(item.insertDate).toLocaleDateString() }}
+        </template>
+        <!-- <template v-slot:item.user_id="{ item }">
+          <p v-if="user?.MID.id === '01'">{{ item.user_id }}</p>
+        </template> -->
+        <template v-slot:item.index="{ index, item }">
+          <p>{{ item.index }}</p>
+        </template>
+        <template v-slot:item.searchtrue="{ item }">
+          <a :href="`../saerchtrue?id=${item.id}`">
+            <v-chip color="success" text-color="white">{{
+              item.searchtrue
+            }}</v-chip></a
+          >
+        </template>
+        <template v-slot:item.searchfals="{ item }">
+          <a :href="`../fals?id=${item.id}`">
+            <v-chip color="error" text-color="white">{{
+              item.searchfals
+            }}</v-chip>
+          </a>
+        </template>
+        <template v-slot:header.user_id style="color: green">
+          <p v-if="user?.MID.id === '01'">ລະຫັດສະມາຊິກ</p>
+        </template>
+      </v-data-table>
+    </div>
+  </div>
+</template>
