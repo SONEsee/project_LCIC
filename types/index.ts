@@ -13,6 +13,7 @@ import * as UserDataResponse from './user'
 import * as ValidateResponse from './validate'
 import * as MemberinfoModel from './meberinfo'
 import * as LochalUserData from './location'
+import * as InVestorInfoModels from './investorinfo'
 export{
     DuplicatesFalse,
     DataModel,
@@ -27,6 +28,7 @@ export{
     UserDataResponse,
     ValidateResponse,
     MemberinfoModel,
-    LochalUserData
+    LochalUserData,
+    InVestorInfoModels,
 
 }
