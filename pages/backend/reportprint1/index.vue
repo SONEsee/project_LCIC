@@ -619,7 +619,7 @@ const mapdatInfo1 = (memberinfo:string)=>{
     border:'1px #2979FF solid'
     
   }">
-<pre>{{ investorData }}</pre>
+
   <!-- <pre>{{ enterpriseInfo }}</pre> -->
   <!-- <pre>{{ search_history }}</pre> -->
    <!-- <pre>{{ loan_detail_active }}</pre> -->
