@@ -35,7 +35,7 @@ export function useMemberInfo() {
     return foundItem ? `${foundItem.bnk_code}-${foundItem.code}-${foundItem.nameL}` : membercode;
   };
 
-  // ຟັງຊັ່ນເພີ່ມເຕີມ
+
   const getMemberName = (membercode: string): string => {
     if (!membercode || !Array.isArray(dataMemberInfo.value)) {
       return "-";

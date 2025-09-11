@@ -264,7 +264,7 @@ const getDisplayText = (item: any) => {
     <!-- <pre>{{ dataMemberInfon }}</pre> -->
     <v-col>
       <v-row>
-        <v-col cols="12" md="5">
+        <v-col cols="12" md="5" v-if="user?.MID.id !== '01'">
           <v-file-input
             type="file"
             accept=".json"
@@ -274,10 +274,10 @@ const getDisplayText = (item: any) => {
             width="100%"
           />
         </v-col>
-        <v-col cols="12" md="1">
+        <v-col cols="12" md="1" v-if="user?.MID.id !== '01'">
           <v-btn @click="uploadFile" class="bg-primary">ອັບໂຫຼດ</v-btn>
         </v-col>
-        <v-col cols="12" md="2"> </v-col>
+        <v-col cols="12" md="2" v-if="user?.MID.id !== '01'"> </v-col>
         <v-col cols="12" md="4">
           <div v-if="user?.MID.id === '01'" class="mb-4">
             <v-autocomplete
@@ -313,6 +313,40 @@ const getDisplayText = (item: any) => {
         items-per-page="10"
         :headers="header"
       >
+        <!-- const header = ref([
+  { title: "ລຳດັບ", value: "id" },
+  { title: "ລະຫັດສະມາຊິກ", value: "user_id" },
+  { title: "ຊື່ຟາຍ", value: "fileName" },
+  { title: "ຈຳນວນຄົ້ນຫາທັງໝົດ", value: "total" },
+  { title: "ຄົ້ນຫາພົບ", value: "searchtrue" },
+  { title: "ຂໍ້ມູນສໍ້າກັນ", value: "count_duplicates" },
+  { title: "ຄົ້ນຫາບໍ່ພົບ", value: "searchfals" },
+  { title: "ມື້ສົ່ງ", value: "insertDate" },
+]); -->
+        <template v-slot:header.id="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.user_id="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.fileName="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.total="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.searchtrue="{ column }">
+          <b style="color: green">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.searchfals="{ column }">
+          <b style="color: red">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.count_duplicates="{ column }">
+          <b style="color: orange">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.insertDate="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
         <template v-slot:item.user_id="{ item }">
           {{ mapMemberInfo(item.user_id) }}
         </template>
@@ -324,10 +358,14 @@ const getDisplayText = (item: any) => {
           }}</v-chip>
         </template>
         <template v-slot:item.count_duplicates="{ item }">
-          <a :href="`../duplicates_batefile/?id=${item.id}`">
-            <v-chip color="warning" text-color="white">
-              {{ item.count_duplicates }}
-            </v-chip></a
+          <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການຄົ້ນຫາທີ່ຂໍ້ມູນສໍ້າກັນ"
+            ><template v-slot:activator="{ props }">
+              <a :href="`../duplicates_batefile/?id=${item.id}`">
+                <v-chip color="warning" text-color="white" v-bind="props">
+                  {{ item.count_duplicates }}
+                </v-chip></a
+              ></template
+            ></v-tooltip
           >
         </template>
         <template v-slot:item.insertDate="{ item }">
@@ -340,22 +378,30 @@ const getDisplayText = (item: any) => {
           <p>{{ item.index }}</p>
         </template>
         <template v-slot:item.searchtrue="{ item }">
-          <a :href="`../saerchtrue?id=${item.id}`">
-            <v-chip color="success" text-color="white">{{
-              item.searchtrue
-            }}</v-chip></a
+          <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການທີ່ຄົ້ນຫາພົບ">
+            <template v-slot:activator="{ props }">
+              <a :href="`../saerchtrue?id=${item.id}`">
+                <v-chip color="success" text-color="white" v-bind="props">{{
+                  item.searchtrue
+                }}</v-chip></a
+              ></template
+            ></v-tooltip
           >
         </template>
         <template v-slot:item.searchfals="{ item }">
-          <a :href="`../fals?id=${item.id}`">
-            <v-chip color="error" text-color="white">{{
-              item.searchfals
-            }}</v-chip>
-          </a>
+          <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການທີ່ຄົ້ນບໍ່ພົບ ">
+            <template v-slot:activator="{ props }">
+              <a :href="`../fals?id=${item.id}`">
+                <v-chip color="error" text-color="white" v-bind="props">{{
+                  item.searchfals
+                }}</v-chip>
+              </a>
+            </template>
+          </v-tooltip>
         </template>
-        <template v-slot:header.user_id style="color: green">
+        <!-- <template v-slot:header.user_id style="color: green">
           <p v-if="user?.MID.id === '01'">ລະຫັດສະມາຊິກ</p>
-        </template>
+        </template> -->
       </v-data-table>
     </div>
   </div>

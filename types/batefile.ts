@@ -77,8 +77,6 @@ export enum UserID {
     The02 = "02",
 }
 
-// Converts JSON strings to/from your types
-// and asserts the results of JSON.parse at runtime
 export class Convert {
     public static toJSONRespons(json: string): JSONRespons[] {
         return cast(JSON.parse(json), a(r("JSONRespons")));

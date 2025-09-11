@@ -713,7 +713,7 @@ const mapdatInfo1 = (memberinfo:string)=>{
     </v-col>
 
 
-<p><b>- ຂໍ້ມູນປະຫວັດການເຂົ້າຄົ້ນຫາ</b></p>
+<p><b>- ຂໍ້ມູນປະຫວັດການເຂົ້າຄົ້ນຫາ: {{ search_history.length }} ຄັ້ງ</b></p>
 <div
 class="rounded-lg ml-2 mb-1 mr-2"
  :style="{
@@ -750,7 +750,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
 
 
     <v-col cols="12" class="loan-summary-section">
-  <p><b>- ລວມວົງເງິນກູ້ທີ່ເຄື່ອນໄຫວທັງໝົດ</b></p>
+  <p><b>- ລວມວົງເງິນກູ້ທີ່ເຄື່ອນໄຫວທັງໝົດ: {{ tableData.length }} ບວ້ງ</b></p>
   <v-table class="mt-5 elevation-1 v-data-table1 rouded-lg"  :style="{
     border:'1px #2979FF solid'
   }" density="compact">
@@ -865,6 +865,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
                        <p> <b>ມື້ໝົດສັນຍາ: </b>{{ item.lon_expiry_date }}</p>
                        <p> <b>ມື້ໝົດຂອງມື້ຕໍ່ສັນຍາ:</b> {{ dayjs(item.lon_ext_date).format("DD-MM-YYYY") }}</p>
                         <p> <b>ໄລຍະການກູ້ຢືມ:</b> {{ item.lon_term }}</p>
+                        <p><b>ຈຸດປະສົງການກູ້ຢືມ:</b> {{ item.lon_purpose_code }}</p>
                         <p><b>ເຫດຜົນຫການສິ້ນສຸດໜີ້:</b> -- </p>
 
                       </v-col>

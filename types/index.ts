@@ -15,6 +15,7 @@ import * as MemberinfoModel from './meberinfo'
 import * as LochalUserData from './location'
 import * as InVestorInfoModels from './investorinfo'
 import * as BafileModel from './batefile'
+import * as UploadFile from './uploadfile'
 export{
     DuplicatesFalse,
     DataModel,
@@ -32,5 +33,6 @@ export{
     LochalUserData,
     InVestorInfoModels,
     BafileModel,
+    UploadFile,
 
 }

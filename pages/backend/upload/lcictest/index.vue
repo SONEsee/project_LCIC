@@ -1,6 +1,55 @@
 <script setup lang="ts">
+import { ref, onMounted, watch } from "vue";
 import lcic from "@/pages/insertcollaterals.vue";
-const tab = ref(null);
+
+const tab = ref<any>(null);
+const TAB_STORAGE_KEY = "selected_tab_storage";
+
+
+const saveTabToStorage = (selectedTab: string) => {
+  try {
+    localStorage.setItem(TAB_STORAGE_KEY, selectedTab);
+    console.log("Saved tab to storage:", selectedTab);
+  } catch (error) {
+    console.error("Failed to save tab to localStorage:", error);
+  }
+};
+
+
+const loadTabFromStorage = () => {
+  try {
+    const savedTab = localStorage.getItem(TAB_STORAGE_KEY);
+    if (savedTab) {
+      tab.value = savedTab;
+      console.log("Loaded tab from storage:", savedTab);
+    } else {
+    
+      tab.value = "one";
+    }
+  } catch (error) {
+    console.error("Failed to load tab from localStorage:", error);
+   
+    tab.value = "one";
+  }
+};
+
+
+const clearTabStorage = () => {
+  try {
+    localStorage.removeItem(TAB_STORAGE_KEY);
+    console.log("Tab storage cleared");
+  } catch (error) {
+    console.error("Failed to clear tab storage:", error);
+  }
+};
+
+
+watch(tab, (newTab) => {
+  if (newTab) {
+    saveTabToStorage(newTab);
+  }
+});
+
 definePageMeta({
   layout: "backend",
 });
@@ -18,6 +67,14 @@ useHead({
     },
   ],
 });
+
+// ເມື່ອໂຫຼດໜ້າ ໃຫ້ໂຫຼດແຖບທີ່ເກັບໄວ້
+onMounted(() => {
+  loadTabFromStorage();
+});
+
+// ຖ້າຕ້ອງການໃຊ້ clearTabStorage ໃນທີ່ອື່ນ ສາມາດເອົາຟັງຊັນນີ້ໄປໃຊ້ໄດ້
+// clearTabStorage(); // ເອີ້ນໃນ logout function
 </script>
 
 <template>
