@@ -34,14 +34,7 @@ const loadTabFromStorage = () => {
 };
 
 
-const clearTabStorage = () => {
-  try {
-    localStorage.removeItem(TAB_STORAGE_KEY);
-    console.log("Tab storage cleared");
-  } catch (error) {
-    console.error("Failed to clear tab storage:", error);
-  }
-};
+
 
 
 watch(tab, (newTab) => {
@@ -68,13 +61,12 @@ useHead({
   ],
 });
 
-// ເມື່ອໂຫຼດໜ້າ ໃຫ້ໂຫຼດແຖບທີ່ເກັບໄວ້
+
 onMounted(() => {
   loadTabFromStorage();
 });
 
-// ຖ້າຕ້ອງການໃຊ້ clearTabStorage ໃນທີ່ອື່ນ ສາມາດເອົາຟັງຊັນນີ້ໄປໃຊ້ໄດ້
-// clearTabStorage(); // ເອີ້ນໃນ logout function
+
 </script>
 
 <template>
