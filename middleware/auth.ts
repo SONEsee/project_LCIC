@@ -8,13 +8,23 @@
 //   }
 // });
 export default defineNuxtRouteMiddleware((to, from) => {
-    const localStorageToken = localStorage.getItem("access_token");
-    const cookieToken = useCookie("access_token");
+  const cookieToken = useCookie("access_token");
   
-    if (!localStorageToken && !cookieToken.value) {
-      return navigateTo("/"); 
+  // ກວດສອບ cookie ກ່ອນ (ເຮັດວຽກໄດ້ທັງ server ແລະ client)
+  if (!cookieToken.value) {
+    // ຖ້າເປັນ client-side ກໍ່ກວດສອບ localStorage ເພີ່ມ
+    if (process.client) {
+      const localStorageToken = localStorage.getItem("access_token");
+      if (!localStorageToken) {
+        return navigateTo("/");
+      }
+      // ຖ້າມີໃນ localStorage ແຕ່ບໍ່ມີໃນ cookie ໃຫ້ sync
+      cookieToken.value = localStorageToken;
+    } else {
+      return navigateTo("/");
     }
-  });
+  }
+});
   
 // export default defineNuxtRouteMiddleware((to, from) => {
 //     const token = localStorage.getItem('access_token');

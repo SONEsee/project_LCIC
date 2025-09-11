@@ -11,7 +11,20 @@ import { useUploadFile } from "~/stores/uploadfile";
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 const memberinfoStore = MemberStore();
 const UplodafileStore = useUploadFile();
-
+const getUserStorageKey = (baseKey: string) => {
+  try {
+    const userData = localStorage.getItem("user_data");
+    if (userData) {
+      const user = JSON.parse(userData);
+      const userId = user.MID?.id || 'unknown';
+      return `${baseKey}_user_${userId}`;
+    }
+    return baseKey; // fallback
+  } catch (error) {
+    console.error("Failed to get user ID for storage key:", error);
+    return baseKey;
+  }
+};
 const period = computed(()=>{
   const data = UplodafileStore.respose_uploadfile_b;
   let mapData = [];
@@ -169,6 +182,13 @@ const headers = computed(() => {
 
 const router = useRouter();
 const config = useRuntimeConfig();
+
+// ປັບປຸງສ່ວນ localStorage functions ໃນໂຄດ Bank Component
+
+// ສ້າງ key ສະເພາະສຳລັບແຕ່ລະຜູ້ໃຊ້
+
+
+// ປັບປຸງຟັງຊັນ saveFiltersToStorage
 const saveFiltersToStorage = () => {
   try {
     const filtersToSave = {
@@ -178,21 +198,39 @@ const saveFiltersToStorage = () => {
       status: filters.value.status || "",
     };
     
-    // ເກັບສະເພາະຟິວເຕີ້ທີ່ມີຄ່າ
     const hasActiveFilters = Object.values(filtersToSave).some(value => value !== "");
+    const storageKey = getUserStorageKey("bank_filters_data");
     
     if (hasActiveFilters) {
-      localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(filtersToSave));
+      localStorage.setItem(storageKey, JSON.stringify(filtersToSave));
+      // ເກັບໃນ sessionStorage ດ້ວຍເພື່ອຄວາມໄວ
+      sessionStorage.setItem(storageKey, JSON.stringify(filtersToSave));
     } else {
-      localStorage.removeItem(FILTER_STORAGE_KEY);
+      localStorage.removeItem(storageKey);
+      sessionStorage.removeItem(storageKey);
     }
   } catch (error) {
     console.error("Failed to save filters to localStorage:", error);
   }
 };
+
+// ປັບປຸງຟັງຊັນ loadFiltersFromStorage
 const loadFiltersFromStorage = () => {
   try {
-    const savedFilters = localStorage.getItem(FILTER_STORAGE_KEY);
+    const storageKey = getUserStorageKey("bank_filters_data");
+    
+    // ພະຍາຍາມໂຫຼດຈາກ sessionStorage ກ່ອນ (ໄວກວ່າ)
+    let savedFilters = sessionStorage.getItem(storageKey);
+    
+    // ຖ້າບໍ່ມີໃນ sessionStorage ໃຫ້ໂຫຼດຈາກ localStorage
+    if (!savedFilters) {
+      savedFilters = localStorage.getItem(storageKey);
+      // ຖ້າພົບໃນ localStorage ໃຫ້ copy ໄປ sessionStorage
+      if (savedFilters) {
+        sessionStorage.setItem(storageKey, savedFilters);
+      }
+    }
+    
     if (savedFilters) {
       const parsedFilters = JSON.parse(savedFilters);
       
@@ -204,7 +242,7 @@ const loadFiltersFromStorage = () => {
         status: parsedFilters.status || "",
       };
       
-      console.log("Loaded filters from storage:", filters.value);
+      console.log("Loaded bank filters from storage:", filters.value);
     }
   } catch (error) {
     console.error("Failed to load filters from localStorage:", error);
@@ -257,16 +295,17 @@ const clearFilter = () => {
     status: "",
   };
   
-  // ລືຂໍ້ມູນຈາກ localStorage
+  // ລືຂໍ້ມູນຈາກ localStorage ແລະ sessionStorage
   try {
-    localStorage.removeItem(FILTER_STORAGE_KEY);
+    const storageKey = getUserStorageKey("bank_filters_data");
+    localStorage.removeItem(storageKey);
+    sessionStorage.removeItem(storageKey);
   } catch (error) {
     console.error("Failed to remove filters from localStorage:", error);
   }
   
   fetchFilteredData();
 };
-
 const isUserUploading = (user_id: string) => {
   return items.value.some(
     (item) =>
@@ -350,10 +389,48 @@ const fetchData = async () => {
 };
 const clearFiltersOnLogout = () => {
   try {
-    localStorage.removeItem(FILTER_STORAGE_KEY);
-    console.log("Filters cleared on logout");
+    const storageKey = getUserStorageKey("bank_filters_data");
+    localStorage.removeItem(storageKey);
+    sessionStorage.removeItem(storageKey);
+    console.log("Bank filters cleared on logout");
   } catch (error) {
-    console.error("Failed to clear filters on logout:", error);
+    console.error("Failed to clear bank filters on logout:", error);
+  }
+};
+const validateUserStorage = () => {
+  try {
+    const currentUserData = localStorage.getItem("user_data");
+    const lastUserData = localStorage.getItem("last_logged_user_bank");
+    
+    if (currentUserData !== lastUserData) {
+      console.log("User changed, clearing old bank filters storage...");
+      
+      // ລືຂໍ້ມູນ filters ທີ່ກ່ຽວຂ້ອງກັບ users ອື່ນ
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes('bank_filters_data_user_')) {
+          const currentUserKey = getUserStorageKey("bank_filters_data");
+          if (key !== currentUserKey) {
+            localStorage.removeItem(key);
+          }
+        }
+      });
+      
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.includes('bank_filters_data_user_')) {
+          const currentUserKey = getUserStorageKey("bank_filters_data");
+          if (key !== currentUserKey) {
+            sessionStorage.removeItem(key);
+          }
+        }
+      });
+      
+      // ເກັບຂໍ້ມູນ user ປັດຈຸບັນ
+      if (currentUserData) {
+        localStorage.setItem("last_logged_user_bank", currentUserData);
+      }
+    }
+  } catch (error) {
+    console.error("Failed to validate user storage:", error);
   }
 };
 const fetchFilteredData = async () => {
@@ -676,10 +753,13 @@ onMounted(async () => {
       }
     }
 
-   
+    // ກວດສອບການປ່ຽນ user
+    validateUserStorage();
+    
+    // ໂຫຼດຟິວເຕີ້ທັງໝົດຈາກ localStorage
     loadFiltersFromStorage();
 
-  
+    // ຖ້າມີຟິວເຕີ້ທີ່ເກັບໄວ້ ໃຫ້ fetch ຂໍ້ມູນດ້ວຍຟິວເຕີ້
     const hasActiveFilters = Object.values(filters.value).some(value => value !== "");
     if (hasActiveFilters) {
       await fetchFilteredData();
@@ -691,6 +771,7 @@ onMounted(async () => {
     console.error("Error in onMounted:", error);
   }
 });
+
 
 
 watch(

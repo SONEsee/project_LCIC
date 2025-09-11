@@ -3,40 +3,118 @@ import { ref, onMounted, watch } from "vue";
 import lcic from "@/pages/insertcollaterals.vue";
 
 const tab = ref<any>(null);
-const TAB_STORAGE_KEY = "selected_tab_storage";
 
-
-const saveTabToStorage = (selectedTab: string) => {
+// ສ້າງ key ສະເພາະສຳລັບແຕ່ລະຜູ້ໃຊ້
+const getUserStorageKey = (baseKey: string) => {
   try {
-    localStorage.setItem(TAB_STORAGE_KEY, selectedTab);
-    console.log("Saved tab to storage:", selectedTab);
+    const userData = localStorage.getItem("user_data");
+    if (userData) {
+      const user = JSON.parse(userData);
+      const userId = user.MID?.id || 'unknown';
+      return `${baseKey}_user_${userId}`;
+    }
+    return baseKey; // fallback
   } catch (error) {
-    console.error("Failed to save tab to localStorage:", error);
+    console.error("Failed to get user ID for storage key:", error);
+    return baseKey;
   }
 };
 
+// ຟັງຊັນເກັບແຖບທີ່ເລືອກ
+const saveTabToStorage = (selectedTab: string) => {
+  try {
+    const storageKey = getUserStorageKey("selected_tab_storage");
+    localStorage.setItem(storageKey, selectedTab);
+    // ເກັບໃນ sessionStorage ດ້ວຍເພື່ອຄວາມໄວ
+    sessionStorage.setItem(storageKey, selectedTab);
+    console.log("Saved tab to storage:", selectedTab, "with key:", storageKey);
+  } catch (error) {
+    console.error("Failed to save tab to storage:", error);
+  }
+};
 
+// ຟັງຊັນໂຫຼດແຖບທີ່ເກັບໄວ້
 const loadTabFromStorage = () => {
   try {
-    const savedTab = localStorage.getItem(TAB_STORAGE_KEY);
+    const storageKey = getUserStorageKey("selected_tab_storage");
+    
+    // ພະຍາຍາມໂຫຼດຈາກ sessionStorage ກ່ອນ (ໄວກວ່າ)
+    let savedTab = sessionStorage.getItem(storageKey);
+    
+    // ຖ້າບໍ່ມີໃນ sessionStorage ໃຫ້ໂຫຼດຈາກ localStorage
+    if (!savedTab) {
+      savedTab = localStorage.getItem(storageKey);
+      // ຖ້າພົບໃນ localStorage ໃຫ້ copy ໄປ sessionStorage
+      if (savedTab) {
+        sessionStorage.setItem(storageKey, savedTab);
+      }
+    }
+    
     if (savedTab) {
       tab.value = savedTab;
-      console.log("Loaded tab from storage:", savedTab);
+      console.log("Loaded tab from storage:", savedTab, "with key:", storageKey);
     } else {
-    
+      // ຖ້າບໍ່ມີການເກັບໄວ້ ໃຫ້ເລີ່ມຕົ້ນທີ່ແຖບທຳອິດ
       tab.value = "one";
     }
   } catch (error) {
     console.error("Failed to load tab from localStorage:", error);
-   
+    // ຖ້າມີຜິດພາດ ໃຫ້ເລີ່ມຕົ້ນທີ່ແຖບທຳອິດ
     tab.value = "one";
   }
 };
 
+// ຟັງຊັນລືແຖບທີ່ເກັບໄວ້ (ສຳລັບເວລາ logout)
+const clearTabStorage = () => {
+  try {
+    const storageKey = getUserStorageKey("selected_tab_storage");
+    localStorage.removeItem(storageKey);
+    sessionStorage.removeItem(storageKey);
+    console.log("Tab storage cleared for key:", storageKey);
+  } catch (error) {
+    console.error("Failed to clear tab storage:", error);
+  }
+};
 
+// ຟັງຊັນກວດສອບແລະລື storage ເກົ່າຖ້າ user ປ່ຽນ
+const validateUserStorage = () => {
+  try {
+    const currentUserData = localStorage.getItem("user_data");
+    const lastUserData = localStorage.getItem("last_logged_user_tab");
+    
+    if (currentUserData !== lastUserData) {
+      console.log("User changed, clearing old tab storage...");
+      
+      // ລືຂໍ້ມູນ tab ທີ່ກ່ຽວຂ້ອງກັບ users ອື່ນ
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes('selected_tab_storage_user_')) {
+          const currentUserKey = getUserStorageKey("selected_tab_storage");
+          if (key !== currentUserKey) {
+            localStorage.removeItem(key);
+          }
+        }
+      });
+      
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.includes('selected_tab_storage_user_')) {
+          const currentUserKey = getUserStorageKey("selected_tab_storage");
+          if (key !== currentUserKey) {
+            sessionStorage.removeItem(key);
+          }
+        }
+      });
+      
+      // ເກັບຂໍ້ມູນ user ປັດຈຸບັນ
+      if (currentUserData) {
+        localStorage.setItem("last_logged_user_tab", currentUserData);
+      }
+    }
+  } catch (error) {
+    console.error("Failed to validate user storage:", error);
+  }
+};
 
-
-
+// Watcher ສຳລັບຕິດຕາມການປ່ຽນແປງແຖບ
 watch(tab, (newTab) => {
   if (newTab) {
     saveTabToStorage(newTab);
@@ -61,12 +139,11 @@ useHead({
   ],
 });
 
-
+// ເມື່ອໂຫຼດໜ້າ ໃຫ້ກວດສອບ user ແລະໂຫຼດແຖບທີ່ເກັບໄວ້
 onMounted(() => {
+  validateUserStorage();
   loadTabFromStorage();
 });
-
-
 </script>
 
 <template>
