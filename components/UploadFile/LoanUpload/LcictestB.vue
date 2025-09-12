@@ -183,12 +183,6 @@ const headers = computed(() => {
 const router = useRouter();
 const config = useRuntimeConfig();
 
-// ປັບປຸງສ່ວນ localStorage functions ໃນໂຄດ Bank Component
-
-// ສ້າງ key ສະເພາະສຳລັບແຕ່ລະຜູ້ໃຊ້
-
-
-// ປັບປຸງຟັງຊັນ saveFiltersToStorage
 const saveFiltersToStorage = () => {
   try {
     const filtersToSave = {
@@ -203,7 +197,7 @@ const saveFiltersToStorage = () => {
     
     if (hasActiveFilters) {
       localStorage.setItem(storageKey, JSON.stringify(filtersToSave));
-      // ເກັບໃນ sessionStorage ດ້ວຍເພື່ອຄວາມໄວ
+      
       sessionStorage.setItem(storageKey, JSON.stringify(filtersToSave));
     } else {
       localStorage.removeItem(storageKey);
@@ -214,18 +208,18 @@ const saveFiltersToStorage = () => {
   }
 };
 
-// ປັບປຸງຟັງຊັນ loadFiltersFromStorage
+
 const loadFiltersFromStorage = () => {
   try {
     const storageKey = getUserStorageKey("bank_filters_data");
     
-    // ພະຍາຍາມໂຫຼດຈາກ sessionStorage ກ່ອນ (ໄວກວ່າ)
+    
     let savedFilters = sessionStorage.getItem(storageKey);
     
-    // ຖ້າບໍ່ມີໃນ sessionStorage ໃຫ້ໂຫຼດຈາກ localStorage
+   
     if (!savedFilters) {
       savedFilters = localStorage.getItem(storageKey);
-      // ຖ້າພົບໃນ localStorage ໃຫ້ copy ໄປ sessionStorage
+      
       if (savedFilters) {
         sessionStorage.setItem(storageKey, savedFilters);
       }
@@ -234,7 +228,7 @@ const loadFiltersFromStorage = () => {
     if (savedFilters) {
       const parsedFilters = JSON.parse(savedFilters);
       
-      // ກຳນົດຄ່າຟິວເຕີ້ທັງໝົດ
+    
       filters.value = {
         user_id: parsedFilters.user_id || "",
         period: parsedFilters.period || "",
@@ -286,7 +280,7 @@ const loadFilterFromStorage = () => {
   }
 };
 
-// ຟັງຊັນເຄຍການຟິວເຕີ້
+
 const clearFilter = () => {
   filters.value = {
     user_id: "",
@@ -295,7 +289,7 @@ const clearFilter = () => {
     status: "",
   };
   
-  // ລືຂໍ້ມູນຈາກ localStorage ແລະ sessionStorage
+ 
   try {
     const storageKey = getUserStorageKey("bank_filters_data");
     localStorage.removeItem(storageKey);
@@ -405,7 +399,7 @@ const validateUserStorage = () => {
     if (currentUserData !== lastUserData) {
       console.log("User changed, clearing old bank filters storage...");
       
-      // ລືຂໍ້ມູນ filters ທີ່ກ່ຽວຂ້ອງກັບ users ອື່ນ
+    
       Object.keys(localStorage).forEach(key => {
         if (key.includes('bank_filters_data_user_')) {
           const currentUserKey = getUserStorageKey("bank_filters_data");
@@ -424,7 +418,7 @@ const validateUserStorage = () => {
         }
       });
       
-      // ເກັບຂໍ້ມູນ user ປັດຈຸບັນ
+  
       if (currentUserData) {
         localStorage.setItem("last_logged_user_bank", currentUserData);
       }
@@ -592,8 +586,10 @@ const unloadUpload = async (item: FileItem) => {
     const updateResponse = await axios.post(
       `${config.public.strapi.url}api/api/unload_statussubmit/`,
       `FID=${item.FID}`
+     
     );
-
+    await fetchFilteredData();
+   await fetchData();
     if (updateResponse.data.status !== "success") {
       item.statussubmit = "1";
       return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
@@ -652,11 +648,11 @@ const confirmAction = async (item: FileItem) => {
     return;
   }
 
-  item.statussubmit = "3";
   try {
     const updateResponse = await axios.post(
       `${config.public.strapi.url}api/api/update-statussubmit/`,
       `FID=${item.FID}`
+
     );
 
     if (updateResponse.data.status !== "success") {

@@ -19,7 +19,7 @@ const getUserStorageKey = (baseKey: string) => {
     const userData = localStorage.getItem("user_data");
     if (userData) {
       const user = JSON.parse(userData);
-      const userId = user.MID?.id || 'unknown';
+      const userId = user.MID?.id || "unknown";
       return `${baseKey}_user_${userId}`;
     }
     return baseKey; // fallback
@@ -28,25 +28,25 @@ const getUserStorageKey = (baseKey: string) => {
     return baseKey;
   }
 };
-const period = computed(()=>{
+const period = computed(() => {
   const data = UplodafileStore.respose_uploadfile_c;
   let mapData = [];
-  if(Array.isArray(data)){
+  if (Array.isArray(data)) {
     mapData = data;
-  }else if(data && typeof data ==="object"){
-    mapData = [data]
-  }else{
-    return []
+  } else if (data && typeof data === "object") {
+    mapData = [data];
+  } else {
+    return [];
   }
   const uniquePeriods = new Map();
 
-  mapData.forEach((item)=>{
-    if(item.period){
+  mapData.forEach((item) => {
+    if (item.period) {
       uniquePeriods.set(item.period, item);
     }
   });
   return Array.from(uniquePeriods.values());
-})
+});
 
 const dataMemberInfon = computed(() => {
   const data = memberinfoStore.respons_data_query;
@@ -184,7 +184,6 @@ const headers = computed(() => {
 const router = useRouter();
 const config = useRuntimeConfig();
 
-
 const FILTER_STORAGE_KEY = "credit_filters_data";
 const saveFiltersToStorage = () => {
   try {
@@ -194,10 +193,12 @@ const saveFiltersToStorage = () => {
       file_type: filters.value.file_type || "",
       status: filters.value.status || "",
     };
-    
-    const hasActiveFilters = Object.values(filtersToSave).some(value => value !== "");
+
+    const hasActiveFilters = Object.values(filtersToSave).some(
+      (value) => value !== ""
+    );
     const storageKey = getUserStorageKey("credit_filters_data");
-    
+
     if (hasActiveFilters) {
       localStorage.setItem(storageKey, JSON.stringify(filtersToSave));
       // ເກັບໃນ sessionStorage ດ້ວຍເພື່ອຄວາມໄວ
@@ -211,14 +212,13 @@ const saveFiltersToStorage = () => {
   }
 };
 
-
 const loadFiltersFromStorage = () => {
   try {
     const storageKey = getUserStorageKey("credit_filters_data");
-    
+
     // ພະຍາຍາມໂຫຼດຈາກ sessionStorage ກ່ອນ (ໄວກວ່າ)
     let savedFilters = sessionStorage.getItem(storageKey);
-    
+
     // ຖ້າບໍ່ມີໃນ sessionStorage ໃຫ້ໂຫຼດຈາກ localStorage
     if (!savedFilters) {
       savedFilters = localStorage.getItem(storageKey);
@@ -227,10 +227,10 @@ const loadFiltersFromStorage = () => {
         sessionStorage.setItem(storageKey, savedFilters);
       }
     }
-    
+
     if (savedFilters) {
       const parsedFilters = JSON.parse(savedFilters);
-      
+
       // ກຳນົດຄ່າຟິວເຕີ້ທັງໝົດ
       filters.value = {
         user_id: parsedFilters.user_id || "",
@@ -238,7 +238,7 @@ const loadFiltersFromStorage = () => {
         file_type: parsedFilters.file_type || "",
         status: parsedFilters.status || "",
       };
-      
+
       console.log("Loaded credit filters from storage:", filters.value);
     }
   } catch (error) {
@@ -250,7 +250,6 @@ const filteredItems = computed(() =>
     item.user_id.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 );
-
 
 const saveFilterToStorage = () => {
   try {
@@ -264,7 +263,6 @@ const saveFilterToStorage = () => {
   }
 };
 
-
 const loadFilterFromStorage = () => {
   try {
     const savedFilter = localStorage.getItem(FILTER_STORAGE_KEY);
@@ -276,7 +274,6 @@ const loadFilterFromStorage = () => {
   }
 };
 
-
 const clearFilter = () => {
   filters.value = {
     user_id: "",
@@ -284,8 +281,7 @@ const clearFilter = () => {
     file_type: "",
     status: "",
   };
-  
- 
+
   try {
     const storageKey = getUserStorageKey("credit_filters_data");
     localStorage.removeItem(storageKey);
@@ -293,7 +289,7 @@ const clearFilter = () => {
   } catch (error) {
     console.error("Failed to remove credit filters from localStorage:", error);
   }
-  
+
   fetchFilteredData();
 };
 
@@ -371,7 +367,6 @@ const fetchDataByUserID = async (userID: string) => {
     }
 
     sortItemsByUploadDate();
-    
   } catch (error) {
     console.error("Failed to fetch data:", error);
     Swal.fire({
@@ -397,29 +392,29 @@ const validateUserStorage = () => {
   try {
     const currentUserData = localStorage.getItem("user_data");
     const lastUserData = localStorage.getItem("last_logged_user_credit");
-    
+
     if (currentUserData !== lastUserData) {
       console.log("User changed, clearing old credit filters storage...");
-      
+
       // ລືຂໍ້ມູນ filters ທີ່ກ່ຽວຂ້ອງກັບ users ອື່ນ
-      Object.keys(localStorage).forEach(key => {
-        if (key.includes('credit_filters_data_user_')) {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.includes("credit_filters_data_user_")) {
           const currentUserKey = getUserStorageKey("credit_filters_data");
           if (key !== currentUserKey) {
             localStorage.removeItem(key);
           }
         }
       });
-      
-      Object.keys(sessionStorage).forEach(key => {
-        if (key.includes('credit_filters_data_user_')) {
+
+      Object.keys(sessionStorage).forEach((key) => {
+        if (key.includes("credit_filters_data_user_")) {
           const currentUserKey = getUserStorageKey("credit_filters_data");
           if (key !== currentUserKey) {
             sessionStorage.removeItem(key);
           }
         }
       });
-      
+
       // ເກັບຂໍ້ມູນ user ປັດຈຸບັນ
       if (currentUserData) {
         localStorage.setItem("last_logged_user_credit", currentUserData);
@@ -433,8 +428,7 @@ const fetchFilteredData = async () => {
   if (user.value?.MID?.id) {
     const paddedMID = user.value.MID.id.toString().padStart(2, "0");
     await fetchDataByUserID(paddedMID);
-    
-    
+
     saveFiltersToStorage();
   }
 };
@@ -539,7 +533,7 @@ const confirmAction = async (item: any) => {
       `${config.public.strapi.url}api/api/update-statussubmitc/`,
       `CID=${item.CID}`
     );
-
+    await fetchFilteredData();
     if (response1.data.status !== "success") {
       item.statussubmit = "1";
       return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
@@ -627,7 +621,8 @@ const uploadDataButton = async (item: any) => {
       `${config.public.strapi.url}api/api/unload-statussubmitc/`,
       `CID=${item.CID}`
     );
-
+    fetchDataByUserID;
+    viewDetails;
     if (response1.data.status !== "success") {
       return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
     }
@@ -713,7 +708,6 @@ const formatFileSize = (fileSize: string | number) => {
   }
 };
 
-
 const statusStats = computed(() => {
   const stats = {
     total: items.value.length,
@@ -734,7 +728,7 @@ onMounted(async () => {
   try {
     UplodafileStore.getDataUplodC();
     memberinfoStore.getMemberInfo();
-    
+
     const userData = localStorage.getItem("user_data");
     console.log("User data:", userData);
 
@@ -745,7 +739,7 @@ onMounted(async () => {
 
         // ກວດສອບການປ່ຽນ user
         validateUserStorage();
-        
+
         // ໂຫຼດຟິວເຕີ້ທັງໝົດຈາກ localStorage ກ່ອນ
         loadFiltersFromStorage();
 
@@ -753,9 +747,11 @@ onMounted(async () => {
         if (MID && MID.id) {
           const paddedMID = MID.id.toString().padStart(2, "0");
           console.log("Padded MID.id:", paddedMID);
-          
+
           // ຖ້າມີຟິວເຕີ້ທີ່ເກັບໄວ້ ໃຫ້ fetch ຂໍ້ມູນດ້ວຍຟິວເຕີ້
-          const hasActiveFilters = Object.values(filters.value).some(value => value !== "");
+          const hasActiveFilters = Object.values(filters.value).some(
+            (value) => value !== ""
+          );
           if (hasActiveFilters) {
             await fetchFilteredData();
           } else {
@@ -770,8 +766,6 @@ onMounted(async () => {
     console.error("Error in onMounted:", error);
   }
 });
-
-
 
 watch(
   () => filters.value,
@@ -863,7 +857,12 @@ watch(
         <v-btn
           @click="clearFilter"
           color="secondary"
-          :disabled="!filters.user_id && !filters.period && !filters.file_type && !filters.status"
+          :disabled="
+            !filters.user_id &&
+            !filters.period &&
+            !filters.file_type &&
+            !filters.status
+          "
         >
           ເຄຍ Filter
         </v-btn>
