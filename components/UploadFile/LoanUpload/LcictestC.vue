@@ -524,7 +524,7 @@ const confirmAction = async (item: any) => {
     return;
   }
 
-  item.statussubmit = "3";
+  item.statussubmit = "0";
   try {
     if (isUserIdProcessing(item.user_id)) {
       Swal.fire({
