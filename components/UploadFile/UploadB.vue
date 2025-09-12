@@ -50,6 +50,7 @@ const displayMemberInfo = (name: any) => {
 
 definePageMeta({
   layout: "backend",
+  middleware: ["auth"],
 });
 
 useHead({
