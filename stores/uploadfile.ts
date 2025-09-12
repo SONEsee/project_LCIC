@@ -30,10 +30,7 @@ export const useUploadFile = defineStore("upload", {
         const token = localStorage.getItem("access_token");
         if (!token) throw new Error("No access token found");
         const res = await axios.get<UploadFile.UploadFileBRespons>(`/api/upload-files2/`,{
-            headers:{
-                 Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
+           
             params:{
                 ...this.filter_data_b.query
             }
@@ -60,10 +57,7 @@ export const useUploadFile = defineStore("upload", {
         const token = localStorage.getItem("access_token");
         if (!token) throw new Error("No access token found");
         const res = await axios.get<UploadFile.UploadFileBRespons>(`/api/upload-files2/`,{
-            headers:{
-                 Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
+          
             params:{
                 ...this.filter_data_b.query
             }
@@ -90,10 +84,7 @@ export const useUploadFile = defineStore("upload", {
         const token = localStorage.getItem("access_token");
         if (!token) throw new Error("No access token found");
         const res = await axios.get<UploadFile.UploadFileCRespons>(`/api/upload-files2/`,{
-            headers:{
-                 Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
+          
             params:{
                 ...this.filter_data_b.query
             }
