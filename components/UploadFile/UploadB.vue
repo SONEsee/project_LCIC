@@ -312,14 +312,16 @@ const uploadFile = async () => {
   formData.append("file", file.value);
   formData.append("title", file.value.name);
 
-  if (user.value) {
-    let userId = user.value.MID.id.toString();
-    if (Number(user.value.MID.id) < 10) {
-      userId = "0" + userId;
-    }
-    formData.append("user_id", userId);
-    console.log("Formatted User ID:", userId);
-  } else {
+if (user.value) {
+  // ແປງເປັນ number ກ່ອນ, ແລ້ວຈຶ່ງ format
+  const userIdNumber = parseInt(user.value.MID.id.toString());
+  const userId = userIdNumber.toString().padStart(2, '0');
+  
+  formData.append("user_id", userId);
+  console.log("Original MID.id:", user.value.MID.id);
+  console.log("Parsed number:", userIdNumber);
+  console.log("Formatted User ID:", userId);
+} else {
     Swal.fire({
       icon: "warning",
       title: "ຂໍ້ມູນຜູ້ໃຊ້ບໍ່ສາມາດສົ່ງໄດ້",
@@ -359,6 +361,12 @@ const uploadFile = async () => {
         icon: "warning",
         title: "ມີຊືຟາຍຊໍ້າກັນ",
         text: "ຊື່ຟາຍນີ້ມີຢູ່ໃນລະບົບແລ້ວ ກາລຸນາກວດຄືນໃໝ່",
+      });
+    }else if (error.response && error.response.status === 405) {
+      Swal.fire({
+        icon: "warning",
+        title: "ຂໍ້ມູນຍອ້ນຫຼັງ",
+        text: "ທ່ານບໍ່ສາມາດອັບຂໍ້ມູນຍອ້ນຫຼັງ ກາລຸນາກວດຄືນໃໝ່",
       });
     } else if (error.response && error.response.status === 406) {
       Swal.fire({
