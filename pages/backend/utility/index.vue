@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 const tab = ref(null);
 
 definePageMeta({
@@ -21,6 +22,8 @@ useHead({
   <v-tabs v-model="tab" fixed-tabs stacked>
     <v-tab value="one">ດາວໂຫຼດ json file</v-tab>
     <v-tab value="two">ອັບໂຫຼດຂໍ້ມູນເຂົ້າ Database</v-tab>
+    <v-tab value="three">ນໍາສົ່ງຂໍ້ມູນ API EDL</v-tab>
+    <v-tab value="four">ນໍາສົ່ງຂໍ້ມູນ API Water</v-tab>
   </v-tabs>
   <v-card-text>
     <v-window v-model="tab">
@@ -29,6 +32,12 @@ useHead({
       </v-window-item>
       <v-window-item value="two">
         <UtilityExportUpload />
+      </v-window-item>
+      <v-window-item value="three">
+        <UtilityUtilityapiUtilityAPIEdl />
+      </v-window-item>
+      <v-window-item value="four">
+        <UtilityUtilityapiUtilityAPIWater />
       </v-window-item>
     </v-window>
   </v-card-text>
