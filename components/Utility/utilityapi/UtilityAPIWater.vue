@@ -8,7 +8,7 @@
             ການຕິດຕາມການອັບໂຫຼດຂໍ້ມູນນ້ຳປະປາ
           </h1>
           
-          
+
           <!-- Controls Section -->
           <div class="controls-section">
             <v-row dense>
@@ -455,7 +455,7 @@
   
     initializing.value = true
     try {
-      const response = await axios.post(`${apiUrl.value}api/water/initialize/`, {
+      const response = await axios.post(`${config.public.strapi.url}api/water/initialize/`, {
         month: selectedMonth.value,
         username: username.value
       }, {
@@ -485,7 +485,7 @@
     uploadResult.value = null
   
     try {
-      const response = await axios.post(`${apiUrl.value}api/water/upload/`, {
+      const response = await axios.post(`${config.public.strapi.url}api/water/upload/`, {
         month: selectedMonth.value,
         username: username.value
         // API token removed - now handled automatically in backend
@@ -547,7 +547,7 @@
   
     loading.value = true
     try {
-      const response = await axios.get(`${apiUrl.value}api/water/tracking/`, {
+      const response = await axios.get(`${config.public.strapi.url}api/water/tracking/`, {
         params: { month: selectedMonth.value },
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`
@@ -577,7 +577,7 @@
     }
     
     try {
-      const response = await axios.get(`${apiUrl.value}api/water/tracking/${currentTracking.value.id}/`, {
+      const response = await axios.get(`${config.public.strapi.url}api/water/tracking/${currentTracking.value.id}/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`
         }

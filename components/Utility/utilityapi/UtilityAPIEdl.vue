@@ -391,7 +391,7 @@
   // Configuration
   const config = useRuntimeConfig()
   const apiUrl = computed(() => config.public.apiUrl || 'http://192.168.45.56:8000/')
-  
+//   ${config.public.strapi.url}
   // Reactive Data
   const username = ref('system')
   const selectedProvince = ref(null)
@@ -466,7 +466,7 @@
   const loadProvinces = async () => {
     loadingProvinces.value = true
     try {
-      const response = await axios.get(`${apiUrl.value}api/provinces/`, {
+      const response = await axios.get(`${config.public.strapi.url}api/provinces/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -497,7 +497,7 @@
     
     loading.value = true
     try {
-      const response = await axios.get(`${apiUrl.value}api/districts/`, {
+      const response = await axios.get(`${config.public.strapi.url}api/districts/`, {
         params: { province_id: selectedProvince.value },
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`
@@ -540,7 +540,7 @@
     
     loading.value = true
     try {
-      const response = await axios.get(`${apiUrl.value}api/upload-tracking/`, {
+      const response = await axios.get(`${config.public.strapi.url}api/upload-tracking/`, {
         params: {
           province_id: selectedProvince.value,
           month: selectedMonth.value
@@ -601,7 +601,7 @@
   
     initializing.value = true
     try {
-      const response = await axios.post(`${apiUrl.value}api/initialize-districts/`, {
+      const response = await axios.post(`${config.public.strapi.url}api/initialize-districts/`, {
         province_id: selectedProvince.value,
         month: selectedMonth.value,
         username: username.value
@@ -629,7 +629,7 @@
   
     district.loading = true
     try {
-      const response = await axios.post(`${apiUrl.value}api/upload-data/`, {
+      const response = await axios.post(`${config.public.strapi.url}api/upload-data/`, {
         province_code: district.pro_id,
         district_code: district.dis_id,
         dateRequest: selectedMonth.value,
@@ -688,7 +688,7 @@
         bulkProgress.currentDistrict = district.dis_name
         
         try {
-          const response = await axios.post(`${apiUrl.value}api/upload-data/`, {
+          const response = await axios.post(`${config.public.strapi.url}api/upload-data/`, {
             province_code: district.pro_id,
             district_code: district.dis_id,
             dateRequest: selectedMonth.value,
@@ -742,7 +742,7 @@
     selectedItem.value = district
     
     try {
-      const response = await axios.get(`${apiUrl.value}api/upload-tracking/${district.id}/`, {
+      const response = await axios.get(`${config.public.strapi.url}api/upload-tracking/${district.id}/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -1124,6 +1124,7 @@
     margin: -4px;
   }
   
+
   :deep(.v-row.dense > .v-col) {
     padding: 4px;
   }
