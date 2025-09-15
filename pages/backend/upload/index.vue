@@ -7,7 +7,6 @@
     </div>
   </v-card>
 </template>
-
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
