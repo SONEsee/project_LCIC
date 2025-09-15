@@ -1,4 +1,31 @@
 
+export interface BatfileRespons {
+    id:               number;
+    user_id:          string;
+    duplicates:       string;
+    count_duplicates: number;
+    duplicates_false: string;
+    UID:              string;
+    file_id:          string;
+    fileName:         string;
+    fileUpload:       string;
+    fileSize:         string;
+    path:             string;
+    insertDate:       string;
+    updateDate:       string;
+    period:           string;
+    status:           string;
+    statussubmit:     string;
+    searchtrue:       string;
+    searchfals:       string;
+    status_upload:    string;
+    FileType:         string;
+    percentage:       number;
+    MID:              null;
+    GID:              null;
+    SType:            null;
+    UType:            null;
+}
 
 export interface JSONRespons {
     id:            number;
@@ -50,8 +77,6 @@ export enum UserID {
     The02 = "02",
 }
 
-// Converts JSON strings to/from your types
-// and asserts the results of JSON.parse at runtime
 export class Convert {
     public static toJSONRespons(json: string): JSONRespons[] {
         return cast(JSON.parse(json), a(r("JSONRespons")));

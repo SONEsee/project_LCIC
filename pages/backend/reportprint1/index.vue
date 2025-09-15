@@ -499,22 +499,10 @@ const fetchData = async (enterpriseID: string, LCIC_code: string): Promise<void>
   }
 };
 
-const print = () => {
-  // ເພີ່ມໃນ method print ທີ່ມີຢູ່ແລ້ວ
-  const style = document.createElement('style');
-  style.textContent = `
-    @page { 
-      size: A4 landscape !important; 
-      margin: 10mm !important; 
-    }
-  `;
-  document.head.appendChild(style);
-  
-  setTimeout(() => {
-    window.print();
-    document.head.removeChild(style);
-  }, 100);
+const print = (): void => {
+  window.print();
 };
+
 
 const goBack = (): void => {
   window.history.back();
@@ -697,16 +685,17 @@ const mapdatInfo1 = (memberinfo:string)=>{
         <!-- {{ enterpriseInfo }} -->
         <p><b>ຊື່ວິສາຫະກິດ(ພາສາລາວ):</b> {{ enterpriseInfo.enterpriseNameLao }}</p>
         <p><b>ຊື່ວິສາຫະກິດ(ພາສາອັງກິດ):</b> {{ enterpriseInfo.eneterpriseNameEnglish }}</p>
-        <p><b>ວັນທີອອກໃບທະບຽນ:</b> {{ dayjs(enterpriseInfo.regisDate).format("DD/MM/YYYY") }}</p>
+        <p><b>ທຶນຈົດທະບຽນ:</b> {{ Number(enterpriseInfo.investmentAmount).toLocaleString() }} 
+     <b v-if="enterpriseInfo.investmentCurrency">{{ enterpriseInfo.investmentCurrency ?? "" }}</b>
+  </p>
          
         <!-- <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.regisStrationOfficeType }}</p> -->
        
       </v-col>
       
    <v-col cols="4" v-if="enterpriseInfo">
-  <p><b>ທຶນຈົດທະບຽນ:</b> {{ Number(enterpriseInfo.investmentAmount).toLocaleString() }} 
-     <b v-if="enterpriseInfo.investmentCurrency">{{ enterpriseInfo.investmentCurrency ?? "" }}</b>
-  </p>
+    <p><b>ວັນທີອອກໃບທະບຽນ:</b> {{ dayjs(enterpriseInfo.regisDate).format("DD/MM/YYYY") }}</p>
+  
   <p><b>ເລກທີ:</b> {{ enterpriseInfo.enLegalStrature ?? "ບໍ່ມີຂໍ້ມູນ" }}</p>
   <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ (ລາວ):</b> {{ investorData[0]?.name ?? "ບໍ່ມີຂໍ້ມູນ" }}</p>
   <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ (ອັງກິດ):</b> {{ investorData[0]?.nameEn ?? "ບໍ່ມີຂໍ້ມູນ" }}</p>
@@ -724,7 +713,7 @@ const mapdatInfo1 = (memberinfo:string)=>{
     </v-col>
 
 
-<p><b>- ຂໍ້ມູນປະຫວັດການເຂົ້າຄົ້ນຫາ</b></p>
+<p><b>- ຂໍ້ມູນປະຫວັດການເຂົ້າຄົ້ນຫາ: {{ search_history.length }} ຄັ້ງ</b></p>
 <div
 class="rounded-lg ml-2 mb-1 mr-2"
  :style="{
@@ -761,7 +750,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
 
 
     <v-col cols="12" class="loan-summary-section">
-  <p><b>- ລວມວົງເງິນກູ້ທີ່ເຄື່ອນໄຫວທັງໝົດ</b></p>
+  <p><b>- ລວມວົງເງິນກູ້ທີ່ເຄື່ອນໄຫວທັງໝົດ: {{ tableData.length }} ບວ້ງ</b></p>
   <v-table class="mt-5 elevation-1 v-data-table1 rouded-lg"  :style="{
     border:'1px #2979FF solid'
   }" density="compact">
@@ -816,7 +805,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
                 <div>
                   
                   <p>
-                    <b>- ຂໍ້ມູນລາຍລະອຽດເງິນກູ້ບວ້ງທີ {{ index + 1 }}</b>
+                    <b>- ຂໍ້ມູນລາຍລະອຽດເງິນກູ້ບ້ວງທີ {{ index + 1 }}</b>
                   </p>
                   <!-- <v-col cols="12">
                     <v-row>
@@ -853,6 +842,79 @@ class="rounded-lg ml-2 mb-1 mr-2"
                     rounded
                   ></hr>
 
+                  
+                </div>
+                <div>
+                 
+
+                  <v-row>
+                    <v-col cols="4">
+                                        <v-col cols="12">
+                    <v-row>
+                      <v-col cols="12" md="12" >
+                        
+                        <!-- <pre>{{ item }}</pre> -->
+                        <p><b>ສະມາຊິກ: </b>{{ mapMemberInfo(item.bank) }}</p>
+                        <p><b>ສາຂາ:</b>----</p>
+                        <p> <b>ລະຫັດເງິນກູ້: </b>{{ item.id }}</p>
+                         <p> <b>ວົງເງິນໃນອານຸມັດ:</b> {{ item.lon_credit_line.toLocaleString() }} {{  item.lon_currency_code }}</p>
+                        <p><b>ຍອດເງິນເຫຼືອຕົ້ນທຶນ:</b> {{ Number(item.lon_outstanding_balance).toLocaleString() }} {{  item.lon_currency_code }}</p>
+                        <p> <b>ຍອດເຫຼືອດອກເບ້ຍ: </b>----</p>
+                        <p> <b>ອັດຕາດອກເບ້ຍ:</b> {{ item.lon_int_rate }} %</p>
+                       <p> <b>ມື້ເປິດສັນຍາ </b>{{ item.lon_open_date.slice(0, -10) }}</p> 
+                       <p> <b>ມື້ໝົດສັນຍາ: </b>{{ item.lon_expiry_date }}</p>
+                       <p> <b>ມື້ໝົດຂອງມື້ຕໍ່ສັນຍາ:</b> {{ dayjs(item.lon_ext_date).format("DD-MM-YYYY") }}</p>
+                        <p> <b>ໄລຍະການກູ້ຢືມ:</b> {{ item.lon_term }}</p>
+                        <p><b>ຈຸດປະສົງການກູ້ຢືມ:</b> {{ item.lon_purpose_code }}</p>
+                        <p><b>ເຫດຜົນຫການສິ້ນສຸດໜີ້:</b> -- </p>
+
+                      </v-col>
+                    </v-row>
+
+                  </v-col>
+                    </v-col>
+                    <v-col cols="8">
+                      <div style="border: 1px solid blue; " class="rounded-lg mt-2 pa-4">
+                    <p v-if="item.lon_class_history.length">
+                    <b>- ປະຫວັດການເຄື່ອນໄຫວ່: {{ item.lon_class_history.length }} ເດືອນ</b>
+                  </p>
+
+                  <v-table density="compact" class="text-end text-no-warp " style="font-size: 80%;">
+                    <thead>
+                      <tr>
+                        <!-- <th class="text-center"><b>ລຳດັບ.</b></th> -->
+                        <th class="text-center"><b>ເດືອນ </b></th>
+                        <th class="text-end"><b>ວົງເງິນກູ້</b></th>
+                        <th class="text-end"><b>ຍອດຍັງເຫຼືອ</b></th>
+                        <th class="text-center"><b>ຈ/ນ ວັນຄ້າງ</b></th>
+                        <!-- <th>ສະກຸນເງິນ</th> -->
+                        <th class="text-center"><b>ຈັດຊັ້ນ</b></th>
+                        <th class="text-center"><b>ສະຖານະ</b></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(items  , index)  in item.lon_class_history">
+                        
+                        <!-- <td class="text-center">{{index +1}}</td> -->
+                        <td class="text-center">{{ dayjs(items.period).format("YYYY-MM") }}</td>
+                        <td>{{Number( items.lon_credit_line).toLocaleString() }}</td>
+                        <td>{{Number( items.lon_outstanding_balance).toLocaleString() }}</td>
+                        <td class="text-center">{{ items.lon_no_days_slow }}</td>
+                        <!-- <td>{{ items.lon_currency_code }}</td> -->
+                        <td class="text-center">{{ items.lon_class }}</td>
+                        <td class="text-center">{{ items.lon_status }}</td>
+
+                      </tr>
+                    </tbody>
+                  </v-table>  </div>
+                    </v-col>
+                  </v-row> 
+                  <hr v-if="item.collateral_history.length"
+                    color="indigo"
+                    model-value="100"
+                    rounded
+                    class="mb-2 mt-2"
+                  ></hr>
                   <v-col cols="12">
                     <p v-if="item.collateral_history.length">
                       <b>- ຂໍ້ມູນຫຼັກຊັບຄໍ້າປະກັນ</b>
@@ -1117,77 +1179,6 @@ class="rounded-lg ml-2 mb-1 mr-2"
                       </v-col>
                     </v-row>
                   </v-col>
-                </div>
-                <div>
-                  <hr v-if="item.collateral_history.length"
-                    color="indigo"
-                    model-value="100"
-                    rounded
-                    class="mb-2 mt-2"
-                  ></hr>
-
-                  <v-row>
-                    <v-col cols="4">
-                                        <v-col cols="12">
-                    <v-row>
-                      <v-col cols="12" md="12" >
-                        
-                        <!-- <pre>{{ item }}</pre> -->
-                        <p><b>ສະມາຊິກ: </b>{{ mapMemberInfo(item.bank) }}</p>
-                        <p><b>ສາຂາ:</b>----</p>
-                        <p> <b>ລະຫັດເງິນກູ້: </b>{{ item.id }}</p>
-                         <p> <b>ວົງເງິນໃນອານຸມັດ:</b> {{ item.lon_credit_line.toLocaleString() }} {{  item.lon_currency_code }}</p>
-                        <p><b>ຍອດເງິນເຫຼືອຕົ້ນທຶນ:</b> {{ Number(item.lon_outstanding_balance).toLocaleString() }} {{  item.lon_currency_code }}</p>
-                        <p> <b>ຍອດເຫຼືອດອກເບ້ຍ: </b>----</p>
-                        <p> <b>ອັດຕາດອກເບ້ຍ:</b> {{ item.lon_int_rate }} %</p>
-                       <p> <b>ມື້ເປິດສັນຍາ </b>{{ item.lon_open_date.slice(0, -10) }}</p> 
-                       <p> <b>ມື້ໝົດສັນຍາ: </b>{{ item.lon_expiry_date }}</p>
-                       <p> <b>ມື້ໝົດຂອງມື້ຕໍ່ສັນຍາ:</b> {{ dayjs(item.lon_ext_date).format("DD-MM-YYYY") }}</p>
-                        <p> <b>ໄລຍະການກູ້ຢືມ:</b> {{ item.lon_term }}</p>
-                        <p><b>ເຫດຜົນຫການສິ້ນສຸດໜີ້:</b> -- </p>
-
-                      </v-col>
-                    </v-row>
-
-                  </v-col>
-                    </v-col>
-                    <v-col cols="8">
-                      <div style="border: 1px solid blue; " class="rounded-lg mt-2 pa-4">
-                    <p v-if="item.lon_class_history.length">
-                    <b>- ປະຫວັດການເຄື່ອນໄຫວ່: {{ item.lon_class_history.length }} ເດືອນ</b>
-                  </p>
-
-                  <v-table density="compact" class="text-end text-no-warp " style="font-size: 80%;">
-                    <thead>
-                      <tr>
-                        <!-- <th class="text-center"><b>ລຳດັບ.</b></th> -->
-                        <th class="text-center"><b>ເດືອນ </b></th>
-                        <th class="text-end"><b>ວົງເງິນກູ້</b></th>
-                        <th class="text-end"><b>ຍອດຍັງເຫຼືອ</b></th>
-                        <th class="text-center"><b>ຈ/ນ ວັນຄ້າງ</b></th>
-                        <!-- <th>ສະກຸນເງິນ</th> -->
-                        <th class="text-center"><b>ຈັດຊັ້ນ</b></th>
-                        <th class="text-center"><b>ສະຖານະ</b></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="(items  , index)  in item.lon_class_history">
-                        
-                        <!-- <td class="text-center">{{index +1}}</td> -->
-                        <td class="text-center">{{ dayjs(items.period).format("YYYY-MM") }}</td>
-                        <td>{{Number( items.lon_credit_line).toLocaleString() }}</td>
-                        <td>{{Number( items.lon_outstanding_balance).toLocaleString() }}</td>
-                        <td class="text-center">{{ items.lon_no_days_slow }}</td>
-                        <!-- <td>{{ items.lon_currency_code }}</td> -->
-                        <td class="text-center">{{ items.lon_class }}</td>
-                        <td class="text-center">{{ items.lon_status }}</td>
-
-                      </tr>
-                    </tbody>
-                  </v-table>  </div>
-                    </v-col>
-                  </v-row>
-                  
                   <!-- <v-data-table
                     v-if="
                       item.lon_class_history &&
@@ -1245,16 +1236,17 @@ class="rounded-lg ml-2 mb-1 mr-2"
           </div>
         </v-col>
       </v-row>
-    </v-col></div></v-container>
+    </v-col>
+    </div></v-container>
 </template>
 <style scoped>
-
+/* A4 Page Setup - ການຕັ້ງຄ່າໜ້າກະດາດ A4 */
 @page {
-  size: A4 landscape; 
-  margin: 10mm 8mm 15mm 8mm; 
+  size: A4 portrait;
+  margin: 15mm 8mm 20mm 8mm; 
   
   @top-center {
-    content: "ບົດລາຍງານສິນເຊື່ອຄົບຖ້ວນ - LCIC";
+    content: "ບົດລາຍງານສິນເຊື່ອຄົບຖ້ວນ - B LCIC";
     font-size: 10pt;
     font-weight: bold;
     color: #1565c0;
@@ -1279,17 +1271,17 @@ class="rounded-lg ml-2 mb-1 mr-2"
   }
 }
 
-
+/* Print Styles - ສະໄຕລ໌ສຳລັບການພິມ */
 @media print {
   * {
     -webkit-print-color-adjust: exact !important;
-    color-adjust: exact !important;
+  
     print-color-adjust: exact !important;
   }
   
   html, body {
-    width: 297mm !important;
-    height: 210mm !important; 
+    width: 210mm !important;
+    height: 297mm !important;
     background: white !important;
     font-family: "Noto Sans Lao", Arial, sans-serif !important;
     font-size: 9pt !important;
@@ -1299,7 +1291,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
     overflow: visible !important;
   }
   
-
+  /* Container Setup - ການຕັ້ງຄ່າ Container */
   .v-application {
     background: white !important;
     font-size: 9pt !important;
@@ -1312,35 +1304,35 @@ class="rounded-lg ml-2 mb-1 mr-2"
     margin: 0 !important;
   }
   
-
-  h1 { font-size: 14pt !important; margin: 4mm 0 2mm 0 !important; }
-  h2 { font-size: 12pt !important; margin: 3mm 0 2mm 0 !important; }
-  h3 { font-size: 11pt !important; margin: 3mm 0 2mm 0 !important; }
-  h4 { font-size: 10pt !important; margin: 2mm 0 1mm 0 !important; }
+  /* Typography - ການຈັດແບ່ງຂໍ້ຄວາມ */
+  h1 { font-size: 14pt !important; margin: 6mm 0 3mm 0 !important; }
+  h2 { font-size: 12pt !important; margin: 5mm 0 2mm 0 !important; }
+  h3 { font-size: 11pt !important; margin: 4mm 0 2mm 0 !important; }
+  h4 { font-size: 10pt !important; margin: 3mm 0 2mm 0 !important; }
   
   p { 
     font-size: 9pt !important; 
     line-height: 1.2 !important; 
-    margin: 0.5mm 0 !important; 
+    margin: 1mm 0 !important; 
   }
   
-
+  /* Headers and Important Text */
   b, strong { 
     font-weight: 600 !important; 
     font-size: 9pt !important; 
   }
   
-
+  /* Hide Print Buttons */
   .button,
   .v-btn,
   .no-print {
     display: none !important;
   }
   
- 
+  /* Company Header Section */
   .company-header {
     page-break-after: avoid !important;
-    margin-bottom: 3mm !important;
+    margin-bottom: 4mm !important;
   }
   
   .company-header h4 {
@@ -1348,14 +1340,15 @@ class="rounded-lg ml-2 mb-1 mr-2"
     margin: 1mm 0 !important;
   }
   
- 
+  /* Enterprise Info Section */
   .enterprise-info {
-    margin-bottom: 3mm !important;
+    /* page-break-inside: avoid !important; */
+    margin-bottom: 4mm !important;
     border: 1px solid #1565c0 !important;
-    padding: 2mm !important;
+    padding: 3mm !important;
   }
   
- 
+  /* Tables - ຕາຕະລາງ */
   .v-table,
   table {
     width: 100% !important;
@@ -1363,66 +1356,58 @@ class="rounded-lg ml-2 mb-1 mr-2"
     font-size: 8pt !important;
     margin: 2mm 0 !important;
     page-break-inside: auto !important;
-    border: none !important;
   }
   
   .v-table th,
   .v-table td,
   th, td {
-    border: none !important;
+    border: 1px solid #333 !important;
     padding: 1mm 2mm !important;
-    font-size: 8pt !important; 
-    line-height: 1.2 !important;
+    font-size: 7pt !important;
+    line-height: 1.1 !important;
     vertical-align: top !important;
     word-wrap: break-word !important;
   }
   
   .v-table th,
   th {
-    background-color: #f8f9fa !important; 
+    background-color: #f0f0f0 !important;
     font-weight: 600 !important;
     text-align: center !important;
-    border-bottom: 1px solid #ddd !important;
   }
   
- 
-  .v-table tbody tr {
-    border-bottom: 0.5px solid #f0f0f0 !important;
-  }
-  
-
-  .no-borders .v-table th,
-  .no-borders .v-table td,
-  .no-borders th, 
-  .no-borders td,
-  .no-borders .v-table tbody tr {
-    border: none !important;
-  }
-  
- 
+  /* Search History Table */
   .search-history-table {
-    margin-bottom: 3mm !important;
+    /* page-break-inside: avoid !important; */
+    margin-bottom: 4mm !important;
   }
   
-
+  /* Loan Summary Table */
   .loan-summary-section {
-    margin-bottom: 4mm !important;
+    /* page-break-inside: avoid !important; */
+    margin-bottom: 5mm !important;
   }
   
   .loan-summary-section .v-table th,
   .loan-summary-section .v-table td {
-    font-size: 7pt !important;
-    padding: 0.5mm 1.5mm !important;
+    font-size: 6pt !important;
+    padding: 0.5mm 1mm !important;
   }
   
- 
+  /* Loan Details Section */
   .loan-detail-item {
+    /* page-break-inside: avoid !important; */
     border: 1px solid #1565c0 !important;
-    padding: 2mm !important;
-    margin-bottom: 3mm !important;
+    padding: 3mm !important;
+    margin-bottom: 4mm !important;
   }
   
-
+  /* Break large loan details if necessary */
+  .loan-detail-large {
+    page-break-inside: auto !important;
+  }
+  
+  /* Collateral Section */
   .collateral-section {
     border: 1px solid #1565c0 !important;
     padding: 2mm !important;
@@ -1435,7 +1420,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
     margin: 0.5mm 0 !important;
   }
   
-  
+  /* Payment History Table */
   .payment-history {
     border: 1px solid #1565c0 !important;
     padding: 2mm !important;
@@ -1444,11 +1429,11 @@ class="rounded-lg ml-2 mb-1 mr-2"
   
   .payment-history .v-table th,
   .payment-history .v-table td {
-    font-size: 7pt !important;
+    font-size: 6pt !important;
     padding: 0.5mm 1mm !important;
   }
   
-
+  /* Grid Layout Adjustments */
   .v-row {
     margin: 0 !important;
   }
@@ -1457,21 +1442,19 @@ class="rounded-lg ml-2 mb-1 mr-2"
     padding: 0 1mm !important;
   }
   
- 
-  .print-col-2 { width: 16.66% !important; float: left !important; }
-  .print-col-3 { width: 25% !important; float: left !important; }
+  /* Responsive Columns for Print */
   .print-col-4 { width: 33.33% !important; float: left !important; }
   .print-col-6 { width: 50% !important; float: left !important; }
   .print-col-8 { width: 66.66% !important; float: left !important; }
-  .print-col-9 { width: 75% !important; float: left !important; }
   .print-col-12 { width: 100% !important; clear: both !important; }
   
- 
+  /* Footer Section */
   .footer-section {
     background-color: #f5f5f5 !important;
     border: 1px solid #1565c0 !important;
-    padding: 2mm !important;
-    margin-top: 4mm !important;
+    padding: 3mm !important;
+    margin-top: 5mm !important;
+    /* page-break-inside: avoid !important; */
   }
   
   .footer-section p {
@@ -1479,42 +1462,30 @@ class="rounded-lg ml-2 mb-1 mr-2"
     margin: 0.5mm 0 !important;
   }
   
-@page {
-  size: A4 landscape !important;
-  margin: 10mm !important;
-}
-
-@media print {
-  body {
-    transform-origin: left top;
-    transform: rotate(90deg) translateY(-100%);
-    width: 297mm !important;
-    height: 210mm !important;
-  }
-}
+  /* Icons in Print */
   .v-icon {
     font-size: 8pt !important;
   }
   
- 
+  /* Page Break Controls */
   .page-break-before { page-break-before: always !important; }
   .page-break-after { page-break-after: always !important; }
   .page-break-avoid { page-break-inside: avoid !important; }
   .page-break-auto { page-break-inside: auto !important; }
   
-
+  /* Prevent Orphans and Widows */
   p, li {
     orphans: 2 !important;
     widows: 2 !important;
   }
   
- 
+  /* Headers should not break from content */
   h1, h2, h3, h4, h5, h6 {
     page-break-after: avoid !important;
     orphans: 2 !important;
   }
   
- 
+  /* Table Headers */
   thead {
     display: table-header-group !important;
   }
@@ -1528,12 +1499,17 @@ class="rounded-lg ml-2 mb-1 mr-2"
     page-break-after: auto !important;
   }
   
- 
+  /* Remove Vuetify default styles that interfere with printing */
   .v-data-table__wrapper {
     overflow: visible !important;
   }
   
- 
+  /* Ensure borders print correctly */
+  .border-print {
+    border: 1px solid #000 !important;
+  }
+  
+  /* Number formatting */
   .text-end {
     text-align: right !important;
   }
@@ -1542,60 +1518,48 @@ class="rounded-lg ml-2 mb-1 mr-2"
     text-align: center !important;
   }
   
- 
+  /* Specific adjustments for long content */
   .long-content {
     font-size: 7pt !important;
     line-height: 1.1 !important;
   }
   
- 
+  /* Hide scrollbars */
   ::-webkit-scrollbar {
     display: none !important;
   }
   
- 
+  /* Print-specific utility classes */
   .print-small { font-size: 6pt !important; }
   .print-medium { font-size: 8pt !important; }
   .print-large { font-size: 10pt !important; }
   
-  
+  /* Margin utilities for print */
   .print-mb-1 { margin-bottom: 1mm !important; }
   .print-mb-2 { margin-bottom: 2mm !important; }
   .print-mb-3 { margin-bottom: 3mm !important; }
   .print-mt-1 { margin-top: 1mm !important; }
   .print-mt-2 { margin-top: 2mm !important; }
   .print-mt-3 { margin-top: 3mm !important; }
-  
- 
-  .landscape-single-row {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    justify-content: space-between !important;
-  }
-  
-  .landscape-single-row > * {
-    flex: 1 !important;
-    margin: 0 2mm !important;
-  }
 }
 
-
+/* Screen Styles - ສະໄຕລ໌ສຳລັບໜ້າຈໍ */
 @media screen {
   .report-container {
-    max-width: 297mm; 
+    max-width: 210mm;
     margin: 0 auto;
     background: white;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    padding: 10mm;
+    padding: 15mm;
   }
   
   /* Print preview styles */
   .print-preview {
-    width: 297mm; /* ປ່ຽນຄວາມກວ້າງສຳລັບ landscape */
-    min-height: 210mm; /* ປ່ຽນຄວາມສູງສຳລັບ landscape */
+    width: 210mm;
+    min-height: 297mm;
     background: white;
     margin: 20px auto;
     box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    padding: 10mm;
+    padding: 15mm;
   }
 }</style>

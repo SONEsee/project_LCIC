@@ -1,15 +1,52 @@
-<script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+<script lang="ts" setup>
+import { ref, computed, onMounted, watch } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useRouter } from "vue-router";
-import { useRuntimeConfig } from "#app";
-import { MemberStore } from "@/stores/memberinfo";
 import dayjs from "dayjs";
+import { useMemberInfo } from "@/composables/memberInfo";
+import { MemberStore } from "@/stores/memberinfo";
+import { useUploadFile } from "~/stores/uploadfile";
 
-const memberSore = MemberStore();
-const memberName = computed(() => {
-  const data = memberSore.respons_data_query;
+const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
+const memberinfoStore = MemberStore();
+const UplodafileStore = useUploadFile();
+const getUserStorageKey = (baseKey: string) => {
+  try {
+    const userData = localStorage.getItem("user_data");
+    if (userData) {
+      const user = JSON.parse(userData);
+      const userId = user.MID?.id || 'unknown';
+      return `${baseKey}_user_${userId}`;
+    }
+    return baseKey; // fallback
+  } catch (error) {
+    console.error("Failed to get user ID for storage key:", error);
+    return baseKey;
+  }
+};
+const period = computed(()=>{
+  const data = UplodafileStore.respose_uploadfile_b;
+  let mapData = [];
+  if(Array.isArray(data)){
+    mapData = data;
+  }else if(data && typeof data ==="object"){
+    mapData = [data]
+  }else{
+    return []
+  }
+  const uniquePeriods = new Map();
+
+  mapData.forEach((item)=>{
+    if(item.period){
+      uniquePeriods.set(item.period, item);
+    }
+  });
+  return Array.from(uniquePeriods.values());
+})
+
+const dataMemberInfon = computed(() => {
+  const data = memberinfoStore.respons_data_query;
   if (Array.isArray(data)) {
     return data;
   }
@@ -19,154 +56,250 @@ const memberName = computed(() => {
   return [];
 });
 
+const displayMemberInfo = (name: any) => {
+  if (!name || !name.bnk_code || !name.code || !name.nameL) return "ທັງໝົດ";
+  return `${name.bnk_code} - ${name.code} - ${name.nameL}`;
+};
+
 definePageMeta({
   layout: "backend",
 });
 
 useHead({
-  title: "ຂໍ້ມູນການນຳສົ່ງ - Submit Data",
+  title: "Submit",
   meta: [
-    { name: "keywords", content: "Report, Nuxt 3, Backend, Data Management" },
+    {
+      name: "keywords",
+      content: "Report, Nuxt 3, Backend",
+    },
     {
       name: "Description",
-      content: "ລະບົບຈັດການຂໍ້ມູນການນຳສົ່ງ - IT Genius Engineering",
+      content: "Report Nuxt 3, IT Genius Engineering",
     },
   ],
 });
 
-interface ItemData {
-  FID: string;
-  fileName: string;
-  path: string;
-  statussubmit: string;
-  percentage: number;
-  status: string;
-  confirmed: boolean;
-  insertDate: string;
-  user_id: string;
+// Type definitions
+interface User {
+  MID: {
+    id: number | string;
+  };
 }
 
-const search = ref("");
-const dateFilter = ref("");
+interface FileItem {
+  FID?: string;
+  CID?: string;
+  fileName: string;
+  path: string;
+  user_id: string;
+  fileSize?: number;
+  statussubmit: string;
+  percentage: number;
+  period?: string;
+  period_formatted?: string;
+  FileType?: string;
+  insertDate?: string;
+  updateDate?: string;
+  status: string;
+  status_display?: string;
+  confirmed: boolean;
+}
+
+interface MemberInfo {
+  bnk_code: string;
+  nameL: string;
+}
+
+interface Period {
+  period: string;
+}
+
+interface Statistics {
+  summary: {
+    total_files: number;
+    successful_uploads: number;
+    pending_uploads: number;
+    rejected_uploads: number;
+    success_rate: number;
+  };
+  file_types: {
+    json_files: number;
+    xml_files: number;
+  };
+}
+
+interface ApiResponse {
+  count: number;
+  results: FileItem[];
+  summary: any;
+  filters_applied: any;
+}
+
 const file = ref<File | null>(null);
-const items = ref<ItemData[]>([]);
-const user = ref<any>({});
-const router = useRouter();
-const config = useRuntimeConfig();
-const loading = ref(false);
-const dialogUpload = ref(false);
+const user = ref<User | null>(null);
+const items = ref<FileItem[]>([]);
+const searchQuery = ref("");
+const isLoading = ref(false);
+const itemsPerPage = ref(25);
+const statistics = ref<Statistics | null>(null);
+const apiResponse = ref<ApiResponse | null>(null);
 
-const FILTER_STORAGE_KEY = "bank_filter_search";
-const DATE_FILTER_STORAGE_KEY = "bank_date_filter";
+const filters = ref({
+  user_id: "",
+  period: "",
+  file_type: "",
+  status: "",
+});
 
-const headers = ref([
-  { title: "ໄອດີ", value: "FID", width: "80px", align: "center" },
-  { title: "ຊື່ໄຟລ໌", value: "path", width: "200px" },
-  { title: "ທະນາຄານ", value: "user_id", width: "150px" },
-  // { title: "ຂະໜາດ", value: "fileSize", width: "100px", align: "center" },
-  { title: "ສະຖານະ", value: "statussubmit", width: "150px", align: "center" },
-  { title: "ຄວາມຖືກຕ້ອງ", value: "percentage", width: "80px", align: "center" },
-  // { title: "ວັນທີ່ອັບໂຫຼດ", value: "insertDate", width: "120px", align: "center" },
-  {
-    title: "ຈັດການ",
-    value: "actions",
-    width: "200px",
-    sortable: false,
-    align: "start",
-  },
+const statusOptions = ref([
+  { title: "ສຳເລັດການໂຫຼດ", value: "0" },
+  { title: "ລໍຖ້າຢືນຢັນ", value: "1" },
+  { title: "ປະຕິເສດ", value: "2" },
+  { title: "ກຳລັງອັບໂຫຼດ", value: "3" },
+  { title: "ກຳລັງຖືກອັນໂຫຼດ", value: "4" },
+  { title: "ຂໍ້ມູນຖືກອັນໂຫຼດ", value: "5" },
+  { title: "ກຳລັງນຳສົ່ງຂໍ້ມູນ", value: "Pending" },
 ]);
 
-const filteredItems = computed(() => {
-  let filtered = items.value;
+const headers = computed(() => {
+  const baseHeaders = [
+    { title: "ໄອດີ", value: "FID" },
+    { title: "ຊື່ໄຟລ໌", value: "fileName" },
+    { title: "ຂະໜາດຟາຍ", value: "fileSize" },
+    { title: "ໄລຍະເວລາ", value: "period" },
+    // { title: "ປະເພດ", value: "FileType" },
+    { title: "ສະຖານະການຢືນຢັນ", value: "statussubmit" },
+    { title: "ເປີເຊັນຄວາມຖືກຕ້ອງ", value: "percentage" },
+    { title: "ການດຳເນີນການ", value: "actions", sortable: false },
+  ];
 
-  if (search.value && search.value.trim() !== "") {
-    const searchTerm = search.value.toLowerCase().trim();
-    filtered = filtered.filter((item) => {
-      const bankInfo = mapitem.value.find((mi) => mi.FID === item.FID);
-      return (
-        item.user_id.toLowerCase().includes(searchTerm) ||
-        bankInfo?.bankNameL?.toLowerCase().includes(searchTerm) ||
-        bankInfo?.bankNameE?.toLowerCase().includes(searchTerm)
-      );
-    });
+  if (user.value && user.value.MID.id === "01") {
+    baseHeaders.splice(2, 0, { title: "ລະຫັດທະນາຄານ", value: "user_id" });
   }
 
-  if (dateFilter.value) {
-    filtered = filtered.filter((item) => {
-      const itemDate = dayjs(item.insertDate).format("YYYY-MM-DD");
-      return itemDate === dateFilter.value;
-    });
-  }
-
-  return filtered;
+  return baseHeaders;
 });
+
+const router = useRouter();
+const config = useRuntimeConfig();
+
+const saveFiltersToStorage = () => {
+  try {
+    const filtersToSave = {
+      user_id: filters.value.user_id || "",
+      period: filters.value.period || "",
+      file_type: filters.value.file_type || "",
+      status: filters.value.status || "",
+    };
+    
+    const hasActiveFilters = Object.values(filtersToSave).some(value => value !== "");
+    const storageKey = getUserStorageKey("bank_filters_data");
+    
+    if (hasActiveFilters) {
+      localStorage.setItem(storageKey, JSON.stringify(filtersToSave));
+      
+      sessionStorage.setItem(storageKey, JSON.stringify(filtersToSave));
+    } else {
+      localStorage.removeItem(storageKey);
+      sessionStorage.removeItem(storageKey);
+    }
+  } catch (error) {
+    console.error("Failed to save filters to localStorage:", error);
+  }
+};
+
+
+const loadFiltersFromStorage = () => {
+  try {
+    const storageKey = getUserStorageKey("bank_filters_data");
+    
+    
+    let savedFilters = sessionStorage.getItem(storageKey);
+    
+   
+    if (!savedFilters) {
+      savedFilters = localStorage.getItem(storageKey);
+      
+      if (savedFilters) {
+        sessionStorage.setItem(storageKey, savedFilters);
+      }
+    }
+    
+    if (savedFilters) {
+      const parsedFilters = JSON.parse(savedFilters);
+      
+    
+      filters.value = {
+        user_id: parsedFilters.user_id || "",
+        period: parsedFilters.period || "",
+        file_type: parsedFilters.file_type || "",
+        status: parsedFilters.status || "",
+      };
+      
+      console.log("Loaded bank filters from storage:", filters.value);
+    }
+  } catch (error) {
+    console.error("Failed to load filters from localStorage:", error);
+  }
+};
+
+const FILTER_STORAGE_KEY = "bank_filters_data";
+
+const filteredItems = computed(() =>
+  items.value.filter((item) =>
+    item.user_id.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+);
 
 const uniqueUserIds = computed(() => {
   return [...new Set(items.value.map((item) => item.user_id))];
 });
 
-const uniqueDates = computed(() => {
-  const dates = items.value
-    .map((item) => dayjs(item.insertDate).format("YYYY-MM-DD"))
-    .filter((date, index, self) => self.indexOf(date) === index)
-    .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-  return dates;
-});
-
-const statusStats = computed(() => {
-  const stats = {
-    total: items.value.length,
-    confirmed: items.value.filter((item) => item.statussubmit === "0").length,
-    pending: items.value.filter((item) => item.statussubmit === "1").length,
-    rejected: items.value.filter((item) => item.statussubmit === "2").length,
-    uploading: items.value.filter((item) => item.statussubmit === "3").length,
-    unloading: items.value.filter((item) => item.statussubmit === "4").length,
-  };
-  return stats;
-});
 
 const saveFilterToStorage = () => {
   try {
-    if (search.value) {
-      localStorage.setItem(FILTER_STORAGE_KEY, search.value);
+    if (filters.value.user_id) {
+      localStorage.setItem(FILTER_STORAGE_KEY, filters.value.user_id);
     } else {
       localStorage.removeItem(FILTER_STORAGE_KEY);
-    }
-
-    if (dateFilter.value) {
-      localStorage.setItem(DATE_FILTER_STORAGE_KEY, dateFilter.value);
-    } else {
-      localStorage.removeItem(DATE_FILTER_STORAGE_KEY);
     }
   } catch (error) {
     console.error("Failed to save filter to localStorage:", error);
   }
 };
 
+
 const loadFilterFromStorage = () => {
   try {
     const savedFilter = localStorage.getItem(FILTER_STORAGE_KEY);
-    const savedDateFilter = localStorage.getItem(DATE_FILTER_STORAGE_KEY);
-
     if (savedFilter) {
-      search.value = savedFilter;
-    }
-
-    if (savedDateFilter) {
-      dateFilter.value = savedDateFilter;
+      filters.value.user_id = savedFilter;
     }
   } catch (error) {
     console.error("Failed to load filter from localStorage:", error);
   }
 };
 
-const clearFilter = () => {
-  search.value = "";
-  dateFilter.value = "";
-  localStorage.removeItem(FILTER_STORAGE_KEY);
-  localStorage.removeItem(DATE_FILTER_STORAGE_KEY);
-};
 
+const clearFilter = () => {
+  filters.value = {
+    user_id: "",
+    period: "",
+    file_type: "",
+    status: "",
+  };
+  
+ 
+  try {
+    const storageKey = getUserStorageKey("bank_filters_data");
+    localStorage.removeItem(storageKey);
+    sessionStorage.removeItem(storageKey);
+  } catch (error) {
+    console.error("Failed to remove filters from localStorage:", error);
+  }
+  
+  fetchFilteredData();
+};
 const isUserUploading = (user_id: string) => {
   return items.value.some(
     (item) =>
@@ -184,8 +317,8 @@ const isUserUnloading = (user_id: string) => {
 };
 
 const fetchData = async () => {
-  loading.value = true;
   try {
+    isLoading.value = true;
     const response = await fetch(
       `${config.public.strapi.url}api/upload-files2/`
     );
@@ -195,18 +328,46 @@ const fetchData = async () => {
     }
 
     const data = await response.json();
+    console.log("Data:", data);
 
-    items.value = data
-      .filter((item: any) =>
-        ["1", "3", "0", "2", "4", "5"].includes(item.statussubmit)
-      )
-      .map((item: any) => ({
-        ...item,
-        FID: item.FID,
-        status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-        confirmed: false,
-        fileSize: item.fileSize || 0,
-      }));
+    if (data.results) {
+      apiResponse.value = data;
+      items.value = data.results
+        .filter((item: any) =>
+          ["1", "3", "0", "2", "4", "5"].includes(item.statussubmit)
+        )
+        .map((item: any) => ({
+          ...item,
+          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+          confirmed: false,
+        }));
+
+      if (data.summary) {
+        statistics.value = {
+          summary: {
+            total_files: data.summary.total_files || 0,
+            successful_uploads: data.summary.status_breakdown?.["1"] || 0,
+            pending_uploads: data.summary.status_breakdown?.["Pending"] || 0,
+            rejected_uploads: data.summary.status_breakdown?.["2"] || 0,
+            success_rate: calculateSuccessRate(data.summary.status_breakdown),
+          },
+          file_types: {
+            json_files: data.summary.json_files || 0,
+            xml_files: data.summary.xml_files || 0,
+          },
+        };
+      }
+    } else {
+      items.value = data
+        .filter((item: any) =>
+          ["1", "3", "0", "2", "4", "5"].includes(item.statussubmit)
+        )
+        .map((item: any) => ({
+          ...item,
+          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+          confirmed: false,
+        }));
+    }
 
     sortItemsByUploadDate();
   } catch (error) {
@@ -214,115 +375,168 @@ const fetchData = async () => {
     Swal.fire({
       icon: "error",
       title: "ຜິດພາດ",
-      text: "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້. ກະລຸນາລອງໃໝ່ອີກຄັ້ງ.",
+      text: "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້",
     });
   } finally {
-    loading.value = false;
+    isLoading.value = false;
+  }
+};
+const clearFiltersOnLogout = () => {
+  try {
+    const storageKey = getUserStorageKey("bank_filters_data");
+    localStorage.removeItem(storageKey);
+    sessionStorage.removeItem(storageKey);
+    console.log("Bank filters cleared on logout");
+  } catch (error) {
+    console.error("Failed to clear bank filters on logout:", error);
+  }
+};
+const validateUserStorage = () => {
+  try {
+    const currentUserData = localStorage.getItem("user_data");
+    const lastUserData = localStorage.getItem("last_logged_user_bank");
+    
+    if (currentUserData !== lastUserData) {
+      console.log("User changed, clearing old bank filters storage...");
+      
+    
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes('bank_filters_data_user_')) {
+          const currentUserKey = getUserStorageKey("bank_filters_data");
+          if (key !== currentUserKey) {
+            localStorage.removeItem(key);
+          }
+        }
+      });
+      
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.includes('bank_filters_data_user_')) {
+          const currentUserKey = getUserStorageKey("bank_filters_data");
+          if (key !== currentUserKey) {
+            sessionStorage.removeItem(key);
+          }
+        }
+      });
+      
+  
+      if (currentUserData) {
+        localStorage.setItem("last_logged_user_bank", currentUserData);
+      }
+    }
+  } catch (error) {
+    console.error("Failed to validate user storage:", error);
+  }
+};
+const fetchFilteredData = async () => {
+  try {
+    isLoading.value = true;
+    let url = `${config.public.strapi.url}api/upload-files2/`;
+
+    const params = new URLSearchParams();
+
+    if (filters.value.user_id) {
+      params.append("request_user_id", "01");
+      params.append("user_id", filters.value.user_id);
+    }
+    if (filters.value.period) {
+      params.append("period", filters.value.period);
+    }
+    if (filters.value.file_type) {
+      params.append("file_type", filters.value.file_type);
+    }
+    if (filters.value.status) {
+      params.append("status", filters.value.status);
+    }
+
+    const response = await fetch(`${url}?${params.toString()}`);
+    console.log("Response:", response);
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    const data = await response.json();
+    console.log("Filtered data:", data);
+
+    if (data.results) {
+      apiResponse.value = data;
+      items.value = data.results
+        .filter((item: any) =>
+          ["1", "3", "0", "2", "4", "5"].includes(item.statussubmit)
+        )
+        .map((item: any) => ({
+          ...item,
+          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+          confirmed: false,
+        }));
+
+      if (data.summary) {
+        statistics.value = {
+          summary: {
+            total_files: data.summary.total_files || 0,
+            successful_uploads: data.summary.status_breakdown?.["1"] || 0,
+            pending_uploads: data.summary.status_breakdown?.["Pending"] || 0,
+            rejected_uploads: data.summary.status_breakdown?.["2"] || 0,
+            success_rate: calculateSuccessRate(data.summary.status_breakdown),
+          },
+          file_types: {
+            json_files: data.summary.json_files || 0,
+            xml_files: data.summary.xml_files || 0,
+          },
+        };
+      }
+    } else {
+      items.value = data
+        .filter((item: any) =>
+          ["1", "3", "0", "2", "4", "5"].includes(item.statussubmit)
+        )
+        .map((item: any) => ({
+          ...item,
+          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+          confirmed: false,
+        }));
+    }
+
+    sortItemsByUploadDate();
+    saveFiltersToStorage();
+    
+  } catch (error) {
+    console.error("Failed to fetch filtered data:", error);
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້",
+    });
+  } finally {
+    isLoading.value = false;
   }
 };
 
-const fetchDataByUserID = async (paddedMID: string) => {
-  try {
-    console.log("Fetching data for user ID:", paddedMID);
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-  }
+const calculateSuccessRate = (statusBreakdown: any): number => {
+  if (!statusBreakdown) return 0;
+
+  const total = Object.values(statusBreakdown).reduce(
+    (sum: number, count: any) => sum + (count || 0),
+    0
+  );
+  const successful = (statusBreakdown["1"] || 0) + (statusBreakdown["0"] || 0);
+
+  return total > 0 ? Math.round((successful / total) * 100) : 0;
 };
 
 const sortItemsByUploadDate = () => {
   items.value.sort(
-    (a, b) =>
-      new Date(b.insertDate).getTime() - new Date(a.insertDate).getTime()
+    (a: FileItem, b: FileItem) =>
+      new Date(b.insertDate || "").getTime() -
+      new Date(a.insertDate || "").getTime()
   );
 };
 
-const onFileChange = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  if (target.files && target.files.length > 0) {
-    file.value = target.files[0];
-  }
-};
-
-const uploadFile = async () => {
-  if (!file.value) {
-    Swal.fire({
-      icon: "warning",
-      title: "ບໍ່ໄດ້ເລືອກໄຟລ໌",
-      text: "ກະລຸນາເລືອກໄຟລ໌ກ່ອນ",
-    });
-    return;
-  }
-
-  try {
-    const formData = new FormData();
-    formData.append("file", file.value);
-    formData.append("title", file.value.name);
-
-    const newItem = {
-      fileName: file.value.name,
-      fileSize: file.value.size,
-      path: "",
-      insertDate: new Date().toLocaleString(),
-      updateDate: new Date().toLocaleString(),
-      status: "ກຳລັງນຳສົ່ງຂໍ້ມູນ",
-      confirmed: false,
-    } as any;
-
-    items.value.push(newItem);
-
-    const response = await axios.post(
-      `${config.public.strapi.url}api/upload-files/`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        timeout: 30000,
-      }
-    );
-
-    const updatedItem = items.value.find(
-      (item) => item.fileName === file.value!.name
-    );
-
-    if (updatedItem) {
-      updatedItem.status = "ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ";
-      updatedItem.path = response.data.path;
-    }
-
-    Swal.fire({
-      icon: "success",
-      title: "ສຳເລັດ",
-      text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນແລ້ວ",
-    });
-
-    dialogUpload.value = false;
-    file.value = null;
-    await fetchData();
-  } catch (error) {
-    console.error("Upload failed:", error);
-
-    const updatedItem = items.value.find(
-      (item) => item.fileName === file.value!.name
-    );
-
-    if (updatedItem) {
-      updatedItem.status = "ການນຳສົ່ງບໍ່ສົມບູນ";
-    }
-
-    Swal.fire({
-      icon: "error",
-      title: "ການອັບໂຫຼດລົ້ມເຫລວ",
-      text: "ລົ້ມເຫລວໃນການອັບໂຫຼດໄຟລ໌",
-    });
-  }
-};
-
-const viewDetails = async (item: ItemData) => {
+const viewDetails = async (item: FileItem) => {
   if (!item.FID) {
     Swal.fire({
       icon: "error",
-      title: "ລົ້ມເຫລວ",
+      title: "ລົ້ມເຫຼວ",
       text: "ບໍມີຂໍ້ມູນທີ່ກົງກັບ FID ນີ້",
     });
     return;
@@ -332,29 +546,27 @@ const viewDetails = async (item: ItemData) => {
     const response = await axios.get(
       `${config.public.strapi.url}api/api/productinfo3/`,
       {
-        params: { FID: item.FID },
-        timeout: 10000,
+        params: {
+          FID: item.FID,
+        },
       }
     );
 
     const data = response.data;
-
     router.push({
       name: "detailupload",
       query: { data: JSON.stringify(data) },
     });
   } catch (error) {
-    console.error("Failed to fetch details:", error);
-
     Swal.fire({
       icon: "error",
-      title: "ລົ້ມເຫລວ",
-      text: "ການດຶງຂໍ້ມູນລົ້ມເຫລວ",
+      title: "ລົ້ມເຫຼວ",
+      text: "ລົ້ມເຫຼວໃນການສະແດງຂໍ້ມູນ",
     });
   }
 };
 
-const unloadUpload = async (item: ItemData) => {
+const unloadUpload = async (item: FileItem) => {
   try {
     const result = await Swal.fire({
       title: "ຢືນຢັນການອັນໂຫຼດ",
@@ -374,15 +586,17 @@ const unloadUpload = async (item: ItemData) => {
     const updateResponse = await axios.post(
       `${config.public.strapi.url}api/api/unload_statussubmit/`,
       `FID=${item.FID}`
+     
     );
-
+    await fetchFilteredData();
+   await fetchData();
     if (updateResponse.data.status !== "success") {
       item.statussubmit = "1";
-      return Swal.fire("ລົ້ມເຫລວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
+      return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
     }
 
     const params = new URLSearchParams();
-    params.append("FID", item.FID);
+    params.append("FID", item.FID!);
 
     const response = await axios.post(
       `${config.public.strapi.url}api/unload-upload/`,
@@ -393,16 +607,24 @@ const unloadUpload = async (item: ItemData) => {
 
     if (response.data.status === "success") {
       await Swal.fire("ສຳເລັດ!", "ການອັນໂຫຼດຂໍ້ມູນໄດ້ສຳເລັດແລ້ວ.", "success");
-      window.location.reload();
+      await fetchFilteredData();
     } else {
       Swal.fire(
-        "ລົ້ມເຫລວ!",
-        response.data.message || "ການອັນໂຫຼດຂໍ້ມູນລົ້ມເຫລວ.",
+        "ລົ້ມເຫຼວ!",
+        response.data.message || "ການອັນໂຫຼດຂໍ້ມູນລົ້ມເຫຼວ.",
         "error"
       );
     }
   } catch (error) {
     console.error("Failed to unload upload:", error);
+
+    await Swal.fire({
+      title: "ຜິດພາດ",
+      text: "ບໍ່ສາມາດອັນໂຫຼດຂໍ້ມູນໄດ້. ກະລຸນາລອງໃໝ່.",
+      icon: "error",
+      confirmButtonText: "ຕົກລົງ",
+    });
+
     const updateResponse = await axios.post(
       `${config.public.strapi.url}api/api/error_statussubmit/`,
       `FID=${item.FID}`
@@ -410,7 +632,7 @@ const unloadUpload = async (item: ItemData) => {
   }
 };
 
-const confirmAction = async (item: ItemData) => {
+const confirmAction = async (item: FileItem) => {
   const result = await Swal.fire({
     title: "ຢືນຢັນການດຳເນີນການ",
     text: "ທ່ານແນ່ໃຈຫຼືບໍ່ທີ່ຢືນຢັນການອັບໂຫຼດນີ້?",
@@ -426,27 +648,26 @@ const confirmAction = async (item: ItemData) => {
     return;
   }
 
-  item.statussubmit = "3";
   try {
-    const config = useRuntimeConfig();
     const updateResponse = await axios.post(
       `${config.public.strapi.url}api/api/update-statussubmit/`,
       `FID=${item.FID}`
+
     );
 
     if (updateResponse.data.status !== "success") {
       item.statussubmit = "1";
-      return Swal.fire("ລົ້ມເຫລວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
+      return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
     }
   } catch (error) {
     console.error("Failed to update status:", error);
     item.statussubmit = "1";
-    return Swal.fire("ຜິດພາດ!", "ການອັບເດດລົ້ມເຫລວ.", "error");
+    return Swal.fire("ຜິດພາດ!", "ການອັບເດດລົ້ມເຫຼວ.", "error");
   }
 
   try {
     const params = new URLSearchParams();
-    params.append("FID", item.FID);
+    params.append("FID", item.FID!);
 
     const confirmResponse = await axios.post(
       `${config.public.strapi.url}api/confirm_upload/`,
@@ -461,865 +682,565 @@ const confirmAction = async (item: ItemData) => {
       }
 
       await Swal.fire("ຢືນຢັນສຳເລັດ!", "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.", "success");
-      window.location.reload();
+      await fetchFilteredData();
     } else {
       item.statussubmit = "1";
-      Swal.fire("ລົ້ມເຫລວ!", "ການຢືນຢັນລົ້ມເຫລວ.", "error");
+      Swal.fire("ລົ້ມເຫຼວ!", "ການຢືນຢັນລົ້ມເຫຼວ.", "error");
     }
   } catch (error) {
     console.error("Failed to confirm upload:", error);
     item.statussubmit = "1";
-    Swal.fire("ຜິດພາດ!", "ການຢືນຢັນລົ້ມເຫລວ. ກະລຸນາລອງໃໝ່.", "error");
-  }
-};
-
-const getPercentageColor = (percentage: number) => {
-  if (percentage > 50) return "error";
-  if (percentage <= 15) return "success";
-  return "warning";
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "ກຳລັງນຳສົ່ງຂໍ້ມູນ":
-      return "info";
-    case "ການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ":
-      return "success";
-    case "ການນຳສົ່ງບໍ່ສົມບູນ":
-      return "error";
-    default:
-      return "default";
+    Swal.fire("ຜິດພາດ!", "ການຢືນຢັນລົ້ມເຫຼວ. ກະລຸນາລອງໃໝ່.", "error");
   }
 };
 
 const getFullPath = (path: string) => {
-  if (!path) return "";
-  return `${config.public.strapi.url}media/${path}`;
+  const baseUrl = `${config.public.strapi.url}media/`;
+  return `${baseUrl}${path}`;
 };
 
 const getFileName = (path: string) => {
-  if (!path) return "";
   const parts = path.split("/");
   return parts[parts.length - 1];
 };
 
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+const truncateFileName = (fileName: string, maxLength: number) => {
+  if (fileName.length <= maxLength) return fileName;
+  const extension = fileName.split(".").pop();
+  const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf("."));
+  const truncatedName = nameWithoutExt.substring(
+    0,
+    maxLength - extension!.length - 4
+  );
+  return `${truncatedName}...${extension}`;
 };
 
-const mapitem = computed(() => {
-  return items.value.map((item) => {
-    const memberInfo = memberName.value.find(
-      (member) => member.bnk_code === item.user_id
-    );
+const getPercentageColor = (percentage: number) => {
+  if (percentage >= 15) {
+    return "red";
+  } else if (percentage < 15) {
+    return "green";
+  }
+  return "black";
+};
 
-    return {
-      ...item,
-      memberInfo: memberInfo || null,
-      bankNameL: memberInfo?.nameL || "ບໍ່ພົບຂໍ້ມູນທະນາຄານ",
-      bankNameE: memberInfo?.nameE || "Bank not found",
-      bankCode: memberInfo?.code || "N/A",
-    };
-  });
-});
+const displayFilter = (item: MemberInfo) => {
+  return `${item.bnk_code} - ${item.nameL}`;
+};
 
-const mapitemWithMemberOnly = computed(() => {
-  const mappedItems = items.value
-    .map((item) => {
-      const memberInfo = memberName.value.find(
-        (member) => member.bnk_code === item.user_id
-      );
-      if (!memberInfo) return null;
-
-      return {
-        ...item,
-        memberInfo,
-        bankNameL: memberInfo.nameL,
-        bankNameE: memberInfo.nameE,
-        bankCode: memberInfo.code,
-      };
-    })
-    .filter((item) => item !== null);
-
-  const uniqueItems = mappedItems.filter(
-    (item, index, self) =>
-      index === self.findIndex((i) => i.user_id === item.user_id)
-  );
-
-  return uniqueItems;
-});
+const montDisplay = (item: Period) => {
+  return dayjs(item.period).format("YYYY-MM");
+};
 
 onMounted(async () => {
   try {
-    loadFilterFromStorage();
-    await memberSore.getMemberInfo();
-    await fetchData();
-
+    UplodafileStore.getDataUplodB();
+    memberinfoStore.getMemberInfo();
+    
     const userData = localStorage.getItem("user_data");
+    console.log("User data:", userData);
+
     if (userData) {
       try {
         user.value = JSON.parse(userData);
-        if (user.value.MID && user.value.MID.id) {
-          const paddedMID = user.value.MID.id.toString().padStart(2, "0");
-          await fetchDataByUserID(paddedMID);
-        }
-      } catch (parseError) {
-        console.error("Error parsing user data:", parseError);
+        console.log("Parsed user data:", user.value);
+      } catch (error) {
+        console.error("Error parsing user data:", error);
       }
     }
+
+    // ກວດສອບການປ່ຽນ user
+    validateUserStorage();
+    
+    // ໂຫຼດຟິວເຕີ້ທັງໝົດຈາກ localStorage
+    loadFiltersFromStorage();
+
+    // ຖ້າມີຟິວເຕີ້ທີ່ເກັບໄວ້ ໃຫ້ fetch ຂໍ້ມູນດ້ວຍຟິວເຕີ້
+    const hasActiveFilters = Object.values(filters.value).some(value => value !== "");
+    if (hasActiveFilters) {
+      await fetchFilteredData();
+    } else {
+      await fetchData();
+    }
+    
   } catch (error) {
     console.error("Error in onMounted:", error);
   }
 });
+
+
+
+watch(
+  () => filters.value,
+  (newFilters) => {
+
+    saveFiltersToStorage();
+  },
+  { deep: true }
+);
+
+
 </script>
 
 <template>
-  <div class="data-management-container">
-    <div class="header-section">
-      <div class="text-h5">ກວດສອບແລະຢືນຢັນຂໍ້ມູນເງິນກູ້</div>
+  <v-col cols="12">
+    <!-- Filters Section -->
+    <v-row class="mb-4">
+      <v-col cols="12" md="3">
+        <v-autocomplete
+          variant="outlined"
+          density="compact"
+          v-model="filters.user_id"
+          label="ໃສ່ລະຫັດທະນາຄານ"
+          :items="dataMemberInfon"
+          item-value="bnk_code"
+          :item-title="displayMemberInfo"
+          clearable
+          @update:model-value="fetchFilteredData"
+        >
+          <template v-slot:item="{ props, item }">
+            <v-list-item
+              v-bind="props"
+              :title="`${item.raw.bnk_code} - ${item.raw.nameL}`"
+            ></v-list-item>
+          </template>
+        </v-autocomplete>
+      </v-col>
+      <v-col cols="12" md="2">
+        <v-autocomplete
+          variant="outlined"
+          density="compact"
+          v-model="filters.period"
+          label="ເລືອກໄລຍະເວລາ"
+          :items="period"
+          :item-title="montDisplay"
+          item-value="period"
+          clearable
+          @update:model-value="fetchFilteredData"
+        >
+          <template v-slot:item="{ props, item }">
+            <v-list-item
+              v-bind="props"
+              :title="`${dayjs(item.raw.period).format('YYYY-MM')}`"
+            ></v-list-item>
+          </template>
+        </v-autocomplete>
+      </v-col>
+      <v-col cols="12" md="2">
+        <v-select
+          variant="outlined"
+          density="compact"
+          v-model="filters.file_type"
+          label="ປະເພດໄຟລ໌"
+          :items="[
+            { title: 'JSON', value: 'json' },
+            { title: 'XML', value: 'xml' },
+          ]"
+          clearable
+          @update:model-value="fetchFilteredData"
+        />
+      </v-col>
+      <v-col cols="12" md="3">
+        <v-select
+          variant="outlined"
+          density="compact"
+          v-model="filters.status"
+          label="ສະຖານະ"
+          :items="statusOptions"
+          clearable
+          @update:model-value="fetchFilteredData"
+        />
+      </v-col>
+      <v-col cols="12" md="2">
+        <v-btn
+          @click="clearFilter"
+          color="success"
+          icon="mdi-refresh"
+          variant="outlined"
+          class="mr-2"
+        ></v-btn>
+        <v-btn
+          @click="clearFilter"
+          color="secondary"
+          :disabled="!filters.user_id && !filters.period && !filters.file_type && !filters.status"
+        >
+          ເຄຍ Filter
+        </v-btn>
+      </v-col>
+    </v-row>
 
-      <v-row class="stats-row mt-6">
-        <v-col cols="12" sm="6" md="2">
-          <v-card class="stat-card total-card" elevation="2">
-            <v-card-text class="text-center">
-              <v-icon size="24" class="mb-2">mdi-file-multiple</v-icon>
-              <div class="stat-number">{{ statusStats.total }}</div>
-              <div class="stat-label">ທັງໝົດ</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
+ 
+    <v-row class="mb-4" v-if="statistics">
+      <v-col cols="12" md="2">
+        <v-card color="primary" variant="tonal">
+          <v-card-text class="text-center">
+            <div class="text-h6">{{ statistics.summary.total_files }}</div>
+            <div class="text-caption">ຈຳນວນທັງໝົດ</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="2">
+        <v-card color="success" variant="tonal">
+          <v-card-text class="text-center">
+            <div class="text-h6">
+              {{ statistics.summary.successful_uploads }}
+            </div>
+            <div class="text-caption">ສຳເລັດ</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="2">
+        <v-card color="warning" variant="tonal">
+          <v-card-text class="text-center">
+            <div class="text-h6">{{ statistics.summary.pending_uploads }}</div>
+            <div class="text-caption">ກຳລັງດຳເນີນການ</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="2">
+        <v-card color="error" variant="tonal">
+          <v-card-text class="text-center">
+            <div class="text-h6">{{ statistics.summary.rejected_uploads }}</div>
+            <div class="text-caption">ປະຕິເສດ</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="2">
+        <v-card color="info" variant="tonal">
+          <v-card-text class="text-center">
+            <div class="text-h6">{{ statistics.summary.success_rate }}%</div>
+            <div class="text-caption">ອັດຕາສຳເລັດ</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="2">
+        <v-card color="secondary" variant="tonal">
+          <v-card-text class="text-center">
+            <div class="text-h6">
+              {{ statistics.file_types.json_files }}/{{
+                statistics.file_types.xml_files
+              }}
+            </div>
+            <div class="text-caption">JSON/XML</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-col>
 
-        <v-col cols="12" sm="6" md="2">
-          <v-card class="stat-card success-card" elevation="2">
-            <v-card-text class="text-center">
-              <v-icon size="24" class="mb-2">mdi-check-circle</v-icon>
-              <div class="stat-number">{{ statusStats.confirmed }}</div>
-              <div class="stat-label">ຢືນຢັນແລ້ວ</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
+  <!-- Data Table Section -->
+  <v-data-table
+    item-value="FID"
+    :headers="headers"
+    :items="items"
+    :loading="isLoading"
+    class="custom-header elevation-1 text-no-wrap"
+    :items-per-page="itemsPerPage"
+    :search="searchQuery"
+  >
+    <template v-slot:top>
+      <v-toolbar flat>
+        <v-toolbar-title>ລາຍການຟາຍທີ່ຕ້ອງການຢືນຢັນ</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-text-field
+          v-model="searchQuery"
+          append-icon="mdi-magnify"
+          label="ຄົ້ນຫາ..."
+          single-line
+          hide-details
+          density="compact"
+          style="max-width: 300px"
+        ></v-text-field>
+      </v-toolbar>
+    </template>
 
-        <v-col cols="12" sm="6" md="2">
-          <v-card class="stat-card warning-card" elevation="2">
-            <v-card-text class="text-center">
-              <v-icon size="24" class="mb-2">mdi-clock-outline</v-icon>
-              <div class="stat-number">{{ statusStats.pending }}</div>
-              <div class="stat-label">ລໍຖ້າ</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
+    <template v-slot:header.FID>
+      <th style="color: #0d47a1">ໄອດີ</th>
+    </template>
+    <template v-slot:header.fileName>
+      <th style="color: #0d47a1">ຊື່ໄຟລ໌</th>
+    </template>
+    <template v-slot:header.user_id>
+      <th style="color: #0d47a1" v-if="user && user.MID.id === '01'">
+        ລະຫັດທະນາຄານ
+      </th>
+    </template>
+    <template v-slot:header.fileSize>
+      <th style="color: #0d47a1">ຂະໜາດຟາຍ</th>
+    </template>
+    <template v-slot:header.period>
+      <th style="color: #0d47a1">ໄລຍະເວລາ</th>
+    </template>
+    <template v-slot:header.FileType>
+      <th style="color: #0d47a1">ປະເພດ</th>
+    </template>
+    <template v-slot:header.statussubmit>
+      <th style="color: #0d47a1">ສະຖານະການຢືນຢັນ</th>
+    </template>
+    <template v-slot:header.percentage>
+      <th style="color: #0d47a1">ເປີເຊັນຄວາມຖືກຕ້ອງ</th>
+    </template>
+    <template v-slot:header.actions>
+      <th style="color: #0d47a1">ການດຳເນີນການ</th>
+    </template>
 
-        <v-col cols="12" sm="6" md="2">
-          <v-card class="stat-card error-card" elevation="2">
-            <v-card-text class="text-center">
-              <v-icon size="24" class="mb-2">mdi-close-circle</v-icon>
-              <div class="stat-number">{{ statusStats.rejected }}</div>
-              <div class="stat-label">ປະຕິເສດ</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-        <v-col cols="12" sm="6" md="2">
-          <v-card class="stat-card info-card" elevation="2">
-            <v-card-text class="text-center">
-              <v-icon size="24" class="mb-2">mdi-upload</v-icon>
-              <div class="stat-number">{{ statusStats.uploading }}</div>
-              <div class="stat-label">ກຳລັງອັບໂຫຼດ</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-        <v-col cols="12" sm="6" md="2">
-          <v-card class="stat-card unload-card" elevation="2">
-            <v-card-text class="text-center">
-              <v-icon size="24" class="mb-2">mdi-download</v-icon>
-              <div class="stat-number">{{ statusStats.unloading }}</div>
-              <div class="stat-label">ກຳລັງອັນໂຫຼດ</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-    </div>
-
-    <v-card class="filter-card ma-4" elevation="3">
-      <v-card-title class="filter-title mb-2">
-        <v-icon class="mr-2">mdi-filter</v-icon>
-        ການກັ່ນຕອງຂໍ້ມູນ
-      </v-card-title>
-
-      <v-card-text>
-        <v-row align="center">
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="dateFilter"
-              :items="uniqueDates"
-              label="ເລືອກວັນທີ່"
-              prepend-inner-icon="mdi-calendar"
-              variant="outlined"
-              density="compact"
-              clearable
-              @update:model-value="saveFilterToStorage"
-            >
-              <template v-slot:item="{ props, item }">
-                <v-list-item v-bind="props">
-                  <template v-slot:title>
-                    {{ dayjs(item.value).format("DD/MM/YYYY") }}
-                  </template>
-                </v-list-item>
-              </template>
-
-              <template v-slot:selection="{ item }">
-                {{ dayjs(item.value).format("DD/MM/YYYY") }}
-              </template>
-            </v-select>
-          </v-col>
-
-          <v-col cols="12" md="6">
-            <v-autocomplete
-              v-model="search"
-              :items="mapitemWithMemberOnly"
-              item-value="user_id"
-              item-title="bankNameL"
-              label="ເລືອກທະນາຄານ"
-              prepend-inner-icon="mdi-bank"
-              variant="outlined"
-              density="compact"
-              clearable
-              @update:model-value="saveFilterToStorage"
-            >
-              <template v-slot:item="{ props, item }">
-                <v-list-item v-bind="props">
-                  <template v-slot:title>
-                    <div class="d-flex justify-space-between align-center">
-                      <span class="font-weight-medium">{{
-                        item.raw.bankNameL
-                      }}</span>
-                      <v-chip size="small" color="primary">{{
-                        item.raw.user_id
-                      }}</v-chip>
-                    </div>
-                  </template>
-                  <template v-slot:subtitle>
-                    {{ item.raw.bankNameE }}
-                  </template>
-                </v-list-item>
-              </template>
-            </v-autocomplete>
-          </v-col>
-
-          <v-col cols="12" md="2">
-            <v-btn
-              color="secondary"
-              @click="clearFilter"
-              :disabled="!search && !dateFilter"
-              variant="outlined"
-              block
-              prepend-icon="mdi-filter-remove"
-            >
-              ລຶບ Filter
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
-
-    <v-card class="data-table-card ma-4" elevation="3">
-      <v-data-table
-        :headers="headers"
-        :items="filteredItems"
-        :loading="loading"
-        :items-per-page="15"
-        class="modern-table"
-        loading-text="ກຳລັງໂຫຼດຂໍ້ມູນ..."
-        no-data-text="ບໍ່ມີຂໍ້ມູນ"
-        :items-per-page-options="[10, 15, 25, 50]"
-        show-current-page
-      >
-        <template v-slot:item.FID="{ item }">
-          <v-chip color="primary" size="small" variant="outlined">
-            {{ item.FID }}
-          </v-chip>
-        </template>
-
-        <template v-slot:item.path="{ item }">
-          <div class="file-info">
-            <v-icon size="16" class="mr-2" color="primary"
-              >mdi-file-document</v-icon
-            >
+    <template v-slot:item.fileName="{ item }">
+      <v-tooltip :text="`ກົດເພື່ອເບິ່ງເນື້ອຫາຂອງຟາຍ: ${item.fileName}`">
+        <template v-slot:activator="{ props }">
+          <div class="d-flex align-center" v-bind="props">
+            <v-icon
+              :icon="
+                item.FileType === 'json' ? 'mdi-code-json' : 'mdi-file-xml'
+              "
+              :color="item.FileType === 'json' ? 'blue' : 'orange'"
+              class="mr-2"
+            ></v-icon>
             <a
               :href="getFullPath(item.path)"
               target="_blank"
-              class="file-link"
-              v-if="item.path"
+              class="text-decoration-none"
             >
-              {{ getFileName(item.path) }}
+              {{ truncateFileName(item.fileName, 20) }}
             </a>
-            <span v-else class="text-grey">ບໍ່ມີໄຟລ໌</span>
           </div>
         </template>
+      </v-tooltip>
+    </template>
 
-        <template v-slot:item.user_id="{ item }">
-          <div class="bank-info">
-            <div class="bank-name">
-              {{
-                mapitem.find((m) => m.FID === item.FID)?.bankNameL ||
-                item.user_id
-              }}
-            </div>
-            <div class="bank-code">
-              <v-chip size="x-small" color="secondary" variant="outlined">
-                {{ item.user_id }}
-              </v-chip>
-            </div>
-          </div>
-        </template>
+    <template
+      v-slot:item.user_id="{ item }"
+      v-if="user && user.MID.id === '01'"
+    >
+      <v-chip color="primary" size="small">
+        {{ mapMemberInfo(item.user_id) }}
+      </v-chip>
+    </template>
 
-        <!-- <template v-slot:item.fileSize="{ item }">
-          <v-chip 
-            :color="item.fileSize > 10000000 ? 'warning' : 'success'" 
-            size="small" 
-            variant="outlined"
-          >
-            {{ formatFileSize(item.fileSize || 0) }}
-          </v-chip>
-        </template> -->
+    <template v-slot:item.fileSize="{ item }">
+      <span class="text-body-2">
+        {{ item.fileSize }}
+      </span>
+    </template>
 
-        <template v-slot:item.percentage="{ item }">
-          <div class="percentage-container">
+    <template v-slot:item.period="{ item }">
+      <v-chip color="secondary" size="small" v-if="item.period">
+        {{ dayjs(item.period_formatted || item.period).format("YYYY-MM") }}
+      </v-chip>
+      <span v-else class="text-grey">-</span>
+    </template>
+
+    <template v-slot:item.percentage="{ item }">
+      <div class="d-flex align-center">
+        <v-progress-linear
+          :model-value="item.percentage"
+          :color="getPercentageColor(item.percentage)"
+          height="6"
+          class="mr-2"
+          style="min-width: 80px"
+        ></v-progress-linear>
+        <span
+          :style="{ color: getPercentageColor(item.percentage) }"
+          class="text-caption"
+        >
+          {{ item.percentage?.toFixed(1) }}%
+        </span>
+      </div>
+    </template>
+
+    <template v-slot:item.statussubmit="{ item }">
+      <div class="d-flex align-center">
+        <template v-if="item.statussubmit === '3'">
+          <v-chip color="warning" size="small">
             <v-progress-circular
-              :model-value="item.percentage"
-              :color="getPercentageColor(item.percentage)"
-              size="40"
-              width="4"
-            >
-              <span class="percentage-text">
-                {{ item.percentage.toFixed(1) }}%
-              </span>
-            </v-progress-circular>
-          </div>
-        </template>
-
-        <template v-slot:item.insertDate="{ item }">
-          <div class="date-info">
-            <div class="date">
-              {{ dayjs(item.insertDate).format("DD/MM/YYYY") }}
-            </div>
-            <div class="time">{{ dayjs(item.insertDate).format("HH:mm") }}</div>
-          </div>
-        </template>
-
-        <template v-slot:item.statussubmit="{ item }">
-          <div class="status-container">
-            <template v-if="item.statussubmit === '3'">
-              <v-chip
-                color="info"
-                prepend-icon="mdi-loading"
-                variant="elevated"
-              >
-                <template v-slot:prepend>
-                  <v-progress-circular
-                    size="16"
-                    width="2"
-                    color="white"
-                    indeterminate
-                  ></v-progress-circular>
-                </template>
-                ກຳລັງອັບໂຫຼດ
-              </v-chip>
-            </template>
-
-            <template
-              v-else-if="item.statussubmit === '0' && item.percentage <= 50"
-            >
-              <v-chip
-                color="success"
-                prepend-icon="mdi-check-circle"
-                variant="elevated"
-              >
-                ຢືນຢັນສຳເລັດ
-              </v-chip>
-            </template>
-
-            <template v-else-if="item.statussubmit === '2'">
-              <v-chip
-                color="error"
-                prepend-icon="mdi-close-circle"
-                variant="elevated"
-              >
-                ປະຕິເສດ
-              </v-chip>
-            </template>
-
-            <template v-else-if="item.statussubmit === '4'">
-              <v-chip color="warning" variant="elevated">
-                <template v-slot:prepend>
-                  <v-progress-circular
-                    size="16"
-                    width="2"
-                    color="white"
-                    indeterminate
-                  ></v-progress-circular>
-                </template>
-                ກຳລັງອັນໂຫຼດ
-              </v-chip>
-            </template>
-
-            <template v-else-if="item.statussubmit === '5'">
-              <v-chip
-                color="secondary"
-                prepend-icon="mdi-download"
-                variant="elevated"
-              >
-                ອັນໂຫຼດແລ້ວ
-              </v-chip>
-            </template>
-
-            <template v-else-if="item.percentage > 50">
-              <v-chip
-                color="error"
-                prepend-icon="mdi-alert-circle"
-                variant="elevated"
-              >
-                ຂໍ້ຜິດພາດສູງ
-              </v-chip>
-            </template>
-
-            <template v-else>
-              <v-btn
-                @click="confirmAction(item)"
-                color="success"
-                :disabled="isUserUploading(item.user_id)"
-                size="small"
-                prepend-icon="mdi-check"
-                variant="elevated"
-              >
-                ຢືນຢັນ
-              </v-btn>
-            </template>
-          </div>
-        </template>
-
-        <template v-slot:item.actions="{ item }">
-          <div class="action-buttons">
-            <v-btn
-              @click="viewDetails(item)"
-              color="info"
-              size="small"
-              prepend-icon="mdi-eye"
-              variant="outlined"
+              size="16"
+              color="white"
+              indeterminate
               class="mr-1"
-            >
-              ລາຍລະອຽດ
-            </v-btn>
-
-            <template
-              v-if="item.statussubmit === '0' || item.statussubmit === '2'"
-            >
-              <v-btn
-                @click="unloadUpload(item)"
-                color="warning"
-                :disabled="isUserUnloading(item.user_id)"
-                size="small"
-                prepend-icon="mdi-download"
-                variant="outlined"
-              >
-                ອັນໂຫຼດ
-              </v-btn>
-            </template>
-
-            <template v-else-if="item.statussubmit === '4'">
-              <v-chip color="warning" size="small" variant="outlined">
-                <template v-slot:prepend>
-                  <v-progress-circular
-                    size="12"
-                    width="2"
-                    color="orange"
-                    indeterminate
-                  ></v-progress-circular>
-                </template>
-                ກຳລັງອັນໂຫຼດ
-              </v-chip>
-            </template>
-
-            <template v-else-if="item.statussubmit === '5'">
-              <v-chip
-                color="secondary"
-                size="small"
-                prepend-icon="mdi-check"
-                variant="outlined"
-              >
-                ອັນໂຫຼດແລ້ວ
-              </v-chip>
-            </template>
-          </div>
+            ></v-progress-circular>
+            ກຳລັງອັບໂຫຼດ
+          </v-chip>
         </template>
-
-        <template v-slot:loading>
-          <v-skeleton-loader
-            v-for="n in 10"
-            :key="n"
-            type="table-row-divider"
-            class="mx-auto"
-          ></v-skeleton-loader>
+        <template
+          v-else-if="item.statussubmit === '0' && item.percentage <= 50"
+        >
+          <v-chip color="success" size="small">
+            <v-icon icon="mdi-check-all" size="16" class="mr-1"></v-icon>
+            ຢືນຢັນສຳເລັດແລ້ວ
+          </v-chip>
         </template>
-
-        <template v-slot:no-data>
-          <div class="no-data-container">
-            <v-icon size="64" color="grey-lighten-1">mdi-file-outline</v-icon>
-            <h3 class="text-h6 mt-4 text-grey-darken-1">ບໍ່ມີຂໍ້ມູນ</h3>
-            <p class="text-body-2 text-grey-darken-1">
-              ລອງປ່ຽນການກັ່ນຕອງ ຫຼື ອັບໂຫຼດຂໍ້ມູນໃໝ່
-            </p>
-          </div>
+        <template v-else-if="item.statussubmit === '2'">
+          <v-chip color="error" size="small">
+            <v-icon icon="mdi-close" size="16" class="mr-1"></v-icon>
+            ປະຕິເສດ
+          </v-chip>
         </template>
-      </v-data-table>
-    </v-card>
-
-    <!-- Upload Dialog -->
-    <v-dialog v-model="dialogUpload" max-width="500px" persistent>
-      <v-card class="upload-dialog">
-        <v-card-title class="upload-dialog-title">
-          <v-icon class="mr-2">mdi-cloud-upload</v-icon>
-          ອັບໂຫຼດໄຟລ໌ໃໝ່
-        </v-card-title>
-
-        <v-card-text>
-          <v-file-input
-            v-model="file"
-            label="ເລືອກໄຟລ໌"
-            prepend-icon="mdi-paperclip"
-            variant="outlined"
-            show-size
-            accept=".json,.csv,.xlsx,.xls"
-            @change="onFileChange"
-          >
-            <template v-slot:selection="{ fileNames }">
-              <template v-for="fileName in fileNames" :key="fileName">
-                <v-chip size="small" color="primary" class="me-2">
-                  {{ fileName }}
-                </v-chip>
-              </template>
-            </template>
-          </v-file-input>
-
-          <v-alert
-            type="info"
-            variant="tonal"
-            class="mt-4"
-            prepend-icon="mdi-information"
-          >
-            ສາມາດອັບໂຫຼດໄຟລ໌ປະເພດ: JSON, CSV, Excel
-          </v-alert>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="grey" variant="outlined" @click="dialogUpload = false">
-            ຍົກເລີກ
-          </v-btn>
+        <template v-else-if="item.statussubmit === '4'">
+          <v-chip color="info" size="small">
+            <v-progress-circular
+              size="16"
+              color="white"
+              indeterminate
+              class="mr-1"
+            ></v-progress-circular>
+            ກຳລັງອັນໂຫຼດຂໍ້ມູນອອກ
+          </v-chip>
+        </template>
+        <template v-else-if="item.statussubmit === '5'">
+          <v-chip color="grey" size="small">
+            <v-icon icon="mdi-cloud-download" size="16" class="mr-1"></v-icon>
+            ຂໍ້ມູນຖືກອັນໂຫຼດອອກແລ້ວ
+          </v-chip>
+        </template>
+        <template v-else-if="item.percentage > 50">
+          <v-chip color="error" size="small">
+            <v-icon icon="mdi-alert" size="16" class="mr-1"></v-icon>
+            ຂໍ້ຜິດພາດສູງເກີນກຳນົດ
+          </v-chip>
+        </template>
+        <template v-else>
           <v-btn
-            color="primary"
-            variant="elevated"
-            @click="uploadFile"
-            :disabled="!file"
-            prepend-icon="mdi-upload"
+            @click="confirmAction(item)"
+            color="success"
+            size="small"
+            :disabled="isUserUploading(item.user_id)"
           >
-            ອັບໂຫຼດ
+            <v-icon icon="mdi-check" size="16" class="mr-1"></v-icon>
+            ຢືນຢັນ
           </v-btn>
-        </v-card-actions>
+        </template>
+      </div>
+    </template>
+
+    <template v-slot:item.actions="{ item }">
+      <div class="d-flex gap-2">
+        <v-btn
+          @click="viewDetails(item)"
+          color="primary"
+          size="small"
+          variant="outlined"
+        >
+          <v-icon icon="mdi-eye" size="16" class="mr-1"></v-icon>
+          ເບິ່ງລາຍລະອຽດ
+        </v-btn>
+        <template
+          v-if="item.statussubmit === '0' || item.statussubmit === '2'"
+        >
+          <v-btn
+            @click="unloadUpload(item)"
+            color="warning"
+            size="small"
+            variant="outlined"
+            :disabled="isUserUnloading(item.user_id)"
+          >
+            <v-icon icon="mdi-download" size="16" class="mr-1"></v-icon>
+            ອັນໂຫຼດ
+          </v-btn>
+        </template>
+        <template v-else-if="item.statussubmit === '4'">
+          <v-chip color="info" size="small">
+            <v-progress-circular
+              size="16"
+              color="white"
+              indeterminate
+              class="mr-1"
+            ></v-progress-circular>
+            ກຳລັງອັນໂຫຼດຂໍ້ມູນອອກ
+          </v-chip>
+        </template>
+        <template v-else-if="item.statussubmit === '5'">
+          <v-chip color="grey" size="small">
+            <v-icon icon="mdi-cloud-download" size="16" class="mr-1"></v-icon>
+            ຂໍ້ມູນຖືກອັນໂຫຼດອອກແລ້ວ
+          </v-chip>
+        </template>
+      </div>
+    </template>
+
+    <template v-slot:no-data>
+      <v-alert type="info" class="ma-4">
+        <v-icon icon="mdi-information" class="mr-2"></v-icon>
+        ບໍ່ມີຂໍ້ມູນທີ່ກົງກັບເງື່ອນໄຂການຄົ້ນຫາ
+      </v-alert>
+    </template>
+
+    <template v-slot:loading>
+      <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
+    </template>
+  </v-data-table>
+
+
+  <v-row class="mt-4" v-if="apiResponse">
+    <v-col cols="12">
+      <v-card variant="outlined">
+        <v-card-text class="d-flex justify-space-between align-center">
+          <span class="text-body-2">
+            ສະແດງຜົນ {{ items.length }} ຈາກທັງໝົດ {{ apiResponse.count }} ລາຍການ
+          </span>
+          <div class="d-flex align-center gap-4">
+            <v-select
+              v-model="itemsPerPage"
+              :items="[10, 25, 50, 100]"
+              label="ຈຳນວນຕໍ່ໜ້າ"
+              density="compact"
+              style="width: 120px"
+              variant="outlined"
+            ></v-select>
+          </div>
+        </v-card-text>
       </v-card>
-    </v-dialog>
-  </div>
+    </v-col>
+  </v-row>
 </template>
 
 <style scoped>
-.data-management-container {
-  /* background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); */
-  min-height: 100vh;
-  padding: 20px 0;
+.custom-header {
+  background-color: #f5f5f5;
 }
 
-.header-section {
-  padding: 24px;
-  margin: 0 16px 20px 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+.text-no-wrap {
+  white-space: nowrap;
 }
 
-.page-title {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.page-title h1 {
-  background: linear-gradient(45deg, #1976d2, #42a5f5);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.stats-row {
-  margin-top: 24px;
-}
-
-.stat-card {
-  transition: all 0.3s ease;
-  border-radius: 12px;
-  cursor: pointer;
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(204, 200, 200, 0.15);
-}
-
-.stat-number {
-  font-size: 2rem;
+.v-data-table .v-data-table-header th {
   font-weight: bold;
-  line-height: 1;
+  background-color: #fafafa;
 }
 
-.stat-label {
-  font-size: 0.875rem;
-  opacity: 0.8;
-  margin-top: 4px;
+.v-chip {
+  font-weight: 500;
 }
 
-.total-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+.v-progress-linear {
+  border-radius: 4px;
 }
 
-.success-card {
-  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
-  color: white;
-}
-
-.warning-card {
-  background: linear-gradient(135deg, #ff9800 0%, #f57400 100%);
-  color: white;
-}
-
-.error-card {
-  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-  color: white;
-}
-
-.info-card {
-  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
-  color: white;
-}
-
-.unload-card {
-  background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
-  color: white;
-}
-
-/* .filter-card {
-  border-radius: 12px;
-  background: white;
-} */
-
-.filter-title {
-  background: linear-gradient(135deg, #1976d2, #42a5f5);
-  color: white;
-  border-radius: 12px 12px 0 0;
-}
-
-.data-table-card {
-  border-radius: 12px;
-
-  overflow: hidden;
-}
-
-.modern-table {
-  background: transparent;
-}
-
-.modern-table :deep(.v-data-table__wrapper) {
-  border-radius: 0;
-}
-
-.modern-table :deep(th) {
-  font-weight: 600;
-  color: #495057;
-  border: none;
-}
-
-.modern-table :deep(td) {
-  border: none;
-  padding: 16px 12px;
-}
-
-.modern-table :deep(tr:hover) {
-  background: rgba(219, 226, 238, 0.884);
-}
-
-.file-info {
+.d-flex {
   display: flex;
   align-items: center;
 }
 
-.file-link {
-  text-decoration: none;
-  color: #1976d2;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.file-link:hover {
-  color: #1565c0;
-  text-decoration: underline;
-}
-
-.bank-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.bank-name {
-  font-weight: 500;
-  color: #2c3e50;
-}
-
-.bank-code {
-  font-size: 0.75rem;
-}
-
-.percentage-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.percentage-text {
-  font-size: 0.75rem;
-  font-weight: bold;
-}
-
-.date-info {
-  text-align: center;
-}
-
-.date {
-  font-weight: 500;
-  color: #2c3e50;
-}
-
-.time {
-  font-size: 0.75rem;
-  color: #6c757d;
-  margin-top: 2px;
-}
-
-.status-container {
-  display: flex;
-  justify-content: center;
-}
-
-.action-buttons {
-  display: flex;
+.gap-2 {
   gap: 8px;
-  justify-content: center;
-  flex-wrap: wrap;
 }
 
-.no-data-container {
+.text-center {
   text-align: center;
-  padding: 48px 24px;
+  display: block;
 }
 
-.upload-dialog {
-  border-radius: 12px;
+.text-red {
+  color: red;
 }
 
-.upload-dialog-title {
-  background: linear-gradient(135deg, #1976d2, #42a5f5);
-  color: white;
+.text-green {
+  color: green;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .data-management-container {
-    padding: 10px 0;
-  }
-
-  .header-section {
-    margin: 0 8px 10px 8px;
-    padding: 16px;
-  }
-
-  .page-title h1 {
-    font-size: 1.5rem;
-  }
-
-  .stat-card {
-    margin-bottom: 8px;
-  }
-
-  .action-buttons {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .modern-table :deep(td) {
-    padding: 8px 4px;
-    font-size: 0.875rem;
-  }
+.text-amber-darken-4 {
+  color: #ff6f00;
 }
 
-/* Dark mode support */
-/* @media (prefers-color-scheme: dark) {
-  .data-management-container {
-    background: linear-gradient(135deg, #9c9898 0%, #2d3748 100%);
-  }
-  
-  .header-section,
-  .filter-card,
-  .data-table-card {
-    background: #bbc2cf;
-    color: white;
-  }
-  
-  .modern-table :deep(th) {
-    background: linear-gradient(135deg, #4a5568, #2d3748);
-    color: white;
-  }
-  
-  .modern-table :deep(tr:hover) {
-    background: rgba(98, 102, 104, 0.925);
-  }
-} */
-
-/* Animation classes */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
+.ga-2 {
+  gap: 8px;
 }
 </style>
