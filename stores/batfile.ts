@@ -24,9 +24,7 @@ export const useBastFileStore = defineStore("bastfile", {
           params: {
             ...this.filter_data_userid.filter_user,
           },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
+         
         }
       );if(res.status ===200){
         this.respons_data_batefile = res.data
