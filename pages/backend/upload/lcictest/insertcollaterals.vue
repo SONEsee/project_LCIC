@@ -63,6 +63,10 @@ export default defineComponent({
       router.push({ name: 'test', query: { image: imagePath } });
     };
 
+
+
+
+    
     const confirmImage = async (id: number) => {
   try {
     // Fetch CSRF token
