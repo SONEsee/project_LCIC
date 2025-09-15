@@ -192,6 +192,7 @@ import Swal from 'sweetalert2'
 // Router for navigation
 const router = useRouter()
 
+
 // Page title
 const title = 'ລາຍການຄົ້ນຫາ'
 
