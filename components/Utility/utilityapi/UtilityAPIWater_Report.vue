@@ -38,61 +38,7 @@
           </div>
         </div>
       </div>
-  
-      <!-- Debug Panel (Remove in production) -->
-      <div v-if="debugMode" class="debug-panel">
-        <div class="container">
-          <v-card class="mb-4">
-            <v-card-title class="d-flex align-center">
-              <v-icon class="mr-2">mdi-bug</v-icon>
-              Debug Information
-              <v-spacer />
-              <v-btn 
-                size="small" 
-                @click="debugMode = false" 
-                icon="mdi-close"
-                variant="text"
-              />
-            </v-card-title>
-            <v-card-text>
-              <v-tabs v-model="debugTab">
-                <v-tab value="api">API Info</v-tab>
-                <v-tab value="data">Data State</v-tab>
-                <v-tab value="computed">Computed Values</v-tab>
-              </v-tabs>
-              
-              <v-tabs-window v-model="debugTab">
-                <v-tabs-window-item value="api">
-                  <pre class="debug-content">{{ JSON.stringify(debugInfo, null, 2) }}</pre>
-                </v-tabs-window-item>
-                
-                <v-tabs-window-item value="data">
-                  <div class="debug-content">
-                    <h4>summaryData.value:</h4>
-                    <pre>{{ JSON.stringify(summaryData, null, 2) }}</pre>
-                    
-                    <h4>monthDetail.value:</h4>
-                    <pre>{{ JSON.stringify(monthDetail, null, 2) }}</pre>
-                  </div>
-                </v-tabs-window-item>
-                
-                <v-tabs-window-item value="computed">
-                  <div class="debug-content">
-                    <h4>overviewMetrics:</h4>
-                    <pre>{{ JSON.stringify(overviewMetrics, null, 2) }}</pre>
-                    
-                    <h4>Monthly Breakdown Count:</h4>
-                    <p>{{ summaryData.monthly_breakdown?.length || 0 }} items</p>
-                    
-                    <h4>Recent Activity Count:</h4>
-                    <p>{{ summaryData.recent_activity?.length || 0 }} items</p>
-                  </div>
-                </v-tabs-window-item>
-              </v-tabs-window>
-            </v-card-text>
-          </v-card>
-        </div>
-      </div>
+
   
       <!-- Filters Section -->
       <div class="filters-section">
