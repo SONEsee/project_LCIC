@@ -24,6 +24,8 @@ useHead({
     <v-tab value="two">ອັບໂຫຼດຂໍ້ມູນເຂົ້າ Database</v-tab>
     <v-tab value="three">ນໍາສົ່ງຂໍ້ມູນ API EDL</v-tab>
     <v-tab value="four">ນໍາສົ່ງຂໍ້ມູນ API Water</v-tab>
+    <v-tab value="five">ນໍາສົ່ງຂໍ້ມູນ API Report EDL</v-tab>
+    <v-tab value="six">ນໍາສົ່ງຂໍ້ມູນ API Report Water</v-tab>
   </v-tabs>
   <v-card-text>
     <v-window v-model="tab">
@@ -38,6 +40,12 @@ useHead({
       </v-window-item>
       <v-window-item value="four">
         <UtilityUtilityapiUtilityAPIWater />
+      </v-window-item>
+      <v-window-item value="five">
+        <UtilityUtilityapiUtilityAPIEdlReport />
+      </v-window-item>
+      <v-window-item value="six">
+        <UtilityUtilityapiUtilityAPIWaterReport />
       </v-window-item>
     </v-window>
   </v-card-text>
