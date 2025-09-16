@@ -20,17 +20,32 @@ const batefileData = computed(() => {
 });
 
 const memberinfoStore = MemberStore();
+// const dataMemberInfon = computed(() => {
+//   const data = memberinfoStore.respons_data_query;
+//   if (Array.isArray(data)) {
+//     return data;
+//   }
+//   if (data && typeof data === "object") {
+//     return [data];
+//   }
+//   return [];
+// });
 const dataMemberInfon = computed(() => {
   const data = memberinfoStore.respons_data_query;
-  if (Array.isArray(data)) {
-    return data;
-  }
-  if (data && typeof data === "object") {
-    return [data];
-  }
-  return [];
-});
+  let result = [] as any[];
 
+  if (Array.isArray(data)) {
+    result = data;
+  } else if (data && typeof data === "object") {
+    result = [data];
+  }
+  return result.sort((a, b) => {
+    if (a.bnk_code && b.bnk_code) {
+      return parseInt(a.bnk_code) - parseInt(b.bnk_code);
+    }
+    return 0;
+  });
+});
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 
 interface User {

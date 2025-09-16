@@ -32,6 +32,7 @@ export const MemberStore = defineStore("Member", {
       config: useRuntimeConfig(),
     };
   },
+  
   actions: {
     async getMemberInfo() {
       this.loading = true;
