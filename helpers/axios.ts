@@ -1,7 +1,7 @@
 import Axios from "axios";
-
+const config = useRuntimeConfig();
 const axios = Axios.create({
-  baseURL: process.env.STRAPI_URL || import.meta.env.STRAPI_URL || 'http://192.168.45.54:35729/',
+  baseURL: process.env.STRAPI_URL || import.meta.env.STRAPI_URL ||  config.public.strapi.url,
   timeout: 12000000,
 });
 
