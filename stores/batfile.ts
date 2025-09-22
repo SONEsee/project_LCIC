@@ -11,6 +11,11 @@ export const useBastFileStore = defineStore("bastfile", {
         filter_user: {
           user_id: "",
           filter_user_id: "",
+          year: "",
+          month: "",
+          day: "",
+          start_date: "",
+          end_date: "",
         },
       },
     };

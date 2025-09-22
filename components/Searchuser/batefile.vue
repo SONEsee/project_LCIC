@@ -1,13 +1,87 @@
 <script lang="ts" setup>
 import axios from "axios";
-import Swal from "sweetalert2";
+
 import { ref, computed, onMounted } from "vue";
 import { MemberStore } from "@/stores/memberinfo";
 import { useBastFileStore } from "~/stores/batfile";
 import { useMemberInfo } from "@/composables/memberInfo";
-
+import Swal from "sweetalert2";
+import dayjs from "dayjs";
+const selectTypedate = ref("");
+const selectYear = ref("");
+const selectMonth = ref("");
+const selectDays = ref("");
+const selectStart = ref("");
+const selectEnd = ref("");
+const typedate = ref([
+  { title: "ເລືອກຕາມວັນທີ", value: "insertDate" },
+  { title: "ເລືອກຕາມຊວງເວລາ", value: "Ministry_of_Time" },
+]);
 const batefileStore = useBastFileStore();
+watch([selectStart, selectEnd], async ([newStart, newEnd]) => {
+  if (newStart || newEnd) {
+    batefileStore.isLoading = true;
+    try {
+      batefileStore.filter_data_userid.filter_user.start_date = newStart;
 
+      batefileStore.filter_data_userid.filter_user.end_date = newEnd;
+      await batefileStore.getData();
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "ຜິດພາດ",
+        text: "ການຟີວເຕີ້ຊ່ວງເວລາຜິດພາດ",
+      });
+    } finally {
+      batefileStore.isLoading = false;
+    }
+  }
+});
+watch(selectDays, async (newValue) => {
+  batefileStore.isLoading = true;
+  try {
+    batefileStore.filter_data_userid.filter_user.day = newValue;
+    await batefileStore.getData();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: "ການຟີວເຕີ້ປີຜິດພາດ",
+    });
+  } finally {
+    batefileStore.isLoading = false;
+  }
+});
+watch(selectYear, async (newValue) => {
+  batefileStore.isLoading = true;
+  try {
+    batefileStore.filter_data_userid.filter_user.year = newValue;
+    await batefileStore.getData();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: "ການຟີວເຕີ້ປີຜິດພາດ",
+    });
+  } finally {
+    batefileStore.isLoading = false;
+  }
+});
+watch(selectMonth, async (newValue) => {
+  batefileStore.isLoading = true;
+  try {
+    batefileStore.filter_data_userid.filter_user.month = newValue;
+    await batefileStore.getData();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: "ການຟີວເຕີ້ເດືອນຜິດພາດ",
+    });
+  } finally {
+    batefileStore.isLoading = false;
+  }
+});
 const batefileData = computed(() => {
   const data = batefileStore.respons_data_batefile;
   if (Array.isArray(data)) {
@@ -18,7 +92,60 @@ const batefileData = computed(() => {
   }
   return [];
 });
-
+const yearFilter = computed(() => {
+  const data = batefileStore.respons_data_batefile;
+  let mapData = [];
+  if (Array.isArray(data)) {
+    mapData = data;
+  } else if (data && typeof data === "object") {
+    mapData = [data];
+  } else {
+    return [];
+  }
+  const uniqueYears = new Set();
+  mapData.forEach((item) => {
+    if (item.insertDate) {
+      uniqueYears.add(dayjs(item.insertDate).format("YYYY"));
+    }
+  });
+  return Array.from(uniqueYears.values());
+});
+const monhtFilter = computed(() => {
+  const data = batefileStore.respons_data_batefile;
+  let mapData = [];
+  if (Array.isArray(data)) {
+    mapData = data;
+  } else if (data && typeof data === "object") {
+    mapData = [data];
+  } else {
+    return [];
+  }
+  const uniqueMonth = new Set();
+  mapData.forEach((item) => {
+    if (item.insertDate) {
+      uniqueMonth.add(dayjs(item.insertDate).format("MM"));
+    }
+  });
+  return Array.from(uniqueMonth.values());
+});
+const daysFilter = computed(() => {
+  const data = batefileStore.respons_data_batefile;
+  let mapData = [];
+  if (Array.isArray(data)) {
+    mapData = data;
+  } else if (data && typeof data === "object") {
+    mapData = [data];
+  } else {
+    return [];
+  }
+  const uniqueDays = new Set();
+  mapData.forEach((item) => {
+    if (item.insertDate) {
+      uniqueDays.add(dayjs(item.insertDate).format("DD"));
+    }
+  });
+  return Array.from(uniqueDays.values());
+});
 const memberinfoStore = MemberStore();
 // const dataMemberInfon = computed(() => {
 //   const data = memberinfoStore.respons_data_query;
@@ -89,11 +216,11 @@ const initializeUser = () => {
 
 const filteredData = computed(() => {
   if (user.value?.MID.id === "01" && selectedUserId.value) {
-    return dataget.value.filter((item) =>
+    return batefileData.value.filter((item) =>
       item.user_id.includes(selectedUserId.value)
     );
   }
-  return dataget.value;
+  return batefileData.value;
 });
 
 const datafetch = async () => {
@@ -270,13 +397,25 @@ const insertSearchLog = async (item: any) => {
     console.error("Error inserting search log:", error);
   }
 };
+const clearStartDate = (value: any) => {
+  selectStart.value = value || "";
+  batefileStore.filter_data_userid.filter_user.start_date = value || "";
+};
+
+const clearEndDate = () => {
+  selectEnd.value = "";
+
+  batefileStore.filter_data_userid.filter_user.end_date = "";
+};
 const getDisplayText = (item: any) => {
+  if (!item || !item.bnk_code || !item.code || !item.nameL) return "ທັງໝົດ";
   return `${item.bnk_code}-${item.code}-${item.nameL}`;
 };
 </script>
 <template>
   <div>
-    <!-- <pre>{{ dataMemberInfon }}</pre> -->
+    <!-- <pre>{{ monhtFilter }}</pre>
+    <pre>{{ daysFilter }}</pre> -->
     <v-col>
       <v-row>
         <v-col cols="12" md="5" v-if="user?.MID.id !== '01'">
@@ -293,7 +432,7 @@ const getDisplayText = (item: any) => {
           <v-btn @click="uploadFile" class="bg-primary">ອັບໂຫຼດ</v-btn>
         </v-col>
         <v-col cols="12" md="2" v-if="user?.MID.id !== '01'"> </v-col>
-        <v-col cols="12" md="4">
+        <v-col cols="12" md="3">
           <div v-if="user?.MID.id === '01'" class="mb-4">
             <v-autocomplete
               v-model="selectedUserId"
@@ -313,6 +452,98 @@ const getDisplayText = (item: any) => {
                 ></v-list-item>
               </template>
             </v-autocomplete>
+          </div>
+        </v-col>
+        <v-col cols="12" md="2">
+          <div class="mb-4">
+            <v-autocomplete
+              v-model="selectTypedate"
+              :items="typedate"
+              label="ປະເພດຂອງການຄົ້ນຫາ"
+              clearable
+              density="compact"
+              variant="outlined"
+            >
+              <template v-slot:item="{ props, item }">
+                <v-list-item
+                  v-bind="props"
+                  :title="`${item.raw.title}-${item.raw.value}`"
+                ></v-list-item>
+              </template>
+            </v-autocomplete>
+          </div>
+        </v-col>
+        <v-col cols="12" md="7" v-if="selectTypedate === 'Ministry_of_Time'">
+          <div class="mb-4">
+            <v-row>
+              <v-col cols="12" md="5">
+                <v-text-field
+                  v-model="selectStart"
+                  label="ມື້ເລີ່ມ"
+                  type="date"
+                  density="compact"
+                  variant="outlined"
+                  clearable
+                
+                ></v-text-field>
+              </v-col>
+              <v-col cols="1" class="d-flex"><p class="mt-4">ຫາ</p></v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  label="ມື້ສິ້ນສຸດ"
+                  v-model="selectEnd"
+                  type="date"
+                  density="compact"
+                  variant="outlined"
+                  clearable
+                 
+                ></v-text-field>
+              </v-col>
+            </v-row>
+          </div>
+        </v-col>
+        <v-col cols="12" md="7" v-else>
+          <div class="mb-4">
+            <v-row>
+              <v-col cols="12" md="4">
+                <v-autocomplete
+                  v-model="selectYear"
+                  :items="yearFilter"
+                  label="ເລືອກປີ"
+                  item-title="yearFilter"
+                  item-value="yearFilter"
+                  density="compact"
+                  variant="outlined"
+                  clearable
+                ></v-autocomplete>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-autocomplete
+                  :disabled="!selectYear"
+                  v-model="selectMonth"
+                  :items="monhtFilter"
+                  label="ເລືອກເດືອນ"
+                  item-title="monhtFilter"
+                  item-value="monhtFilter"
+                  density="compact"
+                  variant="outlined"
+                  clearable
+                ></v-autocomplete>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-autocomplete
+                  :items="daysFilter"
+                  :disabled="!selectMonth"
+                  clearable
+                  v-model="selectDays"
+                  label="ເລືອກວັນ"
+                  item-title="daysFilter"
+                  item-value="daysFilter"
+                  density="compact"
+                  variant="outlined"
+                ></v-autocomplete>
+              </v-col>
+            </v-row>
           </div>
         </v-col>
       </v-row>
