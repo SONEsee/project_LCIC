@@ -263,6 +263,7 @@ onMounted(() => {
 console.log("user_id", user_id.value);
 </script>
 <template>
+  <!-- <pre>{{ processedResults }}</pre> -->
   <v-data-table
     v-if="processedResults.length > 0"
     :items="processedResults"

@@ -16,7 +16,7 @@ const getUserStorageKey = (baseKey: string) => {
     const userData = localStorage.getItem("user_data");
     if (userData) {
       const user = JSON.parse(userData);
-      const userId = user.MID?.id || 'unknown';
+      const userId = user.MID?.id || "unknown";
       return `${baseKey}_user_${userId}`;
     }
     return baseKey; // fallback
@@ -25,25 +25,25 @@ const getUserStorageKey = (baseKey: string) => {
     return baseKey;
   }
 };
-const period = computed(()=>{
+const period = computed(() => {
   const data = UplodafileStore.respose_uploadfile_b;
   let mapData = [];
-  if(Array.isArray(data)){
+  if (Array.isArray(data)) {
     mapData = data;
-  }else if(data && typeof data ==="object"){
-    mapData = [data]
-  }else{
-    return []
+  } else if (data && typeof data === "object") {
+    mapData = [data];
+  } else {
+    return [];
   }
   const uniquePeriods = new Map();
 
-  mapData.forEach((item)=>{
-    if(item.period){
+  mapData.forEach((item) => {
+    if (item.period) {
       uniquePeriods.set(item.period, item);
     }
   });
   return Array.from(uniquePeriods.values());
-})
+});
 
 const dataMemberInfon = computed(() => {
   const data = memberinfoStore.respons_data_query;
@@ -164,6 +164,7 @@ const statusOptions = ref([
 const headers = computed(() => {
   const baseHeaders = [
     { title: "ໄອດີ", value: "FID" },
+    
     { title: "ຊື່ໄຟລ໌", value: "fileName" },
     { title: "ຂະໜາດຟາຍ", value: "fileSize" },
     { title: "ໄລຍະເວລາ", value: "period" },
@@ -191,13 +192,15 @@ const saveFiltersToStorage = () => {
       file_type: filters.value.file_type || "",
       status: filters.value.status || "",
     };
-    
-    const hasActiveFilters = Object.values(filtersToSave).some(value => value !== "");
+
+    const hasActiveFilters = Object.values(filtersToSave).some(
+      (value) => value !== ""
+    );
     const storageKey = getUserStorageKey("bank_filters_data");
-    
+
     if (hasActiveFilters) {
       localStorage.setItem(storageKey, JSON.stringify(filtersToSave));
-      
+
       sessionStorage.setItem(storageKey, JSON.stringify(filtersToSave));
     } else {
       localStorage.removeItem(storageKey);
@@ -208,34 +211,30 @@ const saveFiltersToStorage = () => {
   }
 };
 
-
 const loadFiltersFromStorage = () => {
   try {
     const storageKey = getUserStorageKey("bank_filters_data");
-    
-    
+
     let savedFilters = sessionStorage.getItem(storageKey);
-    
-   
+
     if (!savedFilters) {
       savedFilters = localStorage.getItem(storageKey);
-      
+
       if (savedFilters) {
         sessionStorage.setItem(storageKey, savedFilters);
       }
     }
-    
+
     if (savedFilters) {
       const parsedFilters = JSON.parse(savedFilters);
-      
-    
+
       filters.value = {
         user_id: parsedFilters.user_id || "",
         period: parsedFilters.period || "",
         file_type: parsedFilters.file_type || "",
         status: parsedFilters.status || "",
       };
-      
+
       console.log("Loaded bank filters from storage:", filters.value);
     }
   } catch (error) {
@@ -255,7 +254,6 @@ const uniqueUserIds = computed(() => {
   return [...new Set(items.value.map((item) => item.user_id))];
 });
 
-
 const saveFilterToStorage = () => {
   try {
     if (filters.value.user_id) {
@@ -268,7 +266,6 @@ const saveFilterToStorage = () => {
   }
 };
 
-
 const loadFilterFromStorage = () => {
   try {
     const savedFilter = localStorage.getItem(FILTER_STORAGE_KEY);
@@ -280,7 +277,6 @@ const loadFilterFromStorage = () => {
   }
 };
 
-
 const clearFilter = () => {
   filters.value = {
     user_id: "",
@@ -288,8 +284,7 @@ const clearFilter = () => {
     file_type: "",
     status: "",
   };
-  
- 
+
   try {
     const storageKey = getUserStorageKey("bank_filters_data");
     localStorage.removeItem(storageKey);
@@ -297,7 +292,7 @@ const clearFilter = () => {
   } catch (error) {
     console.error("Failed to remove filters from localStorage:", error);
   }
-  
+
   fetchFilteredData();
 };
 const isUserUploading = (user_id: string) => {
@@ -395,30 +390,28 @@ const validateUserStorage = () => {
   try {
     const currentUserData = localStorage.getItem("user_data");
     const lastUserData = localStorage.getItem("last_logged_user_bank");
-    
+
     if (currentUserData !== lastUserData) {
       console.log("User changed, clearing old bank filters storage...");
-      
-    
-      Object.keys(localStorage).forEach(key => {
-        if (key.includes('bank_filters_data_user_')) {
+
+      Object.keys(localStorage).forEach((key) => {
+        if (key.includes("bank_filters_data_user_")) {
           const currentUserKey = getUserStorageKey("bank_filters_data");
           if (key !== currentUserKey) {
             localStorage.removeItem(key);
           }
         }
       });
-      
-      Object.keys(sessionStorage).forEach(key => {
-        if (key.includes('bank_filters_data_user_')) {
+
+      Object.keys(sessionStorage).forEach((key) => {
+        if (key.includes("bank_filters_data_user_")) {
           const currentUserKey = getUserStorageKey("bank_filters_data");
           if (key !== currentUserKey) {
             sessionStorage.removeItem(key);
           }
         }
       });
-      
-  
+
       if (currentUserData) {
         localStorage.setItem("last_logged_user_bank", currentUserData);
       }
@@ -499,7 +492,6 @@ const fetchFilteredData = async () => {
 
     sortItemsByUploadDate();
     saveFiltersToStorage();
-    
   } catch (error) {
     console.error("Failed to fetch filtered data:", error);
     Swal.fire({
@@ -586,10 +578,9 @@ const unloadUpload = async (item: FileItem) => {
     const updateResponse = await axios.post(
       `${config.public.strapi.url}api/api/unload_statussubmit/`,
       `FID=${item.FID}`
-     
     );
     await fetchFilteredData();
-   await fetchData();
+    await fetchData();
     if (updateResponse.data.status !== "success") {
       item.statussubmit = "1";
       return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
@@ -652,7 +643,6 @@ const confirmAction = async (item: FileItem) => {
     const updateResponse = await axios.post(
       `${config.public.strapi.url}api/api/update-statussubmit/`,
       `FID=${item.FID}`
-
     );
 
     if (updateResponse.data.status !== "success") {
@@ -736,7 +726,7 @@ onMounted(async () => {
   try {
     UplodafileStore.getDataUplodB();
     memberinfoStore.getMemberInfo();
-    
+
     const userData = localStorage.getItem("user_data");
     console.log("User data:", userData);
 
@@ -751,35 +741,31 @@ onMounted(async () => {
 
     // ກວດສອບການປ່ຽນ user
     validateUserStorage();
-    
+
     // ໂຫຼດຟິວເຕີ້ທັງໝົດຈາກ localStorage
     loadFiltersFromStorage();
 
     // ຖ້າມີຟິວເຕີ້ທີ່ເກັບໄວ້ ໃຫ້ fetch ຂໍ້ມູນດ້ວຍຟິວເຕີ້
-    const hasActiveFilters = Object.values(filters.value).some(value => value !== "");
+    const hasActiveFilters = Object.values(filters.value).some(
+      (value) => value !== ""
+    );
     if (hasActiveFilters) {
       await fetchFilteredData();
     } else {
       await fetchData();
     }
-    
   } catch (error) {
     console.error("Error in onMounted:", error);
   }
 });
 
-
-
 watch(
   () => filters.value,
   (newFilters) => {
-
     saveFiltersToStorage();
   },
   { deep: true }
 );
-
-
 </script>
 
 <template>
@@ -862,14 +848,18 @@ watch(
         <v-btn
           @click="clearFilter"
           color="secondary"
-          :disabled="!filters.user_id && !filters.period && !filters.file_type && !filters.status"
+          :disabled="
+            !filters.user_id &&
+            !filters.period &&
+            !filters.file_type &&
+            !filters.status
+          "
         >
           ເຄຍ Filter
         </v-btn>
       </v-col>
     </v-row>
 
- 
     <v-row class="mb-4" v-if="statistics">
       <v-col cols="12" md="2">
         <v-card color="primary" variant="tonal">
@@ -1122,9 +1112,7 @@ watch(
           <v-icon icon="mdi-eye" size="16" class="mr-1"></v-icon>
           ເບິ່ງລາຍລະອຽດ
         </v-btn>
-        <template
-          v-if="item.statussubmit === '0' || item.statussubmit === '2'"
-        >
+        <template v-if="item.statussubmit === '0' || item.statussubmit === '2'">
           <v-btn
             @click="unloadUpload(item)"
             color="warning"
@@ -1167,7 +1155,6 @@ watch(
       <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
     </template>
   </v-data-table>
-
 
   <v-row class="mt-4" v-if="apiResponse">
     <v-col cols="12">

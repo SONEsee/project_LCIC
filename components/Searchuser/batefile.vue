@@ -7,6 +7,44 @@ import { useBastFileStore } from "~/stores/batfile";
 import { useMemberInfo } from "@/composables/memberInfo";
 import Swal from "sweetalert2";
 import dayjs from "dayjs";
+import { useFeesStore } from "~/stores/fee";
+
+const feestore = useFeesStore();
+const dataFee = computed(() => {
+  const data = feestore.response_data_fee;
+  let processedData = [];
+
+  if (Array.isArray(data)) {
+    processedData = data;
+  } else if (data && typeof data === "object") {
+    processedData = [data];
+  } else {
+    return [];
+  }
+
+  return processedData.filter((item) => item.chg_code === "FCR");
+});
+
+// Helper functions for safe fee calculation
+const calculateFee = (itemCount: number) => {
+  if (dataFee.value.length > 0 && dataFee.value[0]?.chg_amount) {
+    return new Intl.NumberFormat("lo-LA").format(
+      dataFee.value[0].chg_amount * itemCount
+    ) + " ກີບ";
+  }
+  return "0 ກີບ";
+};
+
+const getSingleFeeAmount = () => {
+  if (dataFee.value.length > 0 && dataFee.value[0]?.chg_amount) {
+    return new Intl.NumberFormat("lo-LA").format(dataFee.value[0].chg_amount) + " ກີບ";
+  }
+  return "ກຳລັງໂຫຼດຂໍ້ມູນຄ່າທຳນຽມ...";
+};
+
+const foundItems = ref<any[]>([]);
+const selectedItems = ref<any[]>([]);
+const showSelectionDialog = ref(false);
 const selectTypedate = ref("");
 const selectYear = ref("");
 const selectMonth = ref("");
@@ -17,13 +55,14 @@ const typedate = ref([
   { title: "ເລືອກຕາມວັນທີ", value: "insertDate" },
   { title: "ເລືອກຕາມຊວງເວລາ", value: "Ministry_of_Time" },
 ]);
+
 const batefileStore = useBastFileStore();
+
 watch([selectStart, selectEnd], async ([newStart, newEnd]) => {
   if (newStart || newEnd) {
     batefileStore.isLoading = true;
     try {
       batefileStore.filter_data_userid.filter_user.start_date = newStart;
-
       batefileStore.filter_data_userid.filter_user.end_date = newEnd;
       await batefileStore.getData();
     } catch (error) {
@@ -37,6 +76,7 @@ watch([selectStart, selectEnd], async ([newStart, newEnd]) => {
     }
   }
 });
+
 watch(selectDays, async (newValue) => {
   batefileStore.isLoading = true;
   try {
@@ -52,6 +92,7 @@ watch(selectDays, async (newValue) => {
     batefileStore.isLoading = false;
   }
 });
+
 watch(selectYear, async (newValue) => {
   batefileStore.isLoading = true;
   try {
@@ -67,6 +108,7 @@ watch(selectYear, async (newValue) => {
     batefileStore.isLoading = false;
   }
 });
+
 watch(selectMonth, async (newValue) => {
   batefileStore.isLoading = true;
   try {
@@ -82,6 +124,7 @@ watch(selectMonth, async (newValue) => {
     batefileStore.isLoading = false;
   }
 });
+
 const batefileData = computed(() => {
   const data = batefileStore.respons_data_batefile;
   if (Array.isArray(data)) {
@@ -92,6 +135,7 @@ const batefileData = computed(() => {
   }
   return [];
 });
+
 const yearFilter = computed(() => {
   const data = batefileStore.respons_data_batefile;
   let mapData = [];
@@ -110,6 +154,7 @@ const yearFilter = computed(() => {
   });
   return Array.from(uniqueYears.values());
 });
+
 const monhtFilter = computed(() => {
   const data = batefileStore.respons_data_batefile;
   let mapData = [];
@@ -128,6 +173,7 @@ const monhtFilter = computed(() => {
   });
   return Array.from(uniqueMonth.values());
 });
+
 const daysFilter = computed(() => {
   const data = batefileStore.respons_data_batefile;
   let mapData = [];
@@ -146,17 +192,8 @@ const daysFilter = computed(() => {
   });
   return Array.from(uniqueDays.values());
 });
+
 const memberinfoStore = MemberStore();
-// const dataMemberInfon = computed(() => {
-//   const data = memberinfoStore.respons_data_query;
-//   if (Array.isArray(data)) {
-//     return data;
-//   }
-//   if (data && typeof data === "object") {
-//     return [data];
-//   }
-//   return [];
-// });
 const dataMemberInfon = computed(() => {
   const data = memberinfoStore.respons_data_query;
   let result = [] as any[];
@@ -173,6 +210,7 @@ const dataMemberInfon = computed(() => {
     return 0;
   });
 });
+
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 
 interface User {
@@ -194,18 +232,11 @@ const userIds = ref<string[]>([]);
 const initializeUser = () => {
   try {
     const userData = localStorage.getItem("user_data");
-    console.log("data user ", userData);
-
     if (userData) {
       user.value = JSON.parse(userData);
       const user_id = user.value?.MID?.id;
       const user_mid = user.value?.UID;
       const user_gid = user.value?.GID?.GID;
-
-      console.log("GID", user_gid);
-      console.log("UID", user_mid);
-      console.log("user_id", user_id);
-
       return user_id;
     }
   } catch (error) {
@@ -265,6 +296,7 @@ const datafetch = async () => {
 
 onMounted(() => {
   const userId = initializeUser();
+  feestore.Getdata();
 
   if (userId) {
     batefileStore.filter_data_userid.filter_user.user_id = String(userId);
@@ -338,25 +370,26 @@ const uploadFile = async () => {
     const data = await response.json();
     results.value = data.results || [];
 
+    foundItems.value = results.value.filter((item) => item.status === "Found");
+
+    if (foundItems.value.length > 0) {
+      showSelectionDialog.value = true;
+    } else {
+      Swal.fire({
+        icon: "info",
+        title: "ບໍ່ມີຂໍ້ມູນທີ່ພົບ",
+        text: "ບໍ່ມີລາຍການໃດທີ່ຈະປະມວນຜົນ",
+      });
+    }
+
     Swal.fire({
       icon: "success",
       title: "ອັບໂຫຼດສຳເລັດ!",
       confirmButtonText: "ຕົກລົງ",
-      preConfirm: () => {
-        return new Promise((resolve) => {
-          resolve(true);
-        });
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        results.value.forEach((item) => {
-          if (item.status === "Found") {
-            insertSearchLog(item);
-          }
-        });
-
-        datafetch();
-      }
+    }).then(() => {
+      memberinfoStore.getMemberInfo();
+      batefileStore.getData();
+      datafetch();
     });
   } catch (error) {
     console.error("Error uploading file:", error);
@@ -366,6 +399,140 @@ const uploadFile = async () => {
       text: "ກະລຸນາລອງໃໝ່.",
     });
   }
+};
+
+const processSelectedItems = async () => {
+  if (selectedItems.value.length === 0) {
+    Swal.fire({
+      icon: "warning",
+      title: "ກະລຸນາເລືອກລາຍການ",
+      text: "ເລືອກຢ່າງນ້ອຍ 1 ລາຍການເພື່ອດຳເນີນການ",
+    });
+    return;
+  }
+
+  try {
+    // ສະແດງຢືນຢັນກ່ອນດຳເນີນການ
+    const confirmResult = await Swal.fire({
+      title: "ຢືນຢັນການດຳເນີນການ",
+      html: `
+        <div style="text-align: left;">
+          <p><strong>ລາຍການທີ່ເລືອກ:</strong> ${selectedItems.value.length} ລາຍການ</p>
+          <p><strong>ລາຍການທີ່ຈະອັບເດດ:</strong> ${foundItems.value.length - selectedItems.value.length} ລາຍການ</p>
+          <p><strong>ຄ່າທຳນຽມທັງໝົດ:</strong> ${calculateFee(selectedItems.value.length)}</p>
+        </div>
+      `,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "ຢືນຢັນ",
+      cancelButtonText: "ຍົກເລີກ",
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+    });
+
+    if (!confirmResult.isConfirmed) {
+      return;
+    }
+
+    Swal.fire({
+      title: "ກຳລັງປະມວນຜົນ...",
+      text: `ກຳລັງດຳເນີນການ ${selectedItems.value.length} ລາຍການ`,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    // Step 1: ເອົາ IDs ຂອງລາຍການທີ່ບໍ່ໄດ້ເລືອກ
+    const selectedItemIds = selectedItems.value.map((item) => item.id);
+    const unselectedItemIds = foundItems.value
+      .filter((item) => !selectedItemIds.includes(item.id))
+      .map((item) => item.id);
+
+    console.log("Selected items:", selectedItemIds);
+    console.log("Unselected items to update:", unselectedItemIds);
+
+    // Step 2: ຖ້າມີລາຍການທີ່ບໍ່ເລືອກ ໃຫ້ສົ່ງໄປ bulk update
+    if (unselectedItemIds.length > 0) {
+      await bulkUpdateSearchResults(unselectedItemIds);
+    }
+
+    // Step 3: ດຳເນີນການກັບລາຍການທີ່ເລືອກ
+    for (const item of selectedItems.value) {
+      await insertSearchLog(item);
+    }
+
+    Swal.fire({
+      icon: "success",
+      title: "ດຳເນີນການສຳເລັດ!",
+      html: `
+        <div style="text-align: left;">
+          <p>✅ ເອົາບົດລາຍງານ: ${selectedItems.value.length} ລາຍການ</p>
+          <p>🔄 ອັບເດດສະຖານະ: ${unselectedItemIds.length} ລາຍການ</p>
+        </div>
+      `,
+      timer: 2000,
+      showConfirmButton: false,
+    });
+
+    // ປິດ dialog ແລະລ້າງຂໍ້ມູນ
+    showSelectionDialog.value = false;
+    selectedItems.value = [];
+    foundItems.value = [];
+  } catch (error) {
+    console.error("Error processing items:", error);
+    Swal.fire({
+      icon: "error",
+      title: "ມີຂໍ້ຜິດພາດ",
+      text: "ການດຳເນີນການຜິດພາດ",
+    });
+  }
+};
+
+const unselectedItems = computed(() => {
+  if (selectedItems.value.length === 0) return [];
+  const selectedIds = selectedItems.value.map((item) => item.id);
+  return foundItems.value.filter((item) => !selectedIds.includes(item.id));
+});
+
+const bulkUpdateSearchResults = async (ids: any) => {
+  try {
+    const config = useRuntimeConfig();
+    const token = localStorage.getItem("access_token");
+
+    const response = await fetch(
+      `${config.public.strapi.url}api/api/search-results/bulk-update-status/`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ids: ids,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Bulk update failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("Bulk update result:", data);
+    return data;
+  } catch (error) {
+    console.error("Error in bulk update:", error);
+    throw error;
+  }
+};
+
+const selectAll = () => {
+  selectedItems.value = [...foundItems.value];
+};
+
+const clearAll = () => {
+  selectedItems.value = [];
 };
 
 const insertSearchLog = async (item: any) => {
@@ -397,6 +564,7 @@ const insertSearchLog = async (item: any) => {
     console.error("Error inserting search log:", error);
   }
 };
+
 const clearStartDate = (value: any) => {
   selectStart.value = value || "";
   batefileStore.filter_data_userid.filter_user.start_date = value || "";
@@ -404,21 +572,20 @@ const clearStartDate = (value: any) => {
 
 const clearEndDate = () => {
   selectEnd.value = "";
-
   batefileStore.filter_data_userid.filter_user.end_date = "";
 };
+
 const getDisplayText = (item: any) => {
   if (!item || !item.bnk_code || !item.code || !item.nameL) return "ທັງໝົດ";
   return `${item.bnk_code}-${item.code}-${item.nameL}`;
 };
 </script>
+
 <template>
   <div>
-    <!-- <pre>{{ monhtFilter }}</pre>
-    <pre>{{ daysFilter }}</pre> -->
     <v-col>
       <v-row>
-        <v-col cols="12" md="5" v-if="user?.MID.id !== '01'">
+        <v-col cols="12" md="3" v-if="user?.MID.id !== '01'">
           <v-file-input
             type="file"
             accept=".json"
@@ -431,8 +598,8 @@ const getDisplayText = (item: any) => {
         <v-col cols="12" md="1" v-if="user?.MID.id !== '01'">
           <v-btn @click="uploadFile" class="bg-primary">ອັບໂຫຼດ</v-btn>
         </v-col>
-        <v-col cols="12" md="2" v-if="user?.MID.id !== '01'"> </v-col>
-        <v-col cols="12" md="3">
+
+        <v-col cols="12" md="4" v-if="user?.MID.id === '01'">
           <div v-if="user?.MID.id === '01'" class="mb-4">
             <v-autocomplete
               v-model="selectedUserId"
@@ -454,6 +621,7 @@ const getDisplayText = (item: any) => {
             </v-autocomplete>
           </div>
         </v-col>
+
         <v-col cols="12" md="2">
           <div class="mb-4">
             <v-autocomplete
@@ -467,13 +635,14 @@ const getDisplayText = (item: any) => {
               <template v-slot:item="{ props, item }">
                 <v-list-item
                   v-bind="props"
-                  :title="`${item.raw.title}-${item.raw.value}`"
+                  :title="`${item.raw.title}`"
                 ></v-list-item>
               </template>
             </v-autocomplete>
           </div>
         </v-col>
-        <v-col cols="12" md="7" v-if="selectTypedate === 'Ministry_of_Time'">
+
+        <v-col cols="12" md="6" v-if="selectTypedate === 'Ministry_of_Time'">
           <div class="mb-4">
             <v-row>
               <v-col cols="12" md="5">
@@ -484,7 +653,6 @@ const getDisplayText = (item: any) => {
                   density="compact"
                   variant="outlined"
                   clearable
-                
                 ></v-text-field>
               </v-col>
               <v-col cols="1" class="d-flex"><p class="mt-4">ຫາ</p></v-col>
@@ -496,16 +664,16 @@ const getDisplayText = (item: any) => {
                   density="compact"
                   variant="outlined"
                   clearable
-                 
                 ></v-text-field>
               </v-col>
             </v-row>
           </div>
         </v-col>
-        <v-col cols="12" md="7" v-else>
+
+        <v-col cols="12" md="6" v-else>
           <div class="mb-4">
             <v-row>
-              <v-col cols="12" md="4">
+              <v-col cols="12" md="3">
                 <v-autocomplete
                   v-model="selectYear"
                   :items="yearFilter"
@@ -517,7 +685,7 @@ const getDisplayText = (item: any) => {
                   clearable
                 ></v-autocomplete>
               </v-col>
-              <v-col cols="12" md="4">
+              <v-col cols="12" md="3">
                 <v-autocomplete
                   :disabled="!selectYear"
                   v-model="selectMonth"
@@ -530,7 +698,7 @@ const getDisplayText = (item: any) => {
                   clearable
                 ></v-autocomplete>
               </v-col>
-              <v-col cols="12" md="4">
+              <v-col cols="12" md="3">
                 <v-autocomplete
                   :items="daysFilter"
                   :disabled="!selectMonth"
@@ -548,27 +716,257 @@ const getDisplayText = (item: any) => {
         </v-col>
       </v-row>
     </v-col>
-    <div v-if="isloading" class="d-flex justify-center align-center">
-      <p>ກຳລັງໂຫຼດ....</p>
+
+    <!-- Fixed Selection Dialog with proper accessibility -->
+    <v-dialog 
+      v-model="showSelectionDialog" 
+      max-width="950px" 
+      persistent
+      :retain-focus="false"
+      :aria-modal="true"
+      role="dialog"
+      :aria-labelledby="dialogTitleId"
+      :aria-describedby="dialogDescId"
+      attach
+      content-class="selection-dialog"
+    >
+      <v-card>
+        <v-card-title 
+          :id="dialogTitleId" 
+          class="bg-primary white--text"
+          tabindex="0"
+          ref="dialogTitle"
+        >
+          <v-icon class="mr-2 white--text" aria-hidden="true">mdi-checkbox-marked-circle</v-icon>
+          ເລືອກລາຍການທີ່ຕ້ອງການດຳເນີນການຕໍ່ເພື່ອຄົ້ນຫາບົດລາຍງານ
+        </v-card-title>
+
+        <v-card-subtitle class="pa-3" :id="dialogDescId">
+          <v-row align="center">
+            <v-col cols="4">
+              <v-chip color="info" size="small">
+                <v-icon start size="small" aria-hidden="true">mdi-database-search</v-icon>
+                ພົບທັງໝົດ: {{ foundItems.length }} ລາຍການ
+              </v-chip>
+            </v-col>
+            <v-col cols="4">
+              <v-chip color="success" size="small">
+                <v-icon start size="small" aria-hidden="true">mdi-checkbox-marked</v-icon>
+                ເລືອກໄປ: {{ selectedItems.length }} ລາຍການ
+              </v-chip>
+            </v-col>
+            <v-col cols="4">
+              <v-chip color="orange" size="small">
+                <v-icon start size="small" aria-hidden="true">mdi-update</v-icon>
+                ຈະອັບເດດ: {{ foundItems.length - selectedItems.length }} ລາຍການ
+              </v-chip>
+            </v-col>
+          </v-row>
+
+          <v-row class="mt-2">
+            <v-col>
+              <v-chip color="primary" variant="tonal">
+                ຄ່າທຳນຽມທັງໝົດ: {{ calculateFee(selectedItems.length) }}
+              </v-chip>
+            </v-col>
+          </v-row>
+        </v-card-subtitle>
+
+        <v-card-text class="pa-4">
+          <v-row class="mb-4">
+            <v-col cols="6">
+              <v-btn
+                @click="selectAll"
+                color="primary"
+                variant="outlined"
+                size="small"
+                prepend-icon="mdi-checkbox-multiple-marked"
+                block
+                :aria-label="`ເລືອກທັງໝົດ ${foundItems.length} ລາຍການ`"
+              >
+                ເລືອກທັງໝົດ
+              </v-btn>
+            </v-col>
+            <v-col cols="6">
+              <v-btn
+                @click="clearAll"
+                color="warning"
+                variant="outlined"
+                size="small"
+                prepend-icon="mdi-checkbox-multiple-blank"
+                block
+                :aria-label="ຍົກເລີກການເລືອກທັງໝົດ"
+              >
+                ຍົກເລີກທັງໝົດ
+              </v-btn>
+            </v-col>
+          </v-row>
+
+          <v-divider class="mb-4"></v-divider>
+
+          <div
+            class="selection-container"
+            style="max-height: 500px; overflow-y: auto"
+            role="region"
+            aria-label="ລາຍການທີ່ສາມາດເລືອກໄດ້"
+            tabindex="0"
+          >
+            <v-row>
+              <v-col v-for="(item, index) in foundItems" :key="`item-${item.id || index}`" cols="12">
+                <v-card
+                  class="mb-3"
+                  :class="{ 'selected-item': selectedItems.includes(item) }"
+                  elevation="2"
+                  :ripple="false"
+                  role="option"
+                  :aria-selected="selectedItems.includes(item)"
+                  :aria-label="`ລາຍການ ${index + 1}: Enterprise ID ${item.com_enterprise_code}, LCIC Code ${item.LCIC_code}`"
+                >
+                  <v-card-text class="pa-3">
+                    <v-row align="center" no-gutters>
+                      <v-col cols="1">
+                        <v-checkbox
+                          v-model="selectedItems"
+                          :value="item"
+                          density="compact"
+                          hide-details
+                          color="primary"
+                          :aria-label="`ເລືອກລາຍການ Enterprise ID ${item.com_enterprise_code}`"
+                        ></v-checkbox>
+                      </v-col>
+                      <v-col cols="5">
+                        <div class="ml-2">
+                          <div class="mb-2 d-flex align-center">
+                            <v-icon size="small" class="mr-2 text-primary" aria-hidden="true">mdi-office-building</v-icon>
+                            <span class="text-body-2 font-weight-medium">Enterprise ID:</span>
+                            <v-chip
+                              size="small"
+                              color="primary"
+                              class="ml-2"
+                              variant="flat"
+                            >
+                              {{ item.com_enterprise_code || "N/A" }}
+                            </v-chip>
+                          </div>
+
+                          <div class="mb-2 d-flex align-center">
+                            <v-icon size="small" class="mr-2 text-secondary" aria-hidden="true">mdi-barcode</v-icon>
+                            <span class="text-body-2 font-weight-medium">LCIC Code:</span>
+                            <v-chip
+                              size="small"
+                              color="secondary"
+                              class="ml-2"
+                              variant="flat"
+                            >
+                              {{ item.LCIC_code || "N/A" }}
+                            </v-chip>
+                          </div>
+
+                          <div v-if="item.enterpriseNameLao" class="d-flex align-center">
+                            <v-icon size="small" class="mr-2 text-grey" aria-hidden="true">mdi-domain</v-icon>
+                            <span class="text-body-2 text-grey-darken-1">
+                              <strong>ບໍລິສັດ:</strong> {{ item.enterpriseNameLao }}
+                            </span>
+                          </div>
+
+                          <div class="mt-2">
+                            <v-chip
+                              size="x-small"
+                              color="success"
+                              prepend-icon="mdi-check-circle"
+                            >
+                              ພົບຂໍ້ມູນ
+                            </v-chip>
+                          </div>
+                        </div>
+                      </v-col>
+                      <v-col cols="6">
+                        <div class="ml-2">
+                          <p style="color: orange">
+                            ຢືນຢັນການໄດ້ຮັບອານຸຍາດແລະຢີນຍອມຈາກເຈົ້າຂອງຂໍ້ມູນ
+                          </p>
+                          <p style="color: green">
+                            ຂ້າພະເຈົ້າຢືນຢັນວ່າໄດ້ຮັບການຍິນຍອມເປີດເຜີຍຂໍ້ມູນຈາກເຈົ້າຂອງຂໍ້ມູນແລ້ວ
+                            ແລະຮັບຮູ້ວ່າການນໍາໃຊ້ຂໍ້ມູນນີ້ຈະເປັນໄປຕາມກົດໝາຍທີ່ກ່ຽວຂ້ອງ
+                          </p>
+                          <p style="color: #1976d2">
+                            ຖ້າຢືນຢັນເອົາບົດລາຍງານນີ້ແມ່ນຈະໄດ້ເສຍຄ່າທຳນຽມ:
+                            <b class="fee-amount">{{ getSingleFeeAmount() }}</b>
+                          </p>
+                        </div>
+                      </v-col>
+                    </v-row>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </div>
+
+          <v-alert
+            v-if="foundItems.length > 0"
+            type="info"
+            variant="tonal"
+            class="mt-4"
+            role="status"
+            aria-live="polite"
+          >
+            <div class="d-flex align-center">
+              <v-icon class="mr-2" aria-hidden="true">mdi-information</v-icon>
+              <div>
+                <strong>ສະຫຼຸບການດຳເນີນການ:</strong><br>
+                📋 ທັງໝົດ: {{ foundItems.length }} ລາຍການ |
+                📄 ເອົາບົດລາຍງານ: {{ selectedItems.length }} ລາຍການ |
+                🔄 ອັບເດດສະຖານະ: {{ foundItems.length - selectedItems.length }} ລາຍການ<br>
+                💰 ຄ່າທຳນຽມ: {{ calculateFee(selectedItems.length) }}
+              </div>
+            </div>
+          </v-alert>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="closeDialog"
+            color="grey"
+            variant="outlined"
+            prepend-icon="mdi-close"
+            :aria-label="ຍົກເລີກແລະປິດໜ້າຕ່າງ"
+          >
+            ຍົກເລີກ
+          </v-btn>
+          <v-btn
+            @click="processSelectedItems"
+            color="success"
+            :disabled="selectedItems.length === 0"
+            prepend-icon="mdi-document"
+            class="ml-2"
+            :aria-label="`ດຳເນີນການກັບ ${selectedItems.length} ລາຍການທີ່ເລືອກ`"
+          >
+            ດຳເນີນການ ({{ selectedItems.length }} ລາຍການ)
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Loading and Error States -->
+    <div v-if="isloading" class="d-flex justify-center align-center" role="status" aria-live="polite">
+      <v-progress-circular indeterminate color="primary"></v-progress-circular>
+      <span class="ml-2">ກຳລັງໂຫຼດ....</span>
     </div>
-    <div v-if="error">ເກິດຂໍ້ຜິດພາດບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້</div>
+    <div v-if="error" role="alert" class="error-message">ເກິດຂໍ້ຜິດພາດບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້</div>
+
+    <!-- Data Table -->
     <div v-else>
       <v-data-table
         :items="filteredData"
         item-key="name"
         items-per-page="10"
         :headers="header"
+        role="table"
+        aria-label="ຕາຕະລາງຂໍ້ມູນການຄົ້ນຫາ"
       >
-        <!-- const header = ref([
-  { title: "ລຳດັບ", value: "id" },
-  { title: "ລະຫັດສະມາຊິກ", value: "user_id" },
-  { title: "ຊື່ຟາຍ", value: "fileName" },
-  { title: "ຈຳນວນຄົ້ນຫາທັງໝົດ", value: "total" },
-  { title: "ຄົ້ນຫາພົບ", value: "searchtrue" },
-  { title: "ຂໍ້ມູນສໍ້າກັນ", value: "count_duplicates" },
-  { title: "ຄົ້ນຫາບໍ່ພົບ", value: "searchfals" },
-  { title: "ມື້ສົ່ງ", value: "insertDate" },
-]); -->
         <template v-slot:header.id="{ column }">
           <b style="color: blue">{{ column.title }}</b>
         </template>
@@ -593,62 +991,108 @@ const getDisplayText = (item: any) => {
         <template v-slot:header.insertDate="{ column }">
           <b style="color: blue">{{ column.title }}</b>
         </template>
+
         <template v-slot:item.user_id="{ item }">
           {{ mapMemberInfo(item.user_id) }}
         </template>
+
         <template v-slot:item.total="{ item }">
-          <v-chip color="primary" text-color="white">{{
-            Number(item.searchtrue) +
-            Number(item.searchfals) +
-            Number(item.count_duplicates)
-          }}</v-chip>
+          <v-chip color="primary" text-color="white">
+            {{
+              Number(item.searchtrue) +
+              Number(item.searchfals) +
+              Number(item.count_duplicates)
+            }}
+          </v-chip>
         </template>
+
         <template v-slot:item.count_duplicates="{ item }">
-          <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການຄົ້ນຫາທີ່ຂໍ້ມູນສໍ້າກັນ"
-            ><template v-slot:activator="{ props }">
-              <a :href="`../duplicates_batefile/?id=${item.id}`">
+          <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການຄົ້ນຫາທີ່ຂໍ້ມູນສໍ້າກັນ">
+            <template v-slot:activator="{ props }">
+              <a 
+                :href="`../duplicates_batefile/?id=${item.id}`"
+                :aria-label="`ເບິ່ງລາຍການຂໍ້ມູນສໍ້າກັນ ${item.count_duplicates} ລາຍການ`"
+              >
                 <v-chip color="warning" text-color="white" v-bind="props">
                   {{ item.count_duplicates }}
-                </v-chip></a
-              ></template
-            ></v-tooltip
-          >
-        </template>
-        <template v-slot:item.insertDate="{ item }">
-          {{ new Date(item.insertDate).toLocaleDateString() }}
-        </template>
-        <!-- <template v-slot:item.user_id="{ item }">
-          <p v-if="user?.MID.id === '01'">{{ item.user_id }}</p>
-        </template> -->
-        <template v-slot:item.index="{ index, item }">
-          <p>{{ item.index }}</p>
-        </template>
-        <template v-slot:item.searchtrue="{ item }">
-          <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການທີ່ຄົ້ນຫາພົບ">
-            <template v-slot:activator="{ props }">
-              <a :href="`../saerchtrue?id=${item.id}`">
-                <v-chip color="success" text-color="white" v-bind="props">{{
-                  item.searchtrue
-                }}</v-chip></a
-              ></template
-            ></v-tooltip
-          >
-        </template>
-        <template v-slot:item.searchfals="{ item }">
-          <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການທີ່ຄົ້ນບໍ່ພົບ ">
-            <template v-slot:activator="{ props }">
-              <a :href="`../fals?id=${item.id}`">
-                <v-chip color="error" text-color="white" v-bind="props">{{
-                  item.searchfals
-                }}</v-chip>
+                </v-chip>
               </a>
             </template>
           </v-tooltip>
         </template>
-        <!-- <template v-slot:header.user_id style="color: green">
-          <p v-if="user?.MID.id === '01'">ລະຫັດສະມາຊິກ</p>
-        </template> -->
+
+        <template v-slot:item.insertDate="{ item }">
+          {{ new Date(item.insertDate).toLocaleDateString() }}
+        </template>
+
+        <template v-slot:item.index="{ index, item }">
+          <p>{{ item.index }}</p>
+        </template>
+
+        <template v-slot:item.searchtrue="{ item }">
+          <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການທີ່ຄົ້ນຫາພົບ">
+            <template v-slot:activator="{ props }">
+              <a 
+                :href="`../saerchtrue?id=${item.id}`"
+                :aria-label="`ເບິ່ງລາຍການທີ່ຄົ້ນຫາພົບ ${item.searchtrue} ລາຍການ`"
+              >
+                <v-chip color="success" text-color="white" v-bind="props">
+                  {{ item.searchtrue }}
+                </v-chip>
+              </a>
+            </template>
+          </v-tooltip>
+        </template>
+
+        <template v-slot:item.searchfals="{ item }">
+          <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການທີ່ຄົ້ນບໍ່ພົບ">
+            <template v-slot:activator="{ props }">
+              <a 
+                :href="`../fals?id=${item.id}`"
+                :aria-label="`ເບິ່ງລາຍການທີ່ຄົ້ນບໍ່ພົບ ${item.searchfals} ລາຍການ`"
+              >
+                <v-chip color="error" text-color="white" v-bind="props">
+                  {{ item.searchfals }}
+                </v-chip>
+              </a>
+            </template>
+          </v-tooltip>
+        </template>
       </v-data-table>
     </div>
   </div>
 </template>
+
+<style scoped>
+.selected-item {
+  border: 2px solid #1976d2 !important;
+  background-color: #f3f9ff !important;
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+.selection-container {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: #fafafa;
+}
+
+.selection-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.selection-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.selection-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.selection-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+</style>

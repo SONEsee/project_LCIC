@@ -162,7 +162,7 @@ const headers = computed(() => {
   ];
 
   if (user.value && user.value.MID.id === "01") {
-    baseHeaders.splice(2, 0, { title: "ລະຫັດທະນາຄານ", value: "user_id" });
+    baseHeaders.splice(1, 0, { title: "ລະຫັດທະນາຄານ", value: "user_id" });
   }
 
   return baseHeaders;
@@ -739,14 +739,16 @@ onMounted(async () => {
     <template v-slot:header.FID>
       <th style="color: #0d47a1">{{ $t("id") }}</th>
     </template>
-    <template v-slot:header.fileName>
-      <th style="color: #0d47a1">ຊື່ໄຟລ໌</th>
-    </template>
     <template v-slot:header.user_id>
       <th style="color: #0d47a1" v-if="user && user.MID.id === '01'">
         ລະຫັດທະນາຄານ
       </th>
     </template>
+    <template v-slot:header.fileName>
+      <th style="color: #0d47a1">ຊື່ໄຟລ໌</th>
+    </template>
+
+    
     <template v-slot:header.fileSize>
       <th style="color: #0d47a1">ຂະໜາດຟາຍ</th>
     </template>
@@ -765,7 +767,14 @@ onMounted(async () => {
     <template v-slot:header.actions>
       <th style="color: #0d47a1">ການດຳເນີນການ</th>
     </template>
-
+<template
+      v-slot:item.user_id="{ item }"
+      v-if="user && user.MID.id === '01'"
+    >
+      <v-chip color="primary" size="small">
+        {{ mapMemberInfo(item.user_id) }}
+      </v-chip>
+    </template>
     <template v-slot:item.fileName="{ item }">
       <v-tooltip :text="`ກົດເພື່ອເບິ່ງເນື້ອຫາຂອງຟາຍ: ${item.fileName}`">
         <template v-slot:activator="{ props }">
@@ -789,14 +798,7 @@ onMounted(async () => {
       </v-tooltip>
     </template>
 
-    <template
-      v-slot:item.user_id="{ item }"
-      v-if="user && user.MID.id === '01'"
-    >
-      <v-chip color="primary" size="small">
-        {{ mapMemberInfo(item.user_id) }}
-      </v-chip>
-    </template>
+    
     <template v-slot:item.fileSize="{ item }">
       <span class="text-body-2">
         <!-- <span v-if="Number(item.fileSize) / 1024 / 1024 < 1">

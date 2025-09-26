@@ -169,7 +169,7 @@ const headers = computed(() => {
   ];
 
   if (user.value && user.value.MID.id === "01") {
-    baseHeaders.splice(2, 0, { title: "ລະຫັດທະນາຄານ", value: "user_id" });
+    baseHeaders.splice(1, 0, { title: "ລະຫັດທະນາຄານ", value: "user_id" });
   }
 
   return baseHeaders;
