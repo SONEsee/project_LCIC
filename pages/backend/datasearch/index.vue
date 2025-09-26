@@ -353,6 +353,12 @@ const insertSearchLog = async (item: EnterpriseInfo) => {
     const token = localStorage.getItem("access_token");
     const config = useRuntimeConfig();
 
+    console.log("Inserting search log with data:", {
+      EnterpriseID: item.EnterpriseID,
+      LCIC_code: item.LCIC_code,
+      CatalogID: CatalogID,
+    });
+
     const response = await fetch(
       `${config.public.strapi.url}api/insert_searchlog/`,
       {
