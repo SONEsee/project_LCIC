@@ -28,16 +28,21 @@ const dataFee = computed(() => {
 // Helper functions for safe fee calculation
 const calculateFee = (itemCount: number) => {
   if (dataFee.value.length > 0 && dataFee.value[0]?.chg_amount) {
-    return new Intl.NumberFormat("lo-LA").format(
-      dataFee.value[0].chg_amount * itemCount
-    ) + " ກີບ";
+    return (
+      new Intl.NumberFormat("lo-LA").format(
+        dataFee.value[0].chg_amount * itemCount
+      ) + " ກີບ"
+    );
   }
   return "0 ກີບ";
 };
 
 const getSingleFeeAmount = () => {
   if (dataFee.value.length > 0 && dataFee.value[0]?.chg_amount) {
-    return new Intl.NumberFormat("lo-LA").format(dataFee.value[0].chg_amount) + " ກີບ";
+    return (
+      new Intl.NumberFormat("lo-LA").format(dataFee.value[0].chg_amount) +
+      " ກີບ"
+    );
   }
   return "ກຳລັງໂຫຼດຂໍ້ມູນຄ່າທຳນຽມ...";
 };
@@ -318,12 +323,12 @@ const header = ref([
   { title: "ລຳດັບ", value: "id" },
   { title: "ລະຫັດສະມາຊິກ", value: "user_id" },
   { title: "ຊື່ຟາຍ", value: "fileName" },
-  { title: "ຈຳນວນຄົ້ນຫາທັງໝົດ", value: "total" },
-  { title: "ຄົ້ນຫາພົບ", value: "totalsearch" },
-  { title: "ຄົ້ນຫາພົບເອົາບົດລາຍງານ", value: "searchtrue" },
-  { title: "ຄົ້ນຫາພົບບໍ່ເອົາບົດລາຍງານ", value: "not_report" },
-  { title: "ຂໍ້ມູນສໍ້າກັນ", value: "count_duplicates" },
+  { title: "ທັງໝົດ", value: "total" },
+  { title: "ມີບົດລາຍງານ", value: "totalsearch" },
+  { title: "ພິມບົດລາຍງານ", value: "searchtrue" },
+  { title: "ບໍ່ເອົາລາຍງານ", value: "not_report" },
   { title: "ຄົ້ນຫາບໍ່ພົບ", value: "searchfals" },
+  { title: "ຂໍ້ມູນສໍ້າກັນ", value: "count_duplicates" },
   { title: "ມື້ສົ່ງ", value: "insertDate" },
 ]);
 
@@ -388,7 +393,7 @@ const uploadFile = async () => {
       icon: "success",
       title: "ອັບໂຫຼດສຳເລັດ!",
       confirmButtonText: "ຕົກລົງ",
-      timer:1000,
+      timer: 1000,
     }).then(() => {
       memberinfoStore.getMemberInfo();
       batefileStore.getData();
@@ -420,9 +425,15 @@ const processSelectedItems = async () => {
       title: "ຢືນຢັນການດຳເນີນການ",
       html: `
         <div style="text-align: left;">
-          <p><strong>ລາຍການທີ່ເລືອກເອົາບົດລາຍງານ:</strong> ${selectedItems.value.length} ລາຍການ</p>
-          <p><strong>ລາຍກາທີ່ບໍ່ເອົາບົດລາຍງານ:</strong> ${foundItems.value.length - selectedItems.value.length} ລາຍການ</p>
-          <p><strong>ຄ່າທຳນຽມທັງໝົດ:</strong> ${calculateFee(selectedItems.value.length)}</p>
+          <p><strong>ລາຍການທີ່ເລືອກເອົາບົດລາຍງານ:</strong> ${
+            selectedItems.value.length
+          } ລາຍການ</p>
+          <p><strong>ລາຍກາທີ່ບໍ່ເອົາບົດລາຍງານ:</strong> ${
+            foundItems.value.length - selectedItems.value.length
+          } ລາຍການ</p>
+          <p><strong>ຄ່າທຳນຽມທັງໝົດ:</strong> ${calculateFee(
+            selectedItems.value.length
+          )}</p>
         </div>
       `,
       icon: "question",
@@ -446,7 +457,6 @@ const processSelectedItems = async () => {
       },
     });
 
- 
     const selectedItemIds = selectedItems.value.map((item) => item.id);
     const unselectedItemIds = foundItems.value
       .filter((item) => !selectedItemIds.includes(item.id))
@@ -455,12 +465,10 @@ const processSelectedItems = async () => {
     console.log("Selected items:", selectedItemIds);
     console.log("Unselected items to update:", unselectedItemIds);
 
-    
     if (unselectedItemIds.length > 0) {
       await bulkUpdateSearchResults(unselectedItemIds);
     }
 
-    
     for (const item of selectedItems.value) {
       await insertSearchLog(item);
     }
@@ -522,8 +530,8 @@ const bulkUpdateSearchResults = async (ids: any) => {
     }
 
     const data = await response.json();
-     memberinfoStore.getMemberInfo();
-      batefileStore.getData();
+    memberinfoStore.getMemberInfo();
+    batefileStore.getData();
     console.log("Bulk update result:", data);
     return data;
   } catch (error) {
@@ -539,7 +547,6 @@ const selectAll = () => {
 const clearAll = () => {
   selectedItems.value = [];
 };
-
 
 const insertSearchLog = async (item: any) => {
   try {
@@ -723,10 +730,10 @@ const getDisplayText = (item: any) => {
       </v-row>
     </v-col>
 
-    <!-- Fixed Selection Dialog with proper accessibility -->
-    <v-dialog 
-      v-model="showSelectionDialog" 
-      max-width="950px" 
+   
+    <v-dialog
+      v-model="showSelectionDialog"
+      max-width="950px"
       persistent
       :retain-focus="false"
       :aria-modal="true"
@@ -737,13 +744,14 @@ const getDisplayText = (item: any) => {
       content-class="selection-dialog"
     >
       <v-card>
-        <v-card-title 
-          
-          class="bg-primary white--text"
+        <v-card-title
+          class="bg-primary white--text mt-12"
           tabindex="0"
           ref="dialogTitle"
         >
-          <v-icon class="mr-2 white--text" aria-hidden="true">mdi-checkbox-marked-circle</v-icon>
+          <v-icon class="mr-2 white--text" aria-hidden="true"
+            >mdi-checkbox-marked-circle</v-icon
+          >
           ເລືອກລາຍການທີ່ຕ້ອງການດຳເນີນການຕໍ່ເພື່ອຄົ້ນຫາບົດລາຍງານ
         </v-card-title>
 
@@ -751,20 +759,27 @@ const getDisplayText = (item: any) => {
           <v-row align="center">
             <v-col cols="4">
               <v-chip color="info" size="small">
-                <v-icon start size="small" aria-hidden="true">mdi-database-search</v-icon>
+                <v-icon start size="small" aria-hidden="true"
+                  >mdi-database-search</v-icon
+                >
                 ພົບທັງໝົດ: {{ foundItems.length }} ລາຍການ
               </v-chip>
             </v-col>
             <v-col cols="4">
               <v-chip color="success" size="small">
-                <v-icon start size="small" aria-hidden="true">mdi-checkbox-marked</v-icon>
+                <v-icon start size="small" aria-hidden="true"
+                  >mdi-checkbox-marked</v-icon
+                >
                 ເລືອກໄປ: {{ selectedItems.length }} ລາຍການ
               </v-chip>
             </v-col>
             <v-col cols="4">
               <v-chip color="orange" size="small">
-                <v-icon start size="small" aria-hidden="true">mdi-update</v-icon>
-                ລາຍການທີ່ບໍ່ເອົາບົດລາຍງານ: {{ foundItems.length - selectedItems.length }} ລາຍການ
+                <v-icon start size="small" aria-hidden="true"
+                  >mdi-update</v-icon
+                >
+                ລາຍການທີ່ບໍ່ເອົາບົດລາຍງານ:
+                {{ foundItems.length - selectedItems.length }} ລາຍການ
               </v-chip>
             </v-col>
           </v-row>
@@ -801,7 +816,7 @@ const getDisplayText = (item: any) => {
                 size="small"
                 prepend-icon="mdi-checkbox-multiple-blank"
                 block
-                :aria-label="ຍົກເລີກການເລືອກທັງໝົດ"
+                :aria-label="`ຍົກເລີກການເລືອກທັງໝົດ`"
               >
                 ຍົກເລີກທັງໝົດ
               </v-btn>
@@ -818,7 +833,11 @@ const getDisplayText = (item: any) => {
             tabindex="0"
           >
             <v-row>
-              <v-col v-for="(item, index) in foundItems" :key="`item-${item.id || index}`" cols="12">
+              <v-col
+                v-for="(item, index) in foundItems"
+                :key="`item-${item.id || index}`"
+                cols="12"
+              >
                 <v-card
                   class="mb-3"
                   :class="{ 'selected-item': selectedItems.includes(item) }"
@@ -826,25 +845,25 @@ const getDisplayText = (item: any) => {
                   :ripple="false"
                   role="option"
                   :aria-selected="selectedItems.includes(item)"
-                  :aria-label="`ລາຍການ ${index + 1}: Enterprise ID ${item.com_enterprise_code}, LCIC Code ${item.LCIC_code}`"
+                  :aria-label="`ລາຍການ ${index + 1}: Enterprise ID ${
+                    item.com_enterprise_code
+                  }, LCIC Code ${item.LCIC_code}`"
                 >
                   <v-card-text class="pa-3">
                     <v-row align="center" no-gutters>
-                      <v-col cols="1">
-                        <v-checkbox
-                          v-model="selectedItems"
-                          :value="item"
-                          density="compact"
-                          hide-details
-                          color="primary"
-                          :aria-label="`ເລືອກລາຍການ Enterprise ID ${item.com_enterprise_code}`"
-                        ></v-checkbox>
-                      </v-col>
+                      
                       <v-col cols="5">
                         <div class="ml-2">
                           <div class="mb-2 d-flex align-center">
-                            <v-icon size="small" class="mr-2 text-primary" aria-hidden="true">mdi-office-building</v-icon>
-                            <span class="text-body-2 font-weight-medium">Enterprise ID:</span>
+                            <v-icon
+                              size="small"
+                              class="mr-2 text-primary"
+                              aria-hidden="true"
+                              >mdi-office-building</v-icon
+                            >
+                            <span class="text-body-2 font-weight-medium"
+                              >Enterprise ID:</span
+                            >
                             <v-chip
                               size="small"
                               color="primary"
@@ -856,8 +875,15 @@ const getDisplayText = (item: any) => {
                           </div>
 
                           <div class="mb-2 d-flex align-center">
-                            <v-icon size="small" class="mr-2 text-secondary" aria-hidden="true">mdi-barcode</v-icon>
-                            <span class="text-body-2 font-weight-medium">LCIC Code:</span>
+                            <v-icon
+                              size="small"
+                              class="mr-2 text-secondary"
+                              aria-hidden="true"
+                              >mdi-barcode</v-icon
+                            >
+                            <span class="text-body-2 font-weight-medium"
+                              >LCIC Code:</span
+                            >
                             <v-chip
                               size="small"
                               color="secondary"
@@ -868,10 +894,19 @@ const getDisplayText = (item: any) => {
                             </v-chip>
                           </div>
 
-                          <div v-if="item.enterpriseNameLao" class="d-flex align-center">
-                            <v-icon size="small" class="mr-2 text-grey" aria-hidden="true">mdi-domain</v-icon>
+                          <div
+                            v-if="item.enterpriseNameLao"
+                            class="d-flex align-center"
+                          >
+                            <v-icon
+                              size="small"
+                              class="mr-2 text-grey"
+                              aria-hidden="true"
+                              >mdi-domain</v-icon
+                            >
                             <span class="text-body-2 text-grey-darken-1">
-                              <strong>ບໍລິສັດ:</strong> {{ item.enterpriseNameLao }}
+                              <strong>ບໍລິສັດ:</strong>
+                              {{ item.enterpriseNameLao }}
                             </span>
                           </div>
 
@@ -901,6 +936,16 @@ const getDisplayText = (item: any) => {
                           </p>
                         </div>
                       </v-col>
+                      <v-col cols="1">
+                        <v-checkbox
+                          v-model="selectedItems"
+                          :value="item"
+                          density="compact"
+                          hide-details
+                          color="primary"
+                          :aria-label="`ເລືອກລາຍການ Enterprise ID ${item.com_enterprise_code}`"
+                        ></v-checkbox>
+                      </v-col>
                     </v-row>
                   </v-card-text>
                 </v-card>
@@ -919,10 +964,10 @@ const getDisplayText = (item: any) => {
             <div class="d-flex align-center">
               <v-icon class="mr-2" aria-hidden="true">mdi-information</v-icon>
               <div>
-                <strong>ສະຫຼຸບການດຳເນີນການ:</strong><br>
-                📋 ທັງໝົດ: {{ foundItems.length }} ລາຍການ |
-                📄 ເອົາບົດລາຍງານ: {{ selectedItems.length }} ລາຍການ |
-                🔄 ບໍ່ເອົາບົດລາຍງານ: {{ foundItems.length - selectedItems.length }} ລາຍການ<br>
+                <strong>ສະຫຼຸບການດຳເນີນການ:</strong><br />
+                📋 ທັງໝົດ: {{ foundItems.length }} ລາຍການ | 📄 ເອົາບົດລາຍງານ:
+                {{ selectedItems.length }} ລາຍການ | 🔄 ບໍ່ເອົາບົດລາຍງານ:
+                {{ foundItems.length - selectedItems.length }} ລາຍການ<br />
                 💰 ຄ່າທຳນຽມ: {{ calculateFee(selectedItems.length) }}
               </div>
             </div>
@@ -955,18 +1000,25 @@ const getDisplayText = (item: any) => {
         </v-card-actions>
       </v-card>
     </v-dialog>
-<!-- <pre>{{ filteredData }}</pre> -->
+    <!-- <pre>{{ filteredData }}</pre> -->
     <!-- Loading and Error States -->
-    <div v-if="isloading" class="d-flex justify-center align-center" role="status" aria-live="polite">
+    <div
+      v-if="isloading"
+      class="d-flex justify-center align-center"
+      role="status"
+      aria-live="polite"
+    >
       <v-progress-circular indeterminate color="primary"></v-progress-circular>
       <span class="ml-2">ກຳລັງໂຫຼດ....</span>
     </div>
-    <div v-if="error" role="alert" class="error-message">ເກິດຂໍ້ຜິດພາດບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້</div>
+    <div v-if="error" role="alert" class="error-message">
+      ເກິດຂໍ້ຜິດພາດບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້
+    </div>
 
     <!-- Data Table -->
     <div v-else>
       <v-data-table
-      class="text-no-wrap"
+        class="text-no-wrap"
         :items="filteredData"
         item-key="name"
         items-per-page="10"
@@ -996,13 +1048,13 @@ const getDisplayText = (item: any) => {
           <b style="color: orange">{{ column.title }}</b>
         </template>
         <template v-slot:header.totalsearch="{ column }">
-          <b style="color: #33691E">{{ column.title }}</b>
+          <b style="color: #33691e">{{ column.title }}</b>
         </template>
         <template v-slot:header.insertDate="{ column }">
           <b style="color: blue">{{ column.title }}</b>
         </template>
         <template v-slot:header.not_report="{ column }">
-          <b style="color: #1976D2">{{ column.title }}</b>
+          <b style="color: #1976d2">{{ column.title }}</b>
         </template>
 
         <template v-slot:item.user_id="{ item }">
@@ -1010,19 +1062,19 @@ const getDisplayText = (item: any) => {
         </template>
 
         <template v-slot:item.total="{ item }">
-   <v-chip color="primary">       
+          <v-chip color="primary">
             {{
               Number(item.searchtrue) +
               Number(item.searchfals) +
               Number(item.count_duplicates)
             }}
-  </v-chip>        
+          </v-chip>
         </template>
 
         <template v-slot:item.count_duplicates="{ item }">
           <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການຄົ້ນຫາທີ່ຂໍ້ມູນສໍ້າກັນ">
             <template v-slot:activator="{ props }">
-              <a 
+              <a
                 :href="`../duplicates_batefile/?id=${item.id}`"
                 :aria-label="`ເບິ່ງລາຍການຂໍ້ມູນສໍ້າກັນ ${item.count_duplicates} ລາຍການ`"
               >
@@ -1041,30 +1093,48 @@ const getDisplayText = (item: any) => {
         <template v-slot:item.index="{ index, item }">
           <p>{{ item.index }}</p>
         </template>
-        <template v-slot:item.totalsearch="{item}">
+        <template v-slot:item.totalsearch="{ item }">
           <v-chip color="light-green-darken-4">
-          {{ item.searchtrue || 0}}</v-chip>
+            {{ item.searchtrue || 0 }}</v-chip
+          >
         </template>
 
         <template v-slot:item.searchtrue="{ item }">
           <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການທີ່ຄົ້ນຫາພົບ">
             <template v-slot:activator="{ props }">
-              <a 
+              <a
                 :href="`../saerchtrue?id=${item.id}`"
                 :aria-label="`ເບິ່ງລາຍການທີ່ຄົ້ນຫາພົບ ${item.searchtrue} ລາຍການ`"
               >
-                <v-btn color="success" text-color="white" v-bind="props" flat size="small" small>
-                  {{ Number(item.searchtrue)- Number(item.not_report) }}
+                <v-btn
+                  color="success"
+                  text-color="white"
+                  v-bind="props"
+                  flat
+                  size="small"
+                  small
+                >
+                  {{ Number(item.searchtrue) - Number(item.not_report) }}
                 </v-btn>
               </a>
             </template>
           </v-tooltip>
         </template>
-        <template v-slot:item.not_report="{item}">
-          <v-tooltip :text="`ລາຍການທີ່ຄົນຫາພົບແຕ່ບໍ່ເອົາບົດລາຍງານ ${item.not_report ?? 0}`">
-            <template v-slot:activator="{props}">
-              <v-btn v-bind="props" color="info" flat  @click="navigateTo(`../saerchtrue/not_report?id=${item.id}`)">
-              {{ item.not_report ?? "0"}}</v-btn>
+        <template v-slot:item.not_report="{ item }">
+          <v-tooltip
+            :text="`ລາຍການທີ່ຄົນຫາພົບແຕ່ບໍ່ເອົາບົດລາຍງານ ${
+              item.not_report ?? 0
+            }`"
+          >
+            <template v-slot:activator="{ props }">
+              <v-btn
+                v-bind="props"
+                color="info"
+                flat
+                @click="navigateTo(`../saerchtrue/not_report?id=${item.id}`)"
+              >
+                {{ item.not_report ?? "0" }}</v-btn
+              >
             </template>
           </v-tooltip>
         </template>
@@ -1072,9 +1142,11 @@ const getDisplayText = (item: any) => {
         <template v-slot:item.searchfals="{ item }">
           <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການທີ່ຄົ້ນບໍ່ພົບ">
             <template v-slot:activator="{ props }">
-              <a 
+              <a
                 :href="`../fals?id=${item.id}`"
-                :aria-label="`ເບິ່ງລາຍການທີ່ຄົ້ນບໍ່ພົບ ${item.searchfals ?? '0'} ລາຍການ`"
+                :aria-label="`ເບິ່ງລາຍການທີ່ຄົ້ນບໍ່ພົບ ${
+                  item.searchfals ?? '0'
+                } ລາຍການ`"
               >
                 <v-btn color="error" text-color="white" v-bind="props">
                   {{ item.searchfals }}
