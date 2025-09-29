@@ -386,6 +386,7 @@ const uploadFile = async () => {
       icon: "success",
       title: "ອັບໂຫຼດສຳເລັດ!",
       confirmButtonText: "ຕົກລົງ",
+      timer:1000,
     }).then(() => {
       memberinfoStore.getMemberInfo();
       batefileStore.getData();
@@ -417,8 +418,8 @@ const processSelectedItems = async () => {
       title: "ຢືນຢັນການດຳເນີນການ",
       html: `
         <div style="text-align: left;">
-          <p><strong>ລາຍການທີ່ເລືອກ:</strong> ${selectedItems.value.length} ລາຍການ</p>
-          <p><strong>ລາຍການທີ່ຈະອັບເດດ:</strong> ${foundItems.value.length - selectedItems.value.length} ລາຍການ</p>
+          <p><strong>ລາຍການທີ່ເລືອກເອົາບົດລາຍງານ:</strong> ${selectedItems.value.length} ລາຍການ</p>
+          <p><strong>ລາຍກາທີ່ບໍ່ເອົາບົດລາຍງານ:</strong> ${foundItems.value.length - selectedItems.value.length} ລາຍການ</p>
           <p><strong>ຄ່າທຳນຽມທັງໝົດ:</strong> ${calculateFee(selectedItems.value.length)}</p>
         </div>
       `,
@@ -468,7 +469,7 @@ const processSelectedItems = async () => {
       html: `
         <div style="text-align: left;">
           <p>✅ ເອົາບົດລາຍງານ: ${selectedItems.value.length} ລາຍການ</p>
-          <p>🔄 ອັບເດດສະຖານະ: ${unselectedItemIds.length} ລາຍການ</p>
+          <p>🔄 ລາຍກາທີ່ບໍ່ເອົາບົດລາຍງານ: ${unselectedItemIds.length} ລາຍການ</p>
         </div>
       `,
       timer: 2000,
@@ -758,7 +759,7 @@ const getDisplayText = (item: any) => {
             <v-col cols="4">
               <v-chip color="orange" size="small">
                 <v-icon start size="small" aria-hidden="true">mdi-update</v-icon>
-                ຈະອັບເດດ: {{ foundItems.length - selectedItems.length }} ລາຍການ
+                ລາຍການທີ່ບໍ່ເອົາບົດລາຍງານ: {{ foundItems.length - selectedItems.length }} ລາຍການ
               </v-chip>
             </v-col>
           </v-row>
