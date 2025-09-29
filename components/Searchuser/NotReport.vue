@@ -67,14 +67,6 @@ const initializeUser = () => {
 
 initializeUser();
 
-// ເພີ່ມຟັງຊັນກວດສອບວ່າເປັນວັນດຽວກັນບໍ່
-const isToday = (dateString: string | null): boolean => {
-  if (!dateString) return false;
-  const today = dayjs().format('YYYY-MM-DD');
-  const itemDate = dayjs(dateString).format('YYYY-MM-DD');
-  return today === itemDate;
-};
-
 
 definePageMeta({
   layout: "backend",
@@ -102,19 +94,19 @@ const header = computed(() => {
     { title: "ຊື່ບໍລິສັດ (ພາສາລາວ)", value: "enterpriseNameLao" },
     { title: "ສະກຸນເງິນລົງທຶນ", value: "investmentCurrency" },
     { title: "ວັນທີສ້າງ", value: "created_at" },
-    { title: "ສະຖານະ", value: "status" },
+    // { title: "ສະຖານະ", value: "status" },
   ];
 
-  if (user_id.value !== '01') {
-    headers.push({ title: "ການກະທຳ", value: "action" });
-  }
+//   if (user_id.value !== '01') {
+//     headers.push({ title: "ການກະທຳ", value: "action" });
+//   }
   
   return headers;
 });
 
 const processedResults = computed(() =>
   results.value.filter(
-    (item) => item.status === "Found" || item.status === "3"
+    (item) => item.status === "Not_Report" || item.status === "3"
   )
 );
 
@@ -221,7 +213,6 @@ const processBatchReports = async (items: Result[]) => {
     return 0;
   }
 };
-
 const openReport = async (item: Result) => {
   processingItems.value[item.id] = true;
   try {
@@ -271,8 +262,8 @@ onMounted(() => {
 
 console.log("user_id", user_id.value);
 </script>
-
 <template>
+  <!-- <pre>{{ processedResults }}</pre> -->
   <v-data-table
     v-if="processedResults.length > 0"
     :items="processedResults"
@@ -284,25 +275,23 @@ console.log("user_id", user_id.value);
     <template v-slot:top>
       <v-toolbar flat color="">
         <v-toolbar-title>
-          <p>ການຄົ້ນຫາທີ່ພົບຂໍ້ມູນໃນຖານຂໍ້ມູນຂອງ ຂສລ</p>
+          <p>ການຄົ້ນຫາທີ່ພົບຂໍ້ມູນໃນຖານຂໍ້ມູນຂອງ ຂສລ ແຕ່ບໍ່ໄດຮັບການກົດຢືນຢັນເພື່ອເອົາບົດລາຍງານ</p>
         </v-toolbar-title>
-        <v-btn 
-          v-if="user?.MID.id !== '01'"
+        <!-- <v-btn 
+        v-if="user?.MID.id !== '01'"
           class="bg-primary" 
           @click="openAllReports"
           :loading="isProcessing"
           :disabled="isProcessing"
         >
           {{ isProcessing ? 'ກຳລັງດຳເນີນການ...' : 'ເປີດທັງໝົດ' }}
-        </v-btn>
+        </v-btn> -->
       </v-toolbar>
     </template>
 
     <template v-slot:item.action="{ item }">
-      <div>
-        <!-- ກໍລະນີທີ່ 1: status = 'Found' ແລະບໍ່ແມ່ນ admin -->
-        <v-btn 
-          v-if="item.status === 'Found' && user?.MID.id !== '01'"
+      <div v-if="item.status === 'Found'">
+        <v-btn v-if="user?.MID.id !== '01'"
           class="bg-primary" 
           @click="openReport(item)"
           :loading="processingItems[item.id]"
@@ -310,27 +299,16 @@ console.log("user_id", user_id.value);
         >
           ເປີດ
         </v-btn>
-        
-        <!-- ກໍລະນີທີ່ 2: status = '3', ເປັນວັນນີ້, ແລະບໍ່ແມ່ນ admin -->
-        <v-btn 
-          v-else-if="item.status === '3' && isToday(item.created_at) && user?.MID.id !== '01'"
-          class="bg-primary" 
-          @click="openReport(item)"
-          :loading="processingItems[item.id]"
-          :disabled="processingItems[item.id]"
-        >
-          ເປີດ
-        </v-btn>
-        
-        <!-- ກໍລະນີທີ່ 3: status = '3' ແລະບໍ່ແມ່ນວັນນີ້ -->
-        <v-chip 
-          v-else-if="item.status === '3'"
-          color="success"
-        >
+      </div>
+      <div v-else>
+        <v-chip color="success" v-if="item.status === '3'">
           <p>ເປີດແລ້ວ</p>
         </v-chip>
       </div>
     </template>
+    <!-- <template v-slot:item.created_at="{ item }">
+    {{   new Date(item.created_at).toLocaleDateString() }}
+    </template> -->
 
     <template v-slot:item.status="{ item }">
       <v-chip color="primary" v-if="item.status === 'Found'">
@@ -343,7 +321,6 @@ console.log("user_id", user_id.value);
         <v-icon icon="mdi-check-circle"></v-icon>
       </v-chip>
     </template>
-
     <template v-slot:item.created_at="{item}">
       {{ dayjs(item.created_at).format("DD/MM/YYYY") }}
     </template>
@@ -351,6 +328,7 @@ console.log("user_id", user_id.value);
 
   <div v-else>ບໍ່ມີລາຍການທີ່ມີສະຖານະ "Found" ທີ່ມີຢູ່.</div>
 
+ 
   <v-snackbar
     v-model="snackbar.show"
     :color="snackbar.color"
@@ -359,3 +337,4 @@ console.log("user_id", user_id.value);
     {{ snackbar.text }}
   </v-snackbar>
 </template>
+

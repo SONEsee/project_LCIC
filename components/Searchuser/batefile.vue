@@ -319,7 +319,9 @@ const header = ref([
   { title: "ລະຫັດສະມາຊິກ", value: "user_id" },
   { title: "ຊື່ຟາຍ", value: "fileName" },
   { title: "ຈຳນວນຄົ້ນຫາທັງໝົດ", value: "total" },
-  { title: "ຄົ້ນຫາພົບ", value: "searchtrue" },
+  { title: "ຄົ້ນຫາພົບ", value: "totalsearch" },
+  { title: "ຄົ້ນຫາພົບເອົາບົດລາຍງານ", value: "searchtrue" },
+  { title: "ຄົ້ນຫາພົບບໍ່ເອົາບົດລາຍງານ", value: "not_report" },
   { title: "ຂໍ້ມູນສໍ້າກັນ", value: "count_duplicates" },
   { title: "ຄົ້ນຫາບໍ່ພົບ", value: "searchfals" },
   { title: "ມື້ສົ່ງ", value: "insertDate" },
@@ -444,7 +446,7 @@ const processSelectedItems = async () => {
       },
     });
 
-    // Step 1: ເອົາ IDs ຂອງລາຍການທີ່ບໍ່ໄດ້ເລືອກ
+ 
     const selectedItemIds = selectedItems.value.map((item) => item.id);
     const unselectedItemIds = foundItems.value
       .filter((item) => !selectedItemIds.includes(item.id))
@@ -453,12 +455,12 @@ const processSelectedItems = async () => {
     console.log("Selected items:", selectedItemIds);
     console.log("Unselected items to update:", unselectedItemIds);
 
-    // Step 2: ຖ້າມີລາຍການທີ່ບໍ່ເລືອກ ໃຫ້ສົ່ງໄປ bulk update
+    
     if (unselectedItemIds.length > 0) {
       await bulkUpdateSearchResults(unselectedItemIds);
     }
 
-    // Step 3: ດຳເນີນການກັບລາຍການທີ່ເລືອກ
+    
     for (const item of selectedItems.value) {
       await insertSearchLog(item);
     }
@@ -734,7 +736,7 @@ const getDisplayText = (item: any) => {
     >
       <v-card>
         <v-card-title 
-          :id="dialogTitleId" 
+          
           class="bg-primary white--text"
           tabindex="0"
           ref="dialogTitle"
@@ -951,7 +953,7 @@ const getDisplayText = (item: any) => {
         </v-card-actions>
       </v-card>
     </v-dialog>
-
+<!-- <pre>{{ filteredData }}</pre> -->
     <!-- Loading and Error States -->
     <div v-if="isloading" class="d-flex justify-center align-center" role="status" aria-live="polite">
       <v-progress-circular indeterminate color="primary"></v-progress-circular>
@@ -962,6 +964,7 @@ const getDisplayText = (item: any) => {
     <!-- Data Table -->
     <div v-else>
       <v-data-table
+      class="text-no-wrap"
         :items="filteredData"
         item-key="name"
         items-per-page="10"
@@ -990,8 +993,14 @@ const getDisplayText = (item: any) => {
         <template v-slot:header.count_duplicates="{ column }">
           <b style="color: orange">{{ column.title }}</b>
         </template>
+        <template v-slot:header.totalsearch="{ column }">
+          <b style="color: #33691E">{{ column.title }}</b>
+        </template>
         <template v-slot:header.insertDate="{ column }">
           <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.not_report="{ column }">
+          <b style="color: #1976D2">{{ column.title }}</b>
         </template>
 
         <template v-slot:item.user_id="{ item }">
@@ -999,13 +1008,13 @@ const getDisplayText = (item: any) => {
         </template>
 
         <template v-slot:item.total="{ item }">
-          <v-chip color="primary" text-color="white">
+   <v-chip color="primary">       
             {{
               Number(item.searchtrue) +
               Number(item.searchfals) +
               Number(item.count_duplicates)
             }}
-          </v-chip>
+  </v-chip>        
         </template>
 
         <template v-slot:item.count_duplicates="{ item }">
@@ -1015,9 +1024,9 @@ const getDisplayText = (item: any) => {
                 :href="`../duplicates_batefile/?id=${item.id}`"
                 :aria-label="`ເບິ່ງລາຍການຂໍ້ມູນສໍ້າກັນ ${item.count_duplicates} ລາຍການ`"
               >
-                <v-chip color="warning" text-color="white" v-bind="props">
+                <v-btn color="warning" text-color="white" v-bind="props" flat>
                   {{ item.count_duplicates }}
-                </v-chip>
+                </v-btn>
               </a>
             </template>
           </v-tooltip>
@@ -1030,6 +1039,10 @@ const getDisplayText = (item: any) => {
         <template v-slot:item.index="{ index, item }">
           <p>{{ item.index }}</p>
         </template>
+        <template v-slot:item.totalsearch="{item}">
+          <v-chip color="light-green-darken-4">
+          {{ item.searchtrue || 0}}</v-chip>
+        </template>
 
         <template v-slot:item.searchtrue="{ item }">
           <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການທີ່ຄົ້ນຫາພົບ">
@@ -1038,10 +1051,18 @@ const getDisplayText = (item: any) => {
                 :href="`../saerchtrue?id=${item.id}`"
                 :aria-label="`ເບິ່ງລາຍການທີ່ຄົ້ນຫາພົບ ${item.searchtrue} ລາຍການ`"
               >
-                <v-chip color="success" text-color="white" v-bind="props">
-                  {{ item.searchtrue }}
-                </v-chip>
+                <v-btn color="success" text-color="white" v-bind="props" flat size="small" small>
+                  {{ Number(item.searchtrue)- Number(item.not_report) }}
+                </v-btn>
               </a>
+            </template>
+          </v-tooltip>
+        </template>
+        <template v-slot:item.not_report="{item}">
+          <v-tooltip :text="`ລາຍການທີ່ຄົນຫາພົບແຕ່ບໍ່ເອົາບົດລາຍງານ ${item.not_report ?? 0}`">
+            <template v-slot:activator="{props}">
+              <v-btn v-bind="props" color="info" flat  @click="navigateTo(`../saerchtrue/not_report?id=${item.id}`)">
+              {{ item.not_report ?? "0"}}</v-btn>
             </template>
           </v-tooltip>
         </template>
@@ -1051,11 +1072,11 @@ const getDisplayText = (item: any) => {
             <template v-slot:activator="{ props }">
               <a 
                 :href="`../fals?id=${item.id}`"
-                :aria-label="`ເບິ່ງລາຍການທີ່ຄົ້ນບໍ່ພົບ ${item.searchfals} ລາຍການ`"
+                :aria-label="`ເບິ່ງລາຍການທີ່ຄົ້ນບໍ່ພົບ ${item.searchfals ?? '0'} ລາຍການ`"
               >
-                <v-chip color="error" text-color="white" v-bind="props">
+                <v-btn color="error" text-color="white" v-bind="props">
                   {{ item.searchfals }}
-                </v-chip>
+                </v-btn>
               </a>
             </template>
           </v-tooltip>

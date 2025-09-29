@@ -37,8 +37,8 @@ export default {
     });
     const header = ref([
       { title: "ID", value: "id" },
-      { title: "LCIC ID", value: "lcicID" },
-      { title: "Enterprise Code", value: "com_enterprise_code" },
+      { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+      { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
     ]);
 
     const processedResults = computed(() =>
@@ -78,11 +78,14 @@ export default {
 </script>
 
 <template>
+  <div class="pa-4">
   <div class="d-flex justify-end align-center mr-3 mt-3">
     <v-btn class="bg-error"
       >export <v-icon icon="mdi-cloud-braces" class="ml-2"></v-icon>
     </v-btn>
   </div>
+  <!-- <pre>{{ processedResults }}</pre> -->
+   
   <v-data-table
     v-if="processedResults.some((item) => item.status === 'Not Found')"
     :items="processedResults"
@@ -91,5 +94,5 @@ export default {
     items-per-page="10"
     class="elevation-1"
   />
-  <div v-else>No items with status "Found" available.</div>
+  <div v-else>No items with status "Found" available.</div></div>
 </template>
