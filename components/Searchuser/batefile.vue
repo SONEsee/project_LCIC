@@ -323,10 +323,11 @@ const header = ref([
   { title: "ລຳດັບ", value: "id" },
   { title: "ລະຫັດສະມາຊິກ", value: "user_id" },
   { title: "ຊື່ຟາຍ", value: "fileName" },
-  { title: "ທັງໝົດ", value: "total" },
+  { title: "ຈໍານວນສອບຖາມ", value: "total" },
   { title: "ມີບົດລາຍງານ", value: "totalsearch" },
+
   { title: "ພິມບົດລາຍງານ", value: "searchtrue" },
-  { title: "ບໍ່ເອົາລາຍງານ", value: "not_report" },
+  { title: "ບໍ່ເອົາບົດລາຍງານ", value: "not_report" },
   { title: "ຄົ້ນຫາບໍ່ພົບ", value: "searchfals" },
   { title: "ຂໍ້ມູນສໍ້າກັນ", value: "count_duplicates" },
   { title: "ມື້ສົ່ງ", value: "insertDate" },
@@ -420,7 +421,6 @@ const processSelectedItems = async () => {
   }
 
   try {
-    // ສະແດງຢືນຢັນກ່ອນດຳເນີນການ
     const confirmResult = await Swal.fire({
       title: "ຢືນຢັນການດຳເນີນການ",
       html: `
@@ -730,7 +730,6 @@ const getDisplayText = (item: any) => {
       </v-row>
     </v-col>
 
-   
     <v-dialog
       v-model="showSelectionDialog"
       max-width="950px"
@@ -851,7 +850,6 @@ const getDisplayText = (item: any) => {
                 >
                   <v-card-text class="pa-3">
                     <v-row align="center" no-gutters>
-                      
                       <v-col cols="5">
                         <div class="ml-2">
                           <div class="mb-2 d-flex align-center">
@@ -983,7 +981,7 @@ const getDisplayText = (item: any) => {
             color="grey"
             variant="outlined"
             prepend-icon="mdi-close"
-            :aria-label="ຍົກເລີກແລະປິດໜ້າຕ່າງ"
+            :aria-label="`ຍົກເລີກແລະປິດໜ້າຕ່າງ`"
           >
             ຍົກເລີກ
           </v-btn>
@@ -1001,7 +999,7 @@ const getDisplayText = (item: any) => {
       </v-card>
     </v-dialog>
     <!-- <pre>{{ filteredData }}</pre> -->
-    <!-- Loading and Error States -->
+
     <div
       v-if="isloading"
       class="d-flex justify-center align-center"
@@ -1015,9 +1013,135 @@ const getDisplayText = (item: any) => {
       ເກິດຂໍ້ຜິດພາດບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້
     </div>
 
-    <!-- Data Table -->
     <div v-else>
-      <v-data-table
+      <v-table>
+        <thead>
+          <tr>
+            <th rowspan="2">
+              <b style="color: blue">ລຳດັບ</b>
+            </th>
+            <th rowspan="2"><b style="color: blue">ລະຫັດສະມາຊິກ</b></th>
+            <th rowspan="2"><b style="color: blue">ຊື່ຟາຍ</b></th>
+            <th colspan="7" class="text-center">
+              <b style="color: blue">ລາຍລະອຽດການຄົ້ນຫາ</b>
+            </th>
+          </tr>
+          <tr>
+            <th>
+              <b style="color: blue">ຈຳນວນສອບຖາມ</b>
+            </th>
+            <th>
+              <b style="color: #33691e"> ມີບົດລາຍງານ </b>
+            </th>
+            <th><b style="color: green"> ພິມບົດລາຍງານ </b></th>
+            <th>
+              <b style="color: #1976d2"> ບໍ່ເອົາບົດລາຍງານ </b>
+            </th>
+            <th><b style="color: red"> ຄົ້ນຫາບໍ່ພົບ </b></th>
+            <th><b style="color: orange"> ຂໍ້ມູນສໍ້າກັນ </b></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr v-for="item in filteredData">
+            <td>{{ item.id }}</td>
+            <td>{{ mapMemberInfo(item.user_id) }}</td>
+            <td>{{ item.fileName }}</td>
+            <td>
+              <v-chip color="primary">
+                {{
+                  Number(item.searchtrue) +
+                  Number(item.searchfals) +
+                  Number(item.count_duplicates)
+                }}
+              </v-chip>
+            </td>
+            <td>
+              <v-chip color="light-green-darken-4">
+                {{ item.searchtrue || 0 }}</v-chip
+              >
+            </td>
+
+            <td>
+              <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການທີ່ຄົ້ນຫາພົບ">
+                <template v-slot:activator="{ props }">
+                  <a
+                    :href="`../saerchtrue?id=${item.id}`"
+                    :aria-label="`ເບິ່ງລາຍການທີ່ຄົ້ນຫາພົບ ${item.searchtrue} ລາຍການ`"
+                  >
+                    <v-btn
+                      color="success"
+                      text-color="white"
+                      v-bind="props"
+                      flat
+                      size="small"
+                      small
+                    >
+                      {{ Number(item.searchtrue) - Number(item.not_report) }}
+                    </v-btn>
+                  </a>
+                </template>
+              </v-tooltip>
+            </td>
+            <td>
+              <v-tooltip
+                :text="`ລາຍການທີ່ຄົນຫາພົບແຕ່ບໍ່ເອົາບົດລາຍງານ ${
+                  item.not_report ?? 0
+                }`"
+              >
+                <template v-slot:activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    color="info"
+                    flat
+                    @click="
+                      navigateTo(`../saerchtrue/not_report?id=${item.id}`)
+                    "
+                  >
+                    {{ item.not_report ?? "0" }}</v-btn
+                  >
+                </template>
+              </v-tooltip>
+            </td>
+            <td>
+              <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການທີ່ຄົ້ນບໍ່ພົບ">
+                <template v-slot:activator="{ props }">
+                  <a
+                    :href="`../fals?id=${item.id}`"
+                    :aria-label="`ເບິ່ງລາຍການທີ່ຄົ້ນບໍ່ພົບ ${
+                      item.searchfals ?? '0'
+                    } ລາຍການ`"
+                  >
+                    <v-btn color="error" text-color="white" v-bind="props">
+                      {{ item.searchfals }}
+                    </v-btn>
+                  </a>
+                </template>
+              </v-tooltip>
+            </td>
+            <td>
+              <v-tooltip text="ຄລິກເພື່ອເບິ່ງລາຍການຄົ້ນຫາທີ່ຂໍ້ມູນສໍ້າກັນ">
+                <template v-slot:activator="{ props }">
+                  <a
+                    :href="`../duplicates_batefile/?id=${item.id}`"
+                    :aria-label="`ເບິ່ງລາຍການຂໍ້ມູນສໍ້າກັນ ${item.count_duplicates} ລາຍການ`"
+                  >
+                    <v-btn
+                      color="warning"
+                      text-color="white"
+                      v-bind="props"
+                      flat
+                    >
+                      {{ item.count_duplicates }}
+                    </v-btn>
+                  </a>
+                </template>
+              </v-tooltip>
+            </td>
+          </tr>
+        </tbody>
+      </v-table>
+      <!-- <v-data-table
         class="text-no-wrap"
         :items="filteredData"
         item-key="name"
@@ -1155,7 +1279,7 @@ const getDisplayText = (item: any) => {
             </template>
           </v-tooltip>
         </template>
-      </v-data-table>
+      </v-data-table> -->
     </div>
   </div>
 </template>
