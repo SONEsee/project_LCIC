@@ -73,8 +73,8 @@ export default {
       bankInfo: { title: 'ທະນາຄານ', value: 'bnk_code' },
       headers: [
         { title: 'ທະນາຄານ', value: 'bnk_code' },
-        { title: 'ຊື່ຜູ້ຖືກຖາມ', value: 'LCIC_ID' },
-        { title: 'ຊື່ບົດລາຍງານ', value: 'chg_code' },
+        { title: 'ປະເພດບົດລາຍງານ', value: 'chg_code' },
+        { title: 'ຜູ້ຖືກຖາມ', value: 'LCIC_ID' },
         { title: 'ລະຫັດຜູ້ນໍາໃຊ້', value: 'user_sys_id' },
         { title: 'ຄ່າທໍານຽມ', value: 'chg_amount' },
         { title: 'ວັນທີ', value: 'rec_insert_date' },
