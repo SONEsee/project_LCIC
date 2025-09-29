@@ -536,6 +536,7 @@ const clearAll = () => {
   selectedItems.value = [];
 };
 
+
 const insertSearchLog = async (item: any) => {
   try {
     const token = localStorage.getItem("access_token");
