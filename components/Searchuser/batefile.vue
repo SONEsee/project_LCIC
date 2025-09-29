@@ -522,6 +522,8 @@ const bulkUpdateSearchResults = async (ids: any) => {
     }
 
     const data = await response.json();
+     memberinfoStore.getMemberInfo();
+      batefileStore.getData();
     console.log("Bulk update result:", data);
     return data;
   } catch (error) {
@@ -920,7 +922,7 @@ const getDisplayText = (item: any) => {
                 <strong>ສະຫຼຸບການດຳເນີນການ:</strong><br>
                 📋 ທັງໝົດ: {{ foundItems.length }} ລາຍການ |
                 📄 ເອົາບົດລາຍງານ: {{ selectedItems.length }} ລາຍການ |
-                🔄 ອັບເດດສະຖານະ: {{ foundItems.length - selectedItems.length }} ລາຍການ<br>
+                🔄 ບໍ່ເອົາບົດລາຍງານ: {{ foundItems.length - selectedItems.length }} ລາຍການ<br>
                 💰 ຄ່າທຳນຽມ: {{ calculateFee(selectedItems.length) }}
               </div>
             </div>
