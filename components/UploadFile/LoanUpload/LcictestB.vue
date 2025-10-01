@@ -7,7 +7,79 @@ import dayjs from "dayjs";
 import { useMemberInfo } from "@/composables/memberInfo";
 import { MemberStore } from "@/stores/memberinfo";
 import { useUploadFile } from "~/stores/uploadfile";
+const statusCheckInterval = ref<NodeJS.Timeout | null>(null);
+const processingFID = ref<string | null>(null);
+const startStatusPolling = (FID: string) => {
+  processingFID.value = FID;
+  
+  // ຢຸດ interval ເກົ່າຖ້າມີ
+  if (statusCheckInterval.value) {
+    clearInterval(statusCheckInterval.value);
+  }
+  
+  // ເຊັກທຸກໆ 2 ວິນາທີ
+  statusCheckInterval.value = setInterval(async () => {
+    await checkUploadStatus(FID);
+  }, 2000);
+  
+  // ເຊັກທັນທີຄັ້ງທຳອິດ
+  checkUploadStatus(FID);
+};
 
+// ຟັງຊັ່ນເຊັກສະຖານະ
+const checkUploadStatus = async (FID: string) => {
+  try {
+    const response = await axios.get(
+      `${config.public.strapi.url}api/check-upload-status/${FID}/`
+    );
+    
+    const data = response.data;
+    console.log('Upload status:', data);
+    
+    // ອັບເດດ item ໃນ list
+    const item = items.value.find(i => i.FID === FID);
+    if (item && data.progress !== undefined) {
+      item.percentage = data.progress;
+    }
+    
+    if (data.status === 'completed') {
+      // ສຳເລັດ
+      if (statusCheckInterval.value) {
+        clearInterval(statusCheckInterval.value);
+        statusCheckInterval.value = null;
+      }
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'ສຳເລັດ!',
+        text: 'ການປະມວນຜົນສຳເລັດແລ້ວ',
+        timer: 2000
+      });
+      
+      // Refresh data
+      await fetchFilteredData();
+      
+    } else if (data.status === 'failed') {
+      // ຜິດພາດ
+      if (statusCheckInterval.value) {
+        clearInterval(statusCheckInterval.value);
+        statusCheckInterval.value = null;
+      }
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'ຜິດພາດ!',
+        text: data.message || 'ເກີດຂໍ້ຜິດພາດໃນການປະມວນຜົນ'
+      });
+      
+      await fetchFilteredData();
+    }
+    // ຖ້າ status === 'processing' → ສືບຕໍ່ polling
+    
+  } catch (error) {
+    console.error('Error checking status:', error);
+  }
+};
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 const memberinfoStore = MemberStore();
 const UplodafileStore = useUploadFile();
@@ -623,6 +695,66 @@ const unloadUpload = async (item: FileItem) => {
   }
 };
 
+// const confirmAction = async (item: FileItem) => {
+//   const result = await Swal.fire({
+//     title: "ຢືນຢັນການດຳເນີນການ",
+//     text: "ທ່ານແນ່ໃຈຫຼືບໍ່ທີ່ຢືນຢັນການອັບໂຫຼດນີ້?",
+//     icon: "warning",
+//     showCancelButton: true,
+//     confirmButtonColor: "#3085d6",
+//     cancelButtonColor: "#d33",
+//     confirmButtonText: "ແນ່ໃຈ, ຢືນຢັນ!",
+//     cancelButtonText: "ຍົກເລີກ",
+//   });
+
+//   if (!result.isConfirmed) {
+//     return;
+//   }
+
+//   try {
+//     const updateResponse = await axios.post(
+//       `${config.public.strapi.url}api/api/update-statussubmit/`,
+//       `FID=${item.FID}`
+//     );
+
+//     if (updateResponse.data.status !== "success") {
+//       item.statussubmit = "1";
+//       return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
+//     }
+//   } catch (error) {
+//     console.error("Failed to update status:", error);
+//     item.statussubmit = "1";
+//     return Swal.fire("ຜິດພາດ!", "ການອັບເດດລົ້ມເຫຼວ.", "error");
+//   }
+
+//   try {
+//     const params = new URLSearchParams();
+//     params.append("FID", item.FID!);
+
+//     const confirmResponse = await axios.post(
+//       `${config.public.strapi.url}api/confirm_upload/`,
+//       params
+//     );
+
+//     if (confirmResponse.data.status === "success") {
+//       const confirmedItem = items.value.find((i) => i.FID === item.FID);
+//       if (confirmedItem) {
+//         confirmedItem.confirmed = true;
+//         confirmedItem.statussubmit = "0";
+//       }
+
+//       await Swal.fire("ຢືນຢັນສຳເລັດ!", "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.", "success");
+//       await fetchFilteredData();
+//     } else {
+//       item.statussubmit = "1";
+//       Swal.fire("ລົ້ມເຫຼວ!", "ການຢືນຢັນລົ້ມເຫຼວ.", "error");
+//     }
+//   } catch (error) {
+//     console.error("Failed to confirm upload:", error);
+//     item.statussubmit = "1";
+//     Swal.fire("ຜິດພາດ!", "ການຢືນຢັນລົ້ມເຫຼວ. ກະລຸນາລອງໃໝ່.", "error");
+//   }
+// };
 const confirmAction = async (item: FileItem) => {
   const result = await Swal.fire({
     title: "ຢືນຢັນການດຳເນີນການ",
@@ -640,6 +772,7 @@ const confirmAction = async (item: FileItem) => {
   }
 
   try {
+    // Update status ກ່ອນ
     const updateResponse = await axios.post(
       `${config.public.strapi.url}api/api/update-statussubmit/`,
       `FID=${item.FID}`
@@ -649,13 +782,8 @@ const confirmAction = async (item: FileItem) => {
       item.statussubmit = "1";
       return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
     }
-  } catch (error) {
-    console.error("Failed to update status:", error);
-    item.statussubmit = "1";
-    return Swal.fire("ຜິດພາດ!", "ການອັບເດດລົ້ມເຫຼວ.", "error");
-  }
-
-  try {
+    
+    // ສົ່ງ request confirm
     const params = new URLSearchParams();
     params.append("FID", item.FID!);
 
@@ -664,7 +792,24 @@ const confirmAction = async (item: FileItem) => {
       params
     );
 
-    if (confirmResponse.data.status === "success") {
+    console.log('Confirm response:', confirmResponse.data);
+
+    if (confirmResponse.data.status === 'processing') {
+      // ສະແດງ loading ແລະ ເລີ່ມ polling
+      Swal.fire({
+        title: 'ກຳລັງປະມວນຜົນ...',
+        html: '<div id="progress-text">0%</div>',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+      
+      // ເລີ່ມ polling
+      startStatusPolling(item.FID!);
+      
+    } else if (confirmResponse.data.status === "success") {
+      // ສຳເລັດທັນທີ (ກໍລະນີຂໍ້ມູນນ້ອຍ)
       const confirmedItem = items.value.find((i) => i.FID === item.FID);
       if (confirmedItem) {
         confirmedItem.confirmed = true;
@@ -673,10 +818,12 @@ const confirmAction = async (item: FileItem) => {
 
       await Swal.fire("ຢືນຢັນສຳເລັດ!", "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.", "success");
       await fetchFilteredData();
+      
     } else {
       item.statussubmit = "1";
-      Swal.fire("ລົ້ມເຫຼວ!", "ການຢືນຢັນລົ້ມເຫຼວ.", "error");
+      Swal.fire("ລົ້ມເຫຼວ!", confirmResponse.data.message || "ການຢືນຢັນລົ້ມເຫຼວ.", "error");
     }
+    
   } catch (error) {
     console.error("Failed to confirm upload:", error);
     item.statussubmit = "1";
@@ -684,6 +831,12 @@ const confirmAction = async (item: FileItem) => {
   }
 };
 
+// ຢຸດ polling ເມື່ອ component unmount
+onUnmounted(() => {
+  if (statusCheckInterval.value) {
+    clearInterval(statusCheckInterval.value);
+  }
+});
 const getFullPath = (path: string) => {
   const baseUrl = `${config.public.strapi.url}media/`;
   return `${baseUrl}${path}`;
