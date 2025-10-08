@@ -5,34 +5,66 @@ import Swal from "sweetalert2";
 import { CollateralModel } from "~/types";
 export const CollateralStore = defineStore("collateral", {
   state() {
+    const userString = localStorage.getItem("user");
+    const userLogin = userString ? JSON.parse(userString) : null;
     return {
+      user_login: userLogin,
+
       response_data_collateral_list:
         null as CollateralModel.CollateralRespons | null,
+      response_data_collateral_list_all:
+        null as CollateralModel.CollateralRespons | null,
       isLoading: false,
-      filter_data:{
-        isLoading:false,
-        query:{
-            user_id:"",
-            year:"",
-            month:"",
-            start_date:"",
-            end_date:"",
-            day:"",
-
-        }
-      }
+      filter_data: {
+        isLoading: false,
+        query: {
+          user_id: "",
+          year: "",
+          month: "",
+          start_date: "",
+          end_date: "",
+          day: "",
+          current_user_id: "",
+        },
+      },
     };
   },
   actions: {
     async GetdsatCollateral() {
       this.isLoading = true;
       try {
-        const res = await axios.get<CollateralModel.CollateralRespons>(`api/api/get_collaterals/`,{
-            params:{
-                ...this.filter_data.query
-            }
-        });if(res.status === 200){
-            this.response_data_collateral_list =  res.data
+        const res = await axios.get<CollateralModel.CollateralRespons>(
+          `api/api/get_collaterals/`,
+          {
+            params: {
+              ...this.filter_data.query,
+            },
+          }
+        );
+        if (res.status === 200) {
+          this.response_data_collateral_list = res.data;
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text: "ບໍ່ສາມາດດືງຂໍ້ມູນໄດ້",
+        });
+      }
+    },
+    async GetdsatCollateralall() {
+      this.isLoading = true;
+      try {
+        const res = await axios.get<CollateralModel.CollateralRespons>(
+          `api/api/get_collaterals/`,
+          {
+            params: {
+              ...this.filter_data.query,
+            },
+          }
+        );
+        if (res.status === 200) {
+          this.response_data_collateral_list_all = res.data;
         }
       } catch (error) {
         Swal.fire({

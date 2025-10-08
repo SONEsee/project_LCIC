@@ -1,10 +1,30 @@
 <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue";
-import axios from "axios";
+import axios from "@/helpers/axios";
 import Swal from "sweetalert2";
 import { CollateralStore } from "@/stores/collaterals";
 import { MemberStore } from "@/stores/memberinfo";
+import { useMemberInfo } from "@/composables/memberInfo";
+import dayjs from "dayjs";
+const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
+const files = ref<File[]>([]);
+const enterpriseCode = ref("");
+const collaterals = ref([]);
+const user = ref<any | null>(null);
+const search = ref("");
+const isLoading = ref(false);
+const collateral = CollateralStore();
+const imagepath = ref("");
+const userIDfileter = ref("");
+const selecTypeFileter = ref("datetime");
+const selectUser = ref("");
+const selecYears = ref("");
+const selecMonth = ref("");
+const selectDay = ref("");
+const selectStartDate = ref("");
+const selectEndDate = ref("");
 const memberStore = MemberStore();
+
 const memberData = computed(() => {
   const data = memberStore.respons_data_query;
   if (Array.isArray(data)) {
@@ -15,21 +35,179 @@ const memberData = computed(() => {
   }
   return [];
 });
-const files = ref<File[]>([]);
-const enterpriseCode = ref("");
-const collaterals = ref([]);
-const user = ref<any | null>(null);
-const search = ref("");
-const isLoading = ref(false);
-const collateral = CollateralStore();
+
+const DataYears = computed(() => {
+  const data = collateral.response_data_collateral_list_all;
+  let MapData = [];
+  if (Array.isArray(data)) {
+    MapData = data;
+  } else if (data && typeof data === "object") {
+    MapData = [data];
+  } else {
+    return [];
+  }
+  const YearUnicque = new Set();
+  MapData.forEach((item) => {
+    if (item.insertdate) {
+      YearUnicque.add(dayjs(item.insertdate).format("YYYY"));
+    }
+  });
+  return Array.from(YearUnicque.values());
+});
+const MonthDate = computed(() => {
+  const data = collateral.response_data_collateral_list_all;
+  let DataMap = [];
+  if (Array.isArray(data)) {
+    DataMap = data;
+  } else if (data && typeof data === "object") {
+    DataMap = [data];
+  } else {
+    return [];
+  }
+  const uniqueMonth = new Set();
+  DataMap.forEach((item) => {
+    if (item.insertdate) {
+      uniqueMonth.add(dayjs(item.insertdate).format("MM"));
+    }
+  });
+  return Array.from(uniqueMonth.values());
+});
+const DayData = computed(() => {
+  const data = collateral.response_data_collateral_list_all;
+  let MapData = [];
+  if (Array.isArray(data)) {
+    MapData = data;
+  } else if (data && typeof data === "object") {
+    MapData = [data];
+  } else {
+    return [];
+  }
+  const uniqueDay = new Set();
+  MapData.forEach((item) => {
+    if (item.insertdate) {
+      uniqueDay.add(dayjs(item.insertdate).format("DD"));
+    }
+  });
+  return Array.from(uniqueDay.values());
+});
+const userString = localStorage.getItem("user_data");
+user.value = userString ? JSON.parse(userString) : null;
+
+const user_ID = computed(() => user.value?.MID?.id);
+
+watch(
+  user_ID,
+  async (newValue) => {
+    if (!newValue) return;
+
+    collateral.isLoading = true;
+    try {
+      collateral.filter_data.query.current_user_id = newValue;
+      await collateral.GetdsatCollateral();
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "ຜິດພາດ",
+        text: `ບໍ່ສາມາດໃຊ້ filter ຕາມ user_id ເນື່ອງຈາກ ${error}`,
+      });
+    } finally {
+      collateral.isLoading = false;
+    }
+  },
+  { immediate: true }
+);
+watch(selecYears, async (newValue) => {
+  collateral.isLoading = true;
+  try {
+    collateral.filter_data.query.year = newValue;
+    collateral.GetdsatCollateral();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: `ບໍ່ສາມາດໃຊ້ filter ຕາມ year ເນື່ອງຈາກ ${error}`,
+    });
+  }
+});
+watch(selecMonth, async (newValue) => {
+  collateral.isLoading = true;
+  try {
+    collateral.filter_data.query.month = newValue;
+    collateral.GetdsatCollateral();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: `ບໍ່ສາມາດໃຊ້ filter ຕາມ year ເນື່ອງຈາກ ${error}`,
+    });
+  }
+});
+watch(selectDay, async (newValue) => {
+  collateral.isLoading = true;
+  try {
+    collateral.filter_data.query.day = newValue;
+    collateral.GetdsatCollateral();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: `ບໍ່ສາມາດໃຊ້ filter ຕາມ year ເນື່ອງຈາກ ${error}`,
+    });
+  }
+});
+watch(selectEndDate, async (newValue) => {
+  collateral.isLoading = true;
+  try {
+    collateral.filter_data.query.end_date = newValue;
+    collateral.GetdsatCollateral();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: `ບໍ່ສາມາດໃຊ້ filter ຕາມ year ເນື່ອງຈາກ ${error}`,
+    });
+  }
+});
+watch(selectStartDate, async (newValue) => {
+  collateral.isLoading = true;
+  try {
+    collateral.filter_data.query.start_date = newValue;
+    collateral.GetdsatCollateral();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: `ບໍ່ສາມາດໃຊ້ filter ຕາມ year ເນື່ອງຈາກ ${error}`,
+    });
+  }
+});
+watch(userIDfileter, async (newValue) => {
+  collateral.isLoading = true;
+  try {
+    collateral.filter_data.query.user_id = newValue;
+    await collateral.GetdsatCollateral();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: `ບໍ່ສາມາດໃຊ້ fileter ຕາມ user_id ເນືອ້ງຈາກ ${error}`,
+    });
+  } finally {
+    collateral.isLoading = false;
+  }
+});
+const typeFilter = [
+  { title: "ເລືອກຕາມ ປີ, ເດືອນ, ວັນ", value: "datetime" },
+  { title: "ເລືອກຕາມຊວງເວລາ", value: "date" },
+];
 const header = [
   { title: "ລະຫັດ", value: "id" },
   { title: "ສະມາຊິກ", value: "user" },
-  { title: "ຊື່ຮູບ", value: "filename" },
+  { title: "ຮູບ", value: "filename", align: "center" },
   { title: "ສະຖານະ", value: "status" },
   { title: "ວັນທີນຳສົ່ງ", value: "insertdate" },
   { title: "ລາຍລະອຽດ", value: "action" },
-];
+] as any;
 const collateralData = computed(() => {
   const data = collateral.response_data_collateral_list;
   if (Array.isArray(data)) {
@@ -173,11 +351,14 @@ const fetchCollaterals = async () => {
     console.error("Error fetching collaterals:", error);
   }
 };
-const disPlay = (item:any)=>{
-  if(!item||!item.bnk_code||!item.code||!item.nameL) return "ທັງໝົດ"
-  return `${item.bnk_code}-${item.code}-${item.nameL}`
-}
+const disPlay = (item: any) => {
+  if (!item || !item.bnk_code || !item.code || !item.nameL) return "ທັງໝົດ";
+  return `${item.bnk_code}-${item.code}-${item.nameL}`;
+};
 onMounted(() => {
+  collateral.GetdsatCollateralall();
+  imagepath.value = axios.defaults.baseURL || "";
+  console.log("Base URL:", imagepath.value);
   memberStore.getMemberInfo();
   collateral.GetdsatCollateral();
   const userData = localStorage.getItem("user_data");
@@ -203,6 +384,7 @@ const uniqueUserIds = computed(() => [
 </script>
 <template>
   <div class="pa-4">
+    <!-- <pre>{{ DayData }}</pre> -->
     <h2>{{ $t("Uploadtheenterpriseregistrationform") }}</h2>
     <v-col cols="12">
       <v-row>
@@ -255,29 +437,175 @@ const uniqueUserIds = computed(() => [
             </v-btn>
           </div>
         </v-col>
-        <v-col cols="12" md="4">
+        <v-col cols="12" md="4" v-if="user && user.MID.id === '01'">
           <v-autocomplete
+            prepend-inner-icon="mdi-bank-circle-outline"
             variant="outlined"
-            v-if="user && user.MID.id === '01'"
+            
             density="compact"
-            v-model="search"
+            v-model="userIDfileter"
             label="ໃສ່ລະຫັດທະນາຄານເພື່ຶອຄົ້ນຫາ"
             :items="memberData"
             :item-title="disPlay"
             item-value="bnk_code"
+            clearable
           >
             <template v-slot:item="{ item, props }">
               <v-list-item
                 v-bind="props"
                 :title="`${item.raw.bnk_code}-${item.raw.code}-${item.raw.nameL}`"
-              ></v-list-item>
+              >
+                <template v-slot:prepend>
+                  <v-avatar size="small" color="primary">
+                    <v-icon>mdi-bank-circle-outline</v-icon>
+                  </v-avatar>
+                </template>
+              </v-list-item>
             </template>
           </v-autocomplete>
+        </v-col>
+        <v-col cols="12" md="2">
+          <v-autocomplete
+            :items="typeFilter"
+            v-model="selecTypeFileter"
+            prepend-inner-icon="mdi-call-merge"
+            label="ເລືອກປະເພດການຄົ້ນຫາ"
+            density="compact"
+            variant="outlined"
+            item-title="title"
+            item-value="value"
+          >
+            <template v-slot:item="{ item, props }">
+              <v-list-item v-bind="props">
+                <template v-slot:prepend>
+                  <v-avatar size="small" color="primary">
+                    <v-icon>mdi-call-merge</v-icon>
+                  </v-avatar>
+                </template>
+              </v-list-item>
+            </template>
+          </v-autocomplete>
+        </v-col>
+        <v-col cols="12" md="6" v-if="selecTypeFileter === 'datetime'">
+          <v-row>
+            <v-col cols="12" md="4">
+              <v-autocomplete
+                v-model="selecYears"
+                :items="DataYears"
+                item-title="DataYears"
+                item-value="DataYears"
+                variant="outlined"
+                density="compact"
+                label="ເລືອກຕາມປີ"
+                clearable
+              ></v-autocomplete>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-autocomplete
+              
+                v-model="selecMonth"
+                :items="MonthDate"
+                item-title="MonthDate"
+                item-value="MonthDate"
+                variant="outlined"
+                density="compact"
+                label="ເລືອກຕາມເດືອນ"
+                clearable
+              ></v-autocomplete>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-autocomplete
+              v-model="selectDay"
+              :items="DayData"
+              item-title="DayData"
+              item-value="DayData"
+                variant="outlined"
+                density="compact"
+                label="ເລືອກຕາມວັນ"
+                clearable
+              ></v-autocomplete>
+            </v-col>
+          </v-row>
+        </v-col>
+        <v-col cols="12" md="6" v-if="selecTypeFileter === 'date'">
+          <v-row>
+            <v-col cols="12" md="5">
+              <v-text-field
+               clearable
+              v-model="selectStartDate"
+              label="ມື້່ເລີ່ມ"
+              type="date"
+                variant="outlined"
+                density="compact"
+              ></v-text-field>
+            </v-col>
+            <v-col cols="12" md="2" class="d-flex justify-center">
+              <span class="mt-2">ຫາ</span>
+            </v-col>
+            <v-col cols="12" md="5">
+              <v-text-field
+               clearable
+              v-model="selectEndDate"
+              label="ມື້່ສຶ້ນສຸດ"
+              type="date"
+                variant="outlined"
+                density="compact"
+              ></v-text-field>
+            </v-col>
+          </v-row>
         </v-col>
       </v-row>
     </v-col>
   </div>
-  <v-data-table :items="collateralData" :headers="header"> </v-data-table>
+  <v-data-table :items="collateralData" :headers="header">
+    <template v-slot:item.user="{ item }">
+      {{ mapMemberInfo(item.user) }}
+    </template>
+    <template v-slot:item.filename="{ item }" class="text-center">
+      <div class="text-center">
+        <div class="image-preview-container">
+          <v-avatar>
+            <img
+              :src="`${imagepath}/media/${item.pathfile}`"
+              alt=""
+              width="40"
+              class="thumbnail"
+            />
+          </v-avatar>
+
+          <div class="image-popup">
+            <img :src="`${imagepath}/media/${item.pathfile}`" alt="" />
+          </div>
+        </div>
+
+        <p>
+          <v-chip variant="flat" size="small" color="green-lighten-4">
+            {{ item.filename.slice(0, 10)
+            }}{{ item.filename.length > 10 ? "..." : "" }}
+          </v-chip>
+        </p>
+      </div>
+    </template>
+    <template v-slot:item.insertdate="{ item }">
+      {{ dayjs(item.insertdate).format("DD/MM/YYYY") }}
+    </template>
+    <template v-slot:item.action="{ item }">
+      <v-btn
+        small
+        @click="viewImage(item.pathfile)"
+        class="bg-indigo-darken-4"
+        >{{ $t("viewimage") }}</v-btn
+      >
+    </template>
+    <template v-slot:item.status="{ item }">
+      <div v-if="item.status === '1'">
+        <p class="text-warning">ອັບໂຫຼດສຳເລັດ</p>
+      </div>
+      <div v-else>
+        <span class="text-success">ຖືກກວດສອບແລ້ວ</span>
+      </div>
+    </template>
+  </v-data-table>
   <!-- <v-data-table :items="filteredItems">
       <template v-slot:top></template>
       <thead>
@@ -316,3 +644,48 @@ const uniqueUserIds = computed(() => [
       </tbody>
     </v-data-table> -->
 </template>
+<style scoped>
+.image-preview-container {
+  position: relative;
+  display: inline-block;
+}
+
+.thumbnail {
+  cursor: pointer;
+}
+
+.image-popup {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.image-popup img {
+  width: 300px;
+  height: auto;
+  border-radius: 4px;
+}
+
+.image-preview-container:hover .image-popup {
+  display: block;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+</style>
