@@ -518,6 +518,8 @@ const uniqueUserIds = computed(() => [
       </v-row>
     </v-col>
   </div>
+  <pre>{{ collateralData }}</pre>
+  
   <v-data-table :items="collateralData" :headers="header">
     <template v-slot:item.user="{ item }">
       {{ mapMemberInfo(item.user) }}

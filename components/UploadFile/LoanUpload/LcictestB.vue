@@ -7,115 +7,30 @@ import dayjs from "dayjs";
 import { useMemberInfo } from "@/composables/memberInfo";
 import { MemberStore } from "@/stores/memberinfo";
 import { useUploadFile } from "~/stores/uploadfile";
-const statusCheckInterval = ref<NodeJS.Timeout | null>(null);
-const processingFID = ref<string | null>(null);
-const startStatusPolling = (FID: string) => {
-  processingFID.value = FID;
-  
-  // ຢຸດ interval ເກົ່າຖ້າມີ
-  if (statusCheckInterval.value) {
-    clearInterval(statusCheckInterval.value);
-  }
-  
-  // ເຊັກທຸກໆ 2 ວິນາທີ
-  statusCheckInterval.value = setInterval(async () => {
-    await checkUploadStatus(FID);
-  }, 2000);
-  
-  // ເຊັກທັນທີຄັ້ງທຳອິດ
-  checkUploadStatus(FID);
-};
 
-// ຟັງຊັ່ນເຊັກສະຖານະ
-const checkUploadStatus = async (FID: string) => {
-  try {
-    const response = await axios.get(
-      `${config.public.strapi.url}api/check-upload-status/${FID}/`
-    );
-    
-    const data = response.data;
-    console.log('Upload status:', data);
-    
-    // ອັບເດດ item ໃນ list
-    const item = items.value.find(i => i.FID === FID);
-    if (item && data.progress !== undefined) {
-      item.percentage = data.progress;
-    }
-    
-    if (data.status === 'completed') {
-      // ສຳເລັດ
-      if (statusCheckInterval.value) {
-        clearInterval(statusCheckInterval.value);
-        statusCheckInterval.value = null;
-      }
-      
-      Swal.fire({
-        icon: 'success',
-        title: 'ສຳເລັດ!',
-        text: 'ການປະມວນຜົນສຳເລັດແລ້ວ',
-        timer: 2000
-      });
-      
-      // Refresh data
-      await fetchFilteredData();
-      
-    } else if (data.status === 'failed') {
-      // ຜິດພາດ
-      if (statusCheckInterval.value) {
-        clearInterval(statusCheckInterval.value);
-        statusCheckInterval.value = null;
-      }
-      
-      Swal.fire({
-        icon: 'error',
-        title: 'ຜິດພາດ!',
-        text: data.message || 'ເກີດຂໍ້ຜິດພາດໃນການປະມວນຜົນ'
-      });
-      
-      await fetchFilteredData();
-    }
-    // ຖ້າ status === 'processing' → ສືບຕໍ່ polling
-    
-  } catch (error) {
-    console.error('Error checking status:', error);
-  }
-};
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 const memberinfoStore = MemberStore();
 const UplodafileStore = useUploadFile();
-const getUserStorageKey = (baseKey: string) => {
-  try {
-    const userData = localStorage.getItem("user_data");
-    if (userData) {
-      const user = JSON.parse(userData);
-      const userId = user.MID?.id || "unknown";
-      return `${baseKey}_user_${userId}`;
-    }
-    return baseKey; // fallback
-  } catch (error) {
-    console.error("Failed to get user ID for storage key:", error);
-    return baseKey;
-  }
-};
-const period = computed(() => {
+
+const period = computed(()=>{
   const data = UplodafileStore.respose_uploadfile_b;
   let mapData = [];
-  if (Array.isArray(data)) {
+  if(Array.isArray(data)){
     mapData = data;
-  } else if (data && typeof data === "object") {
-    mapData = [data];
-  } else {
-    return [];
+  }else if(data && typeof data ==="object"){
+    mapData = [data]
+  }else{
+    return []
   }
   const uniquePeriods = new Map();
 
-  mapData.forEach((item) => {
-    if (item.period) {
+  mapData.forEach((item)=>{
+    if(item.period){
       uniquePeriods.set(item.period, item);
     }
   });
   return Array.from(uniquePeriods.values());
-});
+})
 
 const dataMemberInfon = computed(() => {
   const data = memberinfoStore.respons_data_query;
@@ -135,10 +50,11 @@ const displayMemberInfo = (name: any) => {
 
 definePageMeta({
   layout: "backend",
+  middleware: ["auth"],
 });
 
 useHead({
-  title: "Submit",
+  title: "Upload File",
   meta: [
     {
       name: "keywords",
@@ -225,10 +141,10 @@ const filters = ref({
 
 const statusOptions = ref([
   { title: "ສຳເລັດການໂຫຼດ", value: "0" },
-  { title: "ລໍຖ້າຢືນຢັນ", value: "1" },
+  { title: "ນຳສົ່ງຂໍ້ມູນສຳເລັດ", value: "1" },
   { title: "ປະຕິເສດ", value: "2" },
-  { title: "ກຳລັງອັບໂຫຼດ", value: "3" },
-  { title: "ກຳລັງຖືກອັນໂຫຼດ", value: "4" },
+  // { title: "ກຳລັງອັບໂຫຼດ", value: "3" },
+  // { title: "ກຳລັງຖືກອັນໂຫຼດ", value: "4" },
   { title: "ຂໍ້ມູນຖືກອັນໂຫຼດ", value: "5" },
   { title: "ກຳລັງນຳສົ່ງຂໍ້ມູນ", value: "Pending" },
 ]);
@@ -236,13 +152,12 @@ const statusOptions = ref([
 const headers = computed(() => {
   const baseHeaders = [
     { title: "ໄອດີ", value: "FID" },
-    { title: "ໄລຍະເວລາ", value: "period" },
     { title: "ຊື່ໄຟລ໌", value: "fileName" },
     { title: "ຂະໜາດຟາຍ", value: "fileSize" },
-    
+    { title: "ໄລຍະເວລາ", value: "period" },
     // { title: "ປະເພດ", value: "FileType" },
-    { title: "ສະຖານະການຢືນຢັນ", value: "statussubmit" },
-    { title: "ເປີເຊັນຄວາມຖືກຕ້ອງ", value: "percentage" },
+    { title: "ສະຖານະ", value: "statussubmit" },
+    { title: "ອັດຕາສ່ວນ", value: "percentage" },
     { title: "ການດຳເນີນການ", value: "actions", sortable: false },
   ];
 
@@ -256,251 +171,21 @@ const headers = computed(() => {
 const router = useRouter();
 const config = useRuntimeConfig();
 
-const saveFiltersToStorage = () => {
-  try {
-    const filtersToSave = {
-      user_id: filters.value.user_id || "",
-      period: filters.value.period || "",
-      file_type: filters.value.file_type || "",
-      status: filters.value.status || "",
-    };
-
-    const hasActiveFilters = Object.values(filtersToSave).some(
-      (value) => value !== ""
-    );
-    const storageKey = getUserStorageKey("bank_filters_data");
-
-    if (hasActiveFilters) {
-      localStorage.setItem(storageKey, JSON.stringify(filtersToSave));
-
-      sessionStorage.setItem(storageKey, JSON.stringify(filtersToSave));
-    } else {
-      localStorage.removeItem(storageKey);
-      sessionStorage.removeItem(storageKey);
-    }
-  } catch (error) {
-    console.error("Failed to save filters to localStorage:", error);
-  }
-};
-
-const loadFiltersFromStorage = () => {
-  try {
-    const storageKey = getUserStorageKey("bank_filters_data");
-
-    let savedFilters = sessionStorage.getItem(storageKey);
-
-    if (!savedFilters) {
-      savedFilters = localStorage.getItem(storageKey);
-
-      if (savedFilters) {
-        sessionStorage.setItem(storageKey, savedFilters);
-      }
-    }
-
-    if (savedFilters) {
-      const parsedFilters = JSON.parse(savedFilters);
-
-      filters.value = {
-        user_id: parsedFilters.user_id || "",
-        period: parsedFilters.period || "",
-        file_type: parsedFilters.file_type || "",
-        status: parsedFilters.status || "",
-      };
-
-      console.log("Loaded bank filters from storage:", filters.value);
-    }
-  } catch (error) {
-    console.error("Failed to load filters from localStorage:", error);
-  }
-};
-
-const FILTER_STORAGE_KEY = "bank_filters_data";
-
 const filteredItems = computed(() =>
   items.value.filter((item) =>
     item.user_id.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 );
 
-const uniqueUserIds = computed(() => {
-  return [...new Set(items.value.map((item) => item.user_id))];
-});
-
-const saveFilterToStorage = () => {
-  try {
-    if (filters.value.user_id) {
-      localStorage.setItem(FILTER_STORAGE_KEY, filters.value.user_id);
-    } else {
-      localStorage.removeItem(FILTER_STORAGE_KEY);
-    }
-  } catch (error) {
-    console.error("Failed to save filter to localStorage:", error);
-  }
-};
-
-const loadFilterFromStorage = () => {
-  try {
-    const savedFilter = localStorage.getItem(FILTER_STORAGE_KEY);
-    if (savedFilter) {
-      filters.value.user_id = savedFilter;
-    }
-  } catch (error) {
-    console.error("Failed to load filter from localStorage:", error);
-  }
-};
-
-const clearFilter = () => {
-  filters.value = {
-    user_id: "",
-    period: "",
-    file_type: "",
-    status: "",
-  };
-
-  try {
-    const storageKey = getUserStorageKey("bank_filters_data");
-    localStorage.removeItem(storageKey);
-    sessionStorage.removeItem(storageKey);
-  } catch (error) {
-    console.error("Failed to remove filters from localStorage:", error);
-  }
-
-  fetchFilteredData();
-};
-const isUserUploading = (user_id: string) => {
-  return items.value.some(
-    (item) =>
-      (item.user_id === user_id && item.statussubmit === "3") ||
-      (item.user_id === user_id && item.statussubmit === "4")
-  );
-};
-
-const isUserUnloading = (user_id: string) => {
-  return items.value.some(
-    (item) =>
-      (item.user_id === user_id && item.statussubmit === "4") ||
-      (item.user_id === user_id && item.statussubmit === "3")
-  );
-};
-
-const fetchData = async () => {
-  try {
-    isLoading.value = true;
-    const response = await fetch(
-      `${config.public.strapi.url}api/upload-files2/`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Network response was not ok: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("Data:", data);
-
-    if (data.results) {
-      apiResponse.value = data;
-      items.value = data.results
-        .filter((item: any) =>
-          ["1", "3", "0", "2", "4", "5"].includes(item.statussubmit)
-        )
-        .map((item: any) => ({
-          ...item,
-          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-          confirmed: false,
-        }));
-
-      if (data.summary) {
-        statistics.value = {
-          summary: {
-            total_files: data.summary.total_files || 0,
-            successful_uploads: data.summary.status_breakdown?.["1"] || 0,
-            pending_uploads: data.summary.status_breakdown?.["Pending"] || 0,
-            rejected_uploads: data.summary.status_breakdown?.["2"] || 0,
-            success_rate: calculateSuccessRate(data.summary.status_breakdown),
-          },
-          file_types: {
-            json_files: data.summary.json_files || 0,
-            xml_files: data.summary.xml_files || 0,
-          },
-        };
-      }
-    } else {
-      items.value = data
-        .filter((item: any) =>
-          ["1", "3", "0", "2", "4", "5"].includes(item.statussubmit)
-        )
-        .map((item: any) => ({
-          ...item,
-          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-          confirmed: false,
-        }));
-    }
-
-    sortItemsByUploadDate();
-  } catch (error) {
-    console.error("Failed to fetch data:", error);
-    Swal.fire({
-      icon: "error",
-      title: "ຜິດພາດ",
-      text: "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້",
-    });
-  } finally {
-    isLoading.value = false;
-  }
-};
-const clearFiltersOnLogout = () => {
-  try {
-    const storageKey = getUserStorageKey("bank_filters_data");
-    localStorage.removeItem(storageKey);
-    sessionStorage.removeItem(storageKey);
-    console.log("Bank filters cleared on logout");
-  } catch (error) {
-    console.error("Failed to clear bank filters on logout:", error);
-  }
-};
-const validateUserStorage = () => {
-  try {
-    const currentUserData = localStorage.getItem("user_data");
-    const lastUserData = localStorage.getItem("last_logged_user_bank");
-
-    if (currentUserData !== lastUserData) {
-      console.log("User changed, clearing old bank filters storage...");
-
-      Object.keys(localStorage).forEach((key) => {
-        if (key.includes("bank_filters_data_user_")) {
-          const currentUserKey = getUserStorageKey("bank_filters_data");
-          if (key !== currentUserKey) {
-            localStorage.removeItem(key);
-          }
-        }
-      });
-
-      Object.keys(sessionStorage).forEach((key) => {
-        if (key.includes("bank_filters_data_user_")) {
-          const currentUserKey = getUserStorageKey("bank_filters_data");
-          if (key !== currentUserKey) {
-            sessionStorage.removeItem(key);
-          }
-        }
-      });
-
-      if (currentUserData) {
-        localStorage.setItem("last_logged_user_bank", currentUserData);
-      }
-    }
-  } catch (error) {
-    console.error("Failed to validate user storage:", error);
-  }
-};
-const fetchFilteredData = async () => {
+const fetchDataByUserID = async (userID: string) => {
   try {
     isLoading.value = true;
     let url = `${config.public.strapi.url}api/upload-files2/`;
 
     const params = new URLSearchParams();
+    params.append("request_user_id", userID);
 
-    if (filters.value.user_id) {
-      params.append("request_user_id", "01");
+    if (filters.value.user_id && userID === "01") {
       params.append("user_id", filters.value.user_id);
     }
     if (filters.value.period) {
@@ -521,19 +206,15 @@ const fetchFilteredData = async () => {
     }
 
     const data = await response.json();
-    console.log("Filtered data:", data);
+    console.log("Data for user:", data);
 
     if (data.results) {
       apiResponse.value = data;
-      items.value = data.results
-        .filter((item: any) =>
-          ["1", "3", "0", "2", "4", "5"].includes(item.statussubmit)
-        )
-        .map((item: any) => ({
-          ...item,
-          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-          confirmed: false,
-        }));
+      items.value = data.results.map((item: any) => ({
+        ...item,
+        status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+        confirmed: false,
+      }));
 
       if (data.summary) {
         statistics.value = {
@@ -551,21 +232,16 @@ const fetchFilteredData = async () => {
         };
       }
     } else {
-      items.value = data
-        .filter((item: any) =>
-          ["1", "3", "0", "2", "4", "5"].includes(item.statussubmit)
-        )
-        .map((item: any) => ({
-          ...item,
-          status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
-          confirmed: false,
-        }));
+      items.value = data.map((item: any) => ({
+        ...item,
+        status: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+        confirmed: false,
+      }));
     }
 
     sortItemsByUploadDate();
-    saveFiltersToStorage();
   } catch (error) {
-    console.error("Failed to fetch filtered data:", error);
+    console.error("Failed to fetch data:", error);
     Swal.fire({
       icon: "error",
       title: "ຜິດພາດ",
@@ -576,6 +252,26 @@ const fetchFilteredData = async () => {
   }
 };
 
+const fetchFilteredData = async () => {
+  if (user.value?.MID?.id) {
+    const paddedMID = user.value.MID.id.toString().padStart(2, "0");
+    await fetchDataByUserID(paddedMID);
+  }
+};
+
+const refreshData = async () => {
+  filters.value = {
+    user_id: "",
+    period: "",
+    file_type: "",
+    status: "",
+  };
+  if (user.value?.MID?.id) {
+    const paddedMID = user.value.MID.id.toString().padStart(2, "0");
+    await fetchDataByUserID(paddedMID);
+  }
+};
+
 const calculateSuccessRate = (statusBreakdown: any): number => {
   if (!statusBreakdown) return 0;
 
@@ -583,7 +279,7 @@ const calculateSuccessRate = (statusBreakdown: any): number => {
     (sum: number, count: any) => sum + (count || 0),
     0
   );
-  const successful = (statusBreakdown["1"] || 0) + (statusBreakdown["0"] || 0);
+  const successful = (statusBreakdown["1"] || 0) + (statusBreakdown["3"] || 0);
 
   return total > 0 ? Math.round((successful / total) * 100) : 0;
 };
@@ -596,11 +292,112 @@ const sortItemsByUploadDate = () => {
   );
 };
 
+const onFileChange = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  if (target.files && target.files.length > 0) {
+    file.value = target.files[0];
+  }
+};
+
+const uploadFile = async () => {
+  if (!file.value) {
+    Swal.fire({
+      icon: "warning",
+      title: "ບໍ່ໄດ້ເລືອກໄຟລ໌",
+      text: "ກະລຸນາເລືອກໄຟລ໌ກ່ອນ",
+    });
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file.value);
+  formData.append("title", file.value.name);
+
+if (user.value) {
+  // ແປງເປັນ number ກ່ອນ, ແລ້ວຈຶ່ງ format
+  const userIdNumber = parseInt(user.value.MID.id.toString());
+  const userId = userIdNumber.toString().padStart(2, '0');
+  
+  formData.append("user_id", userId);
+  console.log("Original MID.id:", user.value.MID.id);
+  console.log("Parsed number:", userIdNumber);
+  console.log("Formatted User ID:", userId);
+} else {
+    Swal.fire({
+      icon: "warning",
+      title: "ຂໍ້ມູນຜູ້ໃຊ້ບໍ່ສາມາດສົ່ງໄດ້",
+      text: "ກະລຸນາກວດສອບຂໍ້ມູນຜູ້ໃຊ້",
+    });
+    return;
+  }
+
+  try {
+    isLoading.value = true;
+    const response = await axios.post(
+      `${config.public.strapi.url}api/upload-files/`,
+      formData
+    );
+
+    Swal.fire({
+      icon: "success",
+      title: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ",
+      text: "ສຳເລັດການນຳສົ່ງຂໍ້ມູນສຳເລັດແລ້ວ",
+    });
+    if (user.value?.MID?.id) {
+      const paddedMID = user.value.MID.id.toString().padStart(2, "0");
+      await fetchDataByUserID(paddedMID);
+    }
+    file.value = null;
+  } catch (error: any) {
+    console.error(error);
+
+    if (error.response && error.response.status === 401) {
+      Swal.fire({
+        icon: "error",
+        title: "ການນຳສົ່ງບໍ່ສົມບູນ",
+        text: "ຂໍ້ມູນບໍ່ຖືກກັບທະນາຄານ ກາລຸນາກວດສອບຄືນ",
+      });
+    } else if (error.response && error.response.status === 404) {
+      Swal.fire({
+        icon: "warning",
+        title: "ມີຊືຟາຍຊໍ້າກັນ",
+        text: "ຊື່ຟາຍນີ້ມີຢູ່ໃນລະບົບແລ້ວ ກາລຸນາກວດຄືນໃໝ່",
+      });
+    }else if (error.response && error.response.status === 405) {
+      Swal.fire({
+        icon: "warning",
+        title: "ຂໍ້ມູນຍອ້ນຫຼັງ",
+        text: "ທ່ານບໍ່ສາມາດອັບຂໍ້ມູນຍອ້ນຫຼັງ ກາລຸນາກວດຄືນໃໝ່",
+      });
+    } else if (error.response && error.response.status === 406) {
+      Swal.fire({
+        icon: "error",
+        title: "ອັບໂຫຼດລົ້ມເຫຼວ",
+        text: "ຮູບແບບຂໍ້ມູນຂອງ period ຢູ່ໃນຖານຂໍ້ມູນບໍ່ຖືກຮູບແບບ",
+      });
+    } else if (error.response && error.response.status === 408) {
+      Swal.fire({
+        icon: "error",
+        title: "ການອັບໂຫຼດລົ້ມເຫຼວ",
+        text: "ທ່ານບໍ່ສາມາດອັບໂຫຼດຂໍ້ມູນຍອ້ນຫຼັງໄດ້",
+      });
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "ການອັບໂຫຼດລົ້ມເຫລວ",
+        text: "ກາລຸນາກວດສອບຄືນ",
+      });
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 const viewDetails = async (item: FileItem) => {
   if (!item.FID) {
     Swal.fire({
       icon: "error",
-      title: "ລົ້ມເຫຼວ",
+      title: "ລົ້ມເຫລວ",
       text: "ບໍມີຂໍ້ມູນທີ່ກົງກັບ FID ນີ້",
     });
     return;
@@ -624,219 +421,12 @@ const viewDetails = async (item: FileItem) => {
   } catch (error) {
     Swal.fire({
       icon: "error",
-      title: "ລົ້ມເຫຼວ",
-      text: "ລົ້ມເຫຼວໃນການສະແດງຂໍ້ມູນ",
+      title: "ລົ້ມເຫລວ",
+      text: "ລົ້ມເຫລວໃນການສະແດງຂໍ້ມູນ",
     });
   }
 };
 
-const unloadUpload = async (item: FileItem) => {
-  try {
-    const result = await Swal.fire({
-      title: "ຢືນຢັນການອັນໂຫຼດ",
-      text: "ທ່ານແນ່ໃຈຫຼືບໍ່ທີ່ຕ້ອງການອັນໂຫຼດຂໍ້ມູນນີ້?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ff9800",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "ແນ່ໃຈ, ອັນໂຫຼດ!",
-      cancelButtonText: "ຍົກເລີກ",
-    });
-
-    if (!result.isConfirmed) {
-      return;
-    }
-
-    const updateResponse = await axios.post(
-      `${config.public.strapi.url}api/api/unload_statussubmit/`,
-      `FID=${item.FID}`
-    );
-    await fetchFilteredData();
-    await fetchData();
-    if (updateResponse.data.status !== "success") {
-      item.statussubmit = "1";
-      return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
-    }
-
-    const params = new URLSearchParams();
-    params.append("FID", item.FID!);
-
-    const response = await axios.post(
-      `${config.public.strapi.url}api/unload-upload/`,
-      params
-    );
-
-    Swal.close();
-
-    if (response.data.status === "success") {
-      await Swal.fire("ສຳເລັດ!", "ການອັນໂຫຼດຂໍ້ມູນໄດ້ສຳເລັດແລ້ວ.", "success");
-      await fetchFilteredData();
-    } else {
-      Swal.fire(
-        "ລົ້ມເຫຼວ!",
-        response.data.message || "ການອັນໂຫຼດຂໍ້ມູນລົ້ມເຫຼວ.",
-        "error"
-      );
-    }
-  } catch (error) {
-    console.error("Failed to unload upload:", error);
-
-    await Swal.fire({
-      title: "ຜິດພາດ",
-      text: "ບໍ່ສາມາດອັນໂຫຼດຂໍ້ມູນໄດ້. ກະລຸນາລອງໃໝ່.",
-      icon: "error",
-      confirmButtonText: "ຕົກລົງ",
-    });
-
-    const updateResponse = await axios.post(
-      `${config.public.strapi.url}api/api/error_statussubmit/`,
-      `FID=${item.FID}`
-    );
-  }
-};
-
-// const confirmAction = async (item: FileItem) => {
-//   const result = await Swal.fire({
-//     title: "ຢືນຢັນການດຳເນີນການ",
-//     text: "ທ່ານແນ່ໃຈຫຼືບໍ່ທີ່ຢືນຢັນການອັບໂຫຼດນີ້?",
-//     icon: "warning",
-//     showCancelButton: true,
-//     confirmButtonColor: "#3085d6",
-//     cancelButtonColor: "#d33",
-//     confirmButtonText: "ແນ່ໃຈ, ຢືນຢັນ!",
-//     cancelButtonText: "ຍົກເລີກ",
-//   });
-
-//   if (!result.isConfirmed) {
-//     return;
-//   }
-
-//   try {
-//     const updateResponse = await axios.post(
-//       `${config.public.strapi.url}api/api/update-statussubmit/`,
-//       `FID=${item.FID}`
-//     );
-
-//     if (updateResponse.data.status !== "success") {
-//       item.statussubmit = "1";
-//       return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
-//     }
-//   } catch (error) {
-//     console.error("Failed to update status:", error);
-//     item.statussubmit = "1";
-//     return Swal.fire("ຜິດພາດ!", "ການອັບເດດລົ້ມເຫຼວ.", "error");
-//   }
-
-//   try {
-//     const params = new URLSearchParams();
-//     params.append("FID", item.FID!);
-
-//     const confirmResponse = await axios.post(
-//       `${config.public.strapi.url}api/confirm_upload/`,
-//       params
-//     );
-
-//     if (confirmResponse.data.status === "success") {
-//       const confirmedItem = items.value.find((i) => i.FID === item.FID);
-//       if (confirmedItem) {
-//         confirmedItem.confirmed = true;
-//         confirmedItem.statussubmit = "0";
-//       }
-
-//       await Swal.fire("ຢືນຢັນສຳເລັດ!", "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.", "success");
-//       await fetchFilteredData();
-//     } else {
-//       item.statussubmit = "1";
-//       Swal.fire("ລົ້ມເຫຼວ!", "ການຢືນຢັນລົ້ມເຫຼວ.", "error");
-//     }
-//   } catch (error) {
-//     console.error("Failed to confirm upload:", error);
-//     item.statussubmit = "1";
-//     Swal.fire("ຜິດພາດ!", "ການຢືນຢັນລົ້ມເຫຼວ. ກະລຸນາລອງໃໝ່.", "error");
-//   }
-// };
-const confirmAction = async (item: FileItem) => {
-  const result = await Swal.fire({
-    title: "ຢືນຢັນການດຳເນີນການ",
-    text: "ທ່ານແນ່ໃຈຫຼືບໍ່ທີ່ຢືນຢັນການອັບໂຫຼດນີ້?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "ແນ່ໃຈ, ຢືນຢັນ!",
-    cancelButtonText: "ຍົກເລີກ",
-  });
-
-  if (!result.isConfirmed) {
-    return;
-  }
-
-  try {
-    // Update status ກ່ອນ
-    const updateResponse = await axios.post(
-      `${config.public.strapi.url}api/api/update-statussubmit/`,
-      `FID=${item.FID}`
-    );
-
-    if (updateResponse.data.status !== "success") {
-      item.statussubmit = "1";
-      return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
-    }
-    
-    // ສົ່ງ request confirm
-    const params = new URLSearchParams();
-    params.append("FID", item.FID!);
-
-    const confirmResponse = await axios.post(
-      `${config.public.strapi.url}api/confirm_upload/`,
-      params
-    );
-
-    console.log('Confirm response:', confirmResponse.data);
-
-    if (confirmResponse.data.status === 'processing') {
-      // ສະແດງ loading ແລະ ເລີ່ມ polling
-      Swal.fire({
-        title: 'ກຳລັງປະມວນຜົນ...',
-        html: '<div id="progress-text">0%</div>',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
-      
-      // ເລີ່ມ polling
-      startStatusPolling(item.FID!);
-      
-    } else if (confirmResponse.data.status === "success") {
-      // ສຳເລັດທັນທີ (ກໍລະນີຂໍ້ມູນນ້ອຍ)
-      const confirmedItem = items.value.find((i) => i.FID === item.FID);
-      if (confirmedItem) {
-        confirmedItem.confirmed = true;
-        confirmedItem.statussubmit = "0";
-      }
-
-      await Swal.fire("ຢືນຢັນສຳເລັດ!", "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.", "success");
-      await fetchFilteredData();
-      
-    } else {
-      item.statussubmit = "1";
-      Swal.fire("ລົ້ມເຫຼວ!", confirmResponse.data.message || "ການຢືນຢັນລົ້ມເຫຼວ.", "error");
-    }
-    
-  } catch (error) {
-    console.error("Failed to confirm upload:", error);
-    item.statussubmit = "1";
-    Swal.fire("ຜິດພາດ!", "ການຢືນຢັນລົ້ມເຫຼວ. ກະລຸນາລອງໃໝ່.", "error");
-  }
-};
-
-// ຢຸດ polling ເມື່ອ component unmount
-onUnmounted(() => {
-  if (statusCheckInterval.value) {
-    clearInterval(statusCheckInterval.value);
-  }
-});
 const getFullPath = (path: string) => {
   const baseUrl = `${config.public.strapi.url}media/`;
   return `${baseUrl}${path}`;
@@ -856,6 +446,45 @@ const truncateFileName = (fileName: string, maxLength: number) => {
     maxLength - extension!.length - 4
   );
   return `${truncatedName}...${extension}`;
+};
+
+const getStatusColor = (statussubmit: string) => {
+  switch (statussubmit) {
+    case "Pending":
+      return "orange";
+    case "1":
+    case "3":
+      return "green";
+    case "2":
+      return "red";
+    case "5":
+    case "4":
+      return "#827717";
+    case "0":
+      return "blue";
+    default:
+      return "grey";
+  }
+};
+
+const getStatusText = (statussubmit: string) => {
+  switch (statussubmit) {
+    case "Pending":
+      return "ກຳລັງນຳສົ່ງຂໍ້ມູນ";
+    case "1":
+    case "3":
+      return "ສຳເລັດການນຳສົ່ງຂໍ້ມູນ";
+    case "2":
+      return "ປະຕິເສດ";
+    case "5":
+      return "ຂໍ້ມູນຖືກອັນໂຫຼດ";
+    case "4":
+      return "ກຳລັງຖືກອັນໂຫຼດ..";
+    case "0":
+      return "ສຳເລັດການໂຫຼດ";
+    default:
+      return "ບໍ່ຮູ້ສະຖານະ";
+  }
 };
 
 const getPercentageColor = (percentage: number) => {
@@ -879,7 +508,7 @@ onMounted(async () => {
   try {
     UplodafileStore.getDataUplodB();
     memberinfoStore.getMemberInfo();
-
+    
     const userData = localStorage.getItem("user_data");
     console.log("User data:", userData);
 
@@ -887,45 +516,41 @@ onMounted(async () => {
       try {
         user.value = JSON.parse(userData);
         console.log("Parsed user data:", user.value);
+
+        const MID = user.value?.MID;
+        if (MID && MID.id) {
+          const paddedMID = MID.id.toString().padStart(2, "0");
+          console.log("Padded MID.id:", paddedMID);
+          await fetchDataByUserID(paddedMID);
+        }
       } catch (error) {
         console.error("Error parsing user data:", error);
       }
-    }
-
-    // ກວດສອບການປ່ຽນ user
-    validateUserStorage();
-
-    // ໂຫຼດຟິວເຕີ້ທັງໝົດຈາກ localStorage
-    loadFiltersFromStorage();
-
-    // ຖ້າມີຟິວເຕີ້ທີ່ເກັບໄວ້ ໃຫ້ fetch ຂໍ້ມູນດ້ວຍຟິວເຕີ້
-    const hasActiveFilters = Object.values(filters.value).some(
-      (value) => value !== ""
-    );
-    if (hasActiveFilters) {
-      await fetchFilteredData();
-    } else {
-      await fetchData();
     }
   } catch (error) {
     console.error("Error in onMounted:", error);
   }
 });
-
-watch(
-  () => filters.value,
-  (newFilters) => {
-    saveFiltersToStorage();
-  },
-  { deep: true }
-);
 </script>
 
 <template>
   <v-col cols="12">
-    <!-- Filters Section -->
     <v-row class="mb-4">
-      <v-col cols="12" md="3">
+      <v-col cols="12" md="3" v-if="user && user.MID.id !== '01'">
+        <v-file-input
+          density="compact"
+          variant="outlined"
+          prepend-icon="mdi-paperclip"
+          :label="$t('uploadjson')"
+          accept=".json, .xml"
+          @change="onFileChange"
+          outlined
+        ></v-file-input>
+      </v-col>
+      <v-col cols="12" md="2" v-if="user && user.MID.id !== '01'">
+        <v-btn @click="uploadFile" color="primary">{{ $t("upload") }}</v-btn>
+      </v-col>
+      <v-col cols="12" md="3" v-if="user && user.MID.id === '01'">
         <v-autocomplete
           variant="outlined"
           density="compact"
@@ -945,7 +570,27 @@ watch(
           </template>
         </v-autocomplete>
       </v-col>
-      <v-col cols="12" md="2">
+      <v-col cols="12" md="2" v-if="user && user.MID.id !== '01'">
+        <v-autocomplete
+          variant="outlined"
+          density="compact"
+          v-model="filters.period"
+          label="ເລືອກໄລຍະເວລາ"
+          :items="period"
+          :item-title="montDisplay"
+          item-value="period"
+          clearable
+          @update:model-value="fetchFilteredData"
+        >
+          <template v-slot:item="{ props, item }">
+            <v-list-item
+              v-bind="props"
+              :title="`${dayjs(item.raw.period).format('YYYY-MM')}`"
+            ></v-list-item>
+          </template>
+        </v-autocomplete>
+      </v-col>
+      <v-col cols="12" md="2" v-if="user && user.MID.id === '01'">
         <v-autocomplete
           variant="outlined"
           density="compact"
@@ -979,7 +624,7 @@ watch(
           @update:model-value="fetchFilteredData"
         />
       </v-col>
-      <v-col cols="12" md="3">
+      <v-col cols="12" md="2" v-if="user && user.MID.id !== '01'">
         <v-select
           variant="outlined"
           density="compact"
@@ -990,29 +635,26 @@ watch(
           @update:model-value="fetchFilteredData"
         />
       </v-col>
-      <v-col cols="12" md="2">
+      <v-col cols="12" md="3" v-if="user && user.MID.id === '01'">
+        <v-select
+          variant="outlined"
+          density="compact"
+          v-model="filters.status"
+          label="ສະຖານະ"
+          :items="statusOptions"
+          clearable
+          @update:model-value="fetchFilteredData"
+        />
+      </v-col>
+      <v-col cols="12" md="1">
         <v-btn
-          @click="clearFilter"
+          @click="refreshData"
           color="success"
           icon="mdi-refresh"
           variant="outlined"
-          class="mr-2"
         ></v-btn>
-        <v-btn
-          @click="clearFilter"
-          color="secondary"
-          :disabled="
-            !filters.user_id &&
-            !filters.period &&
-            !filters.file_type &&
-            !filters.status
-          "
-        >
-          ເຄຍ Filter
-        </v-btn>
       </v-col>
     </v-row>
-
     <v-row class="mb-4" v-if="statistics">
       <v-col cols="12" md="2">
         <v-card color="primary" variant="tonal">
@@ -1070,8 +712,6 @@ watch(
       </v-col>
     </v-row>
   </v-col>
-
-  <!-- Data Table Section -->
   <v-data-table
     item-value="FID"
     :headers="headers"
@@ -1083,7 +723,7 @@ watch(
   >
     <template v-slot:top>
       <v-toolbar flat>
-        <v-toolbar-title>ລາຍການຟາຍທີ່ຕ້ອງການຢືນຢັນ</v-toolbar-title>
+        <v-toolbar-title>ລາຍການຟາຍອັບໂຫຼດ</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-text-field
           v-model="searchQuery"
@@ -1096,18 +736,19 @@ watch(
         ></v-text-field>
       </v-toolbar>
     </template>
-
     <template v-slot:header.FID>
-      <th style="color: #0d47a1">ໄອດີ</th>
-    </template>
-    <template v-slot:header.fileName>
-      <th style="color: #0d47a1">ຊື່ໄຟລ໌</th>
+      <th style="color: #0d47a1">{{ $t("id") }}</th>
     </template>
     <template v-slot:header.user_id>
       <th style="color: #0d47a1" v-if="user && user.MID.id === '01'">
         ລະຫັດທະນາຄານ
       </th>
     </template>
+    <template v-slot:header.fileName>
+      <th style="color: #0d47a1">ຊື່ໄຟລ໌</th>
+    </template>
+
+    
     <template v-slot:header.fileSize>
       <th style="color: #0d47a1">ຂະໜາດຟາຍ</th>
     </template>
@@ -1118,15 +759,22 @@ watch(
       <th style="color: #0d47a1">ປະເພດ</th>
     </template>
     <template v-slot:header.statussubmit>
-      <th style="color: #0d47a1">ສະຖານະການຢືນຢັນ</th>
+      <th style="color: #0d47a1">{{ $t("status") }}</th>
     </template>
     <template v-slot:header.percentage>
-      <th style="color: #0d47a1">ເປີເຊັນຄວາມຖືກຕ້ອງ</th>
+      <th style="color: #0d47a1">{{ $t("percentage") }}</th>
     </template>
     <template v-slot:header.actions>
       <th style="color: #0d47a1">ການດຳເນີນການ</th>
     </template>
-
+<template
+      v-slot:item.user_id="{ item }"
+      v-if="user && user.MID.id === '01'"
+    >
+      <v-chip color="primary" size="small">
+        {{ mapMemberInfo(item.user_id) }}
+      </v-chip>
+    </template>
     <template v-slot:item.fileName="{ item }">
       <v-tooltip :text="`ກົດເພື່ອເບິ່ງເນື້ອຫາຂອງຟາຍ: ${item.fileName}`">
         <template v-slot:activator="{ props }">
@@ -1150,28 +798,24 @@ watch(
       </v-tooltip>
     </template>
 
-    <template
-      v-slot:item.user_id="{ item }"
-      v-if="user && user.MID.id === '01'"
-    >
-      <v-chip color="primary" size="small">
-        {{ mapMemberInfo(item.user_id) }}
-      </v-chip>
-    </template>
-
+    
     <template v-slot:item.fileSize="{ item }">
       <span class="text-body-2">
+        <!-- <span v-if="Number(item.fileSize) / 1024 / 1024 < 1">
+          {{ (Number(item.fileSize) / 1024).toFixed(2) }} KB
+        </span>
+        <span v-else>
+          {{ (Number(item.fileSize) / 1024 / 1024).toFixed(2) }} MB
+        </span> -->
         {{ item.fileSize }}
       </span>
     </template>
-
     <template v-slot:item.period="{ item }">
       <v-chip color="secondary" size="small" v-if="item.period">
         {{ dayjs(item.period_formatted || item.period).format("YYYY-MM") }}
       </v-chip>
       <span v-else class="text-grey">-</span>
     </template>
-
     <template v-slot:item.percentage="{ item }">
       <div class="d-flex align-center">
         <v-progress-linear
@@ -1189,71 +833,52 @@ watch(
         </span>
       </div>
     </template>
-
     <template v-slot:item.statussubmit="{ item }">
-      <div class="d-flex align-center">
-        <template v-if="item.statussubmit === '3'">
-          <v-chip color="warning" size="small">
-            <v-progress-circular
-              size="16"
-              color="white"
-              indeterminate
-              class="mr-1"
-            ></v-progress-circular>
-            ກຳລັງອັບໂຫຼດ
-          </v-chip>
-        </template>
-        <template
-          v-else-if="item.statussubmit === '0' && item.percentage <= 50"
-        >
-          <v-chip color="success" size="small">
-            <v-icon icon="mdi-check-all" size="16" class="mr-1"></v-icon>
-            ຢືນຢັນສຳເລັດແລ້ວ
-          </v-chip>
-        </template>
-        <template v-else-if="item.statussubmit === '2'">
-          <v-chip color="error" size="small">
-            <v-icon icon="mdi-close" size="16" class="mr-1"></v-icon>
-            ປະຕິເສດ
-          </v-chip>
-        </template>
-        <template v-else-if="item.statussubmit === '4'">
-          <v-chip color="info" size="small">
-            <v-progress-circular
-              size="16"
-              color="white"
-              indeterminate
-              class="mr-1"
-            ></v-progress-circular>
-            ກຳລັງອັນໂຫຼດຂໍ້ມູນອອກ
-          </v-chip>
-        </template>
-        <template v-else-if="item.statussubmit === '5'">
-          <v-chip color="grey" size="small">
-            <v-icon icon="mdi-cloud-download" size="16" class="mr-1"></v-icon>
-            ຂໍ້ມູນຖືກອັນໂຫຼດອອກແລ້ວ
-          </v-chip>
-        </template>
-        <template v-else-if="item.percentage > 50">
-          <v-chip color="error" size="small">
-            <v-icon icon="mdi-alert" size="16" class="mr-1"></v-icon>
-            ຂໍ້ຜິດພາດສູງເກີນກຳນົດ
-          </v-chip>
-        </template>
-        <template v-else>
-          <v-btn
-            @click="confirmAction(item)"
-            color="success"
-            size="small"
-            :disabled="isUserUploading(item.user_id)"
-          >
-            <v-icon icon="mdi-check" size="16" class="mr-1"></v-icon>
-            ຢືນຢັນ
-          </v-btn>
-        </template>
-      </div>
+      <v-chip
+        v-if="item.statussubmit === 'Pending'"
+        color="warning"
+        size="small"
+      >
+        <v-progress-circular
+          size="16"
+          color="white"
+          indeterminate
+          class="mr-1"
+        ></v-progress-circular>
+        ກຳລັງນຳສົ່ງຂໍ້ມູນ
+      </v-chip>
+      <v-chip
+        v-else-if="item.statussubmit === '1' || item.statussubmit === '3'"
+        color="success"
+        size="small"
+      >
+        <v-icon icon="mdi-check" size="16" class="mr-1"></v-icon>
+        ນຳສົ່ງຂໍ້ມູນສຳເລັດ
+      </v-chip>
+      <v-chip v-else-if="item.statussubmit === '2'" color="error" size="small">
+        <v-icon icon="mdi-close" size="16" class="mr-1"></v-icon>
+        ປະຕິເສດ
+      </v-chip>
+      <v-chip
+        v-else-if="item.statussubmit === '5' || item.statussubmit === '4'"
+        color="info"
+        size="small"
+      >
+        <v-icon icon="mdi-cloud-upload" size="16" class="mr-1"></v-icon>
+        ຂໍ້ມູນຖືກອັນໂຫຼດ
+      </v-chip>
+      <v-chip
+        v-else-if="item.statussubmit === '0'"
+        color="primary"
+        size="small"
+      >
+        <v-icon icon="mdi-check-all" size="16" class="mr-1"></v-icon>
+        ສຳເລັດການໂຫຼດ
+      </v-chip>
+      <v-chip v-else color="grey" size="small">
+        {{ item.status_display || "ບໍ່ຮູ້ສະຖານະ" }}
+      </v-chip>
     </template>
-
     <template v-slot:item.actions="{ item }">
       <div class="d-flex gap-2">
         <v-btn
@@ -1263,52 +888,20 @@ watch(
           variant="outlined"
         >
           <v-icon icon="mdi-eye" size="16" class="mr-1"></v-icon>
-          ເບິ່ງລາຍລະອຽດ
+          {{ $t("detail") }}
         </v-btn>
-        <template v-if="item.statussubmit === '0' || item.statussubmit === '2'">
-          <v-btn
-            @click="unloadUpload(item)"
-            color="warning"
-            size="small"
-            variant="outlined"
-            :disabled="isUserUnloading(item.user_id)"
-          >
-            <v-icon icon="mdi-download" size="16" class="mr-1"></v-icon>
-            ອັນໂຫຼດ
-          </v-btn>
-        </template>
-        <template v-else-if="item.statussubmit === '4'">
-          <v-chip color="info" size="small">
-            <v-progress-circular
-              size="16"
-              color="white"
-              indeterminate
-              class="mr-1"
-            ></v-progress-circular>
-            ກຳລັງອັນໂຫຼດຂໍ້ມູນອອກ
-          </v-chip>
-        </template>
-        <template v-else-if="item.statussubmit === '5'">
-          <v-chip color="grey" size="small">
-            <v-icon icon="mdi-cloud-download" size="16" class="mr-1"></v-icon>
-            ຂໍ້ມູນຖືກອັນໂຫຼດອອກແລ້ວ
-          </v-chip>
-        </template>
       </div>
     </template>
-
     <template v-slot:no-data>
       <v-alert type="info" class="ma-4">
         <v-icon icon="mdi-information" class="mr-2"></v-icon>
         ບໍ່ມີຂໍ້ມູນທີ່ກົງກັບເງື່ອນໄຂການຄົ້ນຫາ
       </v-alert>
     </template>
-
     <template v-slot:loading>
       <v-skeleton-loader type="table-row@10"></v-skeleton-loader>
     </template>
   </v-data-table>
-
   <v-row class="mt-4" v-if="apiResponse">
     <v-col cols="12">
       <v-card variant="outlined">
@@ -1352,35 +945,5 @@ watch(
 
 .v-progress-linear {
   border-radius: 4px;
-}
-
-.d-flex {
-  display: flex;
-  align-items: center;
-}
-
-.gap-2 {
-  gap: 8px;
-}
-
-.text-center {
-  text-align: center;
-  display: block;
-}
-
-.text-red {
-  color: red;
-}
-
-.text-green {
-  color: green;
-}
-
-.text-amber-darken-4 {
-  color: #ff6f00;
-}
-
-.ga-2 {
-  gap: 8px;
 }
 </style>
