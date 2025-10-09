@@ -540,11 +540,11 @@ const submit = async () => {
       console.error("Error creating enterprise info:", error);
       console.error("Error response:", error.response);
       
-      // ດຶງ error message ຈາກຫຼາຍແຫຼ່ງ
+      
       let errorMessage = "ລົ້ມເຫຼວໃນການສ້າງຂໍ້ມູນວິສາຫະກິດ";
       
       if (error.response) {
-        // ມີ response ຈາກ server
+       
         console.log("Error response data:", error.response.data);
         errorMessage = error.response.data?.message 
           || error.response.data?.detail

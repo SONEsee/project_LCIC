@@ -203,10 +203,11 @@ const typeFilter = [
 const header = [
   { title: "ລະຫັດ", value: "id" },
   { title: "ສະມາຊິກ", value: "user" },
+  { title: "ວັນທີນຳສົ່ງ", value: "insertdate" },
   { title: "ຮູບ", value: "filename", align: "center" },
   { title: "ສະຖານະ", value: "status" },
   { title: "ລະຫັດ ຂສລ", value: "LCIC_reques" },
-  { title: "ວັນທີນຳສົ່ງ", value: "insertdate" },
+  { title: "ວັນທີອອກລະຫັດ ຂສລ", value: "updatedate" },
   { title: "ລາຍລະອຽດ", value: "action" },
 ] as any;
 const collateralData = computed(() => {
@@ -614,6 +615,9 @@ const copyCode = async (text: string) => {
      <template v-slot:header.LCIC_reques="{column}">
       <b style="color: blue;">{{ column.title }}</b>
     </template>
+     <template v-slot:header.updatedate="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
     <template v-slot:item.user="{ item }">
       {{ mapMemberInfo(item.user) }}
     </template>
@@ -645,6 +649,10 @@ const copyCode = async (text: string) => {
     <template v-slot:item.insertdate="{ item }">
       {{ dayjs(item.insertdate).format("DD/MM/YYYY") }}
     </template>
+    <template v-slot:item.updatedate="{ item }" >
+      <div class="text-center">
+  {{ item.updatedate ? dayjs(item.updatedate).format("DD/MM/YYYY") : "-" }}</div>
+</template>
     <template v-slot:item.action="{ item }">
       <v-btn
         v-if="user && user.MID.id !== '01'"
@@ -655,7 +663,7 @@ const copyCode = async (text: string) => {
       >
       <v-btn
       :disabled="item.LCIC_reques"
-        v-if="user && user.MID.id === '01'"
+        v-if="user && user.MID.id === '01' && item.status === '1'"
         @click="goToTest1(item.pathfile, item.id, item.status)"
         color="primary"
         size="small"
@@ -664,6 +672,8 @@ const copyCode = async (text: string) => {
       >
         ບັນທຶກຂໍ້ມູນ
       </v-btn>
+      <v-chip color="info" v-if="user && user.MID.id === '01' && item.status === '0'">ອອກເລກວິສາຫະກິດສຳເລັດ</v-chip>
+      
     </template>
     <template v-slot:item.status="{ item }">
       <div v-if="item.status === '1'">
