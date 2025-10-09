@@ -20,12 +20,12 @@ useHead({
 </script>
 <template>
   <v-tabs v-model="tab" fixed-tabs stacked>
-    <v-tab value="one">ດາວໂຫຼດ json file</v-tab>
-    <v-tab value="two">ອັບໂຫຼດຂໍ້ມູນເຂົ້າ Database</v-tab>
+    <v-tab value="one">ດາວໂຫຼດຂໍ້ມູນ ສາທາລະນຸປະໂພກ</v-tab>
+    <v-tab value="two">ນໍາສົ່ງຂໍ້ມູນ ສາທາລະນຸປະໂພກ</v-tab>
     <v-tab value="three">ນໍາສົ່ງຂໍ້ມູນ API EDL</v-tab>
     <v-tab value="four">ນໍາສົ່ງຂໍ້ມູນ API Water</v-tab>
-    <v-tab value="five">ນໍາສົ່ງຂໍ້ມູນ API Report EDL</v-tab>
-    <v-tab value="six">ນໍາສົ່ງຂໍ້ມູນ API Report Water</v-tab>
+    <v-tab value="five">ລາຍງານການນໍາສົ່ງ API EDL</v-tab>
+    <v-tab value="six">ລາຍງານການນໍາສົ່ງ API Water</v-tab>
   </v-tabs>
   <v-card-text>
     <v-window v-model="tab">

@@ -1,369 +1,504 @@
 <template>
-  <div class="utility-tracker">
-    <!-- Header -->
-    <div class="header-section">
-      <div class="container">
-        <h1 class="page-title">
-          <v-icon class="mr-2" size="24">mdi-database-sync</v-icon>
-          ການຕິດຕາມການອັບໂຫຼດຂໍ້ມູນໄຟຟ້າ
-        </h1>
-        
-        <!-- Step 1: Province Selection -->
-        <div class="controls-section">
-          <v-row dense>
-            <v-col cols="12" md="3">
-              <v-text-field
-                v-model="username"
-                label="ຊື່ຜູ້ໃຊ້"
-                variant="outlined"
-                density="compact"
-                prepend-inner-icon="mdi-account"
-                required
-              />
-            </v-col>
-            
-            <v-col cols="12" md="3">
-              <v-select
-                v-model="selectedProvince"
-                :items="provinces"
-                item-title="pro_name"
-                item-value="pro_id"
-                label="ເລືອກແຂວງ"
-                variant="outlined"
-                density="compact"
-                prepend-inner-icon="mdi-map-marker"
-                @update:model-value="onProvinceChange"
-                :loading="loadingProvinces"
-                required
-              />
-            </v-col>
-            
-            <v-col cols="12" md="2">
-              <v-text-field
-                v-model="selectedMonth"
-                label="ເດືອນ (YYYYMM)"
-                variant="outlined"
-                density="compact"
-                prepend-inner-icon="mdi-calendar"
-                placeholder="202509"
-                :rules="monthRules"
-                required
-              />
-            </v-col>
-            
-            <v-col cols="12" md="2">
-              <v-btn
-                color="primary"
-                size="small"
-                block
-                :loading="initializing"
-                :disabled="!selectedProvince || !selectedMonth || !username"
-                @click="initializeDistricts"
-              >
-                <v-icon class="mr-1" size="16">mdi-plus</v-icon>
-                ເລີ່ມຕົ້ນເມືອງ
-              </v-btn>
-            </v-col>
-            
-            <v-col cols="12" md="2">
-              <v-btn
-                color="grey"
-                variant="outlined"
-                size="small"
-                block
-                @click="resetForm"
-                :disabled="loading || initializing"
-              >
-                <v-icon class="mr-1" size="16">mdi-refresh</v-icon>
-                ລ້າງຂໍ້ມູນ
-              </v-btn>
-            </v-col>
-          </v-row>
-        </div>
-      </div>
-    </div>
-
-    <!-- Step 2: Districts Display -->
-    <div v-if="selectedProvince" class="districts-section">
-      <div class="container">
-        <v-card class="districts-card">
-          <v-card-title class="districts-title">
-            <span>ເມືອງໃນ {{ getProvinceName() }} - {{ formatMonth(selectedMonth) }}</span>
-            <div class="title-actions">
-              <v-btn
-                color="success"
-                variant="tonal"
-                size="small"
-                @click="loadDistrictsStatus"
-                :loading="loading"
-                class="mr-2"
-              >
-                <v-icon class="mr-1" size="16">mdi-refresh</v-icon>
-                ໂຫຼດໃໝ່
-              </v-btn>
-              <v-btn
-                color="warning"
-                variant="tonal"
-                size="small"
-                @click="loadAllDistricts"
-                :loading="bulkLoading"
-                :disabled="!pendingDistricts.length || !username"
-              >
-                <v-icon class="mr-1" size="16">mdi-upload-multiple</v-icon>
-                ໂຫຼດທັງໝົດ ({{ pendingDistricts.length }})
-              </v-btn>
-            </div>
-          </v-card-title>
-          
-          <!-- Districts Table -->
-          <v-data-table
-            :headers="headers"
-            :items="districts"
-            :loading="loading"
-            class="elevation-0 custom-table"
-            item-key="dis_id"
-            density="compact"
-          >
-            <!-- District Name -->
-            <template v-slot:item.district="{ item }">
+  <div class="electric-upload-system">
+    <!-- Header with Period Selection -->
+    <v-card class="header-card mb-6" elevation="3">
+      <v-card-text class="pa-8">
+        <v-row align="center" dense>
+          <v-col cols="12" md="2">
+            <div class="d-flex align-center">
+              <v-icon color="primary" size="36" class="mr-3">mdi-lightning-bolt</v-icon>
               <div>
-                <div class="font-weight-medium">{{ item.dis_name }}</div>
-                <div class="text-caption text-medium-emphasis">ລະຫັດເມືອງ: {{ item.dis_id }}</div>
+                <h1 class="text-h5 font-weight-bold">ລະບົບອັບໂຫຼດໄຟຟ້າ</h1>
+                <div class="text-caption text-medium-emphasis">Electric Upload System</div>
               </div>
-            </template>
-            
-            <!-- Status -->
-            <template v-slot:item.status="{ item }">
-              <v-chip
-                :color="getStatusColor(item.status || 'not_initialized')"
-                size="small"
-                variant="flat"
-                class="status-chip"
-              >
-                <v-icon class="mr-1" size="12">{{ getStatusIcon(item.status || 'not_initialized') }}</v-icon>
-                {{ formatStatus(item.status || 'not_initialized') }}
-              </v-chip>
-            </template>
-            
-            <!-- Records Info -->
-            <template v-slot:item.records="{ item }">
-              <div v-if="item.total_records">
-                <div class="font-weight-medium">{{ formatNumber(item.total_records) }} ທັງໝົດ</div>
-                <div class="text-caption" v-if="item.processed_records">
-                  <span class="text-success">{{ formatNumber(item.processed_records) }} ປະມວນຜົນແລ້ວ</span>
-                  <span v-if="item.failed_records" class="text-error ml-1">
-                    • {{ formatNumber(item.failed_records) }} ລົ້ມເຫຼວ
-                  </span>
-                </div>
-              </div>
-              <span v-else class="text-medium-emphasis">ບໍ່ມີຂໍ້ມູນ</span>
-            </template>
-            
-            <!-- Success Rate -->
-            <template v-slot:item.success_rate="{ item }">
-              <div class="d-flex align-center" v-if="item.total_records > 0">
-                <v-progress-circular
-                  :model-value="parseFloat(item.success_rate_formatted || 0)"
-                  :color="getSuccessColor(parseFloat(item.success_rate_formatted || 0))"
-                  size="24"
-                  width="2"
-                  class="mr-2"
-                >
-                  <span class="text-caption">{{ Math.round(parseFloat(item.success_rate_formatted || 0)) }}%</span>
-                </v-progress-circular>
-              </div>
-              <span v-else class="text-medium-emphasis">-</span>
-            </template>
-
-            <!-- Data Size -->
-            <template v-slot:item.data_size="{ item }">
-              <div v-if="item.formatted_size">
-                <div class="font-weight-medium">{{ item.formatted_size }}</div>
-                <div class="text-caption text-medium-emphasis" v-if="item.data_size_mb">
-                  {{ item.data_size_mb.toFixed(2) }} MB
-                </div>
-              </div>
-              <div v-else-if="item.upload_started && item.status === 'in_progress'">
-                <div class="text-warning font-weight-medium">ກຳລັງປະມວນຜົນ...</div>
-                <div class="text-caption">ເລີ່ມຕົ້ນ: {{ formatTime(item.upload_started) }}</div>
-              </div>
-              <span v-else class="text-medium-emphasis">ບໍ່ມີຂໍ້ມູນ</span>
-            </template>
-            
-            <!-- Upload Time -->
-            <template v-slot:item.upload_time="{ item }">
-              <div v-if="item.upload_completed">
-                <div class="font-weight-medium">{{ formatDate(item.upload_completed) }}</div>
-                <div class="text-caption text-medium-emphasis">
-                  {{ formatTime(item.upload_completed) }}
-                  <span v-if="item.upload_duration" class="ml-1">({{ item.upload_duration }})</span>
-                </div>
-              </div>
-              <div v-else-if="item.upload_started && item.status === 'in_progress'">
-                <div class="text-warning font-weight-medium">ກຳລັງດຳເນີນການ</div>
-                <div class="text-caption">ເລີ່ມຕົ້ນ: {{ formatTime(item.upload_started) }}</div>
-              </div>
-              <span v-else class="text-medium-emphasis">ຍັງບໍ່ໄດ້ເລີ່ມຕົ້ນ</span>
-            </template>
-            
-            <!-- Actions -->
-            <template v-slot:item.actions="{ item }">
-              <div class="d-flex gap-1">
-                <v-btn
-                  :color="getActionColor(item.status)"
-                  size="x-small"
-                  variant="flat"
-                  :loading="item.loading"
-                  :disabled="!username || item.status === 'in_progress'"
-                  @click="loadDistrictData(item)"
-                >
-                  <v-icon class="mr-1" size="12">{{ getActionIcon(item.status) }}</v-icon>
-                  {{ getActionText(item.status) }}
-                </v-btn>
-                <v-btn
-                  icon="mdi-information-outline"
-                  size="x-small"
-                  variant="text"
-                  @click="showDetails(item)"
-                  :disabled="!item.id"
-                />
-              </div>
-            </template>
-          </v-data-table>
-        </v-card>
-      </div>
-    </div>
-
-    <!-- Step 3: Progress Monitoring - Details Dialog -->
-    <v-dialog v-model="detailsDialog" max-width="700">
-      <v-card v-if="selectedItem" class="details-card">
-        <v-card-title class="details-title">
-          <v-icon class="mr-2" size="20">mdi-information</v-icon>
-          ລາຍລະອຽດການອັບໂຫຼດ - {{ selectedItem.dis_name }}
-        </v-card-title>
-        <v-card-text class="details-content">
-          <div class="mb-3">
-            <h4>{{ selectedItem.pro_name }} - {{ selectedItem.dis_name }}</h4>
-            <p class="text-medium-emphasis">ເດືອນ: {{ formatMonth(selectedItem.upload_month) }}</p>
-          </div>
+            </div>
+          </v-col>
           
-          <!-- Progress Stats -->
-          <v-row class="mb-3" dense>
-            <v-col cols="4">
-              <v-card variant="outlined" class="stats-card">
-                <v-card-text class="text-center pa-3">
-                  <div class="text-h6 font-weight-bold text-primary">{{ formatNumber(selectedItem.total_records) }}</div>
-                  <div class="text-caption">ຈຳນວນບັນທຶກທັງໝົດ</div>
-                </v-card-text>
+          <v-col cols="12" md="3">
+            <v-select
+              v-model="selectedPeriod"
+              :items="periodOptions"
+              label="ເລືອກເດືອນ-ປີ"
+              variant="outlined"
+              density="comfortable"
+              prepend-inner-icon="mdi-calendar-month"
+              hide-details
+            />
+          </v-col>
+          
+          <v-col cols="12" md="2">
+            <v-text-field
+              v-model="username"
+              label="ຊື່ຜູ້ໃຊ້"
+              variant="outlined"
+              density="comfortable"
+              prepend-inner-icon="mdi-account-circle"
+              hide-details
+            />
+          </v-col>
+          
+          <v-col cols="12" md="2">
+            <v-btn
+              color="primary"
+              size="large"
+              block
+              :loading="loadingData"
+              :disabled="!selectedPeriod"
+              @click="fetchData"
+            >
+              <v-icon class="mr-2" size="20">mdi-sync</v-icon>
+              ໂຫຼດຂໍ້ມູນ
+            </v-btn>
+          </v-col>
+          
+          <v-col cols="12" md="2">
+            <v-btn
+              color="success"
+              variant="tonal"
+              size="large"
+              block
+              @click="showSummary = !showSummary"
+            >
+              <v-icon class="mr-2" size="20">mdi-chart-box-outline</v-icon>
+              {{ showSummary ? 'ເຊື່ອງສະຫຼຸບ' : 'ສະຫຼຸບ' }}
+            </v-btn>
+          </v-col>
+          
+          <v-col cols="12" md="1">
+            <v-btn
+              icon
+              variant="text"
+              size="large"
+              @click="fetchData"
+              :loading="loadingData"
+            >
+              <v-icon size="24">mdi-refresh</v-icon>
+              <v-tooltip activator="parent" location="bottom">ໂຫຼດໃໝ່</v-tooltip>
+            </v-btn>
+          </v-col>
+        </v-row>
+        
+        <v-progress-linear
+          v-if="loadingData"
+          indeterminate
+          color="primary"
+          class="mt-4"
+          height="4"
+        />
+      </v-card-text>
+    </v-card>
+
+    <!-- Summary Section -->
+    <v-expand-transition>
+      <v-card v-if="showSummary" class="summary-card mb-6" elevation="3">
+        <v-card-title class="bg-gradient-primary text-white pa-6">
+          <v-icon class="mr-3" size="28">mdi-chart-box</v-icon>
+          <span class="text-h6">ສະຫຼຸບລວມ - {{ formatPeriod(selectedPeriod) }}</span>
+        </v-card-title>
+        <v-card-text class="pa-6">
+          <v-row dense>
+            <v-col cols="6" md="3">
+              <v-card class="stat-card pa-6" elevation="2">
+                <div class="text-center">
+                  <v-avatar color="primary" size="64" class="mb-3">
+                    <v-icon size="32" color="white">mdi-map-marker-multiple</v-icon>
+                  </v-avatar>
+                  <div class="text-h3 font-weight-bold text-primary">{{ summary.totalProvinces }}</div>
+                  <div class="text-subtitle-1 text-medium-emphasis mt-2">ແຂວງທັງໝົດ</div>
+                </div>
               </v-card>
             </v-col>
-            <v-col cols="4">
-              <v-card variant="outlined" class="stats-card">
-                <v-card-text class="text-center pa-3">
-                  <div class="text-h6 font-weight-bold text-success">{{ formatNumber(selectedItem.processed_records) }}</div>
-                  <div class="text-caption">ປະມວນຜົນແລ້ວ</div>
-                </v-card-text>
+            
+            <v-col cols="6" md="3">
+              <v-card class="stat-card pa-6" elevation="2">
+                <div class="text-center">
+                  <v-avatar color="success" size="64" class="mb-3">
+                    <v-icon size="32" color="white">mdi-check-circle</v-icon>
+                  </v-avatar>
+                  <div class="text-h3 font-weight-bold text-success">
+                    {{ summary.processedDistricts }}
+                  </div>
+                  <div class="text-subtitle-1 text-medium-emphasis mt-2">
+                    ເມືອງສຳເລັດ / {{ summary.totalDistricts }}
+                  </div>
+                </div>
               </v-card>
             </v-col>
-            <v-col cols="4">
-              <v-card variant="outlined" class="stats-card">
-                <v-card-text class="text-center pa-3">
-                  <div class="text-h6 font-weight-bold text-info">{{ selectedItem.formatted_size || 'N/A' }}</div>
-                  <div class="text-caption">ຂະໜາດຂໍ້ມູນ</div>
-                </v-card-text>
+            
+            <v-col cols="6" md="3">
+              <v-card class="stat-card pa-6" elevation="2">
+                <div class="text-center">
+                  <v-avatar color="info" size="64" class="mb-3">
+                    <v-icon size="32" color="white">mdi-database</v-icon>
+                  </v-avatar>
+                  <div class="text-h3 font-weight-bold text-info">{{ formatNumber(summary.totalRecords) }}</div>
+                  <div class="text-subtitle-1 text-medium-emphasis mt-2">ບັນທຶກທັງໝົດ</div>
+                </div>
+              </v-card>
+            </v-col>
+            
+            <v-col cols="6" md="3">
+              <v-card class="stat-card pa-6" elevation="2">
+                <div class="text-center">
+                  <v-avatar color="purple" size="64" class="mb-3">
+                    <v-icon size="32" color="white">mdi-clock-outline</v-icon>
+                  </v-avatar>
+                  <div class="text-subtitle-1 font-weight-bold text-purple mt-2">{{ summary.lastUpdated }}</div>
+                  <div class="text-subtitle-1 text-medium-emphasis mt-2">ອັບເດດລ່າສຸດ</div>
+                </div>
               </v-card>
             </v-col>
           </v-row>
-          
-          <!-- Activity Logs -->
-          <div v-if="detailLogs.length" class="mt-3">
-            <h4 class="mb-3">ບັນທຶກກິດຈະກຳ</h4>
-            <v-timeline density="compact" side="end" class="activity-timeline">
-              <v-timeline-item
-                v-for="log in detailLogs"
-                :key="log.id"
-                :dot-color="getLogColor(log.log_level)"
-                size="small"
-              >
-                <div>
-                  <div class="font-weight-medium">{{ log.message }}</div>
-                  <div class="text-caption text-medium-emphasis">
-                    {{ formatDateTime(log.timestamp) }}
-                  </div>
-                  <v-chip
-                    :color="getLogColor(log.log_level)"
-                    size="x-small"
-                    class="mt-1"
-                  >
-                    {{ log.log_level }}
-                  </v-chip>
-                </div>
-              </v-timeline-item>
-            </v-timeline>
-          </div>
-          <div v-else class="text-center text-medium-emphasis py-3">
-            ບໍ່ມີບັນທຶກກິດຈະກຳ
-          </div>
         </v-card-text>
-        <v-card-actions class="details-actions">
-          <v-spacer />
-          <v-btn variant="text" @click="detailsDialog = false">ປິດ</v-btn>
-        </v-card-actions>
       </v-card>
-    </v-dialog>
+    </v-expand-transition>
 
-    <!-- Bulk Progress Dialog -->
-    <v-dialog 
-      v-model="bulkProgressDialog" 
-      max-width="500" 
-      :persistent="!bulkProgress.isComplete"
-    >
-      <v-card class="bulk-progress-card">
-        <v-card-title class="bulk-progress-title">
-          <v-icon class="mr-2" size="20">mdi-upload-multiple</v-icon>
-          ຄວາມຄືບໜ້າການອັບໂຫຼດທັງໝົດ
+    <!-- Province Cards with Districts -->
+    <div v-if="provinces.length > 0">
+      <v-card
+        v-for="province in provinces"
+        :key="province.pro_id"
+        class="province-card mb-6"
+        elevation="3"
+      >
+        <!-- Province Header -->
+        <v-card-title
+          class="province-header pa-6"
+          :class="getProvinceStatusClass(province)"
+          @click="toggleProvince(province.pro_id)"
+        >
+          <v-row align="center" dense>
+            <v-col cols="12" md="5">
+              <div class="d-flex align-center">
+                <v-btn
+                  icon
+                  variant="flat"
+                  size="large"
+                  class="mr-3"
+                  color="white"
+                >
+                  <v-icon size="28">
+                    {{ expandedProvinces[province.pro_id] ? 'mdi-chevron-down' : 'mdi-chevron-right' }}
+                  </v-icon>
+                </v-btn>
+                
+                <v-avatar color="white" size="56" class="mr-4">
+                  <v-icon size="32" :color="getProvinceIconColor(province.status)">
+                    mdi-map-marker
+                  </v-icon>
+                </v-avatar>
+                
+                <div>
+                  <div class="text-h5 font-weight-bold text-white mb-1">{{ province.pro_name }}</div>
+                  <div class="text-subtitle-2 text-white opacity-90">
+                    <v-icon size="18" class="mr-1">mdi-map-marker-outline</v-icon>
+                    {{ province.districts.length }} ເມືອງ
+                  </div>
+                </div>
+              </div>
+            </v-col>
+            
+            <v-col cols="12" md="3" class="text-center">
+              <v-chip
+                :color="getStatusChipColor(province.status)"
+                size="large"
+                variant="elevated"
+                class="font-weight-bold px-6 py-6"
+              >
+                <v-icon size="20" class="mr-2">{{ getStatusIcon(province.status) }}</v-icon>
+                {{ getStatusText(province.status) }}
+              </v-chip>
+            </v-col>
+            
+            <v-col cols="12" md="4" class="text-right">
+              <v-btn
+                color="white"
+                variant="elevated"
+                size="x-large"
+                class="mr-2"
+                :loading="province.uploading"
+                :disabled="!username"
+                @click.stop="uploadAllDistricts(province)"
+              >
+                <v-icon class="mr-2" size="24">mdi-upload-multiple</v-icon>
+                <span class="text-h6">ອັບໂຫຼດທັງໝົດ</span>
+              </v-btn>
+              
+              <v-btn
+                color="white"
+                variant="outlined"
+                size="x-large"
+                :loading="province.initializing"
+                :disabled="!username"
+                @click.stop="initializeProvince(province)"
+              >
+                <v-icon class="mr-2" size="24">mdi-plus-circle</v-icon>
+                <span class="text-h6">ເລີ່ມຕົ້ນ</span>
+              </v-btn>
+            </v-col>
+          </v-row>
         </v-card-title>
-        <v-card-text class="bulk-progress-content">
-          <div class="text-center mb-3">
-            <v-progress-circular
-              :model-value="bulkProgress.percentage"
-              size="60"
-              width="6"
-              color="primary"
-            >
-              {{ bulkProgress.percentage }}%
-            </v-progress-circular>
+
+        <!-- Districts Table -->
+        <v-expand-transition>
+          <div v-if="expandedProvinces[province.pro_id]">
+            <v-divider />
+            
+            <v-card-text class="pa-0">
+              <v-table class="districts-table">
+                <thead>
+                  <tr>
+                    <th class="text-left pa-4">
+                      <v-icon class="mr-2" size="20">mdi-map-marker-outline</v-icon>
+                      ເມືອງ
+                    </th>
+                    <th class="text-center pa-4">
+                      <v-icon class="mr-2" size="20">mdi-information-outline</v-icon>
+                      ສະຖານະ
+                    </th>
+                    <th class="text-center pa-4">
+                      <v-icon class="mr-2" size="20">mdi-credit-card-check</v-icon>
+                      ການຊຳລະ
+                    </th>
+                    <th class="text-center pa-4">
+                      <v-icon class="mr-2" size="20">mdi-account-group</v-icon>
+                      ລູກຄ້າ
+                    </th>
+                    <th class="text-center pa-4">
+                      <v-icon class="mr-2" size="20">mdi-clock-outline</v-icon>
+                      ວັນທີອັບໂຫຼດ
+                    </th>
+                    <th class="text-center pa-4">
+                      <v-icon class="mr-2" size="20">mdi-cog-outline</v-icon>
+                      ການກະທຳ
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="district in province.districts"
+                    :key="district.dis_id"
+                    class="district-row"
+                  >
+                    <td class="pa-4">
+                      <div class="d-flex align-center">
+                        <v-avatar color="primary" size="40" class="mr-3">
+                          <v-icon size="20" color="white">mdi-map</v-icon>
+                        </v-avatar>
+                        <div>
+                          <div class="text-subtitle-1 font-weight-bold">{{ district.dis_name }}</div>
+                          <div class="text-caption text-medium-emphasis">
+                            <v-icon size="14">mdi-identifier</v-icon>
+                            {{ district.dis_id }}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    <td class="text-center pa-4">
+                      <v-chip
+                        :color="getStatusColor(district.status)"
+                        size="default"
+                        variant="flat"
+                        class="px-4 py-5"
+                      >
+                        <v-icon size="16" class="mr-1">{{ getStatusIcon(district.status) }}</v-icon>
+                        <span class="font-weight-medium">{{ getStatusText(district.status) }}</span>
+                      </v-chip>
+                    </td>
+                    
+                    <td class="text-center pa-4">
+                      <div class="d-flex align-center justify-center">
+                        <v-icon size="20" color="success" class="mr-2">mdi-cash-check</v-icon>
+                        <span class="text-h6 font-weight-bold">{{ formatNumber(district.payment_count) }}</span>
+                      </div>
+                    </td>
+                    
+                    <td class="text-center pa-4">
+                      <div class="d-flex align-center justify-center">
+                        <v-icon size="20" color="info" class="mr-2">mdi-account-multiple</v-icon>
+                        <span class="text-h6 font-weight-bold">{{ formatNumber(district.customer_count) }}</span>
+                      </div>
+                    </td>
+                    
+                    <td class="text-center pa-4">
+                      <div v-if="district.upload_completed">
+                        <div class="text-subtitle-1 font-weight-medium">{{ formatDate(district.upload_completed) }}</div>
+                        <div class="text-caption text-medium-emphasis">{{ formatTime(district.upload_completed) }}</div>
+                      </div>
+                      <span v-else class="text-medium-emphasis">—</span>
+                    </td>
+                    
+                    <td class="text-center pa-4">
+                      <v-btn-group density="comfortable" divided>
+                        <v-btn
+                          color="primary"
+                          :loading="district.loading"
+                          :disabled="!username"
+                          @click="syncDistrict(province, district)"
+                          class="px-4"
+                        >
+                          <v-icon class="mr-2" size="20">mdi-sync</v-icon>
+                          ດຶງຂໍ້ມູນ
+                        </v-btn>
+                        
+                        <v-btn
+                          color="info"
+                          :disabled="!district.payment_count && !district.customer_count"
+                          @click="viewDistrictData(province, district)"
+                          class="px-4"
+                        >
+                          <v-icon class="mr-2" size="20">mdi-eye</v-icon>
+                          ເບິ່ງ
+                        </v-btn>
+                      </v-btn-group>
+                    </td>
+                  </tr>
+                  
+                  <tr v-if="province.districts.length === 0">
+                    <td colspan="6" class="text-center pa-8">
+                      <v-icon size="48" color="grey-lighten-1">mdi-inbox</v-icon>
+                      <div class="text-subtitle-1 text-medium-emphasis mt-3">
+                        ບໍ່ມີຂໍ້ມູນເມືອງ - ກະລຸນາກົດ "ເລີ່ມຕົ້ນ" ກ່ອນ
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </v-table>
+            </v-card-text>
           </div>
-          <p class="text-center">
-            ກຳລັງປະມວນຜົນ {{ bulkProgress.current }} ຈາກ {{ bulkProgress.total }} ເມືອງ
-          </p>
-          <div class="text-center text-caption mb-2">
-            <span class="text-success">✓ {{ bulkProgress.completed }} ສຳເລັດແລ້ວ</span> | 
-            <span class="text-error">✗ {{ bulkProgress.failed }} ລົ້ມເຫຼວ</span>
+        </v-expand-transition>
+      </v-card>
+    </div>
+
+    <!-- Empty State -->
+    <v-card v-else class="empty-state text-center pa-16" elevation="3">
+      <v-avatar color="grey-lighten-3" size="120">
+        <v-icon size="64" color="grey">mdi-database-off-outline</v-icon>
+      </v-avatar>
+      <h2 class="text-h5 mt-6 mb-3">ບໍ່ມີຂໍ້ມູນ</h2>
+      <p class="text-subtitle-1 text-medium-emphasis mb-6">
+        ກະລຸນາເລືອກເດືອນ-ປີ ແລະ ກົດປຸ່ມ "ໂຫຼດຂໍ້ມູນ"
+      </p>
+      <v-btn
+        color="primary"
+        size="large"
+        :disabled="!selectedPeriod"
+        @click="fetchData"
+      >
+        <v-icon class="mr-2">mdi-sync</v-icon>
+        ໂຫຼດຂໍ້ມູນ
+      </v-btn>
+    </v-card>
+
+    <!-- Detail Dialog -->
+    <v-dialog v-model="detailDialog" max-width="1400" scrollable>
+      <v-card v-if="selectedDistrict">
+        <v-card-title class="bg-primary text-white d-flex align-center justify-space-between pa-6">
+          <div class="d-flex align-center">
+            <v-icon class="mr-3" size="32">mdi-file-document</v-icon>
+            <div>
+              <div class="text-h5">ລາຍລະອຽດຂໍ້ມູນ</div>
+              <div class="text-subtitle-2 opacity-90">
+                {{ selectedProvince?.pro_name }} - {{ selectedDistrict.dis_name }}
+              </div>
+            </div>
           </div>
-          <v-progress-linear
-            :model-value="bulkProgress.percentage"
-            color="primary"
-            height="6"
-            rounded
-            class="mt-2"
-          />
-          
-          <!-- Current District -->
-          <div v-if="bulkProgress.currentDistrict" class="mt-2 text-center">
-            <v-chip size="small" color="info">
-              ກຳລັງປະມວນຜົນ: {{ bulkProgress.currentDistrict }}
-            </v-chip>
-          </div>
-        </v-card-text>
-        <v-card-actions class="bulk-progress-actions">
-          <v-spacer />
-          <v-btn 
-            variant="text" 
-            @click="cancelBulkUpload"
-            size="small"
+          <v-btn
+            icon
+            variant="text"
+            size="large"
+            @click="detailDialog = false"
           >
-            {{ bulkProgress.isComplete ? 'ປິດ' : 'ຍົກເລີກ' }}
+            <v-icon size="28">mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        
+        <v-tabs v-model="activeTab" bg-color="grey-lighten-4" height="64">
+          <v-tab value="payment" class="text-h6">
+            <v-icon class="mr-2" size="24">mdi-credit-card-check</v-icon>
+            ການຊຳລະ ({{ formatNumber(paymentData.length) }})
+          </v-tab>
+          <v-tab value="customer" class="text-h6">
+            <v-icon class="mr-2" size="24">mdi-account-group</v-icon>
+            ລູກຄ້າ ({{ formatNumber(customerData.length) }})
+          </v-tab>
+        </v-tabs>
+        
+        <v-card-text class="pa-0" style="height: 600px;">
+          <v-window v-model="activeTab">
+            <v-window-item value="payment">
+              <div class="pa-6">
+                <v-text-field
+                  v-model="paymentSearch"
+                  prepend-inner-icon="mdi-magnify"
+                  label="ຄົ້ນຫາ..."
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                  class="mb-4"
+                  clearable
+                />
+                
+                <div class="text-caption text-medium-emphasis mb-2">
+                  ສະແດງຜົນ {{ paymentData.length }} ລາຍການ
+                </div>
+              </div>
+            </v-window-item>
+            
+            <v-window-item value="customer">
+              <div class="pa-6">
+                <v-text-field
+                  v-model="customerSearch"
+                  prepend-inner-icon="mdi-magnify"
+                  label="ຄົ້ນຫາ..."
+                  variant="outlined"
+                  density="comfortable"
+                  hide-details
+                  class="mb-4"
+                  clearable
+                />
+                
+                <div class="text-caption text-medium-emphasis mb-2">
+                  ສະແດງຜົນ {{ customerData.length }} ລາຍການ
+                </div>
+              </div>
+            </v-window-item>
+          </v-window>
+        </v-card-text>
+        
+        <v-divider />
+        
+        <v-card-actions class="pa-6">
+          <v-btn
+            color="primary"
+            variant="elevated"
+            size="large"
+            @click="refreshDetailData"
+            :loading="loadingDetails"
+          >
+            <v-icon class="mr-2" size="20">mdi-refresh</v-icon>
+            ໂຫຼດໃໝ່
+          </v-btn>
+          
+          <v-btn
+            color="success"
+            variant="tonal"
+            size="large"
+            @click="downloadCSV"
+          >
+            <v-icon class="mr-2" size="20">mdi-download</v-icon>
+            ດາວໂຫຼດ CSV
+          </v-btn>
+          
+          <v-spacer />
+          
+          <v-btn
+            variant="elevated"
+            size="large"
+            @click="detailDialog = false"
+          >
+            ປິດ
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -374,9 +509,15 @@
       v-model="notification.show"
       :color="notification.color"
       :timeout="notification.timeout"
-      location="top"
+      location="top right"
+      elevation="24"
     >
-      {{ notification.message }}
+      <div class="d-flex align-center">
+        <v-icon class="mr-3" size="24">
+          {{ notification.color === 'success' ? 'mdi-check-circle' : notification.color === 'error' ? 'mdi-alert-circle' : 'mdi-information' }}
+        </v-icon>
+        <div>{{ notification.message }}</div>
+      </div>
       <template v-slot:actions>
         <v-btn variant="text" @click="notification.show = false">ປິດ</v-btn>
       </template>
@@ -388,37 +529,25 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import axios from 'axios'
 
-// Configuration
 const config = useRuntimeConfig()
-const apiUrl = computed(() => config.public.apiUrl || 'http://192.168.45.56:8000/')
 
-// Reactive Data
+// State
+const selectedPeriod = ref(new Date().toISOString().slice(0, 7).replace('-', ''))
 const username = ref('system')
-const selectedProvince = ref(null)
-const selectedMonth = ref(new Date().toISOString().slice(0, 7).replace('-', ''))
-const loading = ref(false)
-const loadingProvinces = ref(false)
-const initializing = ref(false)
-const bulkLoading = ref(false)
-const detailsDialog = ref(false)
-const bulkProgressDialog = ref(false)
-
-// Data
+const loadingData = ref(false)
+const showSummary = ref(true)
 const provinces = ref([])
-const districts = ref([])
-const selectedItem = ref(null)
-const detailLogs = ref([])
+const expandedProvinces = ref({})
 
-// Bulk Progress
-const bulkProgress = reactive({
-  total: 0,
-  current: 0,
-  completed: 0,
-  failed: 0,
-  percentage: 0,
-  isComplete: false,
-  currentDistrict: ''
-})
+const detailDialog = ref(false)
+const selectedDistrict = ref(null)
+const selectedProvince = ref(null)
+const activeTab = ref('payment')
+const paymentSearch = ref('')
+const customerSearch = ref('')
+const paymentData = ref([])
+const customerData = ref([])
+const loadingDetails = ref(false)
 
 // Notification
 const notification = reactive({
@@ -428,458 +557,360 @@ const notification = reactive({
   timeout: 5000
 })
 
-// Validation Rules
-const monthRules = [
-  v => !!v || 'ເດືອນແມ່ນຈຳເປັນ',
-  v => /^\d{6}$/.test(v) || 'ຮູບແບບຕ້ອງເປັນ YYYYMM (ເຊັ່ນ: 202509)'
-]
+// Period Options
+const periodOptions = computed(() => {
+  const options = []
+  const currentDate = new Date()
+  for (let i = 0; i < 24; i++) {
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    options.push({
+      title: `${month}/${year}`,
+      value: `${year}${month}`
+    })
+  }
+  return options
+})
 
-// Table Headers - Updated to Lao with styling class
-const headers = [
-  { title: 'ເມືອງ', value: 'district', sortable: false, class: 'table-header' },
-  { title: 'ສະຖານະ', value: 'status', sortable: true, class: 'table-header' },
-  { title: 'ຂໍ້ມູນ', value: 'records', sortable: false, class: 'table-header' },
-  { title: 'ອັດຕາສຳເລັດ', value: 'success_rate', sortable: false, class: 'table-header' },
-  { title: 'ຂະໜາດຂໍ້ມູນ', value: 'data_size', sortable: false, class: 'table-header' },
-  { title: 'ວັນເວລາການນຳສົ່ງ', value: 'upload_time', sortable: false, class: 'table-header' },
-  { title: 'ການກະທຳ', value: 'actions', sortable: false, align: 'center', class: 'table-header' },
-]
-
-// Computed Properties
-const pendingDistricts = computed(() => 
-  districts.value.filter(item => 
-    !item.status || item.status === 'pending' || item.status === 'failed'
+// Summary
+const summary = computed(() => {
+  const totalProvinces = provinces.value.length
+  const totalDistricts = provinces.value.reduce((sum, p) => sum + p.districts.length, 0)
+  const processedDistricts = provinces.value.reduce((sum, p) => 
+    sum + p.districts.filter(d => d.status === 'completed').length, 0
   )
-)
-
-// Reset Form Function
-const resetForm = () => {
-  selectedProvince.value = null
-  selectedMonth.value = new Date().toISOString().slice(0, 7).replace('-', '')
-  username.value = 'system'
-  districts.value = []
+  const totalRecords = provinces.value.reduce((sum, p) =>
+    sum + p.districts.reduce((s, d) => s + (d.payment_count || 0) + (d.customer_count || 0), 0), 0
+  )
   
-  showNotification('ລ້າງຂໍ້ມູນສຳເລັດແລ້ວ', 'info')
-}
-
-// API Methods
-const loadProvinces = async () => {
-  loadingProvinces.value = true
-  try {
-    const response = await axios.get(`${apiUrl.value}api/provinces/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
-      }
-    })
-    provinces.value = response.data
-    console.log('Loaded provinces:', provinces.value)
-    showNotification('ໂຫຼດຂໍ້ມູນແຂວງສຳເລັດແລ້ວ', 'success')
-  } catch (error) {
-    console.error('Error loading provinces:', error)
-    showNotification('ການໂຫຼດຂໍ້ມູນແຂວງລົ້ມເຫຼວ', 'error')
-  } finally {
-    loadingProvinces.value = false
-  }
-}
-
-const onProvinceChange = async () => {
-  console.log('Province changed to:', selectedProvince.value)
-  if (selectedProvince.value) {
-    await loadDistrictsForProvince()
-    await loadDistrictsStatus()
-  } else {
-    districts.value = []
-  }
-}
-
-const loadDistrictsForProvince = async () => {
-  if (!selectedProvince.value) return
+  const lastUpdatedDistrict = provinces.value
+    .flatMap(p => p.districts)
+    .filter(d => d.upload_completed)
+    .sort((a, b) => new Date(b.upload_completed) - new Date(a.upload_completed))[0]
   
-  loading.value = true
-  try {
-    const response = await axios.get(`${apiUrl.value}api/districts/`, {
-      params: { province_id: selectedProvince.value },
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
-      }
-    })
-    
-    // Initialize districts with empty tracking data
-    districts.value = response.data.map(district => ({
-      ...district,
-      status: null,
-      total_records: 0,
-      processed_records: 0,
-      failed_records: 0,
-      success_rate_formatted: '0',
-      formatted_size: null,
-      data_size_mb: 0,
-      upload_started: null,
-      upload_completed: null,
-      upload_duration: null,
-      created_at: null,
-      updated_at: null,
-      upload_month: null,
-      user_upload: null,
-      status_color: null,
-      id: null,
-      loading: false
-    }))
-    
-    showNotification(`ໂຫຼດ ${districts.value.length} ເມືອງແລ້ວ`, 'success')
-  } catch (error) {
-    console.error('Error loading districts:', error)
-    showNotification('ການໂຫຼດຂໍ້ມູນເມືອງລົ້ມເຫຼວ', 'error')
-  } finally {
-    loading.value = false
+  return {
+    totalProvinces,
+    totalDistricts,
+    processedDistricts,
+    totalRecords,
+    lastUpdated: lastUpdatedDistrict ? formatDateTime(lastUpdatedDistrict.upload_completed) : 'N/A'
   }
-}
+})
 
-const loadDistrictsStatus = async () => {
-  if (!selectedProvince.value || !selectedMonth.value) return
-  
-  loading.value = true
-  try {
-    const response = await axios.get(`${apiUrl.value}api/upload-tracking/`, {
-      params: {
-        province_id: selectedProvince.value,
-        month: selectedMonth.value
-      },
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
-      }
-    })
-    
-    const trackingData = response.data.data || []
-    console.log('Tracking data received:', trackingData)
-    
-    // Log individual items to debug data structure
-    if (trackingData.length > 0) {
-      console.log('Sample tracking item:', trackingData[0])
-      console.log('Available fields:', Object.keys(trackingData[0]))
-    }
-    
-    // Merge tracking data with districts
-    districts.value = districts.value.map(district => {
-      const tracking = trackingData.find(t => t.dis_id === district.dis_id)
-      
-      if (tracking) {
-        console.log(`District ${district.dis_name} (${district.dis_id}):`)
-        console.log('- Raw tracking data:', tracking)
-        console.log('- success_rate_formatted:', tracking.success_rate_formatted)
-        console.log('- formatted_size:', tracking.formatted_size)
-        console.log('- data_size_mb:', tracking.data_size_mb)
-        
-        // Merge all tracking data with district data
-        return {
-          ...district,
-          ...tracking, // This includes all fields from your tracking data
-          // Ensure key fields are properly set
-          success_rate_formatted: tracking.success_rate_formatted || '0',
-          formatted_size: tracking.formatted_size || null,
-          data_size_mb: tracking.data_size_mb || 0
-        }
-      }
-      return district
-    })
-    
-    console.log('Final districts data:', districts.value)
-    
-  } catch (error) {
-    console.error('Error loading districts status:', error)
-    // Don't show error here as it's expected when no tracking data exists
-  } finally {
-    loading.value = false
-  }
-}
-
-const initializeDistricts = async () => {
-  if (!selectedProvince.value || !selectedMonth.value || !username.value) {
-    showNotification('ກະລຸນາຕື່ມຂໍ້ມູນໃຫ້ຄົບຖ້ວນ', 'error')
+// Methods
+const fetchData = async () => {
+  if (!selectedPeriod.value) {
+    showNotification('ກະລຸນາເລືອກເດືອນ-ປີ', 'error')
     return
   }
-
-  initializing.value = true
+  
+  loadingData.value = true
   try {
-    const response = await axios.post(`${apiUrl.value}api/initialize-districts/`, {
-      province_id: selectedProvince.value,
-      month: selectedMonth.value,
-      username: username.value
-    }, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
-      }
+    // Load provinces
+    const provincesResponse = await axios.get(`${config.public.strapi.url}api/provinces/`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
     })
-
-    showNotification(response.data.message, 'success')
-    await loadDistrictsStatus()
+    
+    // Load tracking data for each province
+    const provincesData = await Promise.all(
+      provincesResponse.data.map(async (province) => {
+        const trackingResponse = await axios.get(
+          `${config.public.strapi.url}api/upload-tracking/`,
+          {
+            params: {
+              province_id: province.pro_id,
+              month: selectedPeriod.value
+            },
+            headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+          }
+        )
+        
+        const districts = trackingResponse.data.data || []
+        
+        // Calculate province status
+        let provinceStatus = 'not_started'
+        if (districts.length > 0) {
+          const completedCount = districts.filter(d => d.status === 'completed').length
+          if (completedCount === districts.length) {
+            provinceStatus = 'done'
+          } else if (completedCount > 0) {
+            provinceStatus = 'partial'
+          } else {
+            provinceStatus = 'pending'
+          }
+        }
+        
+        return {
+          ...province,
+          status: provinceStatus,
+          districts: districts.map(d => ({
+            ...d,
+            payment_count: d.processed_records || 0,
+            customer_count: d.customer_records || 0,
+            loading: false
+          })),
+          uploading: false,
+          initializing: false
+        }
+      })
+    )
+    
+    provinces.value = provincesData
+    
+    // Auto-expand first province or provinces with data
+    if (provincesData.length > 0) {
+      expandedProvinces.value[provincesData[0].pro_id] = true
+    }
+    
+    showNotification('ໂຫຼດຂໍ້ມູນສຳເລັດ', 'success')
   } catch (error) {
-    console.error('Error initializing districts:', error)
-    showNotification(error.response?.data?.error || 'ການເລີ່ມຕົ້ນລົ້ມເຫຼວ', 'error')
+    console.error('Error fetching data:', error)
+    showNotification('ການໂຫຼດຂໍ້ມູນລົ້ມເຫຼວ', 'error')
   } finally {
-    initializing.value = false
+    loadingData.value = false
   }
 }
 
-const loadDistrictData = async (district) => {
+const toggleProvince = (provinceId) => {
+  expandedProvinces.value[provinceId] = !expandedProvinces.value[provinceId]
+}
+
+const initializeProvince = async (province) => {
   if (!username.value) {
     showNotification('ກະລຸນາໃສ່ຊື່ຜູ້ໃຊ້', 'error')
     return
   }
+  
+  province.initializing = true
+  try {
+    const response = await axios.post(
+      `${config.public.strapi.url}api/initialize-districts/`,
+      {
+        province_id: province.pro_id,
+        month: selectedPeriod.value,
+        username: username.value
+      },
+      {
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+    
+    showNotification(response.data.message, 'success')
+    await fetchData()
+  } catch (error) {
+    console.error('Initialize error:', error)
+    showNotification(error.response?.data?.error || 'ການເລີ່ມຕົ້ນລົ້ມເຫຼວ', 'error')
+  } finally {
+    province.initializing = false
+  }
+}
 
+const syncDistrict = async (province, district) => {
+  if (!username.value) {
+    showNotification('ກະລຸນາໃສ່ຊື່ຜູ້ໃຊ້', 'error')
+    return
+  }
+  
   district.loading = true
   try {
-    const response = await axios.post(`${apiUrl.value}api/upload-data/`, {
-      province_code: district.pro_id,
-      district_code: district.dis_id,
-      dateRequest: selectedMonth.value,
-      username: username.value
-    }, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+    const response = await axios.post(
+      `${config.public.strapi.url}api/upload-data/`,
+      {
+        province_code: province.pro_id,
+        district_code: district.dis_id,
+        dateRequest: selectedPeriod.value,
+        username: username.value
+      },
+      {
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
       }
-    })
-
+    )
+    
     if (response.data && !response.data.error) {
+      const paymentRecords = response.data.payment_records || {}
+      const customerRecords = response.data.customer_records || {}
+      
       showNotification(
-        `${district.dis_name}: ${response.data.processed_records}/${response.data.total_records} ບັນທຶກອັບໂຫຼດແລ້ວ`,
+        `${district.dis_name}: ສຳເລັດ\nການຊຳລະ: ${paymentRecords.processed}/${paymentRecords.total}\nລູກຄ້າ: ${customerRecords.processed}/${customerRecords.total}`,
         'success'
       )
-      await loadDistrictsStatus()
-    } else {
-      showNotification(response.data.error || 'ການອັບໂຫຼດລົ້ມເຫຼວ', 'error')
+      
+      await fetchData()
     }
   } catch (error) {
-    console.error('Upload error:', error)
-    showNotification(error.response?.data?.error || 'ການອັບໂຫຼດລົ້ມເຫຼວ', 'error')
+    console.error('Sync error:', error)
+    showNotification(`${district.dis_name}: ການດຶງຂໍ້ມູນລົ້ມເຫຼວ`, 'error')
   } finally {
     district.loading = false
   }
 }
 
-const loadAllDistricts = async () => {
+const uploadAllDistricts = async (province) => {
   if (!username.value) {
     showNotification('ກະລຸນາໃສ່ຊື່ຜູ້ໃຊ້', 'error')
     return
   }
-
-  const pending = pendingDistricts.value
-  if (pending.length === 0) {
-    showNotification('ບໍ່ມີເມືອງທີ່ລໍຖ້າການປະມວນຜົນ', 'info')
+  
+  // First, ensure districts are initialized
+  if (province.districts.length === 0) {
+    showNotification('ກຳລັງເລີ່ມຕົ້ນເມືອງ...', 'info')
+    await initializeProvince(province)
+    // Reload data after initialization
+    await fetchData()
+    province = provinces.value.find(p => p.pro_id === province.pro_id)
+  }
+  
+  const pendingDistricts = province.districts.filter(d => 
+    !d.status || d.status === 'pending' || d.status === 'failed'
+  )
+  
+  if (pendingDistricts.length === 0) {
+    showNotification('ທຸກເມືອງອັບໂຫຼດແລ້ວ', 'info')
     return
   }
-
-  // Initialize bulk progress
-  bulkProgress.total = pending.length
-  bulkProgress.current = 0
-  bulkProgress.completed = 0
-  bulkProgress.failed = 0
-  bulkProgress.percentage = 0
-  bulkProgress.isComplete = false
-  bulkProgress.currentDistrict = ''
   
-  bulkLoading.value = true
-  bulkProgressDialog.value = true
-
-  try {
-    for (let i = 0; i < pending.length; i++) {
-      const district = pending[i]
-      bulkProgress.current = i + 1
-      bulkProgress.currentDistrict = district.dis_name
-      
-      try {
-        const response = await axios.post(`${apiUrl.value}api/upload-data/`, {
-          province_code: district.pro_id,
+  province.uploading = true
+  let completed = 0
+  let failed = 0
+  
+  for (const district of pendingDistricts) {
+    try {
+      await axios.post(
+        `${config.public.strapi.url}api/upload-data/`,
+        {
+          province_code: province.pro_id,
           district_code: district.dis_id,
-          dateRequest: selectedMonth.value,
+          dateRequest: selectedPeriod.value,
           username: username.value
-        }, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`
-          }
-        })
-
-        if (response.data && !response.data.error) {
-          bulkProgress.completed++
-        } else {
-          bulkProgress.failed++
+        },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
         }
-      } catch (error) {
-        console.error(`Failed to upload ${district.dis_name}:`, error)
-        bulkProgress.failed++
-      }
-
-      bulkProgress.percentage = Math.round(((bulkProgress.completed + bulkProgress.failed) / bulkProgress.total) * 100)
-      
-      // Small delay between requests
-      if (i < pending.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 2000))
-      }
-    }
-
-    bulkProgress.isComplete = true
-    bulkProgress.currentDistrict = 'ສຳເລັດແລ້ວ'
-    await loadDistrictsStatus()
-    
-    showNotification(
-      `ການອັບໂຫຼດທັງໝົດສຳເລັດແລ້ວ: ${bulkProgress.completed} ສຳເລັດ, ${bulkProgress.failed} ລົ້ມເຫຼວ`,
-      bulkProgress.failed > 0 ? 'warning' : 'success'
-    )
-  } catch (error) {
-    console.error('Bulk upload error:', error)
-    showNotification('ການອັບໂຫຼດທັງໝົດລົ້ມເຫຼວ', 'error')
-  } finally {
-    bulkLoading.value = false
-  }
-}
-
-const showDetails = async (district) => {
-  if (!district.id) {
-    showNotification('ບໍ່ມີຂໍ້ມູນການຕິດຕາມສຳລັບເມືອງນີ້', 'info')
-    return
-  }
-  
-  selectedItem.value = district
-  
-  try {
-    const response = await axios.get(`${apiUrl.value}api/upload-tracking/${district.id}/`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
-      }
-    })
-    if (response.data && response.data.logs) {
-      detailLogs.value = response.data.logs
+      )
+      completed++
+    } catch (error) {
+      failed++
     }
     
-  } catch (error) {
-    console.error('Error loading details:', error)
-    detailLogs.value = []
+    await new Promise(resolve => setTimeout(resolve, 2000))
   }
   
-  detailsDialog.value = true
+  province.uploading = false
+  await fetchData()
+  
+  showNotification(
+    `${province.pro_name}:\nສຳເລັດ: ${completed}/${pendingDistricts.length}\nລົ້ມເຫຼວ: ${failed}`,
+    failed > 0 ? 'warning' : 'success'
+  )
 }
 
-const cancelBulkUpload = () => {
-  if (bulkProgress.isComplete) {
-    bulkProgressDialog.value = false
-  } else {
-    bulkLoading.value = false
-    bulkProgressDialog.value = false
-    
-    // Clear all individual loading states
-    districts.value.forEach(d => {
-      if (d.loading) d.loading = false
-    })
-    
-    showNotification('ຍົກເລີກການອັບໂຫຼດທັງໝົດແລ້ວ', 'warning')
-  }
+const viewDistrictData = async (province, district) => {
+  selectedProvince.value = province
+  selectedDistrict.value = district
+  detailDialog.value = true
+  
+  // Mock data - replace with your API calls
+  paymentData.value = []
+  customerData.value = []
 }
 
-// Add a utility function to clear all loading states
-const clearAllLoadingStates = () => {
-  districts.value.forEach(d => {
-    if (d.loading) d.loading = false
-  })
-  loading.value = false
-  bulkLoading.value = false
-  initializing.value = false
+const refreshDetailData = async () => {
+  showNotification('ໂຫຼດຂໍ້ມູນໃໝ່ສຳເລັດ', 'success')
 }
 
-// Utility Methods
-const getProvinceName = () => {
-  const province = provinces.value.find(p => p.pro_id === selectedProvince.value)
-  return province ? province.pro_name : 'ແຂວງທີ່ເລືອກ'
+const downloadCSV = () => {
+  showNotification('ກຳລັງດາວໂຫຼດ...', 'info')
+}
+
+// Helper Functions
+const getProvinceStatusClass = (province) => {
+  const status = province.status
+  if (status === 'done') return 'status-done'
+  if (status === 'partial') return 'status-partial'
+  if (status === 'pending') return 'status-pending'
+  return 'status-not-started'
+}
+
+const getProvinceIconColor = (status) => {
+  if (status === 'done') return 'success'
+  if (status === 'partial') return 'warning'
+  return 'grey'
 }
 
 const getStatusColor = (status) => {
   const colors = {
     completed: 'success',
+    done: 'success',
     pending: 'warning',
+    partial: 'orange',
     in_progress: 'info',
     failed: 'error',
-    partial: 'orange',
-    not_initialized: 'grey'
+    not_started: 'grey'
   }
   return colors[status] || 'grey'
+}
+
+const getStatusChipColor = (status) => {
+  if (status === 'done') return 'success'
+  if (status === 'partial') return 'warning'
+  if (status === 'pending') return 'info'
+  return 'grey-lighten-1'
 }
 
 const getStatusIcon = (status) => {
   const icons = {
     completed: 'mdi-check-circle',
-    pending: 'mdi-clock-outline',
-    in_progress: 'mdi-loading',
-    failed: 'mdi-alert-circle',
-    partial: 'mdi-alert-circle-outline',
-    not_initialized: 'mdi-help-circle'
+    done: 'mdi-check-circle',
+    pending: 'mdi-clock-alert',
+    partial: 'mdi-alert-circle',
+    in_progress: 'mdi-loading mdi-spin',
+    failed: 'mdi-close-circle',
+    not_started: 'mdi-help-circle'
   }
   return icons[status] || 'mdi-help-circle'
 }
 
-const getActionColor = (status) => {
-  if (!status || status === 'not_initialized') return 'grey'
-  return status === 'completed' ? 'orange' : 'primary'
-}
-
-const getActionIcon = (status) => {
-  if (!status || status === 'not_initialized') return 'mdi-plus'
-  return status === 'completed' ? 'mdi-refresh' : 'mdi-upload'
-}
-
-const getActionText = (status) => {
-  if (!status || status === 'not_initialized') return 'ເລີ່ມຕົ້ນ'
-  return status === 'completed' ? 'ໂຫຼດໃໝ່' : 'ໂຫຼດ'
-}
-
-const getSuccessColor = (rate) => {
-  if (rate >= 95) return 'success'
-  if (rate >= 80) return 'warning'
-  return 'error'
-}
-
-const getLogColor = (level) => {
-  const colors = {
-    INFO: 'info',
-    WARNING: 'warning',
-    ERROR: 'error'
-  }
-  return colors[level] || 'grey'
-}
-
-// Formatting Methods
-const formatStatus = (status) => {
-  const statusMap = {
-    not_initialized: 'ຍັງບໍ່ໄດ້ເລີ່ມຕົ້ນ',
+const getStatusText = (status) => {
+  const texts = {
+    completed: 'ສຳເລັດ',
+    done: 'ສຳເລັດ',
     pending: 'ລໍຖ້າ',
+    partial: 'ບາງສ່ວນ',
     in_progress: 'ກຳລັງດຳເນີນການ',
-    completed: 'ສຳເລັດແລ້ວ',
     failed: 'ລົ້ມເຫຼວ',
-    partial: 'ບາງສ່ວນ'
+    not_started: 'ຍັງບໍ່ໄດ້ເລີ່ມ'
   }
-  return statusMap[status] || status
+  return texts[status] || 'ບໍ່ຮູ້ຈັກ'
 }
 
 const formatNumber = (num) => {
   return num?.toLocaleString() || '0'
 }
 
+const formatPeriod = (period) => {
+  if (!period || period.length !== 6) return period
+  const year = period.substring(0, 4)
+  const month = period.substring(4, 6)
+  return `${month}/${year}`
+}
+
 const formatDate = (date) => {
-  return new Date(date).toLocaleDateString()
+  if (!date) return '—'
+  return new Date(date).toLocaleDateString('lo-LA')
 }
 
 const formatTime = (date) => {
-  return new Date(date).toLocaleTimeString()
+  if (!date) return ''
+  return new Date(date).toLocaleTimeString('lo-LA', { hour: '2-digit', minute: '2-digit' })
 }
 
 const formatDateTime = (date) => {
-  return new Date(date).toLocaleString()
-}
-
-const formatMonth = (month) => {
-  if (!month || month.length !== 6) return month
-  const year = month.substring(0, 4)
-  const mon = month.substring(4, 6)
-  const date = new Date(year, mon - 1)
-  return date.toLocaleDateString('lo-LA', { month: 'long', year: 'numeric' })
+  if (!date) return 'N/A'
+  return new Date(date).toLocaleString('lo-LA')
 }
 
 const showNotification = (message, color = 'success') => {
@@ -889,252 +920,127 @@ const showNotification = (message, color = 'success') => {
 }
 
 // Lifecycle
-onMounted(async () => {
-  await loadProvinces()
+onMounted(() => {
+  if (selectedPeriod.value) {
+    fetchData()
+  }
 })
 </script>
 
 <style scoped>
-.utility-tracker {
+.electric-upload-system {
   min-height: 100vh;
-  background: #fafafa;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 24px;
 }
 
-.header-section {
-  background: #ffffff;
-  color: #333;
-  padding: 1.5rem 0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border-bottom: 1px solid #e0e0e0;
+.header-card {
+  background: white;
+  border-radius: 16px;
 }
 
-.page-title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  color: #333;
+.summary-card {
+  background: white;
+  border-radius: 16px;
 }
 
-.controls-section {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 1rem;
-  border: 1px solid #e0e0e0;
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.districts-section {
-  padding: 1.5rem 0;
+.stat-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
+.stat-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
 }
 
-.districts-card {
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border: 1px solid #e0e0e0;
-  background: #ffffff;
+.province-card {
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.districts-title {
-  padding: 1rem 1.5rem 0.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #333;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #f0f0f0;
+.province-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
 
-.title-actions {
-  display: flex;
-  gap: 0.5rem;
+.province-header {
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-/* Table Styling */
-:deep(.custom-table) {
-  border-radius: 0 0 8px 8px;
+.status-done {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: white;
 }
 
-:deep(.custom-table .v-data-table__thead) {
-  background: #f8f9fa;
+.status-partial {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
 }
 
-:deep(.custom-table .table-header) {
+.status-pending {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+.status-not-started {
+  background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
+  color: #424242;
+}
+
+.districts-table {
+  background: white;
+}
+
+.districts-table thead tr th {
   background: #f8f9fa !important;
-  color: #495057 !important;
-  font-weight: 600 !important;
-  border-bottom: 2px solid #dee2e6 !important;
-  padding: 8px 12px !important;
+  font-weight: 700 !important;
+  color: #424242 !important;
+  font-size: 0.95rem !important;
+  text-transform: none !important;
+  border-bottom: 2px solid #e0e0e0 !important;
 }
 
-:deep(.custom-table .v-data-table-header__content) {
-  font-weight: 600;
-  color: #495057;
-  font-size: 0.875rem;
+.district-row {
+  transition: all 0.2s ease;
 }
 
-:deep(.custom-table .v-data-table__tr) {
-  border-bottom: 1px solid #f0f0f0;
-}
-
-:deep(.custom-table .v-data-table__tr:hover) {
+.district-row:hover {
   background: #f8f9fa;
 }
 
-:deep(.custom-table .v-data-table__td) {
-  padding: 6px 12px !important;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 0.875rem;
+.empty-state {
+  background: white;
+  border-radius: 16px;
 }
 
-/* Chips */
-.status-chip {
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-/* Details Dialog */
-.details-card {
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.details-title {
-  padding: 1rem 1.5rem 0.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #333;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.details-content {
-  padding: 1rem 1.5rem;
-}
-
-.details-actions {
-  padding: 0.5rem 1.5rem 1rem;
-}
-
-.stats-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  background: #ffffff;
-}
-
-.activity-timeline {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-/* Bulk Progress Dialog */
-.bulk-progress-card {
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.bulk-progress-title {
-  padding: 1rem 1.5rem 0.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #333;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.bulk-progress-content {
-  padding: 1rem 1.5rem;
-}
-
-.bulk-progress-actions {
-  padding: 0.5rem 1.5rem 1rem;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .page-title {
-    font-size: 1.5rem;
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .controls-section {
-    padding: 0.75rem;
-  }
-  
-  .districts-title {
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: flex-start;
-  }
-  
-  .title-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-  
-  .details-content {
-    padding: 0.75rem 1rem;
-  }
-  
-  .bulk-progress-content {
-    padding: 0.75rem 1rem;
-  }
-}
-
-/* Vuetify Overrides */
-:deep(.v-card-title) {
-  font-weight: 500;
+:deep(.v-snackbar__content) {
+  white-space: pre-line;
+  line-height: 1.8;
   font-size: 1rem;
 }
 
-:deep(.v-card-text) {
-  padding: 1rem 1.5rem;
+:deep(.v-btn-group) {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-:deep(.v-btn) {
-  text-transform: none;
-  border-radius: 6px;
-  font-weight: 500;
-}
-
-:deep(.v-text-field .v-field) {
-  font-size: 0.875rem;
-}
-
-:deep(.v-select .v-field) {
-  font-size: 0.875rem;
-}
-
-:deep(.v-data-table) {
-  font-size: 0.875rem;
-}
-
-:deep(.v-chip) {
-  border-radius: 4px;
-}
-
-/* Dense spacing */
-:deep(.v-row.dense) {
-  margin: -4px;
-}
-
-:deep(.v-row.dense > .v-col) {
-  padding: 4px;
-}
-
-/* Progress circular sizing */
-:deep(.v-progress-circular) {
-  font-size: 0.7rem;
-}
-
-/* Timeline styling */
-:deep(.v-timeline-item__body) {
-  padding-bottom: 0.5rem;
+@media (max-width: 960px) {
+  .electric-upload-system {
+    padding: 16px;
+  }
+  
+  .province-header {
+    padding: 16px !important;
+  }
+  
+  .stat-card {
+    margin-bottom: 16px;
+  }
 }
 </style>
