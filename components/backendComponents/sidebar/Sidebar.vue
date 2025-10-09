@@ -235,7 +235,7 @@ const isCurrentRoute = (url: string) => {
   position: relative;
   text-decoration: none;
   color: #64748b;
-  font-size: 13px;
+  font-size: 15px; /* increased from 13px */
   font-weight: 500;
 }
 
@@ -332,7 +332,7 @@ const isCurrentRoute = (url: string) => {
 
 /* Labels */
 .nav-label {
-  font-size: 13px;
+  font-size: 15px; /* increased from 13px */
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -343,6 +343,15 @@ const isCurrentRoute = (url: string) => {
 .nav-item-active .nav-label {
   color: white;
   font-weight: 600;
+}
+
+.nav-sublabel {
+  font-size: 14px; /* increased from 12px */
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.25s ease;
 }
 
 /* Sub-items Container */
@@ -405,7 +414,7 @@ const isCurrentRoute = (url: string) => {
 }
 
 .nav-sublabel {
-  font-size: 12px;
+  font-size: 14px; /* increased from 12px */
   font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
@@ -502,7 +511,7 @@ const isCurrentRoute = (url: string) => {
 @media (max-width: 768px) {
   .nav-label,
   .nav-sublabel {
-    font-size: 12px;
+    font-size: 13px; /* scaled down slightly for smaller screens */
   }
   
   .nav-icon {
