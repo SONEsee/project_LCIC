@@ -520,7 +520,7 @@ const submit = async () => {
           confirmButtonText: "OK",
         });
 
-        // Update collateral status (ຖ້າຍັງຕ້ອງການ)
+        
         try {
           await updateCollateralStatus(collateralId);
         } catch (statusError) {
