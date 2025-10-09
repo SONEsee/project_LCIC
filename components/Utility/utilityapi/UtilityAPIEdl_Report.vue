@@ -503,7 +503,7 @@
   
   // Configuration
   const config = useRuntimeConfig()
-  const apiUrl = computed(() => config.public.apiUrl || 'http://192.168.45.56:8000/')
+  const apiUrl = computed(() => config.public.apiUrl)
   
   // Reactive Data
   const loading = ref(false)
@@ -707,7 +707,7 @@
   // API Methods
   const loadProvinces = async () => {
     try {
-      const response = await axios.get(`${apiUrl.value}api/provinces/`, {
+      const response = await axios.get(`${config.public.strapi.url}api/provinces/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`
         }
@@ -721,7 +721,7 @@
   
   const loadDistricts = async (provinceId) => {
     try {
-      const response = await axios.get(`${apiUrl.value}api/districts/`, {
+      const response = await axios.get(`${config.public.strapi.url}api/districts/`, {
         params: { province_id: provinceId },
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`
@@ -743,7 +743,7 @@
       if (filters.provinceId) params.province_id = filters.provinceId
       if (filters.districtId) params.district_id = filters.districtId
   
-      const response = await axios.get(`${apiUrl.value}api/edl-summary/overview/`, {
+      const response = await axios.get(`${config.public.strapi.url}api/edl-summary/overview/`, {
         params,
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`
@@ -772,7 +772,7 @@
       if (filters.startMonth) params.start_month = filters.startMonth
       if (filters.endMonth) params.end_month = filters.endMonth
   
-      const response = await axios.get(`${apiUrl.value}api/edl-summary/province/`, {
+      const response = await axios.get(`${config.public.strapi.url}api/edl-summary/province/`, {
         params,
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`
@@ -797,7 +797,7 @@
       if (filters.endMonth) params.end_month = filters.endMonth
       if (filters.provinceId) params.province_id = filters.provinceId
   
-      const response = await axios.get(`${apiUrl.value}api/edl-summary/district/`, {
+      const response = await axios.get(`${config.public.strapi.url}api/edl-summary/district/`, {
         params,
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`
@@ -889,7 +889,7 @@
   const confirmExport = async () => {
     exporting.value = true
     try {
-      const response = await axios.post(`${apiUrl.value}api/edl-summary/export/`, {
+      const response = await axios.post(`${config.public.strapi.url}api/edl-summary/export/`, {
         export_type: exportOptions.type,
         format: exportOptions.format,
         filters: {

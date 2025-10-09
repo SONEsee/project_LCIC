@@ -529,11 +529,6 @@
     ]
   })
   
-  // ✅ Fixed API URL configuration - Use the correct backend URL
-  const apiBaseUrl = computed(() => {
-    // Replace with your actual Django backend URL
-    return config.public.apiUrl || 'http://192.168.45.56:8000'
-  })
   
   // Reactive state
   const loading = ref(false)
@@ -710,7 +705,7 @@
       if (filters.endMonth) params.append('end_month', filters.endMonth)
       
       // ✅ Fixed API URL construction
-      const url = `${apiBaseUrl.value}/api/water-summary/overview/`
+      const url = `${config.public.strapi.url}api/water-summary/overview/`
       const queryString = params.toString()
       const fullUrl = queryString ? `${url}?${queryString}` : url
       
@@ -825,7 +820,7 @@
     
     try {
       // ✅ Fixed API URL construction
-      const url = `${apiBaseUrl.value}/api/water-summary/month/?month=${month}`
+      const url = `${config.public.strapi.url}api/water-summary/month/?month=${month}`
       
       debugInfo.value = {
         ...debugInfo.value,
@@ -926,7 +921,7 @@
     exporting.value = true
     try {
       // ✅ Fixed export API call
-      const url = `${apiBaseUrl.value}/api/water-summary/export/`
+      const url = `${config.public.strapi.url}api/water-summary/export/`
       
       const response = await $fetch(url, {
         method: 'POST',

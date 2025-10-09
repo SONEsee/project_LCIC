@@ -66,28 +66,122 @@
 // // };
 
 
+// import { useState } from "#app";
+
+// export const useSidebar = async () => {
+//   const config = useRuntimeConfig();
+//   const sidebarItems = useState("sidebarItems", () => []);
+
+//   if (!sidebarItems.value.length) {
+
+//     try {
+//       const response = await fetch(`${config.public.strapi.url}api/sidebar-items/`);
+//       if (!response.ok) {
+//         throw new Error(`HTTP error! status: ${response.status}`);
+//       }
+//       const data = await response.json();
+//       sidebarItems.value = data || [];
+//       console.log("------> ",sidebarItems.value);
+
+
+//     } catch (error) {
+//       console.error("Failed to fetch sidebar items:", error);
+//     }
+//   }
+
+//   return sidebarItems;
+// };
 import { useState } from "#app";
+
+interface SubItem {
+  id: number;
+  name: string;
+  url: string;
+  parent: number;
+  roles: number[];
+}
+
+interface SidebarItem {
+  id: number;
+  name: string;
+  url: string;
+  icon: string;
+  roles: number[];
+  sub_items: SubItem[];
+}
 
 export const useSidebar = async () => {
   const config = useRuntimeConfig();
-  const sidebarItems = useState("sidebarItems", () => []);
+  const sidebarItems = useState<SidebarItem[]>("sidebarItems", () => []);
 
+  // Only fetch if not already loaded
   if (!sidebarItems.value.length) {
-
     try {
-      const response = await fetch(`${config.public.strapi.url}api/sidebar-items/`);
+      const response = await fetch(`${config.public.strapi.url}api/sidebar-items/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json();
-      sidebarItems.value = data || [];
-      console.log("------> ",sidebarItems.value);
 
+      const data = await response.json();
+      
+      // Ensure data has proper structure with sub_items
+      sidebarItems.value = (data || []).map((item: any) => ({
+        ...item,
+        sub_items: item.sub_items || []
+      }));
+
+      console.log("✅ Sidebar items loaded successfully:", sidebarItems.value);
+      console.log("📊 Total items:", sidebarItems.value.length);
+      
+      // Log structure for debugging
+      sidebarItems.value.forEach(item => {
+        if (item.sub_items && item.sub_items.length > 0) {
+          console.log(`📁 ${item.name} has ${item.sub_items.length} sub-items`);
+        }
+      });
 
     } catch (error) {
-      console.error("Failed to fetch sidebar items:", error);
+      console.error("❌ Failed to fetch sidebar items:", error);
+      sidebarItems.value = [];
     }
   }
 
   return sidebarItems;
+};
+
+// Optional: Function to refresh sidebar items
+export const refreshSidebar = async () => {
+  const config = useRuntimeConfig();
+  const sidebarItems = useState<SidebarItem[]>("sidebarItems", () => []);
+
+  try {
+    const response = await fetch(`${config.public.strapi.url}api/sidebar-items/`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    sidebarItems.value = (data || []).map((item: any) => ({
+      ...item,
+      sub_items: item.sub_items || []
+    }));
+
+    return sidebarItems.value;
+  } catch (error) {
+    console.error("Failed to refresh sidebar items:", error);
+    return [];
+  }
+};
+
+// Optional: Clear sidebar cache
+export const clearSidebarCache = () => {
+  const sidebarItems = useState<SidebarItem[]>("sidebarItems", () => []);
+  sidebarItems.value = [];
 };
