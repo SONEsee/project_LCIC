@@ -207,7 +207,7 @@
                               class="bg-red"
                               text="ຍົກເລີກ"
                               type="reset"
-                              :to="{ name: 'insertcollaterals' }"
+                              @click="goback"
                               block
                             ></v-btn>
                           </v-col>
@@ -268,6 +268,9 @@ const villages = ref([]);
 const title = ref("");
 
 const route = useRoute();
+const goback = () => {
+  router.go(-1);
+};
 const router = useRouter();
 const config = useRuntimeConfig();
 
@@ -522,10 +525,13 @@ const submit = async () => {
           await updateCollateralStatus(collateralId);
         } catch (statusError) {
           console.error("Error updating collateral status:", statusError);
-          // ບໍ່ throw error ເພາະວ່າຂໍ້ມູນຫຼັກບັນທຶກສຳເລັດແລ້ວ
+         
         }
+        setTimeout(() => {
+          goback()
+        },500);
         
-        router.push("/backend/upload/lcictest");
+        ;
       } else {
         throw new Error(`Unexpected response status: ${response.status}`);
       }
@@ -534,11 +540,11 @@ const submit = async () => {
       console.error("Error creating enterprise info:", error);
       console.error("Error response:", error.response);
       
-      // ດຶງ error message ຈາກຫຼາຍແຫຼ່ງ
+      
       let errorMessage = "ລົ້ມເຫຼວໃນການສ້າງຂໍ້ມູນວິສາຫະກິດ";
       
       if (error.response) {
-        // ມີ response ຈາກ server
+       
         console.log("Error response data:", error.response.data);
         errorMessage = error.response.data?.message 
           || error.response.data?.detail

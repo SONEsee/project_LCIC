@@ -6,6 +6,8 @@ export interface CollateralRespons {
     image:      string;
     user:       string;
     insertdate: string;
+    updatedate: string;
     pathfile:   string;
     status:     string;
+    LCIC_reques: null | string;
 }

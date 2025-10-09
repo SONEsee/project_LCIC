@@ -4,7 +4,7 @@ import lcic from "@/pages/insertcollaterals.vue";
 
 const tab = ref<any>(null);
 
-// ສ້າງ key ສະເພາະສຳລັບແຕ່ລະຜູ້ໃຊ້
+
 const getUserStorageKey = (baseKey: string) => {
   try {
     const userData = localStorage.getItem("user_data");
@@ -13,19 +13,19 @@ const getUserStorageKey = (baseKey: string) => {
       const userId = user.MID?.id || 'unknown';
       return `${baseKey}_user_${userId}`;
     }
-    return baseKey; // fallback
+    return baseKey; 
   } catch (error) {
     console.error("Failed to get user ID for storage key:", error);
     return baseKey;
   }
 };
 
-// ຟັງຊັນເກັບແຖບທີ່ເລືອກ
+
 const saveTabToStorage = (selectedTab: string) => {
   try {
     const storageKey = getUserStorageKey("selected_tab_storage");
     localStorage.setItem(storageKey, selectedTab);
-    // ເກັບໃນ sessionStorage ດ້ວຍເພື່ອຄວາມໄວ
+
     sessionStorage.setItem(storageKey, selectedTab);
     console.log("Saved tab to storage:", selectedTab, "with key:", storageKey);
   } catch (error) {
@@ -33,18 +33,18 @@ const saveTabToStorage = (selectedTab: string) => {
   }
 };
 
-// ຟັງຊັນໂຫຼດແຖບທີ່ເກັບໄວ້
+
 const loadTabFromStorage = () => {
   try {
     const storageKey = getUserStorageKey("selected_tab_storage");
     
-    // ພະຍາຍາມໂຫຼດຈາກ sessionStorage ກ່ອນ (ໄວກວ່າ)
+  
     let savedTab = sessionStorage.getItem(storageKey);
     
-    // ຖ້າບໍ່ມີໃນ sessionStorage ໃຫ້ໂຫຼດຈາກ localStorage
+   
     if (!savedTab) {
       savedTab = localStorage.getItem(storageKey);
-      // ຖ້າພົບໃນ localStorage ໃຫ້ copy ໄປ sessionStorage
+     
       if (savedTab) {
         sessionStorage.setItem(storageKey, savedTab);
       }
@@ -54,17 +54,17 @@ const loadTabFromStorage = () => {
       tab.value = savedTab;
       console.log("Loaded tab from storage:", savedTab, "with key:", storageKey);
     } else {
-      // ຖ້າບໍ່ມີການເກັບໄວ້ ໃຫ້ເລີ່ມຕົ້ນທີ່ແຖບທຳອິດ
+    
       tab.value = "one";
     }
   } catch (error) {
     console.error("Failed to load tab from localStorage:", error);
-    // ຖ້າມີຜິດພາດ ໃຫ້ເລີ່ມຕົ້ນທີ່ແຖບທຳອິດ
+  
     tab.value = "one";
   }
 };
 
-// ຟັງຊັນລືແຖບທີ່ເກັບໄວ້ (ສຳລັບເວລາ logout)
+
 const clearTabStorage = () => {
   try {
     const storageKey = getUserStorageKey("selected_tab_storage");
@@ -76,7 +76,7 @@ const clearTabStorage = () => {
   }
 };
 
-// ຟັງຊັນກວດສອບແລະລື storage ເກົ່າຖ້າ user ປ່ຽນ
+
 const validateUserStorage = () => {
   try {
     const currentUserData = localStorage.getItem("user_data");
@@ -104,7 +104,7 @@ const validateUserStorage = () => {
         }
       });
       
-      // ເກັບຂໍ້ມູນ user ປັດຈຸບັນ
+    
       if (currentUserData) {
         localStorage.setItem("last_logged_user_tab", currentUserData);
       }
@@ -114,7 +114,7 @@ const validateUserStorage = () => {
   }
 };
 
-// Watcher ສຳລັບຕິດຕາມການປ່ຽນແປງແຖບ
+
 watch(tab, (newTab) => {
   if (newTab) {
     saveTabToStorage(newTab);
@@ -150,7 +150,7 @@ onMounted(() => {
   <v-tabs v-model="tab" fixed-tabs color="primary" stacked>
     <v-tab value="one">ກວດສອບຂໍ້ມູນເງິນກູ້</v-tab>
     <v-tab value="two">ກວດຂໍ້ມູນຫຼັກຊັບ</v-tab>
-    <v-tab value="three">ອອກລະຫັດ ຂສລ</v-tab>
+    <!-- <v-tab value="three">ອອກລະຫັດ ຂສລ</v-tab> -->
   </v-tabs>
   <v-window v-model="tab">
     <v-window-item value="one">
@@ -159,8 +159,8 @@ onMounted(() => {
     <v-window-item value="two">
       <UploadFileLoanUploadLcictestC />
     </v-window-item>
-    <v-window-item value="three">
+    <!-- <v-window-item value="three">
       <lcic />
-    </v-window-item>
+    </v-window-item> -->
   </v-window>
 </template>
