@@ -159,9 +159,10 @@ const statusOptions = ref([
 const headers = computed(() => {
   const baseHeaders = [
     { title: "ໄອດີ", value: "CID" },
+    { title: "ໄລຍະເວລາ", value: "period" },
     { title: "ຊື່ໄຟລ໌", value: "fileName" },
     { title: "ຂະໜາດຟາຍ", value: "fileSize" },
-    { title: "ໄລຍະເວລາ", value: "period" },
+    
     { title: "ປະເພດ", value: "FileType" },
     { title: "ສະຖານະ", value: "statussubmit" },
     { title: "ອັດຕາສ່ວນ", value: "percentage" },
@@ -169,7 +170,7 @@ const headers = computed(() => {
   ];
 
   if (user.value && user.value.MID.id === "01") {
-    baseHeaders.splice(2, 0, { title: "ລະຫັດທະນາຄານ", value: "user_id" });
+    baseHeaders.splice(1, 0, { title: "ລະຫັດທະນາຄານ", value: "user_id" });
   }
 
   return baseHeaders;

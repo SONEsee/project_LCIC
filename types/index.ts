@@ -16,6 +16,7 @@ import * as LochalUserData from './location'
 import * as InVestorInfoModels from './investorinfo'
 import * as BafileModel from './batefile'
 import * as UploadFile from './uploadfile'
+import * as CollateralModel from './collateral'
 export{
     DuplicatesFalse,
     DataModel,
@@ -34,5 +35,6 @@ export{
     InVestorInfoModels,
     BafileModel,
     UploadFile,
+    CollateralModel,
 
 }

@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { MemberStore } from "@/stores/memberinfo";
 
-// Interface ສຳລັບ member data
+
 export interface MemberInfo {
   bnk_code: string;
   code: string;
