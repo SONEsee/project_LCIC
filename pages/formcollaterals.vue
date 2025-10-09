@@ -207,7 +207,7 @@
                               class="bg-red"
                               text="ຍົກເລີກ"
                               type="reset"
-                              :to="{ name: 'insertcollaterals' }"
+                              @click="goback"
                               block
                             ></v-btn>
                           </v-col>
@@ -268,6 +268,9 @@ const villages = ref([]);
 const title = ref("");
 
 const route = useRoute();
+const goback = () => {
+  router.go(-1);
+};
 const router = useRouter();
 const config = useRuntimeConfig();
 

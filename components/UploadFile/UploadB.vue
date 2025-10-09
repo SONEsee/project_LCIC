@@ -12,25 +12,25 @@ const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 const memberinfoStore = MemberStore();
 const UplodafileStore = useUploadFile();
 
-const period = computed(()=>{
+const period = computed(() => {
   const data = UplodafileStore.respose_uploadfile_b;
   let mapData = [];
-  if(Array.isArray(data)){
+  if (Array.isArray(data)) {
     mapData = data;
-  }else if(data && typeof data ==="object"){
-    mapData = [data]
-  }else{
-    return []
+  } else if (data && typeof data === "object") {
+    mapData = [data];
+  } else {
+    return [];
   }
   const uniquePeriods = new Map();
 
-  mapData.forEach((item)=>{
-    if(item.period){
+  mapData.forEach((item) => {
+    if (item.period) {
       uniquePeriods.set(item.period, item);
     }
   });
   return Array.from(uniquePeriods.values());
-})
+});
 
 const dataMemberInfon = computed(() => {
   const data = memberinfoStore.respons_data_query;
@@ -313,16 +313,16 @@ const uploadFile = async () => {
   formData.append("file", file.value);
   formData.append("title", file.value.name);
 
-if (user.value) {
-  // ແປງເປັນ number ກ່ອນ, ແລ້ວຈຶ່ງ format
-  const userIdNumber = parseInt(user.value.MID.id.toString());
-  const userId = userIdNumber.toString().padStart(2, '0');
-  
-  formData.append("user_id", userId);
-  console.log("Original MID.id:", user.value.MID.id);
-  console.log("Parsed number:", userIdNumber);
-  console.log("Formatted User ID:", userId);
-} else {
+  if (user.value) {
+    // ແປງເປັນ number ກ່ອນ, ແລ້ວຈຶ່ງ format
+    const userIdNumber = parseInt(user.value.MID.id.toString());
+    const userId = userIdNumber.toString().padStart(2, "0");
+
+    formData.append("user_id", userId);
+    console.log("Original MID.id:", user.value.MID.id);
+    console.log("Parsed number:", userIdNumber);
+    console.log("Formatted User ID:", userId);
+  } else {
     Swal.fire({
       icon: "warning",
       title: "ຂໍ້ມູນຜູ້ໃຊ້ບໍ່ສາມາດສົ່ງໄດ້",
@@ -363,7 +363,7 @@ if (user.value) {
         title: "ມີຊືຟາຍຊໍ້າກັນ",
         text: "ຊື່ຟາຍນີ້ມີຢູ່ໃນລະບົບແລ້ວ ກາລຸນາກວດຄືນໃໝ່",
       });
-    }else if (error.response && error.response.status === 405) {
+    } else if (error.response && error.response.status === 405) {
       Swal.fire({
         icon: "warning",
         title: "ຂໍ້ມູນຍອ້ນຫຼັງ",
@@ -508,7 +508,7 @@ onMounted(async () => {
   try {
     UplodafileStore.getDataUplodB();
     memberinfoStore.getMemberInfo();
-    
+
     const userData = localStorage.getItem("user_data");
     console.log("User data:", userData);
 
@@ -748,7 +748,6 @@ onMounted(async () => {
       <th style="color: #0d47a1">ຊື່ໄຟລ໌</th>
     </template>
 
-    
     <template v-slot:header.fileSize>
       <th style="color: #0d47a1">ຂະໜາດຟາຍ</th>
     </template>
@@ -767,7 +766,7 @@ onMounted(async () => {
     <template v-slot:header.actions>
       <th style="color: #0d47a1">ການດຳເນີນການ</th>
     </template>
-<template
+    <template
       v-slot:item.user_id="{ item }"
       v-if="user && user.MID.id === '01'"
     >
@@ -798,7 +797,6 @@ onMounted(async () => {
       </v-tooltip>
     </template>
 
-    
     <template v-slot:item.fileSize="{ item }">
       <span class="text-body-2">
         <!-- <span v-if="Number(item.fileSize) / 1024 / 1024 < 1">

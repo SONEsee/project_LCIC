@@ -395,14 +395,10 @@ const uniqueUserIds = computed(() => [
     <h2>{{ $t("Uploadtheenterpriseregistrationform") }}</h2>
     <v-col cols="12">
       <v-row>
-       
-      
-      
         <v-col cols="12" md="4" v-if="user && user.MID.id === '01'">
           <v-autocomplete
             prepend-inner-icon="mdi-bank-circle-outline"
             variant="outlined"
-            
             density="compact"
             v-model="userIDfileter"
             label="ໃສ່ລະຫັດທະນາຄານເພື່ຶອຄົ້ນຫາ"
@@ -463,7 +459,6 @@ const uniqueUserIds = computed(() => [
             </v-col>
             <v-col cols="12" md="4">
               <v-autocomplete
-              
                 v-model="selecMonth"
                 :items="MonthDate"
                 item-title="MonthDate"
@@ -476,10 +471,10 @@ const uniqueUserIds = computed(() => [
             </v-col>
             <v-col cols="12" md="4">
               <v-autocomplete
-              v-model="selectDay"
-              :items="DayData"
-              item-title="DayData"
-              item-value="DayData"
+                v-model="selectDay"
+                :items="DayData"
+                item-title="DayData"
+                item-value="DayData"
                 variant="outlined"
                 density="compact"
                 label="ເລືອກຕາມວັນ"
@@ -492,10 +487,10 @@ const uniqueUserIds = computed(() => [
           <v-row>
             <v-col cols="12" md="5">
               <v-text-field
-               clearable
-              v-model="selectStartDate"
-              label="ມື້່ເລີ່ມ"
-              type="date"
+                clearable
+                v-model="selectStartDate"
+                label="ມື້່ເລີ່ມ"
+                type="date"
                 variant="outlined"
                 density="compact"
               ></v-text-field>
@@ -505,10 +500,10 @@ const uniqueUserIds = computed(() => [
             </v-col>
             <v-col cols="12" md="5">
               <v-text-field
-               clearable
-              v-model="selectEndDate"
-              label="ມື້່ສຶ້ນສຸດ"
-              type="date"
+                clearable
+                v-model="selectEndDate"
+                label="ມື້່ສຶ້ນສຸດ"
+                type="date"
                 variant="outlined"
                 density="compact"
               ></v-text-field>
@@ -518,9 +513,10 @@ const uniqueUserIds = computed(() => [
       </v-row>
     </v-col>
   </div>
-  <pre>{{ collateralData }}</pre>
-  
+  <!-- <pre>{{ collateralData }}</pre> -->
+
   <v-data-table :items="collateralData" :headers="header">
+   
     <template v-slot:item.user="{ item }">
       {{ mapMemberInfo(item.user) }}
     </template>
@@ -553,18 +549,18 @@ const uniqueUserIds = computed(() => [
       {{ dayjs(item.insertdate).format("DD/MM/YYYY") }}
     </template>
     <template v-slot:item.action="{ item }">
-          <div class="action-buttons">
-            <v-btn 
-              @click="goToTest1(item.pathfile, item.id, item.status)" 
-              color="primary" 
-              size="small" 
-              prepend-icon="mdi-pencil"
-              variant="elevated"
-            >
-              ບັນທຶກຂໍ້ມູນ
-            </v-btn>
-          </div>
-        </template>
+      <div class="action-buttons">
+        <v-btn
+          @click="goToTest1(item.pathfile, item.id, item.status)"
+          color="primary"
+          size="small"
+          prepend-icon="mdi-pencil"
+          variant="elevated"
+        >
+          ບັນທຶກຂໍ້ມູນ
+        </v-btn>
+      </div>
+    </template>
     <template v-slot:item.status="{ item }">
       <div v-if="item.status === '1'">
         <p class="text-warning">ຍັງບໍ່ທັນກວດສອບ</p>

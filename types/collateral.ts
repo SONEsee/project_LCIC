@@ -8,4 +8,5 @@ export interface CollateralRespons {
     insertdate: string;
     pathfile:   string;
     status:     string;
+    LCIC_reques: null | string;
 }

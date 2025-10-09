@@ -205,6 +205,7 @@ const header = [
   { title: "ສະມາຊິກ", value: "user" },
   { title: "ຮູບ", value: "filename", align: "center" },
   { title: "ສະຖານະ", value: "status" },
+  { title: "ລະຫັດ ຂສລ", value: "LCIC_reques" },
   { title: "ວັນທີນຳສົ່ງ", value: "insertdate" },
   { title: "ລາຍລະອຽດ", value: "action" },
 ] as any;
@@ -370,6 +371,13 @@ onMounted(() => {
     fetchCollaterals();
   }
 });
+const router = useRouter();
+const goToTest1 = (imagePath: string, id: number, status: number) => {
+  router.push({
+    name: "formcollaterals",
+    query: { image: imagePath, id: id, status: status },
+  });
+};
 const user_id = computed(() => user.value?.MID?.id || "");
 console.log("user_id", user_id);
 const filteredItems = computed(() =>
@@ -381,14 +389,43 @@ const filteredItems = computed(() =>
 const uniqueUserIds = computed(() => [
   ...new Set(filteredItems.value.map((item: any) => item.user)),
 ]);
+const copyCode = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    
+ 
+    Swal.fire({
+      icon: 'success',
+      title: 'ກ໊ອບປີ້ສຳເລັດ!',
+      html: `<code style="color: #4caf50; font-weight: bold;">${text}</code>`,
+      timer: 2000,
+      showConfirmButton: false,
+      toast: true,
+      position: 'top-end',
+      timerProgressBar: true,
+    });
+    
+  } catch (error) {
+    console.error('Copy failed:', error);
+    
+    Swal.fire({
+      icon: 'error',
+      title: 'ລົ້ມເຫຼວ',
+      text: 'ບໍ່ສາມາດກ໊ອບປີ້ໄດ້',
+      toast: true,
+      position: 'top-end',
+      timer: 2000,
+      showConfirmButton: false
+    });
+  }
+};
 </script>
 <template>
   <div class="pa-4">
-    <!-- <pre>{{ DayData }}</pre> -->
     <h2>{{ $t("Uploadtheenterpriseregistrationform") }}</h2>
     <v-col cols="12">
       <v-row>
-        <v-col cols="12" md="5">
+        <v-col cols="12" md="5" v-if="user && user.MID.id !== '01'">
           <v-file-input
             density="compact"
             v-model="files"
@@ -423,14 +460,14 @@ const uniqueUserIds = computed(() => [
             </template>
           </v-file-input>
         </v-col>
-        <v-col cols="12" md="3">
+        <v-col cols="12" md="3" v-if="user && user.MID.id !== '01'">
           <v-text-field
             density="compact"
             label="ປອ້ນລະຫັດວິສາຫະກິດ"
             v-model="enterpriseCode"
           ></v-text-field>
         </v-col>
-        <v-col md="2" cols="12">
+        <v-col md="2" cols="12" v-if="user && user.MID.id !== '01'">
           <div class="d-flex">
             <v-btn color="primary" @click="handleUpload" :loading="isLoading">
               {{ $t("uploads") }}
@@ -441,7 +478,6 @@ const uniqueUserIds = computed(() => [
           <v-autocomplete
             prepend-inner-icon="mdi-bank-circle-outline"
             variant="outlined"
-            
             density="compact"
             v-model="userIDfileter"
             label="ໃສ່ລະຫັດທະນາຄານເພື່ຶອຄົ້ນຫາ"
@@ -502,7 +538,6 @@ const uniqueUserIds = computed(() => [
             </v-col>
             <v-col cols="12" md="4">
               <v-autocomplete
-              
                 v-model="selecMonth"
                 :items="MonthDate"
                 item-title="MonthDate"
@@ -515,10 +550,10 @@ const uniqueUserIds = computed(() => [
             </v-col>
             <v-col cols="12" md="4">
               <v-autocomplete
-              v-model="selectDay"
-              :items="DayData"
-              item-title="DayData"
-              item-value="DayData"
+                v-model="selectDay"
+                :items="DayData"
+                item-title="DayData"
+                item-value="DayData"
                 variant="outlined"
                 density="compact"
                 label="ເລືອກຕາມວັນ"
@@ -531,10 +566,10 @@ const uniqueUserIds = computed(() => [
           <v-row>
             <v-col cols="12" md="5">
               <v-text-field
-               clearable
-              v-model="selectStartDate"
-              label="ມື້່ເລີ່ມ"
-              type="date"
+                clearable
+                v-model="selectStartDate"
+                label="ມື້່ເລີ່ມ"
+                type="date"
                 variant="outlined"
                 density="compact"
               ></v-text-field>
@@ -544,10 +579,10 @@ const uniqueUserIds = computed(() => [
             </v-col>
             <v-col cols="12" md="5">
               <v-text-field
-               clearable
-              v-model="selectEndDate"
-              label="ມື້່ສຶ້ນສຸດ"
-              type="date"
+                clearable
+                v-model="selectEndDate"
+                label="ມື້່ສຶ້ນສຸດ"
+                type="date"
                 variant="outlined"
                 density="compact"
               ></v-text-field>
@@ -558,6 +593,27 @@ const uniqueUserIds = computed(() => [
     </v-col>
   </div>
   <v-data-table :items="collateralData" :headers="header">
+     <template v-slot:header.id="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+     <template v-slot:header.user="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+     <template v-slot:header.filename="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+     <template v-slot:header.status="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+     <template v-slot:header.insertdate="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+     <template v-slot:header.action="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+     <template v-slot:header.LCIC_reques="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
     <template v-slot:item.user="{ item }">
       {{ mapMemberInfo(item.user) }}
     </template>
@@ -591,11 +647,23 @@ const uniqueUserIds = computed(() => [
     </template>
     <template v-slot:item.action="{ item }">
       <v-btn
+        v-if="user && user.MID.id !== '01'"
         small
         @click="viewImage(item.pathfile)"
         class="bg-indigo-darken-4"
         >{{ $t("viewimage") }}</v-btn
       >
+      <v-btn
+      :disabled="item.LCIC_reques"
+        v-if="user && user.MID.id === '01'"
+        @click="goToTest1(item.pathfile, item.id, item.status)"
+        color="primary"
+        size="small"
+        prepend-icon="mdi-pencil"
+        variant="elevated"
+      >
+        ບັນທຶກຂໍ້ມູນ
+      </v-btn>
     </template>
     <template v-slot:item.status="{ item }">
       <div v-if="item.status === '1'">
@@ -605,6 +673,60 @@ const uniqueUserIds = computed(() => [
         <span class="text-success">ຖືກກວດສອບແລ້ວ</span>
       </div>
     </template>
+    <!-- <template v-slot:item.LCIC_reques="{ item }">
+      <v-chip
+        v-if="item.LCIC_reques"
+        color="success"
+        variant="flat"
+        size="small"
+      >
+        <v-icon size="16" class="mr-1">mdi-check-circle</v-icon>
+        {{ item.LCIC_reques }}
+      </v-chip>
+      <v-chip v-else color="warning" variant="flat" size="small">
+        <v-icon size="16" class="mr-1">mdi-clock-outline</v-icon>
+        ລໍຖ້າການອອກລະຫັດ ຂສລ
+      </v-chip>
+    </template> -->
+    <template v-slot:item.LCIC_reques="{ item }">
+  <div class="lcic-code-container">
+    <v-chip 
+      v-if="item.LCIC_reques" 
+      color="success" 
+      variant="elevated"
+      size="small"
+    >
+      <v-icon size="16" class="mr-1">mdi-shield-check</v-icon>
+      <strong>{{ item.LCIC_reques }}</strong>
+      
+      <!-- ປຸ່ມກ໊ອບປີ້ -->
+      <v-tooltip text="ກົດເພື່ອກ໊ອບປີ້" location="top">
+        <template v-slot:activator="{ props }">
+          <v-btn
+            v-bind="props"
+            icon
+            size="x-small"
+            variant="text"
+            class="ml-1"
+            @click.stop="copyCode(item.LCIC_reques)"
+          >
+            <v-icon size="16">mdi-content-copy</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+    </v-chip>
+    
+    <v-chip 
+      v-else 
+      color="warning" 
+      variant="tonal"
+      size="small"
+      prepend-icon="mdi-clock-alert-outline"
+    >
+      ລໍຖ້າການອອກລະຫັດ ຂສລ
+    </v-chip>
+  </div>
+</template>
   </v-data-table>
   <!-- <v-data-table :items="filteredItems">
       <template v-slot:top></template>
