@@ -683,21 +683,7 @@ const copyCode = async (text: string) => {
         <span class="text-success">ຖືກກວດສອບແລ້ວ</span>
       </div>
     </template>
-    <!-- <template v-slot:item.LCIC_reques="{ item }">
-      <v-chip
-        v-if="item.LCIC_reques"
-        color="success"
-        variant="flat"
-        size="small"
-      >
-        <v-icon size="16" class="mr-1">mdi-check-circle</v-icon>
-        {{ item.LCIC_reques }}
-      </v-chip>
-      <v-chip v-else color="warning" variant="flat" size="small">
-        <v-icon size="16" class="mr-1">mdi-clock-outline</v-icon>
-        ລໍຖ້າການອອກລະຫັດ ຂສລ
-      </v-chip>
-    </template> -->
+   
     <template v-slot:item.LCIC_reques="{ item }">
   <div class="lcic-code-container">
     <v-chip 
@@ -709,7 +695,7 @@ const copyCode = async (text: string) => {
       <v-icon size="16" class="mr-1">mdi-shield-check</v-icon>
       <strong>{{ item.LCIC_reques }}</strong>
       
-      <!-- ປຸ່ມກ໊ອບປີ້ -->
+     
       <v-tooltip text="ກົດເພື່ອກ໊ອບປີ້" location="top">
         <template v-slot:activator="{ props }">
           <v-btn
