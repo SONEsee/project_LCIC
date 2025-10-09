@@ -525,10 +525,13 @@ const submit = async () => {
           await updateCollateralStatus(collateralId);
         } catch (statusError) {
           console.error("Error updating collateral status:", statusError);
-          // ບໍ່ throw error ເພາະວ່າຂໍ້ມູນຫຼັກບັນທຶກສຳເລັດແລ້ວ
+         
         }
+        setTimeout(() => {
+          goback()
+        },500);
         
-        router.push("/backend/upload/lcictest");
+        ;
       } else {
         throw new Error(`Unexpected response status: ${response.status}`);
       }
