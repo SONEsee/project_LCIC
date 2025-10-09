@@ -41,10 +41,16 @@
                           @input="onLCICChange"
                           :loading="fetchingEnterprise"
                         />
-                        <div v-if="fetchingEnterprise" class="text-caption text-blue">
+                        <div
+                          v-if="fetchingEnterprise"
+                          class="text-caption text-blue"
+                        >
                           ກຳລັງຄົ້ນຫາລະຫັດວິສາຫະກິດ...
                         </div>
-                        <div v-if="enterpriseNameFromLCIC" class="text-caption text-green mt-1">
+                        <div
+                          v-if="enterpriseNameFromLCIC"
+                          class="text-caption text-green mt-1"
+                        >
                           ວິສາຫະກິດ: {{ enterpriseNameFromLCIC }}
                         </div>
                       </div>
@@ -66,11 +72,14 @@
                         <div v-if="fetchingLCIC" class="text-caption text-blue">
                           ກຳລັງຄົ້ນຫາລະຫັດ ຂສລ...
                         </div>
-                        <div v-if="enterpriseNameFromID" class="text-caption text-green mt-1">
+                        <div
+                          v-if="enterpriseNameFromID"
+                          class="text-caption text-green mt-1"
+                        >
                           ວິສາຫະກິດ: {{ enterpriseNameFromID }}
                         </div>
                       </div>
-                      
+
                       <div class="mt-5">
                         <v-combobox
                           v-model="selectedCat"
@@ -85,10 +94,11 @@
                           class="combobox-field"
                         ></v-combobox>
                         <v-btn
+                          :disabled="!id1 || !id2"
                           type="submit"
                           block
                           min-height="44"
-                          class="gradient primary search-btn"
+                          color="primary"
                         >
                           ຄົ້ນຫາ
                         </v-btn>
@@ -131,15 +141,14 @@ useHead({
 });
 
 const selectedCat = ref<Category | null>(null);
-const id1 = ref<string>(""); 
-const id2 = ref<string>(""); 
+const id1 = ref<string>("");
+const id2 = ref<string>("");
 const loading = ref<boolean>(false);
 const fetchingEnterprise = ref<boolean>(false);
 const fetchingLCIC = ref<boolean>(false);
-const enterpriseNameFromLCIC = ref<string>(""); 
-const enterpriseNameFromID = ref<string>(""); 
+const enterpriseNameFromLCIC = ref<string>("");
+const enterpriseNameFromID = ref<string>("");
 const ruleRequired = (v: any) => !!v || "ຈຳເປັນຕ້ອງໃສ່";
-
 
 let lcicTimeout: NodeJS.Timeout | null = null;
 let enterpriseTimeout: NodeJS.Timeout | null = null;
@@ -177,12 +186,11 @@ onMounted(async () => {
   }
 });
 
-
 const fetchEnterpriseByLCIC = async (lcicCode: string) => {
   if (!lcicCode.trim() || lcicCode.length < 3) return;
-  
+
   fetchingEnterprise.value = true;
-  enterpriseNameFromLCIC.value = ""; 
+  enterpriseNameFromLCIC.value = "";
   try {
     const config = useRuntimeConfig();
     const token = localStorage.getItem("access_token");
@@ -212,10 +220,9 @@ const fetchEnterpriseByLCIC = async (lcicCode: string) => {
   }
 };
 
-
 const fetchLCICByEnterprise = async (enterpriseId: string) => {
   if (!enterpriseId.trim() || enterpriseId.length < 3) return;
-  
+
   fetchingLCIC.value = true;
   enterpriseNameFromID.value = "";
   try {
@@ -247,55 +254,48 @@ const fetchLCICByEnterprise = async (enterpriseId: string) => {
   }
 };
 
-
 const onLCICChange = (event: any) => {
   const value = event.target.value;
-  
+
   // ລຶບ timeout ເກົ່າ
   if (lcicTimeout) {
     clearTimeout(lcicTimeout);
   }
-  
-  
+
   if (!value.trim()) {
     id2.value = "";
     enterpriseNameFromLCIC.value = "";
     return;
   }
-  
 
   lcicTimeout = setTimeout(() => {
     fetchEnterpriseByLCIC(value);
   }, 800);
 };
 
-
 const onEnterpriseChange = (event: any) => {
   const value = event.target.value;
-  
+
   // ລຶບ timeout ເກົ່າ
   if (enterpriseTimeout) {
     clearTimeout(enterpriseTimeout);
   }
-  
- 
+
   if (!value.trim()) {
     id1.value = "";
     enterpriseNameFromID.value = "";
     return;
   }
-  
-  
+
   enterpriseTimeout = setTimeout(() => {
     fetchLCICByEnterprise(value);
   }, 800);
 };
 
 const submit = async () => {
- 
   if (!id1.value?.trim() && !id2.value?.trim()) {
     Swal.fire({
-      icon: "warning", 
+      icon: "warning",
       title: "ແຈ້ງເຕືອນ",
       text: "ກະລຸນາໃສ່ລະຫັດ ຂສລ ຫຼື ລະຫັດວິສາຫະກິດ ຢ່າງໜ້ອຍໜຶ່ງອັນ",
       confirmButtonText: "ຕົກລົງ",
@@ -306,7 +306,7 @@ const submit = async () => {
   if (!selectedCat.value) {
     Swal.fire({
       icon: "warning",
-      title: "ແຈ້ງເຕືອນ", 
+      title: "ແຈ້ງເຕືອນ",
       text: "ກະລຸນາເລືອກປະເພດກ່ອນ",
       confirmButtonText: "ຕົກລົງ",
     });
@@ -350,13 +350,16 @@ const submit = async () => {
       Swal.close();
 
       const params = new URLSearchParams();
-      if (id1.value?.trim()) params.append('LCIC_code', id1.value.trim());
-      if (id2.value?.trim()) params.append('EnterpriseID', id2.value.trim());
-      if (selectedCat.value?.cat_sys_id) params.append('CatalogID', selectedCat.value.cat_sys_id);
+      if (id1.value?.trim()) params.append("LCIC_code", id1.value.trim());
+      if (id2.value?.trim()) params.append("EnterpriseID", id2.value.trim());
+      if (selectedCat.value?.cat_sys_id)
+        params.append("CatalogID", selectedCat.value.cat_sys_id);
 
       await navigateTo(`/backend/datasearch?${params.toString()}`);
-      
-    } else if (res.ok && (!data.enterprise_info || data.enterprise_info.length === 0)) {
+    } else if (
+      res.ok &&
+      (!data.enterprise_info || data.enterprise_info.length === 0)
+    ) {
       Swal.fire({
         icon: "warning",
         title: "ບໍ່ພົບຂໍ້ມູນ",
@@ -366,7 +369,6 @@ const submit = async () => {
     } else {
       throw new Error(`HTTP error! status: ${res.status}`);
     }
-
   } catch (error) {
     console.error("Error fetching data:", error);
     Swal.fire({
@@ -383,11 +385,11 @@ const submit = async () => {
 
 <style scoped>
 /* Import Lao fonts */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700&display=swap");
 
 /* Global font setting */
 * {
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
 }
 
 .image-background {
@@ -405,9 +407,9 @@ const submit = async () => {
 .main-title {
   font-size: 24px;
   font-weight: 600;
-  color: #1A237E;
+  color: #1a237e;
   margin-top: 40px;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
 }
 
 /* Label styling */
@@ -417,39 +419,39 @@ const submit = async () => {
   color: #424242;
   margin-bottom: 8px;
   display: block;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
 }
 
 /* Input field styling */
 .input-field :deep(.v-field__input) {
   font-size: 16px;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
-  color: #1A237E;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
+  color: #1a237e;
 }
 
 .input-field :deep(.v-field__input::placeholder) {
   font-size: 14px;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
   opacity: 0.7;
 }
 
 /* Combobox styling */
 .combobox-field :deep(.v-field__input) {
   font-size: 16px;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
-  color: #1A237E;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
+  color: #1a237e;
 }
 
 .combobox-field :deep(.v-label) {
   font-size: 16px;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
 }
 
 /* Button styling */
 .search-btn {
   font-size: 16px;
   font-weight: 500;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
   margin-top: 20px;
 }
 
@@ -461,36 +463,36 @@ const submit = async () => {
 
 .loading-text p {
   font-size: 16px;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
   color: #666;
 }
 
 /* Vuetify overrides for consistent fonts */
 :deep(.v-btn__content) {
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
 }
 
 :deep(.v-field-label) {
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
 }
 
 :deep(.v-list-item-title) {
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
 }
 
 input {
   margin: 5px;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
 }
 
 button {
   margin: 10px;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
 }
 
 h2 {
   margin-top: 20px;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-family: "Noto Sans Lao", "Phetsarath OT", sans-serif;
 }
 
 .text-blue {

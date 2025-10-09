@@ -300,7 +300,7 @@ console.log("user_id", user_id.value);
 
     <template v-slot:item.action="{ item }">
       <div>
-        <!-- ກໍລະນີທີ່ 1: status = 'Found' ແລະບໍ່ແມ່ນ admin -->
+      
         <v-btn 
           v-if="item.status === 'Found' && user?.MID.id !== '01'"
           class="bg-primary" 
@@ -311,7 +311,7 @@ console.log("user_id", user_id.value);
           ເປີດ
         </v-btn>
         
-        <!-- ກໍລະນີທີ່ 2: status = '3', ເປັນວັນນີ້, ແລະບໍ່ແມ່ນ admin -->
+        
         <v-btn 
           v-else-if="item.status === '3' && isToday(item.created_at) && user?.MID.id !== '01'"
           class="bg-primary" 
@@ -322,7 +322,7 @@ console.log("user_id", user_id.value);
           ເປີດ
         </v-btn>
         
-        <!-- ກໍລະນີທີ່ 3: status = '3' ແລະບໍ່ແມ່ນວັນນີ້ -->
+       
         <v-chip 
           v-else-if="item.status === '3'"
           color="success"
