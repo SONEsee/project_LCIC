@@ -5,7 +5,7 @@
   "searchreport" : "ລາຍງານການຄົ້ນຫາ",
   "reportfees" : "ລາຍງານຄ່າທຳນຽມ",
   "report" : "ລາຍງານ",
-  "datdsubmition" : " ການນຳສົ່ງຂໍ້ມູນ",
+  "datdsubmition" : " ຂໍ້ມູນ",
   "manageuser" : " ການຄຸ້ມຄອງສິດຜູ້ນຳໃຊ້ລະບົບ",
   "datavadlidate" : " ກວດສອບຂໍ້ມູນ",
   "uploadenterprise" : " ອອກ KYC ວິສາຫະກິດ ",
@@ -77,6 +77,6 @@
   "Uploadtheenterpriseregistrationform" : "ອັບໂຫຼດໃບທະບຽນວິສາຫະກິດ",
   "individual" : "ບຸກຄົນ",
   "Enterprise" : "ນິຕິບຸກຄົນ",
-  "Managesystemaccess" : "ຈັດການສິດນຳໃຊ້ລະບົບ",
+  "Managesystemaccess" : "ຈັດການສິດນຳໃຊ້ລະບົບ"
 
 }

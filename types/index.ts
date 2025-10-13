@@ -1,4 +1,5 @@
 
+
 import { DuplicatesFalse } from './duplicates_batefile';
 import * as DataModel from './databases'
 import * as FileDataModel from './databasefile'
@@ -17,6 +18,7 @@ import * as InVestorInfoModels from './investorinfo'
 import * as BafileModel from './batefile'
 import * as UploadFile from './uploadfile'
 import * as CollateralModel from './collateral'
+import * as LoanDataModel from './loandata'
 export{
     DuplicatesFalse,
     DataModel,
@@ -36,5 +38,6 @@ export{
     BafileModel,
     UploadFile,
     CollateralModel,
+    LoanDataModel
 
 }
