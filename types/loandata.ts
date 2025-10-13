@@ -1,6 +1,6 @@
 export interface LoanDataRespons {
     id_file:       string;
-    filters:       Filters;
+    pagination:    Pagination;
     counts:        Counts;
     total_records: number;
     data:          Data;
@@ -15,14 +15,23 @@ export interface Counts {
 }
 
 export interface Data {
-    b1:             B1[];
-    data_edit:      DataEdit[];
-    disputes:       Dispute[];
-    b_data_damaged: BDataDamaged[];
-    b1_monthly:     B1Monthly[];
+    b1:             B1;
+    data_edit:      DataEdit;
+    disputes:       Disputes;
+    b_data_damaged: BDataDamaged;
+    b1_monthly:     B1Monthly;
 }
 
 export interface B1 {
+    items:        B1Item[];
+    total_pages:  number;
+    current_page: number;
+    has_next:     boolean;
+    has_previous: boolean;
+    total_items:  number;
+}
+
+export interface B1Item {
     id:                      number;
     id_file:                 string;
     lcicID:                  string;
@@ -61,6 +70,15 @@ export interface B1 {
 }
 
 export interface B1Monthly {
+    items:        B1MonthlyItem[];
+    total_pages:  number;
+    current_page: number;
+    has_next:     boolean;
+    has_previous: boolean;
+    total_items:  number;
+}
+
+export interface B1MonthlyItem {
     id:                      number;
     id_file:                 string;
     lcicID:                  string;
@@ -97,6 +115,15 @@ export interface B1Monthly {
 }
 
 export interface BDataDamaged {
+    items:        BDataDamagedItem[];
+    total_pages:  number;
+    current_page: number;
+    has_next:     boolean;
+    has_previous: boolean;
+    total_items:  number;
+}
+
+export interface BDataDamagedItem {
     id:                        number;
     id_file:                   string;
     lcicID:                    string;
@@ -136,6 +163,15 @@ export interface BDataDamaged {
 }
 
 export interface DataEdit {
+    items:        DataEditItem[];
+    total_pages:  number;
+    current_page: number;
+    has_next:     boolean;
+    has_previous: boolean;
+    total_items:  number;
+}
+
+export interface DataEditItem {
     id:                      number;
     id_file:                 string;
     lcicID:                  string;
@@ -170,7 +206,16 @@ export interface DataEdit {
     LCIC_code:               string;
 }
 
-export interface Dispute {
+export interface Disputes {
+    items:        DisputesItem[];
+    total_pages:  number;
+    current_page: number;
+    has_next:     boolean;
+    has_previous: boolean;
+    total_items:  number;
+}
+
+export interface DisputesItem {
     id:                      number;
     id_file:                 string;
     lcicID:                  string;
@@ -205,5 +250,7 @@ export interface Dispute {
     LCIC_code:               string;
 }
 
-export interface Filters {
+export interface Pagination {
+    page:      number;
+    page_size: number;
 }
