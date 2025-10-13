@@ -1,556 +1,387 @@
 <template>
   <div class="electric-upload-system">
-    <!-- Header with Period Selection -->
-    <v-card class="header-card mb-6" elevation="3">
-      <v-card-text class="pa-8">
-        <v-row align="center" dense>
-          <v-col cols="12" md="2">
-            <div class="d-flex align-center">
-              <v-icon color="primary" size="36" class="mr-3">mdi-lightning-bolt</v-icon>
-              <div>
-                <h1 class="text-h5 font-weight-bold">ລະບົບອັບໂຫຼດໄຟຟ້າ</h1>
-                <div class="text-caption text-medium-emphasis">Electric Upload System</div>
-              </div>
-            </div>
-          </v-col>
-          
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="selectedPeriod"
-              :items="periodOptions"
-              label="ເລືອກເດືອນ-ປີ"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="mdi-calendar-month"
-              hide-details
-            />
-          </v-col>
-          
-          <v-col cols="12" md="2">
-            <v-text-field
-              v-model="username"
-              label="ຊື່ຜູ້ໃຊ້"
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="mdi-account-circle"
-              hide-details
-            />
-          </v-col>
-          
-          <v-col cols="12" md="2">
-            <v-btn
-              color="primary"
-              size="large"
-              block
-              :loading="loadingData"
-              :disabled="!selectedPeriod"
-              @click="fetchData"
-            >
-              <v-icon class="mr-2" size="20">mdi-sync</v-icon>
-              ໂຫຼດຂໍ້ມູນ
-            </v-btn>
-          </v-col>
-          
-          <v-col cols="12" md="2">
-            <v-btn
-              color="success"
-              variant="tonal"
-              size="large"
-              block
-              @click="showSummary = !showSummary"
-            >
-              <v-icon class="mr-2" size="20">mdi-chart-box-outline</v-icon>
-              {{ showSummary ? 'ເຊື່ອງສະຫຼຸບ' : 'ສະຫຼຸບ' }}
-            </v-btn>
-          </v-col>
-          
-          <v-col cols="12" md="1">
-            <v-btn
-              icon
-              variant="text"
-              size="large"
-              @click="fetchData"
-              :loading="loadingData"
-            >
-              <v-icon size="24">mdi-refresh</v-icon>
-              <v-tooltip activator="parent" location="bottom">ໂຫຼດໃໝ່</v-tooltip>
-            </v-btn>
-          </v-col>
-        </v-row>
+    <!-- Header -->
+    <div class="header-card">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="header-title">ລະບົບອັບໂຫຼດໄຟຟ້າ</h1>
+            <div class="header-subtitle">Electric Upload System</div>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <select v-model="selectedPeriod" class="input-field">
+            <option value="">ເລືອກເດືອນ-ປີ</option>
+            <option v-for="opt in periodOptions" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </option>
+          </select>
+
+          <input
+            v-model="username"
+            type="text"
+            placeholder="ຊື່ຜູ້ໃຊ້"
+            class="input-field"
+          />
+
+          <button
+            @click="fetchData"
+            :disabled="!selectedPeriod || loadingData"
+            class="btn btn-primary"
+          >
+            <svg v-if="!loadingData" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+            <svg v-else class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            ໂຫຼດຂໍ້ມູນ
+          </button>
+
+          <button @click="showSummary = !showSummary" class="btn btn-secondary">
+            {{ showSummary ? 'ເຊື່ອງ' : 'ສະຫຼຸບ' }}
+          </button>
+        </div>
+      </div>
+
+      <div v-if="loadingData" class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div v-if="showSummary" class="summary-card">
+      <h2 class="summary-title">ສະຫຼຸບລວມ - {{ formatPeriod(selectedPeriod) }}</h2>
+      <div class="summary-grid">
+        <div class="stat-card stat-blue">
+          <div class="stat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div class="stat-value">{{ summary.totalProvinces }}</div>
+          <div class="stat-label">ແຂວງທັງໝົດ</div>
+        </div>
+
+        <div class="stat-card stat-green">
+          <div class="stat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <div class="stat-value">{{ summary.processedDistricts }}</div>
+          <div class="stat-label">ເມືອງສຳເລັດ / {{ summary.totalDistricts }}</div>
+        </div>
+
+        <div class="stat-card stat-purple">
+          <div class="stat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
+          </div>
+          <div class="stat-value">{{ formatNumber(summary.totalRecords) }}</div>
+          <div class="stat-label">ບັນທຶກທັງໝົດ</div>
+        </div>
+
+        <div class="stat-card stat-orange">
+          <div class="stat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="stat-value" style="font-size: 13px;">{{ currentTime }}</div>
+          <div class="stat-label">ອັບເດດລ່າສຸດ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Modal -->
+    <div v-if="uploadProgress.show" class="progress-modal-overlay">
+      <div class="progress-modal">
+        <div class="progress-modal-header">
+          <h3>ກຳລັງອັບໂຫຼດຂໍ້ມູນ</h3>
+          <div class="progress-modal-subtitle">{{ uploadProgress.provinceName }} - {{ uploadProgress.districtName }}</div>
+        </div>
         
-        <v-progress-linear
-          v-if="loadingData"
-          indeterminate
-          color="primary"
-          class="mt-4"
-          height="4"
-        />
-      </v-card-text>
-    </v-card>
+        <div class="progress-modal-body">
+          <div class="progress-circle-container">
+            <svg class="progress-circle" viewBox="0 0 120 120">
+              <circle class="progress-circle-bg" cx="60" cy="60" r="54" />
+              <circle 
+                class="progress-circle-fill" 
+                cx="60" 
+                cy="60" 
+                r="54"
+                :style="{ strokeDashoffset: progressCircleOffset }"
+              />
+            </svg>
+            <div class="progress-percentage">{{ uploadProgress.percentage }}%</div>
+          </div>
 
-    <!-- Summary Section -->
-    <v-expand-transition>
-      <v-card v-if="showSummary" class="summary-card mb-6" elevation="3">
-        <v-card-title class="bg-gradient-primary text-white pa-6">
-          <v-icon class="mr-3" size="28">mdi-chart-box</v-icon>
-          <span class="text-h6">ສະຫຼຸບລວມ - {{ formatPeriod(selectedPeriod) }}</span>
-        </v-card-title>
-        <v-card-text class="pa-6">
-          <v-row dense>
-            <v-col cols="6" md="3">
-              <v-card class="stat-card pa-6" elevation="2">
-                <div class="text-center">
-                  <v-avatar color="primary" size="64" class="mb-3">
-                    <v-icon size="32" color="white">mdi-map-marker-multiple</v-icon>
-                  </v-avatar>
-                  <div class="text-h3 font-weight-bold text-primary">{{ summary.totalProvinces }}</div>
-                  <div class="text-subtitle-1 text-medium-emphasis mt-2">ແຂວງທັງໝົດ</div>
-                </div>
-              </v-card>
-            </v-col>
-            
-            <v-col cols="6" md="3">
-              <v-card class="stat-card pa-6" elevation="2">
-                <div class="text-center">
-                  <v-avatar color="success" size="64" class="mb-3">
-                    <v-icon size="32" color="white">mdi-check-circle</v-icon>
-                  </v-avatar>
-                  <div class="text-h3 font-weight-bold text-success">
-                    {{ summary.processedDistricts }}
-                  </div>
-                  <div class="text-subtitle-1 text-medium-emphasis mt-2">
-                    ເມືອງສຳເລັດ / {{ summary.totalDistricts }}
-                  </div>
-                </div>
-              </v-card>
-            </v-col>
-            
-            <v-col cols="6" md="3">
-              <v-card class="stat-card pa-6" elevation="2">
-                <div class="text-center">
-                  <v-avatar color="info" size="64" class="mb-3">
-                    <v-icon size="32" color="white">mdi-database</v-icon>
-                  </v-avatar>
-                  <div class="text-h3 font-weight-bold text-info">{{ formatNumber(summary.totalRecords) }}</div>
-                  <div class="text-subtitle-1 text-medium-emphasis mt-2">ບັນທຶກທັງໝົດ</div>
-                </div>
-              </v-card>
-            </v-col>
-            
-            <v-col cols="6" md="3">
-              <v-card class="stat-card pa-6" elevation="2">
-                <div class="text-center">
-                  <v-avatar color="purple" size="64" class="mb-3">
-                    <v-icon size="32" color="white">mdi-clock-outline</v-icon>
-                  </v-avatar>
-                  <div class="text-subtitle-1 font-weight-bold text-purple mt-2">{{ summary.lastUpdated }}</div>
-                  <div class="text-subtitle-1 text-medium-emphasis mt-2">ອັບເດດລ່າສຸດ</div>
-                </div>
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
-    </v-expand-transition>
+          <div class="progress-details">
+            <div class="progress-step">
+              <div class="progress-step-label">ການຊຳລະ:</div>
+              <div class="progress-step-value">{{ uploadProgress.paymentProcessed }} / {{ uploadProgress.paymentTotal }}</div>
+            </div>
+            <div class="progress-step">
+              <div class="progress-step-label">ລູກຄ້າ:</div>
+              <div class="progress-step-value">{{ uploadProgress.customerProcessed }} / {{ uploadProgress.customerTotal }}</div>
+            </div>
+            <div class="progress-step">
+              <div class="progress-step-label">ສະຖານະ:</div>
+              <div class="progress-step-value">{{ uploadProgress.status }}</div>
+            </div>
+          </div>
 
-    <!-- Province Cards with Districts -->
+          <div class="progress-bar-linear">
+            <div class="progress-bar-linear-fill" :style="{ width: uploadProgress.percentage + '%' }"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Provinces -->
     <div v-if="provinces.length > 0">
-      <v-card
-        v-for="province in provinces"
-        :key="province.pro_id"
-        class="province-card mb-6"
-        elevation="3"
-      >
+      <div v-for="province in provinces" :key="province.pro_id" class="province-card">
         <!-- Province Header -->
-        <v-card-title
-          class="province-header pa-6"
-          :class="getProvinceStatusClass(province)"
+        <div
           @click="toggleProvince(province.pro_id)"
+          :class="['province-header', getProvinceHeaderClass(province.status)]"
         >
-          <v-row align="center" dense>
-            <v-col cols="12" md="5">
-              <div class="d-flex align-center">
-                <v-btn
-                  icon
-                  variant="flat"
-                  size="large"
-                  class="mr-3"
-                  color="white"
-                >
-                  <v-icon size="28">
-                    {{ expandedProvinces[province.pro_id] ? 'mdi-chevron-down' : 'mdi-chevron-right' }}
-                  </v-icon>
-                </v-btn>
-                
-                <v-avatar color="white" size="56" class="mr-4">
-                  <v-icon size="32" :color="getProvinceIconColor(province.status)">
-                    mdi-map-marker
-                  </v-icon>
-                </v-avatar>
-                
-                <div>
-                  <div class="text-h5 font-weight-bold text-white mb-1">{{ province.pro_name }}</div>
-                  <div class="text-subtitle-2 text-white opacity-90">
-                    <v-icon size="18" class="mr-1">mdi-map-marker-outline</v-icon>
-                    {{ province.districts.length }} ເມືອງ
-                  </div>
-                </div>
-              </div>
-            </v-col>
+          <div class="province-header-left">
+            <button class="toggle-btn">
+              <svg v-if="expandedProvinces[province.pro_id]" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
             
-            <v-col cols="12" md="3" class="text-center">
-              <v-chip
-                :color="getStatusChipColor(province.status)"
-                size="large"
-                variant="elevated"
-                class="font-weight-bold px-6 py-6"
-              >
-                <v-icon size="20" class="mr-2">{{ getStatusIcon(province.status) }}</v-icon>
-                {{ getStatusText(province.status) }}
-              </v-chip>
-            </v-col>
-            
-            <v-col cols="12" md="4" class="text-right">
-              <v-btn
-                color="white"
-                variant="elevated"
-                size="x-large"
-                class="mr-2"
-                :loading="province.uploading"
-                :disabled="!username"
-                @click.stop="uploadAllDistricts(province)"
-              >
-                <v-icon class="mr-2" size="24">mdi-upload-multiple</v-icon>
-                <span class="text-h6">ອັບໂຫຼດທັງໝົດ</span>
-              </v-btn>
-              
-              <v-btn
-                color="white"
-                variant="outlined"
-                size="x-large"
-                :loading="province.initializing"
-                :disabled="!username"
-                @click.stop="initializeProvince(province)"
-              >
-                <v-icon class="mr-2" size="24">mdi-plus-circle</v-icon>
-                <span class="text-h6">ເລີ່ມຕົ້ນ</span>
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card-title>
+            <div class="province-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+
+            <div>
+              <div class="province-name">{{ province.pro_name }}</div>
+              <div class="province-subtitle">{{ province.districts.length }} ເມືອງ</div>
+            </div>
+          </div>
+
+          <div class="province-header-right">
+            <span :class="['status-badge', getStatusColor(province.status)]">
+              <component :is="getStatusIcon(province.status)" />
+              {{ getStatusText(province.status) }}
+            </span>
+
+            <button
+              @click.stop="uploadAllDistricts(province)"
+              :disabled="!username || province.uploading"
+              class="btn btn-white btn-sm"
+            >
+              <svg v-if="!province.uploading" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <svg v-else class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+              </svg>
+              ອັບໂຫຼດທັງໝົດ
+            </button>
+
+            <button
+              @click.stop="initializeProvince(province)"
+              :disabled="!username || province.initializing"
+              class="btn btn-white btn-sm"
+            >
+              <svg v-if="!province.initializing" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="16"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
+              <svg v-else class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+              </svg>
+              ເລີ່ມຕົ້ນ
+            </button>
+          </div>
+        </div>
 
         <!-- Districts Table -->
-        <v-expand-transition>
-          <div v-if="expandedProvinces[province.pro_id]">
-            <v-divider />
-            
-            <v-card-text class="pa-0">
-              <v-table class="districts-table">
-                <thead>
-                  <tr>
-                    <th class="text-left pa-4">
-                      <v-icon class="mr-2" size="20">mdi-map-marker-outline</v-icon>
-                      ເມືອງ
-                    </th>
-                    <th class="text-center pa-4">
-                      <v-icon class="mr-2" size="20">mdi-information-outline</v-icon>
-                      ສະຖານະ
-                    </th>
-                    <th class="text-center pa-4">
-                      <v-icon class="mr-2" size="20">mdi-credit-card-check</v-icon>
-                      ການຊຳລະ
-                    </th>
-                    <th class="text-center pa-4">
-                      <v-icon class="mr-2" size="20">mdi-account-group</v-icon>
-                      ລູກຄ້າ
-                    </th>
-                    <th class="text-center pa-4">
-                      <v-icon class="mr-2" size="20">mdi-clock-outline</v-icon>
-                      ວັນທີອັບໂຫຼດ
-                    </th>
-                    <th class="text-center pa-4">
-                      <v-icon class="mr-2" size="20">mdi-cog-outline</v-icon>
-                      ການກະທຳ
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="district in province.districts"
-                    :key="district.dis_id"
-                    class="district-row"
-                  >
-                    <td class="pa-4">
-                      <div class="d-flex align-center">
-                        <v-avatar color="primary" size="40" class="mr-3">
-                          <v-icon size="20" color="white">mdi-map</v-icon>
-                        </v-avatar>
-                        <div>
-                          <div class="text-subtitle-1 font-weight-bold">{{ district.dis_name }}</div>
-                          <div class="text-caption text-medium-emphasis">
-                            <v-icon size="14">mdi-identifier</v-icon>
-                            {{ district.dis_id }}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    
-                    <td class="text-center pa-4">
-                      <v-chip
-                        :color="getStatusColor(district.status)"
-                        size="default"
-                        variant="flat"
-                        class="px-4 py-5"
-                      >
-                        <v-icon size="16" class="mr-1">{{ getStatusIcon(district.status) }}</v-icon>
-                        <span class="font-weight-medium">{{ getStatusText(district.status) }}</span>
-                      </v-chip>
-                    </td>
-                    
-                    <td class="text-center pa-4">
-                      <div class="d-flex align-center justify-center">
-                        <v-icon size="20" color="success" class="mr-2">mdi-cash-check</v-icon>
-                        <span class="text-h6 font-weight-bold">{{ formatNumber(district.payment_count) }}</span>
-                      </div>
-                    </td>
-                    
-                    <td class="text-center pa-4">
-                      <div class="d-flex align-center justify-center">
-                        <v-icon size="20" color="info" class="mr-2">mdi-account-multiple</v-icon>
-                        <span class="text-h6 font-weight-bold">{{ formatNumber(district.customer_count) }}</span>
-                      </div>
-                    </td>
-                    
-                    <td class="text-center pa-4">
-                      <div v-if="district.upload_completed">
-                        <div class="text-subtitle-1 font-weight-medium">{{ formatDate(district.upload_completed) }}</div>
-                        <div class="text-caption text-medium-emphasis">{{ formatTime(district.upload_completed) }}</div>
-                      </div>
-                      <span v-else class="text-medium-emphasis">—</span>
-                    </td>
-                    
-                    <td class="text-center pa-4">
-                      <v-btn-group density="comfortable" divided>
-                        <v-btn
-                          color="primary"
-                          :loading="district.loading"
-                          :disabled="!username"
-                          @click="syncDistrict(province, district)"
-                          class="px-4"
-                        >
-                          <v-icon class="mr-2" size="20">mdi-sync</v-icon>
-                          ດຶງຂໍ້ມູນ
-                        </v-btn>
-                        
-                        <v-btn
-                          color="info"
-                          :disabled="!district.payment_count && !district.customer_count"
-                          @click="viewDistrictData(province, district)"
-                          class="px-4"
-                        >
-                          <v-icon class="mr-2" size="20">mdi-eye</v-icon>
-                          ເບິ່ງ
-                        </v-btn>
-                      </v-btn-group>
-                    </td>
-                  </tr>
-                  
-                  <tr v-if="province.districts.length === 0">
-                    <td colspan="6" class="text-center pa-8">
-                      <v-icon size="48" color="grey-lighten-1">mdi-inbox</v-icon>
-                      <div class="text-subtitle-1 text-medium-emphasis mt-3">
-                        ບໍ່ມີຂໍ້ມູນເມືອງ - ກະລຸນາກົດ "ເລີ່ມຕົ້ນ" ກ່ອນ
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </v-card-text>
-          </div>
-        </v-expand-transition>
-      </v-card>
+        <div v-if="expandedProvinces[province.pro_id]" class="districts-table-container">
+          <table class="districts-table">
+            <thead>
+              <tr>
+                <th style="width: 25%">ເມືອງ</th>
+                <th style="width: 12%">ສະຖານະ</th>
+                <th style="width: 10%">ການຊຳລະ</th>
+                <th style="width: 10%">ລູກຄ້າ</th>
+                <th style="width: 15%">ວັນທີ</th>
+                <th style="width: 28%">ການກະທຳ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="province.districts.length === 0">
+                <td colspan="6" class="empty-row">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                  </svg>
+                  <div>ບໍ່ມີຂໍ້ມູນເມືອງ - ກະລຸນາກົດ "ເລີ່ມຕົ້ນ" ກ່ອນ</div>
+                </td>
+              </tr>
+              <tr v-for="district in province.districts" :key="district.dis_id" class="district-row">
+                <td>
+                  <div class="district-cell">
+                    <div class="district-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <div class="district-name">{{ district.dis_name }}</div>
+                      <div class="district-id">ID: {{ district.dis_id }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <span :class="['status-chip', getStatusColor(district.status)]">
+                    <component :is="getStatusIcon(district.status)" />
+                    {{ getStatusText(district.status) }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  <span class="count-badge">{{ formatNumber(district.payment_count) }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="count-badge">{{ formatNumber(district.customer_count) }}</span>
+                </td>
+                <td class="text-center">
+                  <div v-if="district.upload_completed" class="date-container">
+                    <div class="date-text">{{ formatDate(district.upload_completed) }}</div>
+                    <div class="time-text">{{ formatTime(district.upload_completed) }}</div>
+                  </div>
+                  <span v-else class="empty-text">—</span>
+                </td>
+                <td class="text-center">
+                  <div class="action-buttons">
+                    <button
+                      @click="syncDistrict(province, district)"
+                      :disabled="!username || district.loading"
+                      class="btn btn-xs btn-primary"
+                    >
+                      <svg v-if="!district.loading" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                      </svg>
+                      <svg v-else class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                      </svg>
+                      ດຶງຂໍ້ມູນ
+                    </button>
+                    <button
+                      :disabled="!district.payment_count && !district.customer_count"
+                      class="btn btn-xs btn-secondary"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      ເບິ່ງ
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- Empty State -->
-    <v-card v-else class="empty-state text-center pa-16" elevation="3">
-      <v-avatar color="grey-lighten-3" size="120">
-        <v-icon size="64" color="grey">mdi-database-off-outline</v-icon>
-      </v-avatar>
-      <h2 class="text-h5 mt-6 mb-3">ບໍ່ມີຂໍ້ມູນ</h2>
-      <p class="text-subtitle-1 text-medium-emphasis mb-6">
-        ກະລຸນາເລືອກເດືອນ-ປີ ແລະ ກົດປຸ່ມ "ໂຫຼດຂໍ້ມູນ"
-      </p>
-      <v-btn
-        color="primary"
-        size="large"
-        :disabled="!selectedPeriod"
-        @click="fetchData"
-      >
-        <v-icon class="mr-2">mdi-sync</v-icon>
+    <div v-else class="empty-state">
+      <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+        <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>
+        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+      </svg>
+      <h3>ບໍ່ມີຂໍ້ມູນ</h3>
+      <p>ກະລຸນາເລືອກເດືອນ-ປີ ແລະ ກົດປຸ່ມ "ໂຫຼດຂໍ້ມູນ"</p>
+      <button @click="fetchData" :disabled="!selectedPeriod" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+        </svg>
         ໂຫຼດຂໍ້ມູນ
-      </v-btn>
-    </v-card>
-
-    <!-- Detail Dialog -->
-    <v-dialog v-model="detailDialog" max-width="1400" scrollable>
-      <v-card v-if="selectedDistrict">
-        <v-card-title class="bg-primary text-white d-flex align-center justify-space-between pa-6">
-          <div class="d-flex align-center">
-            <v-icon class="mr-3" size="32">mdi-file-document</v-icon>
-            <div>
-              <div class="text-h5">ລາຍລະອຽດຂໍ້ມູນ</div>
-              <div class="text-subtitle-2 opacity-90">
-                {{ selectedProvince?.pro_name }} - {{ selectedDistrict.dis_name }}
-              </div>
-            </div>
-          </div>
-          <v-btn
-            icon
-            variant="text"
-            size="large"
-            @click="detailDialog = false"
-          >
-            <v-icon size="28">mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        
-        <v-tabs v-model="activeTab" bg-color="grey-lighten-4" height="64">
-          <v-tab value="payment" class="text-h6">
-            <v-icon class="mr-2" size="24">mdi-credit-card-check</v-icon>
-            ການຊຳລະ ({{ formatNumber(paymentData.length) }})
-          </v-tab>
-          <v-tab value="customer" class="text-h6">
-            <v-icon class="mr-2" size="24">mdi-account-group</v-icon>
-            ລູກຄ້າ ({{ formatNumber(customerData.length) }})
-          </v-tab>
-        </v-tabs>
-        
-        <v-card-text class="pa-0" style="height: 600px;">
-          <v-window v-model="activeTab">
-            <v-window-item value="payment">
-              <div class="pa-6">
-                <v-text-field
-                  v-model="paymentSearch"
-                  prepend-inner-icon="mdi-magnify"
-                  label="ຄົ້ນຫາ..."
-                  variant="outlined"
-                  density="comfortable"
-                  hide-details
-                  class="mb-4"
-                  clearable
-                />
-                
-                <div class="text-caption text-medium-emphasis mb-2">
-                  ສະແດງຜົນ {{ paymentData.length }} ລາຍການ
-                </div>
-              </div>
-            </v-window-item>
-            
-            <v-window-item value="customer">
-              <div class="pa-6">
-                <v-text-field
-                  v-model="customerSearch"
-                  prepend-inner-icon="mdi-magnify"
-                  label="ຄົ້ນຫາ..."
-                  variant="outlined"
-                  density="comfortable"
-                  hide-details
-                  class="mb-4"
-                  clearable
-                />
-                
-                <div class="text-caption text-medium-emphasis mb-2">
-                  ສະແດງຜົນ {{ customerData.length }} ລາຍການ
-                </div>
-              </div>
-            </v-window-item>
-          </v-window>
-        </v-card-text>
-        
-        <v-divider />
-        
-        <v-card-actions class="pa-6">
-          <v-btn
-            color="primary"
-            variant="elevated"
-            size="large"
-            @click="refreshDetailData"
-            :loading="loadingDetails"
-          >
-            <v-icon class="mr-2" size="20">mdi-refresh</v-icon>
-            ໂຫຼດໃໝ່
-          </v-btn>
-          
-          <v-btn
-            color="success"
-            variant="tonal"
-            size="large"
-            @click="downloadCSV"
-          >
-            <v-icon class="mr-2" size="20">mdi-download</v-icon>
-            ດາວໂຫຼດ CSV
-          </v-btn>
-          
-          <v-spacer />
-          
-          <v-btn
-            variant="elevated"
-            size="large"
-            @click="detailDialog = false"
-          >
-            ປິດ
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      </button>
+    </div>
 
     <!-- Notification -->
-    <v-snackbar
-      v-model="notification.show"
-      :color="notification.color"
-      :timeout="notification.timeout"
-      location="top right"
-      elevation="24"
-    >
-      <div class="d-flex align-center">
-        <v-icon class="mr-3" size="24">
-          {{ notification.color === 'success' ? 'mdi-check-circle' : notification.color === 'error' ? 'mdi-alert-circle' : 'mdi-information' }}
-        </v-icon>
-        <div>{{ notification.message }}</div>
+    <Transition name="slide">
+      <div v-if="notification.show" :class="['notification', `notification-${notification.color}`]">
+        <component :is="getNotificationIcon(notification.color)" />
+        <div class="notification-content">{{ notification.message }}</div>
+        <button @click="notification.show = false" class="notification-close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
-      <template v-slot:actions>
-        <v-btn variant="text" @click="notification.show = false">ປິດ</v-btn>
-      </template>
-    </v-snackbar>
+    </Transition>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
-import axios from 'axios'
-
+import { ref, computed, onMounted, onUnmounted, h } from 'vue'
+definePageMeta({
+  middleware: "auth",
+  layout: "backend",
+});
 const config = useRuntimeConfig()
 
+
 // State
-const selectedPeriod = ref(new Date().toISOString().slice(0, 7).replace('-', ''))
+const selectedPeriod = ref('')
 const username = ref('system')
 const loadingData = ref(false)
 const showSummary = ref(true)
 const provinces = ref([])
 const expandedProvinces = ref({})
+const currentTime = ref('')
 
-const detailDialog = ref(false)
-const selectedDistrict = ref(null)
-const selectedProvince = ref(null)
-const activeTab = ref('payment')
-const paymentSearch = ref('')
-const customerSearch = ref('')
-const paymentData = ref([])
-const customerData = ref([])
-const loadingDetails = ref(false)
+// Progress tracking
+const uploadProgress = ref({
+  show: false,
+  percentage: 0,
+  provinceName: '',
+  districtName: '',
+  status: '',
+  paymentTotal: 0,
+  paymentProcessed: 0,
+  customerTotal: 0,
+  customerProcessed: 0,
+  trackingId: null
+})
+
+let progressInterval = null
 
 // Notification
-const notification = reactive({
+const notification = ref({
   show: false,
   message: '',
   color: 'success',
@@ -566,7 +397,7 @@ const periodOptions = computed(() => {
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
     options.push({
-      title: `${month}/${year}`,
+      label: `${month}/${year}`,
       value: `${year}${month}`
     })
   }
@@ -577,92 +408,101 @@ const periodOptions = computed(() => {
 const summary = computed(() => {
   const totalProvinces = provinces.value.length
   const totalDistricts = provinces.value.reduce((sum, p) => sum + p.districts.length, 0)
-  const processedDistricts = provinces.value.reduce((sum, p) => 
+  const processedDistricts = provinces.value.reduce((sum, p) =>
     sum + p.districts.filter(d => d.status === 'completed').length, 0
   )
   const totalRecords = provinces.value.reduce((sum, p) =>
     sum + p.districts.reduce((s, d) => s + (d.payment_count || 0) + (d.customer_count || 0), 0), 0
   )
-  
-  const lastUpdatedDistrict = provinces.value
-    .flatMap(p => p.districts)
-    .filter(d => d.upload_completed)
-    .sort((a, b) => new Date(b.upload_completed) - new Date(a.upload_completed))[0]
-  
+
   return {
     totalProvinces,
     totalDistricts,
     processedDistricts,
-    totalRecords,
-    lastUpdated: lastUpdatedDistrict ? formatDateTime(lastUpdatedDistrict.upload_completed) : 'N/A'
+    totalRecords
   }
 })
 
-// Methods
+// Progress circle calculation
+const progressCircleOffset = computed(() => {
+  const circumference = 2 * Math.PI * 54
+  const offset = circumference - (uploadProgress.value.percentage / 100) * circumference
+  return offset
+})
+
+// FIXED: Fetch Data
 const fetchData = async () => {
   if (!selectedPeriod.value) {
     showNotification('ກະລຸນາເລືອກເດືອນ-ປີ', 'error')
     return
   }
-  
+
   loadingData.value = true
   try {
-    // Load provinces
-    const provincesResponse = await axios.get(`${config.public.strapi.url}api/provinces/`, {
+    const provincesResponse = await $fetch(`${config.public.strapi.url}api/provinces/`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
     })
-    
-    // Load tracking data for each province
+
     const provincesData = await Promise.all(
-      provincesResponse.data.map(async (province) => {
-        const trackingResponse = await axios.get(
-          `${config.public.strapi.url}api/upload-tracking/`,
-          {
-            params: {
-              province_id: province.pro_id,
-              month: selectedPeriod.value
-            },
-            headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+      provincesResponse.map(async (province) => {
+        try {
+          const trackingResponse = await $fetch(
+            `${config.public.strapi.url}api/upload-tracking/`,
+            {
+              params: {
+                province_id: province.pro_id,
+                month: selectedPeriod.value
+              },
+              headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+            }
+          )
+
+          const districts = trackingResponse.data || []
+
+          let provinceStatus = 'not_started'
+          if (districts.length > 0) {
+            const completedCount = districts.filter(d => d.status === 'completed').length
+            if (completedCount === districts.length) {
+              provinceStatus = 'done'
+            } else if (completedCount > 0) {
+              provinceStatus = 'partial'
+            } else {
+              provinceStatus = 'pending'
+            }
           }
-        )
-        
-        const districts = trackingResponse.data.data || []
-        
-        // Calculate province status
-        let provinceStatus = 'not_started'
-        if (districts.length > 0) {
-          const completedCount = districts.filter(d => d.status === 'completed').length
-          if (completedCount === districts.length) {
-            provinceStatus = 'done'
-          } else if (completedCount > 0) {
-            provinceStatus = 'partial'
-          } else {
-            provinceStatus = 'pending'
+
+          return {
+            ...province,
+            status: provinceStatus,
+            districts: districts.map(d => ({
+              ...d,
+              // FIX: Properly map customer_count from customer_records field
+              payment_count: d.payment_records || d.processed_records || 0,
+              customer_count: d.customer_records || 0,
+              loading: false
+            })),
+            uploading: false,
+            initializing: false
           }
-        }
-        
-        return {
-          ...province,
-          status: provinceStatus,
-          districts: districts.map(d => ({
-            ...d,
-            payment_count: d.processed_records || 0,
-            customer_count: d.customer_records || 0,
-            loading: false
-          })),
-          uploading: false,
-          initializing: false
+        } catch (error) {
+          console.warn(`Failed to fetch tracking for province ${province.pro_id}:`, error)
+          return {
+            ...province,
+            status: 'not_started',
+            districts: [],
+            uploading: false,
+            initializing: false
+          }
         }
       })
     )
-    
+
     provinces.value = provincesData
-    
-    // Auto-expand first province or provinces with data
+
     if (provincesData.length > 0) {
-      expandedProvinces.value[provincesData[0].pro_id] = true
+      expandedProvinces.value = { [provincesData[0].pro_id]: true }
     }
-    
+
     showNotification('ໂຫຼດຂໍ້ມູນສຳເລັດ', 'success')
   } catch (error) {
     console.error('Error fetching data:', error)
@@ -681,67 +521,109 @@ const initializeProvince = async (province) => {
     showNotification('ກະລຸນາໃສ່ຊື່ຜູ້ໃຊ້', 'error')
     return
   }
-  
+
   province.initializing = true
   try {
-    const response = await axios.post(
+    const response = await $fetch(
       `${config.public.strapi.url}api/initialize-districts/`,
       {
-        province_id: province.pro_id,
-        month: selectedPeriod.value,
-        username: username.value
-      },
-      {
-        headers: { 
+        method: 'POST',
+        headers: {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
           'Content-Type': 'application/json'
+        },
+        body: {
+          province_id: province.pro_id,
+          month: selectedPeriod.value,
+          username: username.value
         }
       }
     )
-    
-    showNotification(response.data.message, 'success')
+
+    showNotification(response.message, 'success')
     await fetchData()
   } catch (error) {
     console.error('Initialize error:', error)
-    showNotification(error.response?.data?.error || 'ການເລີ່ມຕົ້ນລົ້ມເຫຼວ', 'error')
+    showNotification(error.data?.error || 'ການເລີ່ມຕົ້ນລົ້ມເຫຼວ', 'error')
   } finally {
     province.initializing = false
   }
 }
 
+// FIX: Sync district with progress monitoring
 const syncDistrict = async (province, district) => {
   if (!username.value) {
     showNotification('ກະລຸນາໃສ່ຊື່ຜູ້ໃຊ້', 'error')
     return
   }
-  
+
   district.loading = true
+  
+  // Show progress modal
+  uploadProgress.value = {
+    show: true,
+    percentage: 0,
+    provinceName: province.pro_name,
+    districtName: district.dis_name,
+    status: 'ກຳລັງເລີ່ມຕົ້ນ...',
+    paymentTotal: 0,
+    paymentProcessed: 0,
+    customerTotal: 0,
+    customerProcessed: 0,
+    trackingId: district.id
+  }
+
   try {
-    const response = await axios.post(
+    // Start upload
+    const uploadPromise = $fetch(
       `${config.public.strapi.url}api/upload-data/`,
       {
-        province_code: province.pro_id,
-        district_code: district.dis_id,
-        dateRequest: selectedPeriod.value,
-        username: username.value
-      },
-      {
-        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+        body: {
+          province_code: province.pro_id,
+          district_code: district.dis_id,
+          dateRequest: selectedPeriod.value,
+          username: username.value
+        }
       }
     )
-    
-    if (response.data && !response.data.error) {
-      const paymentRecords = response.data.payment_records || {}
-      const customerRecords = response.data.customer_records || {}
+
+    // Start progress polling
+    startProgressPolling(district.id)
+
+    const response = await uploadPromise
+
+    // Stop polling
+    stopProgressPolling()
+
+    if (response && !response.error) {
+      // Update final progress
+      uploadProgress.value.percentage = 100
+      uploadProgress.value.status = 'ສຳເລັດ'
       
+      const paymentRecords = response.payment_records || {}
+      const customerRecords = response.customer_records || {}
+
+      uploadProgress.value.paymentTotal = paymentRecords.total || 0
+      uploadProgress.value.paymentProcessed = paymentRecords.processed || 0
+      uploadProgress.value.customerTotal = customerRecords.total || 0
+      uploadProgress.value.customerProcessed = customerRecords.processed || 0
+
       showNotification(
         `${district.dis_name}: ສຳເລັດ\nການຊຳລະ: ${paymentRecords.processed}/${paymentRecords.total}\nລູກຄ້າ: ${customerRecords.processed}/${customerRecords.total}`,
         'success'
       )
-      
+
+      // Wait a bit to show 100% before closing
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      uploadProgress.value.show = false
+
       await fetchData()
     }
   } catch (error) {
+    stopProgressPolling()
+    uploadProgress.value.show = false
     console.error('Sync error:', error)
     showNotification(`${district.dis_name}: ການດຶງຂໍ້ມູນລົ້ມເຫຼວ`, 'error')
   } finally {
@@ -749,129 +631,232 @@ const syncDistrict = async (province, district) => {
   }
 }
 
+// Progress polling
+const startProgressPolling = (trackingId) => {
+  progressInterval = setInterval(async () => {
+    try {
+      const response = await $fetch(
+        `${config.public.strapi.url}api/upload-tracking/${trackingId}/`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+        }
+      )
+
+      if (response) {
+        // Calculate progress based on processed records
+        const total = (response.payment_records || 0) + (response.customer_records || 0)
+        const processed = response.processed_records || 0
+        const percentage = total > 0 ? Math.round((processed / total) * 100) : 0
+
+        uploadProgress.value.percentage = Math.min(percentage, 95) // Cap at 95% until complete
+        uploadProgress.value.status = getStatusText(response.status)
+        uploadProgress.value.paymentTotal = response.payment_records || 0
+        uploadProgress.value.paymentProcessed = Math.min(processed, response.payment_records || 0)
+        uploadProgress.value.customerTotal = response.customer_records || 0
+        uploadProgress.value.customerProcessed = Math.max(0, processed - (response.payment_records || 0))
+      }
+    } catch (error) {
+      console.error('Progress polling error:', error)
+    }
+  }, 2000) // Poll every 2 seconds
+}
+
+const stopProgressPolling = () => {
+  if (progressInterval) {
+    clearInterval(progressInterval)
+    progressInterval = null
+  }
+}
+
+// FIX: Upload all districts sequentially
 const uploadAllDistricts = async (province) => {
   if (!username.value) {
     showNotification('ກະລຸນາໃສ່ຊື່ຜູ້ໃຊ້', 'error')
     return
   }
-  
-  // First, ensure districts are initialized
+
   if (province.districts.length === 0) {
     showNotification('ກຳລັງເລີ່ມຕົ້ນເມືອງ...', 'info')
     await initializeProvince(province)
-    // Reload data after initialization
     await fetchData()
     province = provinces.value.find(p => p.pro_id === province.pro_id)
   }
-  
-  const pendingDistricts = province.districts.filter(d => 
+
+  const pendingDistricts = province.districts.filter(d =>
     !d.status || d.status === 'pending' || d.status === 'failed'
   )
-  
+
   if (pendingDistricts.length === 0) {
     showNotification('ທຸກເມືອງອັບໂຫຼດແລ້ວ', 'info')
     return
   }
-  
+
   province.uploading = true
   let completed = 0
   let failed = 0
-  
+
+  // Process each district sequentially
   for (const district of pendingDistricts) {
     try {
-      await axios.post(
-        `${config.public.strapi.url}api/upload-data/`,
-        {
-          province_code: province.pro_id,
-          district_code: district.dis_id,
-          dateRequest: selectedPeriod.value,
-          username: username.value
-        },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-        }
-      )
+      await syncDistrict(province, district)
       completed++
     } catch (error) {
       failed++
     }
-    
-    await new Promise(resolve => setTimeout(resolve, 2000))
   }
-  
+
   province.uploading = false
   await fetchData()
-  
+
   showNotification(
     `${province.pro_name}:\nສຳເລັດ: ${completed}/${pendingDistricts.length}\nລົ້ມເຫຼວ: ${failed}`,
     failed > 0 ? 'warning' : 'success'
   )
 }
 
-const viewDistrictData = async (province, district) => {
-  selectedProvince.value = province
-  selectedDistrict.value = district
-  detailDialog.value = true
-  
-  // Mock data - replace with your API calls
-  paymentData.value = []
-  customerData.value = []
-}
-
-const refreshDetailData = async () => {
-  showNotification('ໂຫຼດຂໍ້ມູນໃໝ່ສຳເລັດ', 'success')
-}
-
-const downloadCSV = () => {
-  showNotification('ກຳລັງດາວໂຫຼດ...', 'info')
-}
-
 // Helper Functions
-const getProvinceStatusClass = (province) => {
-  const status = province.status
-  if (status === 'done') return 'status-done'
-  if (status === 'partial') return 'status-partial'
-  if (status === 'pending') return 'status-pending'
-  return 'status-not-started'
-}
-
-const getProvinceIconColor = (status) => {
-  if (status === 'done') return 'success'
-  if (status === 'partial') return 'warning'
-  return 'grey'
+const getProvinceHeaderClass = (status) => {
+  const classes = {
+    done: 'province-header-done',
+    partial: 'province-header-partial',
+    pending: 'province-header-pending',
+    not_started: 'province-header-not-started'
+  }
+  return classes[status] || 'province-header-not-started'
 }
 
 const getStatusColor = (status) => {
   const colors = {
-    completed: 'success',
-    done: 'success',
-    pending: 'warning',
-    partial: 'orange',
-    in_progress: 'info',
-    failed: 'error',
-    not_started: 'grey'
+    completed: 'status-success',
+    done: 'status-success',
+    pending: 'status-warning',
+    partial: 'status-warning',
+    in_progress: 'status-info',
+    failed: 'status-error',
+    not_started: 'status-gray'
   }
-  return colors[status] || 'grey'
-}
-
-const getStatusChipColor = (status) => {
-  if (status === 'done') return 'success'
-  if (status === 'partial') return 'warning'
-  if (status === 'pending') return 'info'
-  return 'grey-lighten-1'
+  return colors[status] || 'status-gray'
 }
 
 const getStatusIcon = (status) => {
+  const CheckIcon = () => h('svg', {
+    xmlns: 'http://www.w3.org/2000/svg',
+    width: '14',
+    height: '14',
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': '2'
+  }, [
+    h('path', { d: 'M22 11.08V12a10 10 0 1 1-5.93-9.14' }),
+    h('polyline', { points: '22 4 12 14.01 9 11.01' })
+  ])
+
+  const ClockIcon = () => h('svg', {
+    xmlns: 'http://www.w3.org/2000/svg',
+    width: '14',
+    height: '14',
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': '2'
+  }, [
+    h('circle', { cx: '12', cy: '12', r: '10' }),
+    h('polyline', { points: '12 6 12 12 16 14' })
+  ])
+
+  const AlertIcon = () => h('svg', {
+    xmlns: 'http://www.w3.org/2000/svg',
+    width: '14',
+    height: '14',
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': '2'
+  }, [
+    h('circle', { cx: '12', cy: '12', r: '10' }),
+    h('line', { x1: '12', y1: '8', x2: '12', y2: '12' }),
+    h('line', { x1: '12', y1: '16', x2: '12.01', y2: '16' })
+  ])
+
+  const XIcon = () => h('svg', {
+    xmlns: 'http://www.w3.org/2000/svg',
+    width: '14',
+    height: '14',
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': '2'
+  }, [
+    h('circle', { cx: '12', cy: '12', r: '10' }),
+    h('line', { x1: '15', y1: '9', x2: '9', y2: '15' }),
+    h('line', { x1: '9', y1: '9', x2: '15', y2: '15' })
+  ])
+
   const icons = {
-    completed: 'mdi-check-circle',
-    done: 'mdi-check-circle',
-    pending: 'mdi-clock-alert',
-    partial: 'mdi-alert-circle',
-    in_progress: 'mdi-loading mdi-spin',
-    failed: 'mdi-close-circle',
-    not_started: 'mdi-help-circle'
+    completed: CheckIcon,
+    done: CheckIcon,
+    pending: ClockIcon,
+    partial: AlertIcon,
+    in_progress: ClockIcon,
+    failed: XIcon,
+    not_started: AlertIcon
   }
-  return icons[status] || 'mdi-help-circle'
+  return icons[status] || AlertIcon
+}
+
+const getNotificationIcon = (color) => {
+  const CheckIcon = () => h('svg', {
+    xmlns: 'http://www.w3.org/2000/svg',
+    width: '20',
+    height: '20',
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': '2',
+    class: 'notification-icon'
+  }, [
+    h('path', { d: 'M22 11.08V12a10 10 0 1 1-5.93-9.14' }),
+    h('polyline', { points: '22 4 12 14.01 9 11.01' })
+  ])
+
+  const AlertIcon = () => h('svg', {
+    xmlns: 'http://www.w3.org/2000/svg',
+    width: '20',
+    height: '20',
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': '2',
+    class: 'notification-icon'
+  }, [
+    h('circle', { cx: '12', cy: '12', r: '10' }),
+    h('line', { x1: '12', y1: '8', x2: '12', y2: '12' }),
+    h('line', { x1: '12', y1: '16', x2: '12.01', y2: '16' })
+  ])
+
+  const XIcon = () => h('svg', {
+    xmlns: 'http://www.w3.org/2000/svg',
+    width: '20',
+    height: '20',
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': '2',
+    class: 'notification-icon'
+  }, [
+    h('circle', { cx: '12', cy: '12', r: '10' }),
+    h('line', { x1: '15', y1: '9', x2: '9', y2: '15' }),
+    h('line', { x1: '9', y1: '9', x2: '15', y2: '15' })
+  ])
+
+  const icons = {
+    success: CheckIcon,
+    error: XIcon,
+    warning: AlertIcon,
+    info: AlertIcon
+  }
+  return icons[color] || AlertIcon
 }
 
 const getStatusText = (status) => {
@@ -887,9 +872,7 @@ const getStatusText = (status) => {
   return texts[status] || 'ບໍ່ຮູ້ຈັກ'
 }
 
-const formatNumber = (num) => {
-  return num?.toLocaleString() || '0'
-}
+const formatNumber = (num) => num?.toLocaleString() || '0'
 
 const formatPeriod = (period) => {
   if (!period || period.length !== 6) return period
@@ -908,139 +891,757 @@ const formatTime = (date) => {
   return new Date(date).toLocaleTimeString('lo-LA', { hour: '2-digit', minute: '2-digit' })
 }
 
-const formatDateTime = (date) => {
-  if (!date) return 'N/A'
-  return new Date(date).toLocaleString('lo-LA')
+const showNotification = (message, color = 'success') => {
+  notification.value = {
+    show: true,
+    message,
+    color,
+    timeout: 5000
+  }
+  setTimeout(() => {
+    notification.value.show = false
+  }, 5000)
 }
 
-const showNotification = (message, color = 'success') => {
-  notification.message = message
-  notification.color = color
-  notification.show = true
+const updateTime = () => {
+  currentTime.value = new Date().toLocaleString('lo-LA')
 }
 
 // Lifecycle
 onMounted(() => {
-  if (selectedPeriod.value) {
-    fetchData()
-  }
+  const currentPeriod = new Date().toISOString().slice(0, 7).replace('-', '')
+  selectedPeriod.value = currentPeriod
+  updateTime()
+  setInterval(updateTime, 1000)
+})
+
+onUnmounted(() => {
+  stopProgressPolling()
 })
 </script>
 
 <style scoped>
 .electric-upload-system {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 24px;
+  background: #f5f5f5;
+  padding: 20px;
 }
 
+/* Header */
 .header-card {
   background: white;
-  border-radius: 16px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+  overflow: hidden;
 }
 
+.header-content {
+  padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon {
+  width: 44px;
+  height: 44px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.header-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.header-controls {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.input-field {
+  padding: 8px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  font-size: 13px;
+  min-width: 150px;
+  outline: none;
+  transition: all 0.2s;
+  height: 36px;
+}
+
+.input-field:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.progress-bar {
+  height: 2px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #3b82f6;
+  animation: progress 1.5s infinite;
+}
+
+@keyframes progress {
+  0% { width: 0; margin-left: 0; }
+  50% { width: 50%; margin-left: 25%; }
+  100% { width: 0; margin-left: 100%; }
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 16px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  height: 36px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.btn-white {
+  background: white;
+  color: #374151;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.btn-white:hover:not(:disabled) {
+  background: rgba(255,255,255,0.9);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  height: 32px;
+}
+
+.btn-xs {
+  padding: 5px 10px;
+  font-size: 12px;
+  height: 28px;
+}
+
+/* Progress Modal */
+.progress-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.progress-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  max-width: 480px;
+  width: 90%;
+  overflow: hidden;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.progress-modal-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.progress-modal-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.progress-modal-subtitle {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.progress-modal-body {
+  padding: 32px 24px;
+}
+
+.progress-circle-container {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 24px;
+}
+
+.progress-circle {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.progress-circle-bg {
+  fill: none;
+  stroke: #e5e7eb;
+  stroke-width: 8;
+}
+
+.progress-circle-fill {
+  fill: none;
+  stroke: #3b82f6;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 339.292;
+  stroke-dashoffset: 339.292;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.progress-percentage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.progress-details {
+  margin-bottom: 20px;
+}
+
+.progress-step {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.progress-step:last-child {
+  border-bottom: none;
+}
+
+.progress-step-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.progress-step-value {
+  font-size: 13px;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.progress-bar-linear {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-linear-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Summary */
 .summary-card {
   background: white;
-  border-radius: 16px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  padding: 20px;
+  margin-bottom: 20px;
 }
 
-.bg-gradient-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+.summary-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
 }
 
 .stat-card {
-  transition: all 0.3s ease;
-  border-radius: 12px;
+  padding: 18px;
+  border-radius: 8px;
+  text-align: center;
+  transition: transform 0.2s;
 }
 
 .stat-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
 }
 
+.stat-blue { background: #eff6ff; }
+.stat-green { background: #f0fdf4; }
+.stat-purple { background: #faf5ff; }
+.stat-orange { background: #fff7ed; }
+
+.stat-icon {
+  color: #3b82f6;
+  margin-bottom: 10px;
+}
+
+.stat-green .stat-icon { color: #10b981; }
+.stat-purple .stat-icon { color: #8b5cf6; }
+.stat-orange .stat-icon { color: #f97316; }
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+/* Province Card */
 .province-card {
-  border-radius: 16px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  margin-bottom: 12px;
   overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.province-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
 
 .province-header {
+  padding: 16px 18px;
   cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.status-done {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   color: white;
+  transition: opacity 0.2s;
 }
 
-.status-partial {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+.province-header:hover {
+  opacity: 0.92;
+}
+
+.province-header-done { background: #10b981; }
+.province-header-partial { background: #f97316; }
+.province-header-pending { background: #3b82f6; }
+.province-header-not-started { background: #6b7280; }
+
+.province-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle-btn {
+  padding: 6px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  border-radius: 6px;
   color: white;
+  cursor: pointer;
+  display: flex;
 }
 
-.status-pending {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
+.province-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.status-not-started {
-  background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
-  color: #424242;
+.province-name {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.province-subtitle {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.province-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-success { background: #d1fae5; color: #065f46; }
+.status-warning { background: #fef3c7; color: #92400e; }
+.status-info { background: #dbeafe; color: #1e40af; }
+.status-error { background: #fee2e2; color: #991b1b; }
+.status-gray { background: #f3f4f6; color: #374151; }
+
+/* Districts Table */
+.districts-table-container {
+  overflow-x: auto;
 }
 
 .districts-table {
-  background: white;
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.districts-table thead tr th {
-  background: #f8f9fa !important;
-  font-weight: 700 !important;
-  color: #424242 !important;
-  font-size: 0.95rem !important;
-  text-transform: none !important;
-  border-bottom: 2px solid #e0e0e0 !important;
+.districts-table thead {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.districts-table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.districts-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 13px;
 }
 
 .district-row {
-  transition: all 0.2s ease;
+  transition: background 0.15s;
 }
 
 .district-row:hover {
-  background: #f8f9fa;
+  background: #f9fafb;
 }
 
+.district-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.district-icon {
+  width: 34px;
+  height: 34px;
+  background: #eff6ff;
+  color: #3b82f6;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.district-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.district-id {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.count-badge {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.date-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.date-text {
+  font-size: 12px;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.time-text {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.empty-text {
+  color: #9ca3af;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.empty-row {
+  padding: 40px !important;
+  text-align: center;
+  color: #9ca3af;
+}
+
+.empty-row svg {
+  color: #d1d5db;
+  margin-bottom: 10px;
+}
+
+.empty-row div {
+  font-size: 13px;
+}
+
+/* Empty State */
 .empty-state {
   background: white;
-  border-radius: 16px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  padding: 56px 20px;
+  text-align: center;
 }
 
-:deep(.v-snackbar__content) {
+.empty-state svg {
+  color: #d1d5db;
+  margin-bottom: 14px;
+}
+
+.empty-state h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 6px 0;
+}
+
+.empty-state p {
+  color: #6b7280;
+  margin: 0 0 20px 0;
+  font-size: 13px;
+}
+
+/* Notification */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  max-width: 380px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: white;
+  z-index: 9999;
+}
+
+.notification-success { background: #10b981; }
+.notification-error { background: #ef4444; }
+.notification-warning { background: #f97316; }
+.notification-info { background: #3b82f6; }
+
+.notification-icon {
+  flex-shrink: 0;
+}
+
+.notification-content {
+  flex: 1;
   white-space: pre-line;
-  line-height: 1.8;
-  font-size: 1rem;
+  line-height: 1.5;
+  font-size: 13px;
 }
 
-:deep(.v-btn-group) {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.notification-close {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  opacity: 0.8;
+  transition: opacity 0.2s;
 }
 
-@media (max-width: 960px) {
+.notification-close:hover {
+  opacity: 1;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.slide-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+/* Animations */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
   .electric-upload-system {
-    padding: 16px;
+    padding: 12px;
   }
-  
+
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-controls {
+    flex-direction: column;
+  }
+
+  .input-field {
+    width: 100%;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
   .province-header {
-    padding: 16px !important;
+    flex-direction: column;
+    gap: 12px;
   }
-  
-  .stat-card {
-    margin-bottom: 16px;
+
+  .province-header-right {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .btn-white {
+    width: 100%;
+  }
+
+  .districts-table {
+    font-size: 11px;
+  }
+
+  .districts-table th,
+  .districts-table td {
+    padding: 8px 6px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .notification {
+    left: 12px;
+    right: 12px;
+    max-width: none;
   }
 }
 </style>
