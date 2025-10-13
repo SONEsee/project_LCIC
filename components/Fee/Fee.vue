@@ -3,7 +3,17 @@ import { ref, computed, onMounted } from "vue";
 import { useFeesStore } from "~/stores/fee";
 import Swal from "sweetalert2";
 const feestore = useFeesStore();
-const res = computed(() => feestore.response_data_fee || []);
+const res = computed(()=>{
+  const data = feestore.response_data_fee;
+  if(Array.isArray(data)){
+    data
+  }
+  if(data && typeof data==="object"){
+    return [data]
+  }
+  return []
+})
+// const res = computed(() => feestore.response_data_fee || []);
 const header = [
   { title: "ID", value: "chg_sys_id" },
   { title: "ອັກສອນຫຍໍ້", value: "chg_code" },

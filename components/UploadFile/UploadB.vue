@@ -4,10 +4,10 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { useRouter } from "vue-router";
 import dayjs from "dayjs";
-import { useMemberInfo } from "@/composables/memberInfo";
+
 import { MemberStore } from "@/stores/memberinfo";
 import { useUploadFile } from "~/stores/uploadfile";
-
+import { useMemberInfo } from "@/composables/memberInfo";
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 const memberinfoStore = MemberStore();
 const UplodafileStore = useUploadFile();
@@ -880,7 +880,7 @@ onMounted(async () => {
     <template v-slot:item.actions="{ item }">
       <div class="d-flex gap-2">
         <v-btn
-          @click="viewDetails(item)"
+          @click="$router.push(`/detailupload?code=${item.FID}`)"
           color="primary"
           size="small"
           variant="outlined"

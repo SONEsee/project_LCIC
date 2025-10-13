@@ -1,864 +1,663 @@
-<script setup lang="ts">
-import { useReeportFCRStore } from "~/stores/reportfcr";
-import { onMounted, computed, ref } from "vue";
+<script lang="ts" setup>
+import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
-import dayjs from "dayjs";
+import { useLoanStore } from "~/stores/loan";
+import { MemberStore } from "@/stores/memberinfo";
+import { useMemberInfo } from "@/composables/memberInfo";
 
+
+interface LoanItem {
+  id?: number;
+  LCIC_code?: string;
+  com_enterprise_code?: string;
+  bnk_code?: string;
+  branch_id?: string;
+  customer_id?: string;
+  loan_id?: string;
+  lcicID_get?: string;
+  lcicID_error?: string;
+  period?: string;
+  [key: string]: any;
+}
+
+
+const memberinfoStore = MemberStore();
+const { mapMemberInfo } = useMemberInfo();
+const LoanStore = useLoanStore();
 const route = useRoute();
-const EnterpriseID = (route.query.EnterpriseID as string) || "";
-const LCIC_code = (route.query.LCIC_code as string) || "";
-const CatalogID = (route.query.CatalogID as string) || "";
-const store = useReeportFCRStore();
-const batchItems = ref<any[]>([]);
-const isBatchMode = ref(false);
-const currentBatchIndex = ref(0);
-const isProcessing = ref(false);
+
+
+definePageMeta({
+  layout: "backend",
+});
+
+useHead({
+  title: "Upload File - ລາຍລະອຽດການອັບໂຫຼດຂໍ້ມູນ",
+  meta: [
+    { name: "keywords", content: "Report, Nuxt 3, Backend, LCIC" },
+    { name: "Description", content: "ລາຍງານການອັບໂຫຼດຂໍ້ມູນເຂົ້າລະບົບ LCIC" },
+  ],
+});
+
+
+const tab = ref("one");
+const subTab = ref("two-one");
+const page = ref(1);
+const itemsPerPage = ref(20);
+const bDataIsDamaged = ref<LoanItem[]>([]);
+const b1Monthly = ref<LoanItem[]>([]);
+const b1 = ref<LoanItem[]>([]);
+const uploadfile = ref<any[]>([]);
+
+
+const baseHeaders = [
+  { title: "ລຳດັບ", value: "id", width: "80px" },
+  { title: "ລະຫັດ ຂສລ", value: "LCIC_code", width: "150px" },
+  { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code", width: "180px" },
+  { title: "ທະນາຄານ", value: "bnk_code", width: "150px" },
+  { title: "ລະຫັດສາຂາ", value: "branch_id", width: "120px" },
+  { title: "ລະຫັດລູກຄ້າ", value: "customer_id", width: "150px" },
+  { title: "ລະຫັດເງິນກູ້", value: "loan_id", width: "150px" },
+];
+
+const headers = baseHeaders;
+
+const headers2 = [
+  ...baseHeaders,
+  { title: "ລະຫັດວິສາຫະກິດ (LCIC DB)", value: "lcicID_get", width: "180px" },
+  { title: "ສະຖານະ", value: "lcicID_error", width: "200px" },
+];
+
+const headers3 = [
+  ...baseHeaders,
+  { title: "ລະຫັດ ຂສລ (LCIC DB)", value: "lcicID_get", width: "180px" },
+  { title: "ສະຖານະ", value: "lcicID_error", width: "200px" },
+];
+
+
+const normalizeData = (data: any): LoanItem[] => {
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === "object") return [data];
+  return [];
+};
+
+const dataedit = computed((): LoanItem[] => {
+  return normalizeData(LoanStore.respons_data_loan_list?.data_edit);
+});
+
+const combinedData = computed((): LoanItem[] => {
+  const damaged = normalizeData(
+    LoanStore.respons_data_loan_list?.b_data_damaged
+  );
+  const edited = normalizeData(LoanStore.respons_data_loan_list?.data_edit);
+  return [...damaged, ...edited];
+});
+
+const filteredBDataIsDamaged = computed((): LoanItem[] => {
+  const data = normalizeData(LoanStore.respons_data_loan_list?.b_data_damaged);
+  return data.filter(
+    (item) => item.lcicID_error === "10" || item.lcicID_error === "13"
+  );
+});
+
+const filteredBDataIsDamagedLcicIDError01 = computed((): LoanItem[] => {
+  const data = normalizeData(LoanStore.respons_data_loan_list?.b_data_damaged);
+  return data.filter(
+    (item) => item.lcicID_error === "01" || item.lcicID_error === "31"
+  );
+});
+
+const filteredBDataIsDamagedLcicIDError33 = computed((): LoanItem[] => {
+  const data = normalizeData(LoanStore.respons_data_loan_list?.b_data_damaged);
+  return data.filter((item) => item.lcicID_error === "33");
+});
+
+const disputese = computed((): LoanItem[] => {
+  return normalizeData(LoanStore.respons_data_loan_list?.data_edit);
+});
+
+
+const totalUploaded = computed(() => combinedData.value.length);
+const totalErrors = computed(
+  () =>
+    filteredBDataIsDamaged.value.length +
+    filteredBDataIsDamagedLcicIDError01.value.length +
+    filteredBDataIsDamagedLcicIDError33.value.length
+);
+const totalSuccess = computed(() => b1Monthly.value.length);
+
+
+const exportToJson = () => {
+  const dataToExport = filteredBDataIsDamagedLcicIDError01.value.map((item) => {
+    const {
+      lcicID_get,
+      com_enterprise_code_get,
+      id_file,
+      id,
+      period,
+      com_enterprise_code_error,
+      lcicID_error,
+      ...rest
+    } = item;
+    return {
+      ...rest,
+      lcicID: lcicID_get,
+    };
+  });
+
+  const jsonStr = JSON.stringify(dataToExport, null, 2);
+  const blob = new Blob([jsonStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `LCIC_request_${new Date().toISOString().split("T")[0]}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
+const getErrorMessage = (errorCode: string): string => {
+  const errorMessages: Record<string, string> = {
+    "10": "ລະຫັດວິສາຫະກິດບໍ່ຖືກຕ້ອງ",
+    "13": "ບໍ່ມີລະຫັດວິສາຫະກິດ",
+    "01": "LCIC ID ບໍ່ຖືກຕ້ອງ",
+    "31": "LCIC ID ວ່າງ",
+    "33": "ຂໍ້ມູນຜິດພາດ",
+  };
+  return errorMessages[errorCode] || errorCode;
+};
+
+const getErrorColor = (errorCode: string): string => {
+  return errorCode === "13" || errorCode === "31" ? "error" : "warning";
+};
+
 
 onMounted(() => {
-  const urlParams = new URLSearchParams(window.location.search);
-  
-  // ກວດສອບ parameter reports ໃໝ່
-  const reportsParam = urlParams.get('reports');
-  
-  if (reportsParam) {
+  memberinfoStore.getMemberInfo();
+  const code = route.query.code as string;
+  if (code) {
+    LoanStore.data_fiter.query.id_file = code;
+    LoanStore.getDataLoan();
+  }
+
+  const queryData = route.query.data as string;
+  if (queryData) {
     try {
-      const reports = JSON.parse(decodeURIComponent(reportsParam));
-      if (Array.isArray(reports) && reports.length > 0) {
-        batchItems.value = reports.map(item => ({
-          enterpriseId: item.EnterpriseID,
-          lcicCode: item.LCIC_code,
-          catalogId: item.CatalogID
-        }));
-        isBatchMode.value = true;
-        loadBatchItem(0);
-        return;
-      }
+      const parsedData = JSON.parse(queryData);
+      bDataIsDamaged.value = parsedData.B_Data_is_damaged || [];
+      b1Monthly.value = parsedData.B1_Monthly || [];
+      b1.value = parsedData.B1 || [];
+      uploadfile.value = parsedData.uploadfile || [];
     } catch (error) {
-      console.error("Error parsing reports parameter:", error);
+      console.error("Error parsing query data:", error);
     }
   }
-  
-  // ກວດສອບ parameter items[] ແບບເກົ່າ (backward compatibility)
-  const itemsParam = urlParams.getAll('items[]');
-  
-  if (itemsParam && itemsParam.length > 0) {
-    try {
-      const items = itemsParam.map(item => JSON.parse(decodeURIComponent(item)));
-      batchItems.value = items;
-      isBatchMode.value = true;
-      if (items.length > 0) {
-        loadBatchItem(0);
-      }
-      return;
-    } catch (error) {
-      console.error("Error parsing items parameter:", error);
-    }
-  }
-  
-  // ຖ້າບໍ່ມີ batch parameters, ໃຊ້ single report mode
-  if (EnterpriseID && LCIC_code && CatalogID) {
-    store.GetdataReportFCR(EnterpriseID, LCIC_code, CatalogID);
-  }
-});
-
-const loadBatchItem = async (index: number) => {
-  if (index >= batchItems.value.length) return;
-  
-  isProcessing.value = true;
-  currentBatchIndex.value = index;
-  
-  const item = batchItems.value[index];
-  try {
-    await store.GetdataReportFCR(
-      item.enterpriseId, 
-      item.lcicCode, 
-      item.catalogId
-    );
-  } catch (error) {
-    console.error(`Error loading batch item ${index}:`, error);
-  } finally {
-    isProcessing.value = false;
-  }
-};
-
-const prevBatchItem = () => {
-  if (currentBatchIndex.value > 0) {
-    loadBatchItem(currentBatchIndex.value - 1);
-  }
-};
-
-const nextBatchItem = () => {
-  if (currentBatchIndex.value < batchItems.value.length - 1) {
-    loadBatchItem(currentBatchIndex.value + 1);
-  }
-};
-
-const printCurrent = () => {
-  window.print();
-};
-
-const printAll = async () => {
-  for (let i = 0; i < batchItems.value.length; i++) {
-    await loadBatchItem(i);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    window.print();
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }
-};
-
-const activeloan = computed(() => {
-  return store.respon_data_activeloan;
-});
-
-const history = computed(() => {
-  return store.respon_data_searchhistory;
-});
-
-const enterprisinfo = computed(() => {
-  return store.respon_data_enterprisinfo;
-});
-
-const loaninfo = computed(() => {
-  return store.respon_data_loaninfo;
-});
-
-const lon_history = computed(() => {
-  return store.respons_lon_class_history;
-});
-
-const user = localStorage.getItem("user_data")
-  ? JSON.parse(localStorage.getItem("user_data") as string)
-  : null;
-
-const getCols = (length: number) => {
-  if (length === 1) return 12;
-  if (length === 2) return 6;
-  if (length === 3) return 4;
-  if (length === 4) return 3;
-  if (length === 5) return 2;
-};
-
-const print = () => {
-  window.print();
-};
-
-const batchProgress = computed(() => {
-  if (batchItems.value.length === 0) return 0;
-  return Math.round(((currentBatchIndex.value + 1) / batchItems.value.length) * 100);
-});
-
-// ຄິດໄລ່ຂໍ້ມູນສຳລັບ batch mode
-const currentReportInfo = computed(() => {
-  if (!isBatchMode.value || batchItems.value.length === 0) return null;
-  
-  const current = batchItems.value[currentBatchIndex.value];
-  return {
-    enterpriseId: current.enterpriseId,
-    lcicCode: current.lcicCode,
-    catalogId: current.catalogId,
-    position: currentBatchIndex.value + 1,
-    total: batchItems.value.length
-  };
 });
 </script>
 
 <template>
-  <v-container>
-    <div
-      class="rounded-lg"
-      :style="{
-        border: '1px #2979FF solid',
-      }"
-    >
-      <v-col cols="12">
-        <section class="pa-5" id="main-content">
-          <div>
-            <v-btn class="button" to="../backend/searchuser">
-              <v-icon icon="mdi-arrow-left" style="font-size: 150%"></v-icon>
-            </v-btn>
-          </div>
-          
-          <!-- ສະແດງຂໍ້ມູນ batch mode ຖ້າມີ -->
-          <div v-if="isBatchMode && currentReportInfo" class="mb-4 pa-3 bg-blue-lighten-5 rounded">
-            <div class="d-flex justify-between align-center mb-2">
-              <h4 class="text-primary">ລາຍງານແບບກຸ່ມ</h4>
-              <v-chip color="primary" variant="outlined">
-                {{ currentReportInfo.position }} / {{ currentReportInfo.total }}
-              </v-chip>
-            </div>
-            
-            <v-progress-linear
-              :model-value="batchProgress"
-              color="primary"
-              height="6"
-              rounded
-              class="mb-2"
-            ></v-progress-linear>
-            
-            <div class="d-flex justify-between">
-              <v-btn
-                @click="prevBatchItem"
-                :disabled="currentBatchIndex === 0 || isProcessing"
-                variant="outlined"
-                size="small"
-              >
-                <v-icon icon="mdi-arrow-left"></v-icon>
-                ກັບຄືນ
-              </v-btn>
-              
-              <div class="d-flex gap-2">
-                <v-btn
-                  @click="printCurrent"
-                  color="primary"
-                  variant="outlined"
-                  size="small"
-                >
-                  <v-icon icon="mdi-printer"></v-icon>
-                  ພີມໜ້ານີ້
-                </v-btn>
-                
-                <v-btn
-                  @click="printAll"
-                  color="success"
-                  variant="outlined"
-                  size="small"
-                >
-                  <v-icon icon="mdi-printer-multiple"></v-icon>
-                  ພີມທັງໝົດ
-                </v-btn>
-              </div>
-              
-              <v-btn
-                @click="nextBatchItem"
-                :disabled="currentBatchIndex === batchItems.length - 1 || isProcessing"
-                variant="outlined"
-                size="small"
-              >
-                ໄປຕໍ່
-                <v-icon icon="mdi-arrow-right"></v-icon>
-              </v-btn>
-            </div>
-          </div>
-
-          <div class="text-end mt-5 button" v-if="!isBatchMode">
-            <v-btn @click="print" class="bg-indigo-accent-4">
-              <v-icon icon="mdi-printer-outline"></v-icon> ພີມ
-            </v-btn>
-          </div>
-
-          <v-row>
-            <v-col cols="8" class="text-center">
+  
+ 
+    <v-card class="mb-6 elevation-3" rounded="lg">
+      <v-card-title >
+        <v-row align="center">
+          <v-col cols="12" md="8">
+            <div class="d-flex align-center">
+              <v-icon size="32" class="mr-3">mdi-file-upload</v-icon>
               <div>
-                <v-row align="center">
-                  <v-col cols="auto">
-                    <v-img
-                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQguq0YjU42M_ijrBwnE9IpgFAFeMZQCDDJVi3yrfOCog&s"
-                      width="70"
-                    ></v-img>
-                  </v-col>
-                  <v-col>
-                    <div class="row-content text-start float-left">
-                      <h4>ບໍລິສັດ ຂໍ້ມູນຂ່າວສານສິນເຊື່ອເເຫ່ງ ສປປ ລາວ</h4>
-                      <hr />
-                      <h4>Lao Credit Information Company</h4>
-                    </div>
-                  </v-col>
-                </v-row>
-              </div>
-            </v-col>
-            <v-col cole="12" class="text-end mt-4">
-              <div class="" v-if="enterprisinfo && enterprisinfo.length > 0">
-                <p>
-                  ລະຫັດວິສາຫະກິດ: <b>{{ enterprisinfo[0].EnterpriseID }}</b>
-                </p>
-                <p>
-                  ລະຫັດຂສລ: <b>{{ enterprisinfo[0].LCIC_code }}</b>
+                <h2 class="">
+                  ລາຍລະອຽດການອັບໂຫຼດຂໍ້ມູນເງິນກູ້
+                </h2>
+                <p class="text-subtitle-2 mt-1 ">
+                  ລະບົບຈັດການຂໍ້ມູນເຂົ້າສູ່ LCIC
                 </p>
               </div>
-              <div class="" v-if="user">
-                <p style="font-size: ">
-                  ຜູ້ສອບຖາມ: <b> {{ user.nameE }}</b> ຈາກທະນາຄານ:
-                  <b>{{ user.MID?.code }}</b>
-                </p>
-              </div>
-            </v-col>
-          </v-row>
-
-          <v-row>
-            <v-col>
-              <div class="text-center">
-                <h3 class="text-md mt-5">
-                  <b>ບົດລາຍງານສິນເຊື່ອຄົບຖວ້ນ(ສໍາລັບນິຕິບຸກຄົນ)</b>
-                </h3>
-                <div v-if="isBatchMode && currentReportInfo" class="mt-2">
-                  <v-chip color="info" variant="outlined" size="small">
-                    ລາຍງານທີ່ {{ currentReportInfo.position }} ຈາກທັງໝົດ {{ currentReportInfo.total }} ລາຍງານ
-                  </v-chip>
-                </div>
-              </div>
-            </v-col>
-          </v-row>
-        </section>
-      </v-col>
-
-      <!-- ສ່ວນທີ່ເຫຼືອຂອງລາຍງານ - ຄືເກົ່າ -->
-      <v-col cols="12">
-        <div class="rounded-lg">
-          <p><b> - ຂໍ້ມູນທົວໄປຜູ້ກູ້</b></p>
-          <div
-            :style="{
-              border: '1px #2979FF solid',
-            }"
-            class="rounded-lg"
-          >
-            <v-row class="mt-2 mb-1 ml-1 mr-1">
-              <v-col cols="4" v-if="enterprisinfo && enterprisinfo.length > 0">
-                <p>
-                  <b>ຊື່ວິສາຫະກິດ:</b> {{ enterprisinfo[0].enterpriseNameLao }}
-                </p>
-                <p><b>ເລກທີ:</b>---------</p>
-              </v-col>
-              <v-col cols="4" v-if="enterprisinfo && enterprisinfo.length > 0">
-                <p>
-                  <b>ວັນທີອອກໃບທະບຽນ:</b>
-                  {{ enterprisinfo[0].regisDate.slice(0, -18) }}
-                </p>
-                <p>
-                  <b>ທີ່ຕັ້ງວິສາຫະກິດ:</b> {{ enterprisinfo[0].enLocation }}
-                </p>
-                <p><b>ພາກສວນເສດຖະກິດ:</b> --</p>
-              </v-col>
-              <v-col cols="4" v-if="enterprisinfo && enterprisinfo.length > 0">
-                <p>
-                  <b>ທຶນຈົດທະບຽນ:</b>
-                  {{
-                    Number(enterprisinfo[0].investmentAmount).toLocaleString()
-                  }}
-                  <b v-if="enterprisinfo[0].investmentCurrency">{{
-                    enterprisinfo[0].investmentCurrency
-                  }}</b>
-                </p>
-                <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ:</b> --</p>
-              </v-col>
-            </v-row>
-          </div>
-        </div>
-      </v-col>
-
-      <p><b>- ຂໍ້ມູນປະຫວັດການເຂົ້າຄົ້ນຫາ</b></p>
-      <div
-        class="rounded-lg"
-        :style="{
-          border: '1px #2979FF solid',
-        }"
-      >
-        <v-table>
-          <thead>
-            <tr>
-              <th>ລຳດັບ</th>
-              <th>ວັນເດືອນທີ່ຄົ້ນຫາ</th>
-              <th>ຜູ້ຄົ້ນຫາ</th>
-              <th>ເຫດຜົນການຄົ້ນຫາ</th>
-              <th>ປະເພດເງິນກູ້</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(item, index) in history?.slice(-12) || []">
-              <td>{{ index + 1 }}</td>
-              <td>
-                {{
-                  item?.id instanceof Date
-                    ? item.id.toISOString().slice(0, 10)
-                    : item?.id
-                    ? String(item.id).slice(0, -11)
-                    : "–"
-                }}
-              </td>
-              <td>{{ item?.bnk_code || "–" }}</td>
-              <td>{{ item?.lon_purpose || "–" }}</td>
-              <td>--</td>
-            </tr>
-          </tbody>
-        </v-table>
-      </div>
-
-      <v-col cols="12">
-        <p><b>- ລວມວົງເງິນກູ້ທີ່ເຄື່ອນໄຫວທັງໝົດ</b></p>
-        <v-table
-          class="mt-5 elevation-1 v-data-table1 rouded-lg"
-          :style="{
-            border: '1px #2979FF solid',
-          }"
-        >
-          <thead>
-            <tr style="font-size: 90%" class="text-bold">
-              <th><b>ສະມາຊິກ</b></th>
-              <th><b> ລະຫັດເງິນກູ້</b></th>
-              <th><b>ມືເປີດ</b></th>
-              <th>ວົງເງິນກູ້</th>
-              <th>ຍອດເງິນເຫຼືອ</th>
-              <th>ສະກຸນເງິນ</th>
-              <th>ຈຳນວນວັນຄ້າງຈ່າຍ</th>
-              <th>ປະເພດ</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(item, index) in loaninfo" :key="index">
-              <td>{{ item.bnk_code }}</td>
-              <td>{{ item.loan_id }}</td>
-              <td>{{
-                  (new Date(item.lon_open_date)).toLocaleString('en-GB', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                  })
-                }}</td>
-              <td>{{ Number(item.lon_credit_line).toLocaleString() }}</td>
-              <td>
-                {{ Number(item.lon_outstanding_balance).toLocaleString() }}
-              </td>
-              <td>{{ item.lon_currency_code }}</td>
-              <td>{{ item.lon_no_days_slow }}</td>
-              <td>{{ item.lon_class }}</td>
-            </tr>
-          </tbody>
-        </v-table>
-      </v-col>
-
-      <p><b>-ລາຍລະອຽດຂໍ້ມູນເງິນກູ້</b></p>
-      
-      <v-col cols="12">
-        <v-row>
-          <v-col cols="12">
-            <v-row>
-              <v-col
-                class="mt-2"
-                v-for="(item, index) in activeloan"
-                :key="index"
-              >
-                <div
-                  class="ml-1 rounded-lg"
-                  style="border: 1px solid #1565c0; padding: 10px"
-                >
-                  <div>
-                    <p>
-                      <b>- ຂໍ້ມູນລາຍລະອຽດເງິນກູ້ບວ້ງທີ {{ index + 1 }}</b>
-                    </p>
-                    <v-col cols="12">
-                      <v-row>
-                        <v-col cols="4" md="4" >
-                          <p> <b>ລະຫັດເງິນກູ້: </b>{{ item.id }}</p>
-                          <p> <b>ມື້ເປິດເງິນກູ້: </b>{{dayjs( item.lon_open_date).format("YYYY-MM-DD")}}</p>
-                          <p> <b>ມື້ໝົດສັນຍາເງິນກູ້ເງິນກູ້: </b> {{ dayjs(item.lon_exp_date).format("YYYY-MM-DD") }}</p>
-                        </v-col>
-                        <v-col cols="4" md="4">
-                          <p> <b>ໄລຍະການກູ້ຢືມ:</b> {{ item.lon_term }}</p>
-                          <p> <b>ວົງເງິນໃນອານຸມັດ:</b> {{ item.lon_credit_line.toLocaleString() }} {{  item.lon_currency_code }}</p>
-                          <p> <b>ອັດຕາດອກເບ້ຍ:</b> {{ item.lon_int_rate }}</p>
-                        </v-col>
-                        <v-col cols="4" md="4">
-                          <p><b>ຍອດເງິນເຫຼືອຕົ້ນທຶນ:</b> {{ Number(item.lon_outstanding_balance).toLocaleString() }} {{  item.lon_currency_code }}</p>
-                          <p><b>ເຫດຜົນຫການສິ້ນສຸດໜີ້:</b> -- </p>
-                        </v-col>
-                      </v-row>
-                    </v-col>
-
-                    <hr color="indigo" model-value="100" rounded></hr>
-
-                    <v-col cols="12">
-                      <p v-if="item.collateral_history.length">
-                        <b>- ຂໍ້ມູນຫຼັກຊັບຄໍ້າປະກັນ</b>
-                      </p>
-                      <v-row>
-                        <v-col
-                          v-for="(collateral, index) in item.collateral_history"
-                          class="mt-2"
-                          style="font-size: 80%"
-                          :cols="getCols(item.collateral_history ? item.collateral_history.length : 1)"
-                        >
-                          <div
-                            style="border: #1565c0 1px solid; padding: 10px"
-                            class="rounded-lg"
-                          >
-                            <v-col cols="12">
-                              <div 
-                                v-if="
-                                  collateral.col_type === 'C2.1' ||
-                                  collateral.col_type === 'c2.1'
-                                "
-                              >
-                                <p>
-                                  ລົງຂໍ້ມູນວັນທີ:
-                                  <b>{{
-                                    new Date(collateral.collateral_info.insert_date).toLocaleDateString()
-                                  }}</b>
-                                </p>
-                                <p>ປະເພດຫຼັກຊັບ:<b>ດີນ</b></p>
-                                <p>
-                                  ເລກທີໃບຕາດິນ:<b>{{
-                                    collateral.related_record.land_no
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ເລກທີແຜ່ນທີຶ:<b>{{
-                                    collateral.related_record.land_map_no
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ເນື້ອທີ:<b>{{
-                                    collateral.related_record.col_area
-                                  }}</b>
-                                </p>
-                              </div>
-                              <div
-                                v-else-if="
-                                  collateral.col_type === 'C2.2' ||
-                                  collateral.col_type === 'c2.2'
-                                "
-                              >
-                                <p>
-                                  ລົງຂໍ້ມູນວັນທີ:
-                                  <b>{{
-                                    new Date(collateral.collateral_info.insert_date).toLocaleDateString()
-                                  }}</b>
-                                </p>
-                                <p>ປະເພດຫຼັກຊັບ:<b>ເອກະສານມີຄ່າ</b></p>
-                                <p>
-                                  ເລກເຈົ້າຂອງບັນຊີ:<b>{{
-                                    collateral.related_record.account_no
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ປະເພດບັນຊີ:<b>{{
-                                    collateral.related_record.account_type
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ມູນຄ່າ:<b>{{
-                                    collateral.related_record.value
-                                  }}</b>
-                                </p>
-                              </div>
-                              <div
-                
-                                v-else-if="
-                                  collateral.col_type === 'C2.3' ||
-                                  collateral.col_type === 'c2.3'
-                                "
-                              >
-                                <p>
-                                  ລົງຂໍ້ມູນວັນທີ:
-                                  <b>{{
-                                    new Date(collateral.collateral_info.insert_date).toLocaleDateString()
-                                  }}</b>
-                                </p>
-                                <p>ປະເພດຫຼັກຊັບ:<b>ເຄື່ອງຈັກ</b></p>
-                                <p>
-                                  ປະເພດເຄື່ອງຈັກ:<b>{{
-                                    collateral.related_record.machine_type
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ເລກທີເຄື່ອງຈັກ:<b>{{
-                                    collateral.related_record.machine_no
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ມູນຄ່າ:<b>{{
-                                    collateral.related_record.value
-                                  }}</b>
-                                </p>
-                              </div>
-                              <div
-                                v-else-if="
-                                  collateral.col_type === 'C2.4' ||
-                                  collateral.col_type === 'c2.4'
-                                "
-                              >
-                                <p>
-                                  ລົງຂໍ້ມູນວັນທີ:
-                                  <b>{{
-                                    new Date(collateral.collateral_info.insert_date).toLocaleDateString()
-                                  }}</b>
-                                </p>
-                                <p>ປະເພດຫຼັກຊັບ:<b>ໂຄງການ</b></p>
-                                <p>
-                                  ຊື່ໂຄງການ:<b>{{
-                                    collateral.related_record.project_number
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ເລກທີໂຄງການ:<b>{{
-                                    collateral.related_record.machine_type
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ມູນຄ່າ:<b>{{
-                                    collateral.related_record.value
-                                  }}</b>
-                                </p>
-                              </div>
-                              <div
-                                v-else-if="
-                                  collateral.col_type === 'C2.5' ||
-                                  collateral.col_type === 'c2.5'
-                                "
-                              >
-                                <p>
-                                  ລົງຂໍ້ມູນວັນທີ:
-                                  <b>{{
-                                    new Date(collateral.collateral_info.insert_date).toLocaleDateString()
-                                  }}</b>
-                                </p>
-                                <p>ປະເພດຫຼັກຊັບ:<b>ຍານພາຫະນະ</b></p>
-                                <p>
-                                  ເລກທະບຽນພາຫະນະ:<b>{{
-                                    collateral.related_record.plate_number
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ເລກຈັກ:<b>{{
-                                    collateral.related_record.engine_number
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ມູນຄ່າ:<b>{{
-                                    collateral.related_record.value
-                                  }}</b>
-                                </p>
-                              </div>
-                              <div
-                                v-else-if="
-                                  collateral.col_type === 'C2.6' ||
-                                  collateral.col_type === 'c2.6'
-                                "
-                              >
-                                <p>
-                                  ລົງຂໍ້ມູນວັນທີ:
-                                  <b>{{
-                                    new Date(collateral.collateral_info.insert_date).toLocaleDateString()
-                                  }}</b>
-                                </p>
-                                <p>ປະເພດຫຼັກຊັບ:<b>ບຸກຄົນຄໍ້າ</b></p>
-                                <p>
-                                  ເລກບັດປະຈຳຕົວຂອງຜູ້ຄໍ້າປະກັນ:<b>{{
-                                    collateral.related_record.gua_national_id
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ຊື່ແທ້:<b>{{
-                                    collateral.related_record.gua_lao_name
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ມູນຄ່າ:<b>{{
-                                    collateral.related_record.value
-                                  }}</b>
-                                </p>
-                              </div>
-                              <div
-                                v-else-if="
-                                  collateral.col_type === 'C2.7' ||
-                                  collateral.col_type === 'c2.7'
-                                "
-                              >
-                                <p>
-                                  ລົງຂໍ້ມູນວັນທີ:
-                                  <b>{{
-                                    new Date(collateral.collateral_info.insert_date).toLocaleDateString()
-                                  }}</b>
-                                </p>
-                                <p>ປະເພດຫຼັກຊັບ:<b>ຄໍາ</b></p>
-                                <p>
-                                  ລະຫັດຂອງຫຼັກຊັບຄໍ້າປະກັນ:<b>{{
-                                    collateral.related_record.col_id
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ນໍ້າໜັກ:<b>{{
-                                    collateral.related_record.weight
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ມູນຄ່າ:<b>{{
-                                    collateral.related_record.value
-                                  }}</b>
-                                </p>
-                              </div>
-                              <div
-                                v-else-if="
-                                  collateral.col_type === 'C2.8' ||
-                                  collateral.col_type === 'c2.8'
-                                "
-                              >
-                                <p>
-                                  ລົງຂໍ້ມູນວັນທີ:
-                                  <b>
-                                    {{
-                                      new Date(collateral.collateral_info.insert_date).toLocaleDateString()
-                                    }}
-                                  </b>
-                                </p>
-                                <p>ປະເພດຫຼັກຊັບ:<b>ວິສາຫະກິດຄໍ້າປະກັນ</b></p>
-                                <p>
-                                  ລະຫັດຂອງຫຼັກຊັບຄໍ້າປະກັນ:<b>{{
-                                    collateral.related_record.col_id
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ລະຫັດວິສາຫະກິດ:<b>{{
-                                    collateral.related_record.gua_enterprise_code
-                                  }}</b>
-                                </p>
-                                <p>
-                                  ມູນຄ່າ:<b>{{
-                                    collateral.related_record.value
-                                  }}</b>
-                                </p>
-                              </div>
-                            </v-col>
-                          </div>
-                        </v-col>
-                      </v-row>
-                    </v-col>
-
-                    <div>
-                      <hr v-if="item.collateral_history.length"
-                        color="indigo"
-                        model-value="100"
-                        rounded
-                      ></hr>
-                      <p v-if="item.lon_class_history.length">
-                        <b>- ປະຫວັດການຊຳລະ</b>
-                      </p>
-                      <v-table>
-                        <thead>
-                          <tr>
-                            <th>ລຳດັບ.</th>
-                            <th>ເດືອນ ,ວັນ</th>
-                            <th>ວົງເງິນກູ້</th>
-                            <th>ຍອດຍັງເຫຼືອ</th>
-                            <th>ຈຳນວນວັນຈ່າຍຊ້າ</th>
-                            <th>ສະກຸນເງິນ</th>
-                            <th>ປະເພດເງິນກູ້</th>
-                            <th>ສະຖານະ</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="(item , index) in lon_history">
-                            <td>{{index +1}}</td>
-                            <td>{{ item.period.slice(0, 4) + '-' + item.period.slice(4) }}</td>
-                            <td>{{Number( item.lon_credit_line).toLocaleString() }}</td>
-                            <td>{{Number( item.lon_outstanding_balance).toLocaleString() }}</td>
-                            <td>{{ item.lon_no_days_slow }}</td>
-                            <td>{{ item.lon_currency_code }}</td>
-                            <td>{{ item.lon_class }}</td>
-                            <td>{{ item.lon_status }}</td>
-                          </tr>
-                        </tbody>
-                      </v-table>
-                    </div>
-                  </div>
-                </div>
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-
-        <v-row>
-          <v-col cols="12" class="text-">
-            <div style="border: #1565c0 1px solid; padding: 10px" class="bg-blue-darken-4 rounded-lg">
-              <v-col cols="12">
-                <v-row>
-                  <v-col cols="6" >
-                    <p> <v-icon icon="mdi-map-marker" style="font-size: 120%; color: red;"></v-icon> 2nd Floor, Lao Security Exchange Building Phonthan  Village, </p><p class="ml-5">Xaysettha District, Vientiane Capital</p>
-                  </v-col>
-                  <v-col cols="6" >
-                    <p> <v-icon icon="mdi-phone" style="font-size: 100%;color: #1565c0;" class="mr-2"></v-icon>  Telephone: (856)-21-25429</p>
-                    <p> <v-icon icon=" mdi-email-outline" style="font-size: 100%;" class="mr-2"></v-icon>  Email: info@lcic.com.la</p>
-                  </v-col>
-                </v-row>
-              </v-col>
             </div>
           </v-col>
+          <v-col cols="12" md="4" class="text-md-end">
+            <v-chip
+              v-if="uploadfile.length"
+              color="white"
+              text-color="primary"
+              size="large"
+              prepend-icon="mdi-file-document"
+            >
+              {{ uploadfile[0].fileName }}
+            </v-chip>
+          </v-col>
         </v-row>
-      </v-col>
-    </div>
-  </v-container>
+      </v-card-title>
+
+    
+      <v-card-text class="pa-6">
+        <v-row v-if="combinedData.length > 0">
+          <v-col cols="12" md="3">
+            <v-card class="" color="blue-lighten-5" flat>
+             
+              <v-card-text class="text-center">
+                 <v-icon size="40" color="blue-darken-2">mdi-database</v-icon>
+              <h3 class="text-h4 font-weight-bold mt-2">
+                  {{ totalUploaded }}
+                </h3>
+               <p class="text-body-2 text-blue-darken-2">ທັງໝົດ</p> 
+                
+                
+              </v-card-text>
+            </v-card>
+          </v-col>
+          <v-col cols="12" md="3">
+            <v-card class="" color="success-lighten-5" flat>
+              <v-card-text class="text-center">
+                <v-icon size="40" color="success">mdi-check-circle</v-icon>
+                <h3 class="text-h4 font-weight-bold mt-2">
+                  {{ totalSuccess }}
+                </h3>
+                <p class="text-body-2 text-success">ສຳເລັດ</p>
+              </v-card-text>
+            </v-card>
+          </v-col>
+          <v-col cols="12" md="3">
+            <v-card class="" color="error-lighten-5" flat>
+              <v-card-text class="text-center">
+                <v-icon size="40" color="error">mdi-alert-circle</v-icon>
+                <h3 class="text-h4 font-weight-bold mt-2">{{ totalErrors }}</h3>
+                <p class="text-body-2 text-error">ຜິດພາດ</p>
+              </v-card-text>
+            </v-card>
+          </v-col>
+          <v-col cols="12" md="3">
+            <v-card class="" color="amber-lighten-5" flat>
+              <v-card-text class="text-center">
+                <v-icon size="40" color="amber-darken-2">mdi-calendar</v-icon>
+                <h3 class="text-h6 font-weight-bold mt-2">
+                  {{ combinedData[0].period?.substring(0, 4) }}/{{
+                    combinedData[0].period?.substring(4, 6)
+                  }}
+                </h3>
+                <p class="text-body-2 text-amber-darken-2">ປະຈຳເດືອນ</p>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+
+  
+    <v-card class="elevation-3" rounded="lg">
+      <v-tabs
+        v-model="tab"
+        bg-color="primary"
+        color="white"
+        grow
+        class="tabs-custom"
+      >
+        <v-tab value="one" class="font-weight-bold">
+          <v-icon start>mdi-database-check</v-icon>
+          ຂໍ້ມູນທີ່ອັບໂຫຼດທັງໝົດ
+        </v-tab>
+        <v-tab value="two" class="font-weight-bold">
+          <v-icon start>mdi-alert</v-icon>
+          ຂໍ້ມູນທີ່ບໍ່ຖືກຕ້ອງ
+        </v-tab>
+        <v-tab value="three" class="font-weight-bold">
+          <v-icon start>mdi-check-all</v-icon>
+          ຂໍ້ມູນສົມບູນ
+        </v-tab>
+      </v-tabs>
+
+      <v-card-text class="pa-6">
+        <v-window v-model="tab">
+          <!-- Tab 1: All Data -->
+          <v-window-item value="one">
+            <v-card flat class="mb-4" color="blue-lighten-5" rounded="lg">
+              <v-card-text>
+                <v-icon color="blue-darken-2" class="mr-2"
+                  >mdi-information</v-icon
+                >
+                <span class="font-weight-bold text-blue-darken-2">
+                  ຂໍ້ມູນທັງໝົດທີ່ອັບໂຫຼດເຂົ້າລະບົບ
+                </span>
+              </v-card-text>
+            </v-card>
+
+            <v-data-table
+              :loading="LoanStore.isLoading"
+              :items="dataedit"
+              :headers="headers"
+              density="comfortable"
+              v-model:page="page"
+              v-model:items-per-page="itemsPerPage"
+              class="elevation-1 rounded-lg custom-table"
+              :items-per-page-options="[10, 20, 50, 100]"
+            >
+              <template v-slot:item.id="{ index }">
+                <v-chip size="small" color="blue-grey-lighten-4">
+                  {{ (page - 1) * itemsPerPage + index + 1 }}
+                </v-chip>
+              </template>
+
+              <template v-slot:item.bnk_code="{ item }">
+                <v-chip size="small" color="info" variant="flat">
+                  {{ mapMemberInfo(item.bnk_code ?? "") }}
+                </v-chip>
+              </template>
+
+              <template v-slot:item.LCIC_code="{ item }">
+                <v-chip size="small" color="primary" variant="tonal">
+                  {{ item.LCIC_code }}
+                </v-chip>
+              </template>
+
+              <template v-slot:item.com_enterprise_code="{ item }">
+                <v-chip size="small" color="success" variant="tonal">
+                  {{ item.com_enterprise_code }}
+                </v-chip>
+              </template>
+            </v-data-table>
+          </v-window-item>
+
+          <!-- Tab 2: Error Data -->
+          <v-window-item value="two">
+            <v-tabs v-model="subTab" bg-color="grey-lighten-4" color="error">
+              <v-tab value="two-one">
+                <v-icon start size="small">mdi-alert-circle</v-icon>
+                Enterprise Code Error
+              </v-tab>
+              <v-tab value="two-two">
+                <v-icon start size="small">mdi-alert-octagon</v-icon>
+                ບໍ່ມີ LCIC ID
+              </v-tab>
+              <v-tab value="two-three">
+                <v-icon start size="small">mdi-alert-box</v-icon>
+                LCIC ID Error
+              </v-tab>
+            </v-tabs>
+
+            <v-window v-model="subTab" class="mt-6">
+              <!-- Sub Tab 1 -->
+              <v-window-item value="two-one">
+                <v-alert
+                  type="warning"
+                  variant="tonal"
+                  class="mb-4"
+                  prominent
+                  icon="mdi-alert"
+                >
+                  <v-alert-title class="text-h6">
+                    ຂໍ້ມູນທີ່ບໍ່ມີ ແລະ ຜິດ Enterprise Code
+                  </v-alert-title>
+                  <div>
+                    ພົບຂໍ້ມູນທີ່ມີບັນຫາ:
+                    {{ filteredBDataIsDamaged.length }} ລາຍການ
+                  </div>
+                </v-alert>
+
+                <v-data-table
+                  :items="filteredBDataIsDamaged"
+                  :headers="headers2"
+                  density="comfortable"
+                  v-model:page="page"
+                  v-model:items-per-page="itemsPerPage"
+                  class="elevation-1 rounded-lg custom-table"
+                >
+                  <template v-slot:item.id="{ index }">
+                    <v-chip size="small" color="grey-lighten-2">
+                      {{ (page - 1) * itemsPerPage + index + 1 }}
+                    </v-chip>
+                  </template>
+
+                  <template v-slot:item.LCIC_code="{ item }">
+                    <v-chip size="small" color="primary" variant="tonal">
+                      {{ item.LCIC_code }}
+                    </v-chip>
+                  </template>
+
+                  <template v-slot:item.com_enterprise_code="{ item }">
+                    <v-chip
+                      size="small"
+                      :color="
+                        item.com_enterprise_code === '' ? 'error' : 'warning'
+                      "
+                      variant="flat"
+                    >
+                      {{ item.com_enterprise_code || "ບໍ່ມີ" }}
+                    </v-chip>
+                  </template>
+
+                  <template v-slot:item.bnk_code="{ item }">
+                    <v-chip size="small" color="info" variant="flat">
+                      {{ mapMemberInfo(item.bnk_code ?? "") }}
+                    </v-chip>
+                  </template>
+
+                  <template v-slot:item.lcicID_get="{ item }">
+                    <v-chip size="small" color="success" variant="tonal">
+                      {{ item.lcicID_get }}
+                    </v-chip>
+                  </template>
+
+                  <template v-slot:item.lcicID_error="{ item }">
+                    <v-chip
+                      size="small"
+                      :color="getErrorColor(item.lcicID_error || '')"
+                      variant="flat"
+                    >
+                      <v-icon start size="small">mdi-alert</v-icon>
+                      {{ getErrorMessage(item.lcicID_error ?? "") }}
+                    </v-chip>
+                  </template>
+                </v-data-table>
+              </v-window-item>
+
+              <!-- Sub Tab 2 -->
+              <v-window-item value="two-two">
+                <div class="d-flex justify-space-between align-center mb-4">
+                  <v-alert
+                    type="error"
+                    variant="tonal"
+                    class="flex-grow-1"
+                    prominent
+                  >
+                    <v-alert-title class="text-h6">
+                      ຂໍ້ມູນທີ່ບໍ່ມີ LCIC ID
+                    </v-alert-title>
+                    <div>
+                      ພົບຂໍ້ມູນທີ່ມີບັນຫາ:
+                      {{ filteredBDataIsDamagedLcicIDError01.length }} ລາຍການ
+                    </div>
+                  </v-alert>
+
+                  <v-btn
+                    @click="exportToJson"
+                    color="error"
+                    size="large"
+                    class="ml-4"
+                    prepend-icon="mdi-download"
+                  >
+                    Export JSON
+                  </v-btn>
+                </div>
+
+                <v-data-table
+                  :items="filteredBDataIsDamagedLcicIDError01"
+                  :headers="headers3"
+                  density="comfortable"
+                  v-model:page="page"
+                  v-model:items-per-page="itemsPerPage"
+                  class="elevation-1 rounded-lg custom-table"
+                >
+                  <template v-slot:item.id="{ index }">
+                    <v-chip size="small" color="grey-lighten-2">
+                      {{ (page - 1) * itemsPerPage + index + 1 }}
+                    </v-chip>
+                  </template>
+
+                  <template v-slot:item.LCIC_code="{ item }">
+                    <v-chip size="small" color="error" variant="tonal">
+                      {{ item.LCIC_code }}
+                    </v-chip>
+                  </template>
+
+                  <template v-slot:item.bnk_code="{ item }">
+                    <v-chip size="small" color="info" variant="flat">
+                      {{ mapMemberInfo(item.bnk_code ?? "") }}
+                    </v-chip>
+                  </template>
+
+                  <template v-slot:item.lcicID_get="{ item }">
+                    <v-chip size="small" color="success" variant="tonal">
+                      {{ item.lcicID_get }}
+                    </v-chip>
+                  </template>
+
+                  <template v-slot:item.lcicID_error="{ item }">
+                    <v-chip
+                      size="small"
+                      :color="getErrorColor(item.lcicID_error || '')"
+                      variant="flat"
+                    >
+                      <v-icon start size="small">mdi-alert</v-icon>
+                      {{ getErrorMessage(item.lcicID_error ?? "") }}
+                    </v-chip>
+                  </template>
+                </v-data-table>
+              </v-window-item>
+
+              <!-- Sub Tab 3 -->
+              <v-window-item value="two-three">
+                <v-alert type="warning" variant="tonal" class="mb-4" prominent>
+                  <v-alert-title class="text-h6">
+                    ຂໍ້ມູນທີ່ມີ LCIC ID ແຕ່ມີບັນຫາ
+                  </v-alert-title>
+                  <div>
+                    ພົບຂໍ້ມູນທີ່ມີບັນຫາ:
+                    {{ filteredBDataIsDamagedLcicIDError33.length }} ລາຍການ
+                  </div>
+                </v-alert>
+
+                <v-data-table
+                  :items="filteredBDataIsDamagedLcicIDError33"
+                  :headers="headers"
+                  density="comfortable"
+                  class="elevation-1 rounded-lg custom-table"
+                >
+                  <template v-slot:item.id="{ index }">
+                    <v-chip size="small" color="grey-lighten-2">
+                      {{ index + 1 }}
+                    </v-chip>
+                  </template>
+
+                  <template v-slot:item.LCIC_code="{ item }">
+                    <v-chip size="small" color="warning" variant="tonal">
+                      {{ item.LCIC_code }}
+                    </v-chip>
+                  </template>
+
+                  <template v-slot:item.bnk_code="{ item }">
+                    <v-chip size="small" color="info" variant="flat">
+                      {{ mapMemberInfo(item.bnk_code ?? "") }}
+                    </v-chip>
+                  </template>
+                </v-data-table>
+              </v-window-item>
+            </v-window>
+          </v-window-item>
+
+          <!-- Tab 3: Success Data -->
+          <v-window-item value="three">
+            <v-alert
+              type="success"
+              variant="tonal"
+              class="mb-4"
+              prominent
+              icon="mdi-check-circle"
+            >
+              <v-alert-title class="text-h6">
+                ຂໍ້ມູນທີ່ອັບໂຫຼດສຳເລັດ
+              </v-alert-title>
+              <div>
+                ຂໍ້ມູນທີ່ຜ່ານການກວດສອບ ແລະ ຖືກບັນທຶກລົງຖານຂໍ້ມູນແລ້ວ:
+                {{ b1Monthly.length }} ລາຍການ
+              </div>
+            </v-alert>
+
+            <v-data-table
+              :items="b1Monthly"
+              :headers="headers"
+              density="comfortable"
+              class="elevation-1 rounded-lg custom-table"
+            >
+              <template v-slot:item.id="{ index }">
+                <v-chip size="small" color="success-lighten-4">
+                  {{ index + 1 }}
+                </v-chip>
+              </template>
+
+              <template v-slot:item.LCIC_code="{ item }">
+                <v-chip size="small" color="success" variant="tonal">
+                  {{ item.LCIC_code }}
+                </v-chip>
+              </template>
+
+              <template v-slot:item.com_enterprise_code="{ item }">
+                <v-chip size="small" color="success" variant="tonal">
+                  {{ item.com_enterprise_code }}
+                </v-chip>
+              </template>
+
+              <template v-slot:item.bnk_code="{ item }">
+                <v-chip size="small" color="info" variant="flat">
+                  {{ mapMemberInfo(item.bnk_code ?? "") }}
+                </v-chip>
+              </template>
+            </v-data-table>
+          </v-window-item>
+        </v-window>
+      </v-card-text>
+    </v-card>
+ 
 </template>
 
 <style scoped>
-@page {
-  size: A4 portrait;
-  margin: 0;
-
-  @bottom-center {
-    width: 100%;
-    content: element(footer);
-  }
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
 }
 
-@media print {
-  html,
-  body {
-    width: 210mm;
-    height: 297mm;
-    padding: 4px 10% 0 10%;
-    background: fixed;
-    background-image: fixed;
-    font-size: 10pt !important;
-  }
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-size: 11pt !important;
-  }
-  p,
-  div,
-  span,
-  table {
-    font-size: 10pt !important;
-  }
-  .table {
-    font-size: pt !important;
-  }
-  .main-content {
-    width: 210mm;
-    height: 297mm;
-    padding: 15px 3% 0 3%;
-  }
-  .v-data-table1 {
-    font-size: 11pt !important;
-  }
+.stat-card {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
 
-  .button {
-    display: none;
-  }
-  
-  /* ເຊື່ອງສ່ວນ batch navigation ເວລາພີມ */
-  .bg-blue-lighten-5 {
-    display: none !important;
-  }
-  
-  tr {
-    page-break-inside: avoid;
-    page-break-after: auto;
-  }
-  thead {
-    display: table-header-group;
-  }
-  tfoot {
-    display: table-footer-group;
-  }
-  .div.v-data-table__wrapper::-webkit-scrollbar {
-    display: none;
-  }
-  .div.v-data-table__wrapper {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tabs-custom :deep(.v-tab) {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.custom-table {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.custom-table :deep(thead) {
+  background-color: #f5f5f5;
+}
+
+.custom-table :deep(th) {
+  font-weight: 600 !important;
+  color: #1976d2 !important;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.custom-table :deep(tbody tr:hover) {
+  background-color: #f8f9fa !important;
+}
+
+.custom-table :deep(.v-data-table__td) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
 </style>
