@@ -1257,7 +1257,7 @@ watch(
     <template v-slot:item.actions="{ item }">
       <div class="d-flex gap-2">
         <v-btn
-          @click="viewDetails(item)"
+          @click="goPath(`/detailupload/?code=${item.FID}`)"
           color="primary"
           size="small"
           variant="outlined"
