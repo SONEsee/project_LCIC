@@ -8,10 +8,24 @@ export const useLoanStore = defineStore("loan", {
     return {
       isLoading: false,
       respons_data_loan_list: null as LoanDataModel.Data | null,
+      pagination:{
+        current_page: 1,
+        page_size: 20,
+        total_pages: 0,
+        total_items: 0,
+        has_next: false,
+        has_previous: false,
+      },
       data_fiter: {
         isLoading: false,
         query: {
           id_file: "",
+          q: null as string | null,
+          page_size: 20,
+          page: 1
+          ,
+          
+          
         },
       },
     };
@@ -30,6 +44,7 @@ export const useLoanStore = defineStore("loan", {
         );
         if (res.status === 200) {
           this.respons_data_loan_list = res.data.data;
+          console.log("check data",this.respons_data_loan_list);
         }
       } catch (error) {
         Swal.fire({
