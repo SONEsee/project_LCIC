@@ -141,7 +141,7 @@ useHead({
   ],
 });
 
-// ເມື່ອໂຫຼດໜ້າ ໃຫ້ກວດສອບ user ແລະໂຫຼດແຖບທີ່ເກັບໄວ້
+
 onMounted(() => {
   validateUserStorage();
   loadTabFromStorage();

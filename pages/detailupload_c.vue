@@ -1,14 +1,15 @@
 <template>
   <v-col cols="12">
-    <v-row><v-col cols="12">
-  <v-row>
-    <v-col cols="12">
-      <div>
-        <UploadFileDetailData :cidData="cidData" />
-      </div>
-    </v-col>
-  </v-row>
-</v-col>
+    <v-row
+      ><v-col cols="12">
+        <v-row>
+          <v-col cols="12">
+            <div>
+              <UploadFileDetailData :cidData="cidData" />
+            </div>
+          </v-col>
+        </v-row>
+      </v-col>
       <v-col cols="12" md="4">
         <v-select
           v-model="selectedOption"
@@ -48,102 +49,87 @@
           <UploadFileDetailUploadFileColGuarantorCom :cidData="cidData" />
         </div>
       </v-col>
-     
     </v-row>
   </v-col>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
-import {
-  UploadFileDetailUploadFileColMoneyMia,
-  UploadFileDetailUploadFileColRealEstates,
-} from "~~/.nuxt/components";
 
-export default defineComponent({
-  setup() {
-    const route = useRoute();
-    const cidData = ref(null);
+definePageMeta({
+  layout: "backend",
+  middleware: ["auth"],
+});
 
-    onMounted(() => {
-      const data = route.query.data;
-      if (typeof data === "string") {
-        cidData.value = JSON.parse(data);
-      } else if (Array.isArray(data)) {
-        cidData.value = JSON.parse(JSON.stringify(data));
-        console.log("feegerger", cidData.value);
-      }
-    });
+useHead({
+  title: "Upload File",
+  meta: [
+    { name: "keywords", content: "Report, Nuxt 3, Backend" },
+    {
+      name: "Description",
+      content: "Report Nuxt 3, IT Genius Engineering",
+    },
+  ],
+});
 
-    definePageMeta({
-      layout: "backend",
-      middleware: ["auth"]
-    });
+const route = useRoute();
+const cidData = ref<any>(null);
 
-    useHead({
-      title: "Upload File",
-      meta: [
-        { name: "keywords", content: "Report, Nuxt 3, Backend" },
-        {
-          name: "Description",
-          content: "Report Nuxt 3, IT Genius Engineering",
-        },
-      ],
-    });
-    const options = [
-      "ທັງໝົດ",
-      "ອາຄານ + ທີ່ດິນ",
-      "ເອກະສານມີຄ່າ",
-      "ເຄື່ອງຈັກ ແລະ ອຸປະກອນຕ່າງໆ",
-      "ໂຄງການ",
-      "ຍານພາຫະນະ",
-      "ຜູ້​ຄ້ຳປະກັນ",
-      "GOLD AND SILVER",
-      "ບໍລິສັດຄໍ່າປະກັນ",
-    ] as string[];
+const options = [
+  "ທັງໝົດ",
+  "ອາຄານ + ທີ່ດິນ",
+  "ເອກະສານມີຄ່າ",
+  "ເຄື່ອງຈັກ ແລະ ອຸປະກອນຕ່າງໆ",
+  "ໂຄງການ",
+  "ຍານພາຫະນະ",
+  "ຜູ້ຄ້ຳປະກັນ",
+  "GOLD AND SILVER",
+  "ບໍລິສັດຄໍ່າປະກັນ",
+] as const;
 
-    const selectedOption = ref<string>("ທັງໝົດ");
+const selectedOption = ref<any>("ທັງໝົດ");
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      switch (event.key.toLowerCase()) {
-        case "a":
-          selectedOption.value = options[0];
-          break;
-        case "b":
-          selectedOption.value = options[1];
-          break;
-        case "c":
-          selectedOption.value = options[2];
-          break;
-        case "d":
-          selectedOption.value = options[3];
-          break;
-        case "e":
-          selectedOption.value = options[4];
-          break;
-        case "f":
-          selectedOption.value = options[5];
-          break;
-        case "g":
-          selectedOption.value = options[6];
-          break;
-        case "h":
-          selectedOption.value = options[7];
-          break;
-      }
-    };
+const handleKeyDown = (event: KeyboardEvent) => {
+  const key = event.key.toLowerCase();
+  const keyMap: Record<string, number> = {
+    a: 0,
+    b: 1,
+    c: 2,
+    d: 3,
+    e: 4,
+    f: 5,
+    g: 6,
+    h: 7,
+    i: 8,
+  };
 
-    onMounted(() => {
-      document.addEventListener("keydown", handleKeyDown);
-    });
+  const index = keyMap[key];
+  if (index !== undefined && options[index]) {
+    selectedOption.value = options[index];
+  }
+};
 
-    return {
-      options,
-      selectedOption,
-      cidData,
-      handleKeyDown,
-    };
-  },
+onMounted(() => {
+  
+  const data = route.query.data;
+  if (typeof data === "string") {
+    try {
+      cidData.value = JSON.parse(data);
+    } catch (error) {
+      console.error("Failed to parse data:", error);
+    }
+  } else if (Array.isArray(data)) {
+    cidData.value = JSON.parse(JSON.stringify(data));
+    console.log("Parsed data:", cidData.value);
+  }
+
+ 
+  document.addEventListener("keydown", handleKeyDown);
+});
+
+
+onUnmounted(() => {
+  document.removeEventListener("keydown", handleKeyDown);
 });
 </script>
