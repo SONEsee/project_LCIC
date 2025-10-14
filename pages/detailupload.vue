@@ -4,7 +4,7 @@ import { useRoute } from "vue-router";
 import { useLoanStore } from "~/stores/loan";
 import { MemberStore } from "@/stores/memberinfo";
 import { useMemberInfo } from "@/composables/memberInfo";
-import Index from "./index.vue";
+
 
 const memberinfoStore = MemberStore();
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
