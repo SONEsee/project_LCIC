@@ -111,30 +111,8 @@ onUnmounted(() => {
 <template>
   <v-col cols="12">
     <v-row
-      ><v-col cols="12">
-        <v-row>
-          <v-col cols="12">
-            <div>
-              <UploadFileDetailData :cidData="cidData" />
-            </div>
-          </v-col>
-        </v-row>
-      </v-col>
-      <v-col cols="12" md="4">
-        <v-select
-          v-model="selectedOption"
-          :items="options"
-          density="compact"
-          label="ເລືອກປະເພດຂໍ້ມູນຫຼັກຊັບ"
-          variant="outlined"
-        ></v-select>
-      </v-col>
-      <v-col cols="12" md="8" class=" d-flex align-center justify-end">
-        <div class="text-end">
-          <p>ສະມາຊິກ: <b>{{ mapMemberInfo(combinedData[0]?.user_id ?? "ບໍ່ມີ") }}</b></p>
-          <p>ນຳສົ່ງປະຈຳເດືອນ: <b>{{dayjs(combinedData[0]?.period).format("MM/YYYY")}}</b></p>
-        </div>
-      </v-col>
+      >
+      
 
       <v-col cols="12" md="12">
         <template v-if="selectedOption === options[0]">

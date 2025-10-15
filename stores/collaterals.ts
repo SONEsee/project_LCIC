@@ -18,6 +18,7 @@ export const CollateralStore = defineStore("collateral", {
           CID: "",
         page: 1,
         page_size: 20,
+        col_type: ""
         },
         isLoading: false,
         
