@@ -1,5 +1,7 @@
 // import createVuetify from "vuetify"
 import { createVuetify } from "vuetify";
+// ລຶບບັນທັດນີ້ອອກເພາະວ່າ VFileUpload ບໍ່ມີ
+// import { VFileUpload } from 'vuetify/labs/VFileUpload'
 
 import { mdi } from "vuetify/iconsets/mdi";
 import "@mdi/font/css/materialdesignicons.css";
@@ -22,7 +24,11 @@ import { defaults } from "@/helpers/defaults";
 export default defineNuxtPlugin((nuxtApp) => {
   // Create a new Vuetify instance
   const vuetify = createVuetify({
-    
+    // ລຶບ VFileUpload ອອກຈາກ components
+    // ເພາະວ່າ VFileInput ຈະ auto-import ແລ້ວ
+    components: {
+      // VFileUpload, // ລຶບບັນທັດນີ້
+    },
     ssr: true,
     defaults,
     theme: {
