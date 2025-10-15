@@ -313,7 +313,15 @@ onMounted(() => {
             >
           </template>
         </v-autocomplete>
-        <v-chip color="primary">ຈຳນວນທັງໝົດ: <b>{{ combinedData.length }}</b> ລາຍການ</v-chip>
+        <v-chip color="primary">ຈຳນວນທັງໝົດ: <b>{{
+              Number(
+                collateralStore.response_data_collateral_detail_count?.total_cdl
+              ) +
+              Number(
+                collateralStore.response_data_collateral_detail_count
+                  ?.total_errors
+              )
+            }}</b> ລາຍການ</v-chip>
         
       </v-col>
       <v-col cols="12" md="8" class="d-flex align-center justify-end">
