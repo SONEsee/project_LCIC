@@ -97,6 +97,27 @@ const getUserStorageKey = (baseKey: string) => {
     return baseKey;
   }
 };
+const latestPeriodByUser = computed(() => {
+  const userPeriods = new Map<string, string>();
+  
+  items.value.forEach(item => {
+    if (item.user_id && item.period) {
+      const currentLatest = userPeriods.get(item.user_id);
+      
+      if (!currentLatest || item.period > currentLatest) {
+        userPeriods.set(item.user_id, item.period);
+      }
+    }
+  });
+  
+  return userPeriods;
+});
+const hasLatestPeriod = (item: FileItem): boolean => {
+  if (!item.user_id || !item.period) return false;
+  
+  const latestPeriod = latestPeriodByUser.value.get(item.user_id);
+  return item.period === latestPeriod;
+};
 const period = computed(() => {
   const data = UplodafileStore.respose_uploadfile_b;
   let mapData = [];
@@ -1265,18 +1286,18 @@ watch(
           <v-icon icon="mdi-eye" size="16" class="mr-1"></v-icon>
           ເບິ່ງລາຍລະອຽດ
         </v-btn>
-        <template v-if="item.statussubmit === '0' || item.statussubmit === '2'">
-          <v-btn
-            @click="unloadUpload(item)"
-            color="warning"
-            size="small"
-            variant="outlined"
-            :disabled="isUserUnloading(item.user_id)"
-          >
-            <v-icon icon="mdi-download" size="16" class="mr-1"></v-icon>
-            ອັນໂຫຼດ
-          </v-btn>
-        </template>
+        <template v-if="(item.statussubmit === '0' || item.statussubmit === '2') && hasLatestPeriod(item)">
+      <v-btn
+        @click="unloadUpload(item)"
+        color="warning"
+        size="small"
+        variant="outlined"
+        :disabled="isUserUnloading(item.user_id)"
+      >
+        <v-icon icon="mdi-download" size="16" class="mr-1"></v-icon>
+        ອັນໂຫຼດ
+      </v-btn>
+    </template>
         <template v-else-if="item.statussubmit === '4'">
           <v-chip color="info" size="small">
             <v-progress-circular
