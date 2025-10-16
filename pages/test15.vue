@@ -22,7 +22,6 @@
               {{ opt.label }}
             </option>
           </select>
-
           <input
             v-model="username"
             type="text"
@@ -44,6 +43,23 @@
             ໂຫຼດຂໍ້ມູນ
           </button>
 
+          <!-- NEW: Bulk Upload Button -->
+          <button
+            @click="startBulkUpload"
+            :disabled="!selectedPeriod || !username || bulkUploadProgress.active"
+            class="btn btn-success"
+          >
+            <svg v-if="!bulkUploadProgress.active" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <svg v-else class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            {{ bulkUploadProgress.active ? 'ກຳລັງອັບໂຫຼດ...' : 'ອັບໂຫຼດທຸກແຂວງ' }}
+          </button>
+
           <button @click="showSummary = !showSummary" class="btn btn-secondary">
             {{ showSummary ? 'ເຊື່ອງ' : 'ສະຫຼຸບ' }}
           </button>
@@ -54,6 +70,75 @@
         <div class="progress-fill"></div>
       </div>
     </div>
+
+    <!-- Bulk Upload Progress Modal -->
+    <div v-if="bulkUploadProgress.show" class="progress-modal-overlay">
+      <div class="progress-modal bulk-progress-modal">
+        <div class="progress-modal-header bulk-header">
+          <h3>🚀 ກຳລັງອັບໂຫຼດທຸກແຂວງ</h3>
+          <div class="progress-modal-subtitle">{{ formatPeriod(selectedPeriod) }}</div>
+        </div>
+        
+        <div class="progress-modal-body">
+          <div class="progress-circle-container">
+            <svg class="progress-circle" viewBox="0 0 120 120">
+              <circle class="progress-circle-bg" cx="60" cy="60" r="54" />
+              <circle 
+                class="progress-circle-fill bulk-circle-fill" 
+                cx="60" 
+                cy="60" 
+                r="54"
+                :style="{ strokeDashoffset: bulkProgressCircleOffset }"
+              />
+            </svg>
+            <div class="progress-percentage">{{ bulkUploadProgress.percentage }}%</div>
+          </div>
+
+          <div class="progress-details">
+            <div class="progress-step">
+              <div class="progress-step-label">ທັງໝົດ:</div>
+              <div class="progress-step-value">{{ bulkUploadProgress.total }} ເມືອງ</div>
+            </div>
+            <div class="progress-step">
+              <div class="progress-step-label">ສຳເລັດ:</div>
+              <div class="progress-step-value success-text">{{ bulkUploadProgress.completed }}</div>
+            </div>
+            <div class="progress-step">
+              <div class="progress-step-label">ກຳລັງດຳເນີນການ:</div>
+              <div class="progress-step-value info-text">{{ bulkUploadProgress.inProgress }}</div>
+            </div>
+            <div class="progress-step">
+              <div class="progress-step-label">ລໍຖ້າ:</div>
+              <div class="progress-step-value">{{ bulkUploadProgress.pending }}</div>
+            </div>
+            <div class="progress-step">
+              <div class="progress-step-label">ລົ້ມເຫຼວ:</div>
+              <div class="progress-step-value error-text">{{ bulkUploadProgress.failed }}</div>
+            </div>
+          </div>
+
+          <div class="progress-bar-linear">
+            <div class="progress-bar-linear-fill bulk-bar-fill" :style="{ width: bulkUploadProgress.percentage + '%' }"></div>
+          </div>
+
+          <div class="bulk-upload-note">
+            💡 ກະລຸນາຢ່າປິດໜ້າຕ່າງນີ້ ການອັບໂຫຼດກຳລັງດຳເນີນການຢູ່ພາຍຫຼັງ
+          </div>
+        </div>
+
+        <div class="progress-modal-footer">
+          <button 
+            @click="closeBulkProgress" 
+            class="btn btn-secondary"
+            :disabled="bulkUploadProgress.percentage < 100"
+          >
+            {{ bulkUploadProgress.percentage >= 100 ? 'ປິດ' : 'ເຊື່ອງ (ຍັງດຳເນີນການຢູ່)' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    
 
     <!-- Summary -->
     <div v-if="showSummary" class="summary-card">
@@ -550,6 +635,136 @@ const initializeProvince = async (province) => {
   }
 }
 
+// Add to state section
+const bulkUploadProgress = ref({
+  show: false,
+  active: false,
+  percentage: 0,
+  total: 0,
+  completed: 0,
+  inProgress: 0,
+  pending: 0,
+  failed: 0,
+  taskId: null
+})
+
+let bulkProgressInterval = null
+
+// Add computed for bulk progress circle
+const bulkProgressCircleOffset = computed(() => {
+  const circumference = 2 * Math.PI * 54
+  const offset = circumference - (bulkUploadProgress.value.percentage / 100) * circumference
+  return offset
+})
+
+// Add these functions
+const startBulkUpload = async () => {
+  if (!selectedPeriod.value || !username.value) {
+    showNotification('ກະລຸນາເລືອກເດືອນ-ປີ ແລະ ຊື່ຜູ້ໃຊ້', 'error')
+    return
+  }
+
+  const confirmed = confirm(
+    `ທ່ານຕ້ອງການອັບໂຫຼດທຸກແຂວງ ແລະ ທຸກເມືອງສຳລັບເດືອນ ${formatPeriod(selectedPeriod.value)} ບໍ່?\n\nນີ້ອາດໃຊ້ເວລາດົນ (30-60 ນາທີ)`
+  )
+
+  if (!confirmed) return
+
+  bulkUploadProgress.value = {
+    show: true,
+    active: true,
+    percentage: 0,
+    total: 0,
+    completed: 0,
+    inProgress: 0,
+    pending: 0,
+    failed: 0,
+    taskId: null
+  }
+
+  try {
+    const response = await $fetch(
+      `${config.public.strapi.url}api/bulk-upload-all/`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: {
+          month: selectedPeriod.value,
+          username: username.value
+        }
+      }
+    )
+
+    bulkUploadProgress.value.taskId = response.task_id
+    
+    showNotification('ເລີ່ມອັບໂຫຼດທຸກແຂວງແລ້ວ!', 'success')
+
+    // Start polling for progress
+    startBulkProgressPolling()
+
+  } catch (error) {
+    console.error('Bulk upload error:', error)
+    showNotification('ເລີ່ມອັບໂຫຼດລົ້ມເຫຼວ', 'error')
+    bulkUploadProgress.value.show = false
+    bulkUploadProgress.value.active = false
+  }
+}
+
+const startBulkProgressPolling = () => {
+  bulkProgressInterval = setInterval(async () => {
+    try {
+      const response = await $fetch(
+        `${config.public.strapi.url}api/bulk-upload-status/`,
+        {
+          params: { month: selectedPeriod.value },
+          headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+        }
+      )
+
+      bulkUploadProgress.value.total = response.total
+      bulkUploadProgress.value.completed = response.completed
+      bulkUploadProgress.value.inProgress = response.in_progress
+      bulkUploadProgress.value.pending = response.pending
+      bulkUploadProgress.value.failed = response.failed
+      bulkUploadProgress.value.percentage = response.percentage
+
+      // If completed, stop polling
+      if (response.status === 'completed' || response.percentage >= 100) {
+        stopBulkProgressPolling()
+        bulkUploadProgress.value.active = false
+        
+        showNotification(
+          `ອັບໂຫຼດສຳເລັດ!\nສຳເລັດ: ${response.completed}/${response.total}\nລົ້ມເຫຼວ: ${response.failed}`,
+          response.failed > 0 ? 'warning' : 'success'
+        )
+
+        // Refresh data
+        await fetchData()
+      }
+
+    } catch (error) {
+      console.error('Bulk progress polling error:', error)
+    }
+  }, 3000) // Poll every 3 seconds
+}
+
+const stopBulkProgressPolling = () => {
+  if (bulkProgressInterval) {
+    clearInterval(bulkProgressInterval)
+    bulkProgressInterval = null
+  }
+}
+
+const closeBulkProgress = () => {
+  bulkUploadProgress.value.show = false
+  if (bulkUploadProgress.value.percentage >= 100) {
+    bulkUploadProgress.value.active = false
+  }
+}
+
 // FIX: Sync district with progress monitoring
 const syncDistrict = async (province, district) => {
   if (!username.value) {
@@ -917,10 +1132,14 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopProgressPolling()
+  stopBulkProgressPolling()
+
 })
 </script>
 
 <style scoped>
+
+
 .electric-upload-system {
   min-height: 100vh;
   background: #f5f5f5;
@@ -1643,5 +1862,89 @@ onUnmounted(() => {
     right: 12px;
     max-width: none;
   }
+
 }
+/* Button Success Style */
+.btn-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-success:disabled {
+  background: #9ca3af;
+  box-shadow: none;
+}
+
+
+/* Bulk Progress Modal Styles */
+.bulk-header {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+.bulk-circle-fill {
+  stroke: #10b981 !important;
+}
+
+.bulk-bar-fill {
+  background: linear-gradient(90deg, #10b981, #059669) !important;
+}
+
+.bulk-progress-modal {
+  max-width: 550px;
+}
+
+.bulk-upload-note {
+  margin-top: 20px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.success-text { 
+  color: #10b981; 
+  font-weight: 700; 
+}
+
+.error-text { 
+  color: #ef4444; 
+  font-weight: 700; 
+}
+
+.info-text { 
+  color: #3b82f6; 
+  font-weight: 700; 
+}
+
+.progress-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header-controls {
+    width: 100%;
+  }
+  
+  .btn-success {
+    width: 100%;
+  }
+}
+
 </style>

@@ -108,9 +108,10 @@ definePageMeta({
   layout: "backend",
 });
 
-// const apiUrl = "http://192.168.45.56:8000/api";
-const config = useRuntimeConfig()
-const apiUrl = computed(() => config.public.apiUrl || 'http://192.168.45.56:8000/')
+// const apiUrl = "http://192.168.45.56:8000/"; 
+const config = useRuntimeConfig();
+const apiUrl = config.public.strapi.url;
+
 
 interface Role {
   id: number;
@@ -144,10 +145,11 @@ const sidebarTree = computed(() => sidebarItems.value);
 const fetchData = async () => {
   try {
     const [rolesRes, itemsRes] = await Promise.all([
-      axios.get(`${apiUrl}/roles/`),
-      axios.get(`${apiUrl}/sidebar-items/`)
+      axios.get(`${apiUrl}api/roles/`),
+      axios.get(`${apiUrl}api/sidebar-items/`)
     ]);
-    
+    console.log("API Endpoint for roles:", `${apiUrl}api/roles/`);
+    console.log("API Endpoint for sidebar items:", `${apiUrl}api/sidebar-items/`);
     roles.value = rolesRes.data;
     sidebarItems.value = itemsRes.data;
     
@@ -194,7 +196,7 @@ const updateItemRoles = async (item: any, roleId: number, itemType: string, pare
   }
   
   try {
-    await axios.put(`${apiUrl}/create_sidebar/${item.id}/`, payload);
+    await axios.put(`${apiUrl}api/create_sidebar/${item.id}/`, payload);
     item.roles = updatedRoles;
   } catch (error) {
     console.error("Error updating roles:", error);
@@ -289,7 +291,7 @@ const addParentItem = async () => {
   
   if (formValues) {
     try {
-      const response = await axios.post(`${apiUrl}/create_sidebar/`, {
+      const response = await axios.post(`${apiUrl}api/create_sidebar/`, {
         item_type: "sidebar_item",
         ...formValues
       });
@@ -387,7 +389,7 @@ const addSubItem = async (parent: SidebarItem) => {
   
   if (formValues) {
     try {
-      const response = await axios.post(`${apiUrl}/create_sidebar/`, {
+      const response = await axios.post(`${apiUrl}api/create_sidebar/`, {
         item_type: "sidebar_sub_item",
         parent: parent.id,
         ...formValues
@@ -492,7 +494,7 @@ const editItem = async (item: any, itemType: string, parentId?: number) => {
         payload.parent = parentId || item.parent;
       }
       
-      await axios.put(`${apiUrl}/create_sidebar/${item.id}/`, payload);
+      await axios.put(`${apiUrl}api/create_sidebar/${item.id}/`, payload);
       Object.assign(item, formValues);
       Swal.fire({
         icon: "success",
@@ -528,7 +530,7 @@ const deleteItem = async (id: number, itemType: string) => {
   
   if (result.isConfirmed) {
     try {
-      await axios.delete(`${apiUrl}/create_sidebar/${id}/?item_type=${itemType}`);
+      await axios.delete(`${apiUrl}api/create_sidebar/${id}/?item_type=${itemType}`);
       
       if (itemType === 'sidebar_item') {
         sidebarItems.value = sidebarItems.value.filter(item => item.id !== id);
