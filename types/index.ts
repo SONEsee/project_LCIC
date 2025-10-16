@@ -20,6 +20,9 @@ import * as UploadFile from './uploadfile'
 import * as CollateralModel from './collateral'
 import * as LoanDataModel from './loandata'
 import * as CollateralResponsModel from './collateraldetail'
+import * as DispustRequesModel from './dispustreques'
+import * as UserListModel from './userlist'
+import * as DispustEditModel from './dispustedit'
 export{
     DuplicatesFalse,
     DataModel,
@@ -40,6 +43,9 @@ export{
     UploadFile,
     CollateralModel,
     LoanDataModel,
-    CollateralResponsModel
+    CollateralResponsModel,
+    DispustRequesModel,
+    UserListModel,
+    DispustEditModel,
 
 }

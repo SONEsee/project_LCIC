@@ -8,9 +8,15 @@ export default defineNuxtConfig({
   devtools: {
     enabled: false,
   },
+  
+  // ເພີ່ມ route rules ສຳລັບ /media
   routeRules: {
     "/backend/**": { ssr: false },
+    "/media/**": { 
+      proxy: process.env.STRAPI_URL + "media/**"
+    }
   },
+  
   compatibilityDate: "2024-04-03",
 
   // import vuetify css
@@ -28,6 +34,14 @@ export default defineNuxtConfig({
         transformAssetUrls,
       },
     },
+    server: {
+      proxy: {
+        '/media': {
+          target: process.env.STRAPI_URL || 'http://192.168.45.56:8000',
+          changeOrigin: true,
+        }
+      }
+    }
   },
 
   // modules
@@ -43,6 +57,7 @@ export default defineNuxtConfig({
     },
     "@nuxtjs/i18n",
   ],
+  
   plugins: ['~/plugins/pinia.ts'],
 
   i18n: {
@@ -93,8 +108,24 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       strapi: {
-        url: process.env.STRAPI_URL || "http://192.168.45.56:8000/",
+        url: process.env.STRAPI_URL || "http://192.168.45.54:35729/",
       },
+     
+      apiBase: process.env.STRAPI_URL || "http://192.168.45.54:35729",
     },
   },
+  
+  
+  nitro: {
+    devProxy: {
+      '/media': {
+        target: process.env.STRAPI_URL || 'http://192.168.45.54:35729',
+        changeOrigin: true,
+      }
+    },
+    
+    prerender: {
+      ignore: ['/media']
+    }
+  }
 });
