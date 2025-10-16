@@ -1,4 +1,4 @@
-// utils/memberInfo.ts
+
 import { computed } from "vue";
 import { MemberStore } from "@/stores/memberinfo";
 
@@ -11,7 +11,7 @@ export interface MemberInfo {
   [key: string]: any;
 }
 
-// Composable function ສຳລັບ member info
+
 export function useMemberInfo() {
   const memberinfoStore = MemberStore();
   
@@ -61,7 +61,7 @@ export function useMemberInfo() {
   };
 }
 
-// ຖ້າຕ້ອງການໃຊ້ແບບ standalone function
+
 export const mapMemberInfo = (membercode: string, memberData: MemberInfo[]): string => {
   if (!membercode || !Array.isArray(memberData)) {
     return "-";

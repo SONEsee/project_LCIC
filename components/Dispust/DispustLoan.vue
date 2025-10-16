@@ -6,7 +6,11 @@ import { MemberStore } from "@/stores/memberinfo";
 import { useMemberInfo } from "@/composables/memberInfo";
 import dayjs from "dayjs";
 import { useUserData } from "~/composables/useUserData";
-const { user, userId, isAdmin, isLoggedIn } = useUserData();
+const { user, userId, isAdmin, isLoggedIn, userid } = useUserData();
+const LoanStore = useLoanStore();
+const memberinfoStore = MemberStore();
+
+const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 const header = [
   { title: "ເລືອກ", value: "checkbox", align: "center" },
   { title: "ລຳດັບ", value: "id", align: "start" },
@@ -16,12 +20,10 @@ const header = [
   { title: "ສາຂາ", value: "branch_id" },
   { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
   { title: "ລະຫັດສະມາຊິກ", value: "customer_id" },
-  { title: "Actions", value: "actions", sortable: false },
+  // { title: "ສະຖານະ", value: "actions", sortable: false },
 ] as any;
 
-const LoanStore = useLoanStore();
-const memberinfoStore = MemberStore();
-const { mapMemberInfo } = useMemberInfo();
+
 const route = useRoute();
 const selecData = ref<any>([]);
 const reques = LoanStore.data_fiter.query;
@@ -51,10 +53,10 @@ const isAllSelected = computed({
   }
 });
 
-// ນັບຈຳນວນທີ່ເລືອກ
+
 const selectedCount = computed(() => selecData.value.length);
 
-// ກວດວ່າພ້ອມສົ່ງຫຼືບໍ່
+
 const isReadyToSubmit = computed(() => {
   return file.value && selectedCount.value > 0;
 });
@@ -95,7 +97,7 @@ const confirmUpload = async () => {
     LoanStore.form_create_dispust.file = file.value;
     LoanStore.form_create_dispust.dispute_ids = selecData.value;
     LoanStore.form_create_dispust.id_dispust = dispustId;
-    LoanStore.form_create_dispust.user_id = userId.value; 
+    LoanStore.form_create_dispust.user_id = userid.value; 
     
    
     await LoanStore.createDispust();
@@ -119,6 +121,7 @@ onMounted(() => {
 </script>
 
 <template>
+  
   <v-card height="60" class="d-flex align-center pa-4 mb-4" outlined>
     <h3 style="color: #1a237e">ຈັດການແກ້ໄຂຂໍ້ມູນທີ່ເກິດ Dispute</h3>
   </v-card>
@@ -195,7 +198,7 @@ onMounted(() => {
     </v-col>
   </v-row>
 
-  <!-- <pre>{{ selecData }}</pre> -->
+ 
  
   <v-data-table
     :items="disputese"
@@ -212,6 +215,30 @@ onMounted(() => {
         :aria-label="`Select row for ${item.LCIC_code}`"
         @click.stop
       ></v-checkbox>
+    </template>
+    <template v-slot:header.id="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+    <template v-slot:header.LCIC_code="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+    <template v-slot:header.com_enterprise_code="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+    <template v-slot:header.bnk_code="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+    <template v-slot:header.branch_id="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+    <template v-slot:header.loan_id="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+    <template v-slot:header.customer_id="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
+    </template>
+    <template v-slot:header.actions="{column}">
+      <b style="color: blue;">{{ column.title }}</b>
     </template>
    
     <template v-slot:header.checkbox>
@@ -240,16 +267,41 @@ onMounted(() => {
       </v-chip>
     </template>
 
-    <template v-slot:item.actions="{ item }">
-      <v-btn
+    <!-- <template v-slot:item.actions="{ item }">
+      <v-chip
+        v-if="item.status === 'pending'"
         size="small"
-        color="info"
-        variant="outlined"
+        color="warning"
+        dark
       >
-        <v-icon start size="18">mdi-eye</v-icon>
-        ເບິ່ງ
-      </v-btn>
-    </template>
+        ລໍຖ້າການຢັ້ງຢືນ
+      </v-chip>
+      <v-chip
+        v-else-if="item.status === 'approved'"
+        size="small"
+        color="success"
+        dark
+      >
+        ອະນຸມັດແລ້ວ
+      </v-chip>
+      <v-chip
+        v-else-if="item.status === 'rejected'"
+        size="small"
+        color="error"
+        dark
+      >
+        ປະຕິເສດ
+      </v-chip>
+      <v-chip
+        v-else
+        size="small"
+        color="grey"
+        dark
+      >
+        ບໍ່ມີສະຖານະ
+      </v-chip>
+        
+    </template> -->
 
     <template v-slot:bottom>
       <GloBalTablePaginations

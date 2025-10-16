@@ -1,7 +1,7 @@
-import axios from "axios";
+import axios from "@/helpers/axios";
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { UserDataResponse, MemberinfoModel } from "~/types";
+import { UserDataResponse, MemberinfoModel,UserListModel } from "~/types";
 import Swal from "sweetalert2";
 export const useUserManageStore = defineStore("userManage", {
   state() {
@@ -39,13 +39,28 @@ export const useUserManageStore = defineStore("userManage", {
         null as UserDataResponse.DetailMenmberRespons | null,
       loading: false,
       config: useRuntimeConfig(),
+      respons_user_list:null as UserListModel.AllUser | null
     };
   },
   actions: {
+    async getUserList(){
+      try {
+        const res = await axios.get<UserListModel.UserListRepues>(`/api/userList/`);
+        if(res.status ===200){
+          this.respons_user_list = res.data.all_user
+        }
+      } catch (error) {
+        Swal.fire({
+          icon:"error",
+          title:"ຜິດພາດ",
+          text:"ບໍ່ສາມາດດືງຂໍ້ມູນນີ້ໄດ້"
+        })
+      }
+    },
     async Getrole() {
       try {
         const res = await axios.get<MemberinfoModel.RoleDetailRespose>(
-          `${this.config.public.strapi.url}api/roles`
+          `api/roles`
         );
         if (res.status === 200) {
           this.respons_role_data = res.data;
@@ -57,7 +72,7 @@ export const useUserManageStore = defineStore("userManage", {
     },
     async Getbak() {
       const res = await axios.get<UserDataResponse.BankRespose[]>(
-        `${this.config.public.strapi.url}api/bank`
+        `api/bank`
       );
       if (res.status === 200) {
         this.respons_data_bnk = res.data;
@@ -148,7 +163,7 @@ export const useUserManageStore = defineStore("userManage", {
       this.loading = true;
       try {
         const res = await axios.get<MemberinfoModel.MemberInfoDetailRespose>(
-          `${this.config.public.strapi.url}api/members/${id}`,
+          `api/members/${id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -166,7 +181,7 @@ export const useUserManageStore = defineStore("userManage", {
       this.loading = true;
       try {
         const res = await axios.get<UserDataResponse.DetailMenmberRespons[]>(
-          `${this.config.public.strapi.url}api/create_user/`,
+          `api/create_user/`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -184,7 +199,7 @@ export const useUserManageStore = defineStore("userManage", {
       this.loading = true;
       try {
         const res = await axios.get<UserDataResponse.DetailMenmberRespons>(
-          `${this.config.public.strapi.url}api/get_user/${id}`,
+          `api/get_user/${id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -215,7 +230,7 @@ export const useUserManageStore = defineStore("userManage", {
 
     if (result.isConfirmed) {
       const res = await axios.put(
-        `${this.config.public.strapi.url}api/update_user/${id}/`,
+        `api/update_user/${id}/`,
         formData,
         {
           headers: {
@@ -262,7 +277,7 @@ async deleteUser(id: number) {
 
     if (result.isConfirmed) {
       const res = await axios.delete(
-        `${this.config.public.strapi.url}api/delete_user/${id}/`,
+        `api/delete_user/${id}/`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
