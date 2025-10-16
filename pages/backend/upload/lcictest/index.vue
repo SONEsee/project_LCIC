@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from "vue";
 import lcic from "@/pages/insertcollaterals.vue";
+import { useUserData } from "~/composables/useUserData";
+const { user, userId, isAdmin, isLoggedIn } = useUserData();
 
 const tab = ref<any>(null);
 
@@ -139,7 +141,7 @@ useHead({
   ],
 });
 
-// ເມື່ອໂຫຼດໜ້າ ໃຫ້ກວດສອບ user ແລະໂຫຼດແຖບທີ່ເກັບໄວ້
+
 onMounted(() => {
   validateUserStorage();
   loadTabFromStorage();
@@ -154,7 +156,9 @@ onMounted(() => {
   </v-tabs>
   <v-window v-model="tab">
     <v-window-item value="one">
-      <UploadFileLoanUploadLcictestB />
+      
+      <div v-if="userId ==='01'">
+      <UploadFileLoanUploadLcictestB /></div>
     </v-window-item>
     <v-window-item value="two">
       <UploadFileLoanUploadLcictestC />

@@ -5,7 +5,6 @@ import { useLoanStore } from "~/stores/loan";
 import { MemberStore } from "@/stores/memberinfo";
 import { useMemberInfo } from "@/composables/memberInfo";
 
-
 const memberinfoStore = MemberStore();
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 
@@ -25,6 +24,15 @@ useHead({
 });
 
 const LoanStore = useLoanStore();
+const reques = LoanStore.data_fiter.query;
+async function onSelectonChange(value: number) {
+  reques.page_size = value;
+  await LoanStore.getDataLoan();
+}
+async function onPagechange(value: number) {
+  reques.page = value;
+  await LoanStore.getDataLoan();
+}
 const tab = ref("one");
 const subTab = ref("two-one");
 
@@ -34,29 +42,31 @@ const uploadfile = ref<any[]>([]);
 const route = useRoute();
 
 const combinedData = computed(() => {
-  const data = LoanStore.respons_data_loan_list?.b_data_damaged;
-  const mapdata = LoanStore.respons_data_loan_list?.data_edit;
+  const data = LoanStore.respons_data_loan_list?.b_data_damaged.items;
+  const mapdata = LoanStore.respons_data_loan_list?.data_edit.items;
   const dataArray = Array.isArray(data) ? data : [];
   const mapdataArray = Array.isArray(mapdata) ? mapdata : [];
   return [...dataArray, ...mapdataArray];
 });
 
 const dataedit = computed(() => {
-  const data = LoanStore.respons_data_loan_list?.data_edit;
+  const data = LoanStore.respons_data_loan_list?.data_edit.items;
   if (Array.isArray(data)) return data;
   if (data && typeof data === "object") return [data];
   return [];
 });
 
+
+
 const disputese = computed(() => {
-  const data = LoanStore.respons_data_loan_list?.disputes;
+  const data = LoanStore.respons_data_loan_list?.disputes.items;
   if (Array.isArray(data)) return data;
   if (data && typeof data === "object") return [data];
   return [];
 });
 
 const b1Monthly = computed(() => {
-  const data = LoanStore.respons_data_loan_list?.b1_monthly;
+  const data = LoanStore.respons_data_loan_list?.b1_monthly.items;
   if (Array.isArray(data)) return data;
   if (data && typeof data === "object") return [data];
   return [];
@@ -120,7 +130,7 @@ const headers5 = [
 const code = route.query.code as string;
 
 const filteredBDataIsDamaged = computed(() => {
-  const data = LoanStore.respons_data_loan_list?.b_data_damaged;
+  const data = LoanStore.respons_data_loan_list?.b_data_damaged.items;
   let DataMap = [] as any;
   if (Array.isArray(data)) {
     DataMap = data;
@@ -133,7 +143,7 @@ const filteredBDataIsDamaged = computed(() => {
 });
 
 const filteredBDataIsDamagedLcicIDError01 = computed(() => {
-  const data = LoanStore.respons_data_loan_list?.b_data_damaged;
+  const data = LoanStore.respons_data_loan_list?.b_data_damaged.items;
   let DataMap = [] as any;
   if (Array.isArray(data)) {
     DataMap = data;
@@ -146,7 +156,7 @@ const filteredBDataIsDamagedLcicIDError01 = computed(() => {
 });
 
 const filteredBDataIsDamagedLcicIDError33 = computed(() => {
-  const data = LoanStore.respons_data_loan_list?.b_data_damaged;
+  const data = LoanStore.respons_data_loan_list?.b_data_damaged.items;
   let DataMap = [] as any;
   if (Array.isArray(data)) {
     DataMap = data;
@@ -189,8 +199,7 @@ const exportToJson = () => {
   URL.revokeObjectURL(url);
 };
 
-const page = ref(1);
-const itemsPerPage = ref(20);
+
 
 onMounted(() => {
   memberinfoStore.getMemberInfo();
@@ -242,7 +251,15 @@ onMounted(() => {
                 class="px-6"
                 style="font-size: 16px; font-weight: 600; border-radius: 12px"
               >
-                {{ combinedData.length }}
+                {{
+                  Number(
+                    LoanStore.respons_data_loan_list?.data_edit.total_items
+                  ) +
+                    Number(
+                      LoanStore.respons_data_loan_list?.b_data_damaged
+                        .total_items
+                    ) || 0
+                }}
               </v-chip>
               <span class="ml-3" style="color: #64748b; font-size: 15px"
                 >ລາຍການທັງໝົດ</span
@@ -340,8 +357,8 @@ onMounted(() => {
               :items="dataedit"
               :headers="headers"
               density="comfortable"
-              v-model:page="page"
-              v-model:items-per-page="itemsPerPage"
+              :items-per-page="reques.page_size"
+        
               class="elevation-0"
               style="
                 border: 1px solid #e3e8ef;
@@ -349,34 +366,34 @@ onMounted(() => {
                 overflow: hidden;
               "
             >
-               <template v-slot:top> </template>
-            <template v-slot:header.id="{ column }">
-              <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.LCIC_code="{ column }">
-              <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.com_enterprise_code="{ column }">
-              <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.bnk_code="{ column }">
-              <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.customer_id="{ column }">
-              <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.branch_id="{ column }">
-              <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.loan_id="{ column }">
-              <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.col_id="{ column }">
-              <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
+              <template v-slot:top> </template>
+              <template v-slot:header.id="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.LCIC_code="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.com_enterprise_code="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.bnk_code="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.customer_id="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.branch_id="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.loan_id="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.col_id="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
               <template v-slot:item.id="{ index }">
                 <span style="color: #64748b">{{
-                  (page - 1) * itemsPerPage + index + 1
+                  (reques.page - 1) * reques.page_size + index + 1
                 }}</span>
               </template>
               <template v-slot:item.bnk_code="{ item }">
@@ -412,12 +429,23 @@ onMounted(() => {
                   {{ item.com_enterprise_code }}
                 </v-chip>
               </template>
+              <template v-slot:bottom>
+                <GloBalTablePaginations
+                  :page="reques.page"
+                  :limit="reques.page_size"
+                  :totalpage="
+                    LoanStore.respons_data_loan_list?.data_edit.total_pages || 1
+                  "
+                  @onSelectionChange="onSelectonChange"
+                  @onPagechange="onPagechange"
+                />
+              </template>
             </v-data-table>
           </v-window-item>
 
           <v-window-item value="two">
             <v-tabs
-            align-tabs="center"
+              align-tabs="center"
               v-model="subTab"
               color="#f59e0b"
               height="56"
@@ -551,8 +579,8 @@ onMounted(() => {
                   :items="filteredBDataIsDamaged"
                   :headers="headers2"
                   density="comfortable"
-                  v-model:page="page"
-                  v-model:items-per-page="itemsPerPage"
+                 
+                 :items-per-page="reques.page_size"
                   class="elevation-0"
                   style="
                     border: 1px solid #e3e8ef;
@@ -561,54 +589,54 @@ onMounted(() => {
                   "
                 >
                   <template v-slot:header.id="{ column }">
-                  <span style="color: #0d47a1; font-weight: bold">{{
-                    column.title
-                  }}</span>
-                </template>
-                <template v-slot:header.LCIC_code="{ column }">
-                  <span style="color: #0d47a1; font-weight: bold">{{
-                    column.title
-                  }}</span>
-                </template>
-                <template v-slot:header.com_enterprise_code="{ column }">
-                  <span style="color: #0d47a1; font-weight: bold">{{
-                    column.title
-                  }}</span>
-                </template>
-                <template v-slot:header.bnk_code="{ column }">
-                  <span style="color: #0d47a1; font-weight: bold">{{
-                    column.title
-                  }}</span>
-                </template>
-                <template v-slot:header.customer_id="{ column }">
-                  <span style="color: #0d47a1; font-weight: bold">{{
-                    column.title
-                  }}</span>
-                </template>
-                <template v-slot:header.branch_id="{ column }">
-                  <span style="color: #0d47a1; font-weight: bold">{{
-                    column.title
-                  }}</span>
-                </template>
-                <template v-slot:header.loan_id="{ column }">
-                  <span style="color: #0d47a1; font-weight: bold">{{
-                    column.title
-                  }}</span>
-                </template>
-                <template v-slot:header.lcicID_get="{ column }">
-                  <span style="color: #0d47a1; font-weight: bold">{{
-                    column.title
-                  }}</span>
-                </template>
-                <template v-slot:header.lcicID_error="{ column }">
-                  <span style="color: #0d47a1; font-weight: bold">{{
-                    column.title
-                  }}</span>
-                </template>
-                  <template v-slot:item.id="{ index }">
-                    <span style="color: #64748b">{{
-                      (page - 1) * itemsPerPage + index + 1
+                    <span style="color: #0d47a1; font-weight: bold">{{
+                      column.title
                     }}</span>
+                  </template>
+                  <template v-slot:header.LCIC_code="{ column }">
+                    <span style="color: #0d47a1; font-weight: bold">{{
+                      column.title
+                    }}</span>
+                  </template>
+                  <template v-slot:header.com_enterprise_code="{ column }">
+                    <span style="color: #0d47a1; font-weight: bold">{{
+                      column.title
+                    }}</span>
+                  </template>
+                  <template v-slot:header.bnk_code="{ column }">
+                    <span style="color: #0d47a1; font-weight: bold">{{
+                      column.title
+                    }}</span>
+                  </template>
+                  <template v-slot:header.customer_id="{ column }">
+                    <span style="color: #0d47a1; font-weight: bold">{{
+                      column.title
+                    }}</span>
+                  </template>
+                  <template v-slot:header.branch_id="{ column }">
+                    <span style="color: #0d47a1; font-weight: bold">{{
+                      column.title
+                    }}</span>
+                  </template>
+                  <template v-slot:header.loan_id="{ column }">
+                    <span style="color: #0d47a1; font-weight: bold">{{
+                      column.title
+                    }}</span>
+                  </template>
+                  <template v-slot:header.lcicID_get="{ column }">
+                    <span style="color: #0d47a1; font-weight: bold">{{
+                      column.title
+                    }}</span>
+                  </template>
+                  <template v-slot:header.lcicID_error="{ column }">
+                    <span style="color: #0d47a1; font-weight: bold">{{
+                      column.title
+                    }}</span>
+                  </template>
+                  <template v-slot:item.id="{ index }">
+                   <span style="color: #64748b">{{
+                  (reques.page - 1) * reques.page_size + index + 1
+                }}</span>
                   </template>
                   <template v-slot:item.LCIC_code="{ item }">
                     <v-chip
@@ -701,6 +729,17 @@ onMounted(() => {
                       {{ (item as any).lcicID_get }}
                     </v-chip>
                   </template>
+                  <template v-slot:bottom>
+                <GloBalTablePaginations
+                  :page="reques.page"
+                  :limit="reques.page_size"
+                  :totalpage="
+                    LoanStore.respons_data_loan_list?.b_data_damaged.total_pages || 1
+                  "
+                  @onSelectionChange="onSelectonChange"
+                  @onPagechange="onPagechange"
+                />
+              </template>
                 </v-data-table>
               </v-window-item>
 
@@ -771,8 +810,8 @@ onMounted(() => {
                   :items="filteredBDataIsDamagedLcicIDError01"
                   :headers="headers3"
                   density="comfortable"
-                  v-model:page="page"
-                  v-model:items-per-page="itemsPerPage"
+                  
+                  :items-per-page="reques.page_size"
                   class="elevation-0"
                   style="
                     border: 1px solid #e3e8ef;
@@ -781,36 +820,36 @@ onMounted(() => {
                   "
                 >
                   <template v-slot:header.id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.LCIC_code="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.com_enterprise_code="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.bnk_code="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.customer_id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.branch_id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.loan_id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.lcicID_get="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.lcicID_error="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.LCIC_code="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.com_enterprise_code="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.bnk_code="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.customer_id="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.branch_id="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.loan_id="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.lcicID_get="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.lcicID_error="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
                   <template v-slot:item.id="{ index }">
-                    <span style="color: #64748b">{{
-                      (page - 1) * itemsPerPage + index + 1
-                    }}</span>
+                  <span style="color: #64748b">{{
+                  (reques.page - 1) * reques.page_size + index + 1
+                }}</span>
                   </template>
                   <template v-slot:item.LCIC_code="{ item }">
                     <v-chip
@@ -890,6 +929,17 @@ onMounted(() => {
                       ບໍ່ມີ
                     </v-chip>
                   </template>
+                  <template v-slot:bottom>
+                <GloBalTablePaginations
+                  :page="reques.page"
+                  :limit="reques.page_size"
+                  :totalpage="
+                    LoanStore.respons_data_loan_list?.b_data_damaged.total_pages || 1
+                  "
+                  @onSelectionChange="onSelectonChange"
+                  @onPagechange="onPagechange"
+                />
+              </template>
                 </v-data-table>
               </v-window-item>
 
@@ -905,8 +955,8 @@ onMounted(() => {
                   :items="filteredBDataIsDamagedLcicIDError33"
                   :headers="headers4"
                   density="comfortable"
-                  v-model:page="page"
-                  v-model:items-per-page="itemsPerPage"
+                
+                  :items-per-page="reques.page_size"
                   class="elevation-0"
                   style="
                     border: 1px solid #e3e8ef;
@@ -915,34 +965,34 @@ onMounted(() => {
                   "
                 >
                   <template v-slot:header.id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.LCIC_code="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.com_enterprise_code="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.bnk_code="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.customer_id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.branch_id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.loan_id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.LCIC_code="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.com_enterprise_code="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.bnk_code="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.customer_id="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.branch_id="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.loan_id="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
 
-                <template v-slot:header.lcicID_error="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
+                  <template v-slot:header.lcicID_error="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
                   <template v-slot:item.id="{ index }">
                     <span style="color: #64748b">{{
-                      (page - 1) * itemsPerPage + index + 1
-                    }}</span>
+                  (reques.page - 1) * reques.page_size + index + 1
+                }}</span>
                   </template>
                   <template v-slot:item.LCIC_code="{ item }">
                     <v-chip
@@ -1022,6 +1072,17 @@ onMounted(() => {
                       ທັງສອງບໍ່ຖືກ
                     </v-chip>
                   </template>
+                  <template v-slot:bottom>
+                <GloBalTablePaginations
+                  :page="reques.page"
+                  :limit="reques.page_size"
+                  :totalpage="
+                    LoanStore.respons_data_loan_list?.b_data_damaged.total_pages || 1
+                  "
+                  @onSelectionChange="onSelectonChange"
+                  @onPagechange="onPagechange"
+                />
+              </template>
                 </v-data-table>
               </v-window-item>
 
@@ -1040,8 +1101,8 @@ onMounted(() => {
                   :items="disputese"
                   :headers="headers5"
                   density="comfortable"
-                  v-model:page="page"
-                  v-model:items-per-page="itemsPerPage"
+                 
+                  :items-per-page="reques.page_size"
                   class="elevation-0"
                   style="
                     border: 1px solid #e3e8ef;
@@ -1049,31 +1110,31 @@ onMounted(() => {
                     overflow: hidden;
                   "
                 >
-                   <template v-slot:header.id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.LCIC_code="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.com_enterprise_code="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.bnk_code="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.customer_id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.branch_id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
-                <template v-slot:header.loan_id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-                </template>
+                  <template v-slot:header.id="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.LCIC_code="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.com_enterprise_code="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.bnk_code="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.customer_id="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.branch_id="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
+                  <template v-slot:header.loan_id="{ column }">
+                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  </template>
                   <template v-slot:item.id="{ index }">
                     <span style="color: #64748b">{{
-                      (page - 1) * itemsPerPage + index + 1
-                    }}</span>
+                  (reques.page - 1) * reques.page_size + index + 1
+                }}</span>
                   </template>
                   <template v-slot:item.bnk_code="{ item }">
                     <v-chip
@@ -1088,6 +1149,17 @@ onMounted(() => {
                       {{ mapMemberInfo((item as any).bnk_code) }}
                     </v-chip>
                   </template>
+                  <template v-slot:bottom>
+                <GloBalTablePaginations
+                  :page="reques.page"
+                  :limit="reques.page_size"
+                  :totalpage="
+                    LoanStore.respons_data_loan_list?.disputes.total_pages || 1
+                  "
+                  @onSelectionChange="onSelectonChange"
+                  @onPagechange="onPagechange"
+                />
+              </template>
                 </v-data-table>
               </v-window-item>
             </v-window>
@@ -1112,8 +1184,8 @@ onMounted(() => {
               :items="b1Monthly"
               :headers="headers5"
               density="comfortable"
-              v-model:page="page"
-              v-model:items-per-page="itemsPerPage"
+              
+              :items-per-page="reques.page_size"
               class="elevation-0"
               style="
                 border: 1px solid #e3e8ef;
@@ -1122,29 +1194,29 @@ onMounted(() => {
               "
             >
               <template v-slot:header.id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.LCIC_code="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.com_enterprise_code="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.bnk_code="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.customer_id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.branch_id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
-            <template v-slot:header.loan_id="{ column }">
-                  <th style="color: #0d47a1">{{ column.title }}</th>
-            </template>
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.LCIC_code="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.com_enterprise_code="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.bnk_code="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.customer_id="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.branch_id="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
+              <template v-slot:header.loan_id="{ column }">
+                <th style="color: #0d47a1">{{ column.title }}</th>
+              </template>
               <template v-slot:item.id="{ index }">
                 <span style="color: #64748b">{{
-                  (page - 1) * itemsPerPage + index + 1
+                  (reques.page - 1) * reques.page_size + index + 1
                 }}</span>
               </template>
               <template v-slot:item.bnk_code="{ item }">
@@ -1160,6 +1232,17 @@ onMounted(() => {
                 >
                   {{ mapMemberInfo(item.bnk_code) }}
                 </v-chip>
+              </template>
+              <template v-slot:bottom>
+                <GloBalTablePaginations
+                  :page="reques.page"
+                  :limit="reques.page_size"
+                  :totalpage="
+                    LoanStore.respons_data_loan_list?.b1_monthly.total_pages || 1
+                  "
+                  @onSelectionChange="onSelectonChange"
+                  @onPagechange="onPagechange"
+                />
               </template>
             </v-data-table>
           </v-window-item>

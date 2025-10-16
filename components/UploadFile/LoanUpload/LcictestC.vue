@@ -708,7 +708,27 @@ const formatFileSize = (fileSize: string | number) => {
     return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
   }
 };
-
+const latestPeriodByUser = computed(() => {
+  const userPeriods = new Map<string, string>();
+  
+  items.value.forEach(item => {
+    if (item.user_id && item.period) {
+      const currentLatest = userPeriods.get(item.user_id);
+      
+      if (!currentLatest || item.period > currentLatest) {
+        userPeriods.set(item.user_id, item.period);
+      }
+    }
+  });
+  
+  return userPeriods;
+});
+const hasLatestPeriod = (item: FileItem): boolean => {
+  if (!item.user_id || !item.period) return false;
+  
+  const latestPeriod = latestPeriodByUser.value.get(item.user_id);
+  return item.period === latestPeriod;
+};
 const statusStats = computed(() => {
   const stats = {
     total: items.value.length,
@@ -1115,7 +1135,7 @@ watch(
     <template v-slot:item.actions="{ item }">
       <div class="d-flex gap-2">
         <v-btn
-          @click="viewDetails(item)"
+          @click="goPath(`/detailupload_c?CID=${item.CID}`)"
           color="primary"
           size="small"
           variant="outlined"
@@ -1124,18 +1144,18 @@ watch(
           ລາຍລະອຽດ
         </v-btn>
 
-        <template v-if="item.statussubmit === '0'">
-          <v-btn
-            @click="uploadDataButton(item)"
-            color="warning"
-            :disabled="isUserIdProcessing(item.user_id)"
-            size="small"
-            variant="outlined"
-          >
-            <v-icon icon="mdi-download" size="16" class="mr-1"></v-icon>
-            ອັນໂຫຼດ
-          </v-btn>
-        </template>
+         <template v-if="item.statussubmit === '0' && hasLatestPeriod(item)">
+      <v-btn
+        @click="uploadDataButton(item)"
+        color="warning"
+        :disabled="isUserIdProcessing(item.user_id)"
+        size="small"
+        variant="outlined"
+      >
+        <v-icon icon="mdi-download" size="16" class="mr-1"></v-icon>
+        ອັນໂຫຼດ
+      </v-btn>
+    </template>
 
         <template v-else-if="item.statussubmit === '5'">
           <v-chip color="grey" size="small">

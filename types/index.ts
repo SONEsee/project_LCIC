@@ -19,6 +19,7 @@ import * as BafileModel from './batefile'
 import * as UploadFile from './uploadfile'
 import * as CollateralModel from './collateral'
 import * as LoanDataModel from './loandata'
+import * as CollateralResponsModel from './collateraldetail'
 export{
     DuplicatesFalse,
     DataModel,
@@ -38,6 +39,7 @@ export{
     BafileModel,
     UploadFile,
     CollateralModel,
-    LoanDataModel
+    LoanDataModel,
+    CollateralResponsModel
 
 }
