@@ -5,8 +5,10 @@ import { useLoanStore } from "~/stores/loan";
 import { MemberStore } from "@/stores/memberinfo";
 import { useMemberInfo } from "@/composables/memberInfo";
 import dayjs from "dayjs";
-
+import { useUserData } from "~/composables/useUserData";
+const { user, userId, isAdmin, isLoggedIn } = useUserData();
 const header = [
+  { title: "ເລືອກ", value: "checkbox", align: "center" },
   { title: "ລຳດັບ", value: "id", align: "start" },
   { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
   { title: "ລະຫັດ ວິສາຫະກິດ", value: "com_enterprise_code" },
@@ -21,11 +23,10 @@ const LoanStore = useLoanStore();
 const memberinfoStore = MemberStore();
 const { mapMemberInfo } = useMemberInfo();
 const route = useRoute();
-
+const selecData = ref<any>([]);
 const reques = LoanStore.data_fiter.query;
 const dispustId = (route.query.id_dispust as string) || "";
 
-// File upload
 const file = ref<File | null>(null);
 const isUploading = ref(false);
 
@@ -34,6 +35,28 @@ const disputese = computed(() => {
   if (Array.isArray(data)) return data;
   if (data && typeof data === "object") return [data];
   return [];
+});
+
+const isAllSelected = computed({
+  get: () => {
+    if (disputese.value.length === 0) return false;
+    return disputese.value.every(item => selecData.value.includes(item.id));
+  },
+  set: (value: boolean) => {
+    if (value) {
+      selecData.value = disputese.value.map(item => item.id);
+    } else {
+      selecData.value = [];
+    }
+  }
+});
+
+// ນັບຈຳນວນທີ່ເລືອກ
+const selectedCount = computed(() => selecData.value.length);
+
+// ກວດວ່າພ້ອມສົ່ງຫຼືບໍ່
+const isReadyToSubmit = computed(() => {
+  return file.value && selectedCount.value > 0;
 });
 
 async function onChang(value: number) {
@@ -52,27 +75,35 @@ const handleChange = (newFiles: File[]) => {
 
 const handleError = (message: string) => {
   console.error("Error:", message);
-  // ສາມາດເພີ່ມ Swal alert ໄດ້
 };
 
 const confirmUpload = async () => {
   if (!file.value) {
-    // ສະແດງ warning
     console.warn("ກະລຸນາເລືອກໄຟລ໌ກ່ອນ");
+    return;
+  }
+
+  if (selecData.value.length === 0) {
+    console.warn("ກະລຸນາເລືອກລາຍການກ່ອນ");
     return;
   }
 
   isUploading.value = true;
   
   try {
-    // Logic ການອັບໂຫຼດຂອງເຈົ້າ
-    const formData = new FormData();
-    formData.append('file', file.value);
-    formData.append('id_dispust', dispustId);
+   
+    LoanStore.form_create_dispust.file = file.value;
+    LoanStore.form_create_dispust.dispute_ids = selecData.value;
+    LoanStore.form_create_dispust.id_dispust = dispustId;
+    LoanStore.form_create_dispust.user_id = userId.value; 
     
-    // await axios.post('/api/upload-dispute', formData);
+   
+    await LoanStore.createDispust();
     
-    console.log("Upload success");
+   
+    file.value = null;
+    selecData.value = [];
+    
   } catch (error) {
     console.error("Upload failed:", error);
   } finally {
@@ -93,7 +124,6 @@ onMounted(() => {
   </v-card>
 
   <v-row class="mb-4">
-    <!-- File Upload Section -->
     <v-col cols="12" md="6">
       <VFileUpload
         v-model="file"
@@ -106,12 +136,10 @@ onMounted(() => {
       />
     </v-col>
 
-    <!-- Info Section -->
     <v-col cols="12" md="6" class="d-flex flex-column ga-3">
-      <!-- Warning Message -->
-      <v-alert type="warning" variant="tonal" density="compact">
+      <v-alert color="warning" variant="tonal" density="compact">
         <div class="d-flex align-center">
-          <v-icon class="mr-2">mdi-alert-circle</v-icon>
+          <v-icon class="mr-2 ml-2">mdi-chat</v-icon>
           <span class="text-body-2">
             ທ່ານຕ້ອງໄດ້ຕິດຂັດເອກະສານທາງການເພື່ອຢັ້ງຢືນວ່າຂໍ້ມູນທີ່ທ່ານນຳສົ່ງມານີ້ເປັນຂໍ້ມູນທີ່ຖືກຕ້ອງ
             ແລະ ເພື່ອແຈ້ງໃຫ້ທາງ LCIC ອັບເດດໃຫ້
@@ -119,7 +147,6 @@ onMounted(() => {
         </div>
       </v-alert>
 
-      <!-- Info Chips -->
       <div class="d-flex align-center ga-2 flex-wrap">
         <v-chip 
           v-if="disputese.length > 0" 
@@ -146,62 +173,84 @@ onMounted(() => {
         </v-chip>
       </div>
 
-      <!-- Submit Button -->
       <div class="d-flex align-end justify-start mt-auto">
         <v-btn 
           color="primary" 
           :loading="isUploading"
-          :disabled="!file"
+          :disabled="!isReadyToSubmit"
           @click="confirmUpload"
           size="large"
         >
           <v-icon start>mdi-check-circle</v-icon>
           ຢັ້ງຢືນການປ່ຽນແປງ
+          <v-badge 
+            v-if="selectedCount > 0"
+            :content="selectedCount"
+            color="error"
+            inline
+            class="ml-2"
+          />
         </v-btn>
       </div>
     </v-col>
   </v-row>
 
-  <!-- Data Table -->
+  <!-- <pre>{{ selecData }}</pre> -->
+ 
   <v-data-table
     :items="disputese"
     :headers="header"
     :items-per-page="reques.page_size"
+    :loading="LoanStore.isLoading"
     class="elevation-1"
   >
-    <!-- Row Number -->
+    <template v-slot:item.checkbox="{item}">
+      <v-checkbox
+        size="small"
+        v-model="selecData"
+        :value="item.id"
+        :aria-label="`Select row for ${item.LCIC_code}`"
+        @click.stop
+      ></v-checkbox>
+    </template>
+   
+    <template v-slot:header.checkbox>
+      <v-checkbox
+        size="small"
+        v-model="isAllSelected"
+        :indeterminate="selectedCount > 0 && selectedCount < disputese.length"
+        aria-label="Select all rows"
+        @click.stop
+      ></v-checkbox>
+    </template>
+
     <template v-slot:item.id="{ item, index }">
       {{ (reques.page - 1) * reques.page_size + index + 1 }}
     </template>
 
-    <!-- LCIC Code -->
     <template v-slot:item.LCIC_code="{ item }">
       <v-chip size="small" color="primary" variant="flat">
         {{ item.LCIC_code }}
       </v-chip>
     </template>
 
-    <!-- Bank Code -->
     <template v-slot:item.bnk_code="{ item }">
       <v-chip size="small" color="success">
         {{ mapMemberInfo(item.bnk_code) }}
       </v-chip>
     </template>
 
-    <!-- Actions -->
     <template v-slot:item.actions="{ item }">
       <v-btn
         size="small"
         color="info"
         variant="outlined"
-        
       >
         <v-icon start size="18">mdi-eye</v-icon>
         ເບິ່ງ
       </v-btn>
     </template>
 
-    <!-- Pagination -->
     <template v-slot:bottom>
       <GloBalTablePaginations
         :page="LoanStore.data_fiter.query.page"
@@ -212,7 +261,6 @@ onMounted(() => {
       />
     </template>
 
-    <!-- No Data -->
     <template v-slot:no-data>
       <v-alert type="info" variant="tonal" class="ma-4">
         <v-icon start>mdi-information</v-icon>
