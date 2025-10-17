@@ -31,6 +31,7 @@ export const useLoanStore = defineStore("loan", {
         dispute_ids: [] as number[],
         id_dispust: "" as string,
         user_id: "" as string,
+        deception: "test" as string,
       },
     };
   },
@@ -140,6 +141,7 @@ export const useLoanStore = defineStore("loan", {
         dispute_ids: [],
         id_dispust: "",
         user_id: "",
+        deception: "",
       };
     },
   },

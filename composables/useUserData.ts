@@ -38,6 +38,7 @@ export const useUserData = () => {
 
 
   const userId = computed(() => user.value?.MID?.id || '');
+  const userid = computed(()=>user.value?.UID || '');
   const userName = computed(() => user.value?.MID?.name || '');
   const userBankCode = computed(() => user.value?.MID?.bnk_code || '');
   const isAdmin = computed(() => user.value?.MID?.id === '01');
@@ -57,6 +58,7 @@ export const useUserData = () => {
     
     
     userId,
+    userid,
     userName,
     userBankCode,
     isAdmin,

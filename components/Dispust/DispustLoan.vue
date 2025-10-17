@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import { useLoanStore } from "~/stores/loan";
 import { MemberStore } from "@/stores/memberinfo";
 import { useMemberInfo } from "@/composables/memberInfo";
@@ -40,15 +40,15 @@ const disputese = computed(() => {
 const isAllSelected = computed({
   get: () => {
     if (disputese.value.length === 0) return false;
-    return disputese.value.every(item => selecData.value.includes(item.id));
+    return disputese.value.every((item) => selecData.value.includes(item.id));
   },
   set: (value: boolean) => {
     if (value) {
-      selecData.value = disputese.value.map(item => item.id);
+      selecData.value = disputese.value.map((item) => item.id);
     } else {
       selecData.value = [];
     }
-  }
+  },
 });
 
 // ນັບຈຳນວນທີ່ເລືອກ
@@ -89,21 +89,17 @@ const confirmUpload = async () => {
   }
 
   isUploading.value = true;
-  
+
   try {
-   
     LoanStore.form_create_dispust.file = file.value;
     LoanStore.form_create_dispust.dispute_ids = selecData.value;
     LoanStore.form_create_dispust.id_dispust = dispustId;
-    LoanStore.form_create_dispust.user_id = userId.value; 
-    
-   
+    LoanStore.form_create_dispust.user_id = userId.value;
+
     await LoanStore.createDispust();
-    
-   
+
     file.value = null;
     selecData.value = [];
-    
   } catch (error) {
     console.error("Upload failed:", error);
   } finally {
@@ -148,24 +144,24 @@ onMounted(() => {
       </v-alert>
 
       <div class="d-flex align-center ga-2 flex-wrap">
-        <v-chip 
-          v-if="disputese.length > 0" 
-          color="success" 
+        <v-chip
+          v-if="disputese.length > 0"
+          color="success"
           prepend-icon="mdi-bank"
         >
           {{ mapMemberInfo(disputese[0]?.bnk_code) }}
         </v-chip>
-        
-        <v-chip 
-          v-if="disputese.length > 0 && disputese[0]?.period" 
+
+        <v-chip
+          v-if="disputese.length > 0 && disputese[0]?.period"
           color="primary"
           prepend-icon="mdi-calendar"
         >
           {{ dayjs(disputese[0]?.period).format("MM/YYYY") }}
         </v-chip>
 
-        <v-chip 
-          v-if="disputese.length > 0" 
+        <v-chip
+          v-if="disputese.length > 0"
           color="info"
           prepend-icon="mdi-file-document"
         >
@@ -174,8 +170,8 @@ onMounted(() => {
       </div>
 
       <div class="d-flex align-end justify-start mt-auto">
-        <v-btn 
-          color="primary" 
+        <v-btn
+          color="primary"
           :loading="isUploading"
           :disabled="!isReadyToSubmit"
           @click="confirmUpload"
@@ -183,7 +179,7 @@ onMounted(() => {
         >
           <v-icon start>mdi-check-circle</v-icon>
           ຢັ້ງຢືນການປ່ຽນແປງ
-          <v-badge 
+          <v-badge
             v-if="selectedCount > 0"
             :content="selectedCount"
             color="error"
@@ -196,7 +192,7 @@ onMounted(() => {
   </v-row>
 
   <!-- <pre>{{ selecData }}</pre> -->
- 
+
   <v-data-table
     :items="disputese"
     :headers="header"
@@ -204,7 +200,7 @@ onMounted(() => {
     :loading="LoanStore.isLoading"
     class="elevation-1"
   >
-    <template v-slot:item.checkbox="{item}">
+    <template v-slot:item.checkbox="{ item }">
       <v-checkbox
         size="small"
         v-model="selecData"
@@ -213,7 +209,7 @@ onMounted(() => {
         @click.stop
       ></v-checkbox>
     </template>
-   
+
     <template v-slot:header.checkbox>
       <v-checkbox
         size="small"
@@ -241,11 +237,7 @@ onMounted(() => {
     </template>
 
     <template v-slot:item.actions="{ item }">
-      <v-btn
-        size="small"
-        color="info"
-        variant="outlined"
-      >
+      <v-btn size="small" color="info" variant="outlined">
         <v-icon start size="18">mdi-eye</v-icon>
         ເບິ່ງ
       </v-btn>

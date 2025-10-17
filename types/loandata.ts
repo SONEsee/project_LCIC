@@ -248,6 +248,7 @@ export interface DisputesItem {
     user_id:                 string;
     is_disputed:             null;
     LCIC_code:               string;
+    status:                 string;
 }
 
 export interface Pagination {
