@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useImagePath } from '@/composables/useImagePath';
-
+import axios from '~/helpers/axios';
 interface Props {
   src: string;
   alt?: string;
