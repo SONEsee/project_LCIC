@@ -14,6 +14,7 @@ export const useRequesDispustStore = defineStore("requesdispust", {
         query: {
           bnk_code: "",
           filter_bnk_code: "",
+          id_disput_loan: "",
           page: 1,
           page_size: 20,
         },
