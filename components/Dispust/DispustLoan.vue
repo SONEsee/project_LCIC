@@ -6,6 +6,20 @@ import { MemberStore } from "@/stores/memberinfo";
 import { useMemberInfo } from "@/composables/memberInfo";
 import dayjs from "dayjs";
 import { useUserData } from "~/composables/useUserData";
+import { useUserInfo } from "@/composables/useUserInfo";
+
+const {
+  userData,
+  mapUserInfo,
+  getUserFullName,
+  getUsername,
+  getUserBankName,
+  getUserPermission,
+  isUserActive,
+  getUserDetails,
+  getUserInitials,
+  loadUsers,
+} = useUserInfo();
 const { user, userId, isAdmin, isLoggedIn } = useUserData();
 const header = [
   { title: "ເລືອກ", value: "checkbox", align: "center" },
@@ -51,10 +65,10 @@ const isAllSelected = computed({
   },
 });
 
-// ນັບຈຳນວນທີ່ເລືອກ
+
 const selectedCount = computed(() => selecData.value.length);
 
-// ກວດວ່າພ້ອມສົ່ງຫຼືບໍ່
+
 const isReadyToSubmit = computed(() => {
   return file.value && selectedCount.value > 0;
 });
@@ -95,6 +109,7 @@ const confirmUpload = async () => {
     LoanStore.form_create_dispust.dispute_ids = selecData.value;
     LoanStore.form_create_dispust.id_dispust = dispustId;
     LoanStore.form_create_dispust.user_id = userId.value;
+    // LoanStore.form_create_dispust.user_insert = 
 
     await LoanStore.createDispust();
 
@@ -111,6 +126,7 @@ onMounted(() => {
   LoanStore.data_fiter.query.id_file = dispustId;
   LoanStore.getDataLoan();
   memberinfoStore.getMemberInfo();
+  loadUsers()
 });
 </script>
 
