@@ -30,6 +30,7 @@ export const useLoanStore = defineStore("loan", {
         file: null as File | null,
         dispute_ids: [] as number[],
         id_dispust: "" as string,
+        user_insert: "" as string,
         user_id: "" as string,
         deception: "test" as string,
       },
@@ -84,7 +85,7 @@ export const useLoanStore = defineStore("loan", {
           return;
         }
 
-        // ສ້າງ FormData
+       
         const formData = new FormData();
         formData.append("file", this.form_create_dispust.file);
         formData.append(
@@ -93,8 +94,9 @@ export const useLoanStore = defineStore("loan", {
         );
         formData.append("id_dispust", this.form_create_dispust.id_dispust);
         formData.append("user_id", this.form_create_dispust.user_id);
+        formData.append("user_insert", String(this.form_create_dispust.user_insert));
 
-        // ສົ່ງຂໍ້ມູນ
+      
         const res = await axios.post(`/api/api/disputes/confirm/`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -106,19 +108,22 @@ export const useLoanStore = defineStore("loan", {
             icon: "success",
             title: "ສຳເລັດ",
             text: res.data.message || "ບັນທຶກຂໍ້ມູນສຳເລັດ",
-            confirmButtonText: "ຕົກລົງ",
-          });
+            timer:1500,
+            showConfirmButton:false
+          });setTimeout(() => {
+            goPreviousPath()
+          },1000);
 
-          // ລ້າງຟອມ
+        
           this.resetForm();
 
-          // ໂຫຼດຂໍ້ມູນໃໝ່
+          
           await this.getDataLoan();
         }
       } catch (error: any) {
         console.error("Upload error:", error);
 
-        // ສະແດງ error ຈາກ API
+ 
         const errorMessage =
           error.response?.data?.message ||
           error.response?.data?.errors?.join(", ") ||
@@ -141,6 +146,7 @@ export const useLoanStore = defineStore("loan", {
         dispute_ids: [],
         id_dispust: "",
         user_id: "",
+        user_insert:"",
         deception: "",
       };
     },

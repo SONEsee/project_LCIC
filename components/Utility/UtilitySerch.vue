@@ -11,7 +11,7 @@
                   <v-icon class="header-icon" size="48">mdi-magnify</v-icon>
                 </div>
                 <h1 class="header-title">{{ title }}</h1>
-                <p class="header-subtitle">ເລືອກບໍລິການທີ່ຕ້ອງການຄົ້ນຫາ ແລະ ປ້ອນຂໍ້ມູນລູກຄ້າ</p>
+                <p class="header-subtitle">ຄົ້ນຫາຂໍ້ມູນລູກຄ້າດ້ວຍລະບົບອັດສະລິຍະ</p>
               </div>
             </v-card-title>
 
@@ -134,7 +134,68 @@
                   </div>
                   
                   <v-slide-y-transition group>
-                    <div v-if="electronic" key="electronic" class="mb-5">
+                    <!-- Electric Service Fields -->
+                    <div v-if="electronic" key="electronic" class="mb-6 service-input-group">
+                      <div class="input-group-header mb-3">
+                        <v-icon color="primary" size="20">mdi-flash</v-icon>
+                        <span class="input-group-title">ຂໍ້ມູນໄຟຟ້າ</span>
+                      </div>
+                      
+                      <v-autocomplete
+                        v-model="electricProvince"
+                        :items="provinces"
+                        item-title="name"
+                        item-value="id"
+                        label="ເລືອກແຂວງ (ທາງເລືອກ)"
+                        prepend-inner-icon="mdi-map-marker"
+                        variant="outlined"
+                        color="primary"
+                        clearable
+                        class="input-field mb-4"
+                        hint="ເລືອກແຂວງເພື່ອຊອກຫາໄວຂຶ້ນ"
+                        persistent-hint
+                      ></v-autocomplete>
+
+                      <v-autocomplete
+                        v-model="selectedElectricCustomer"
+                        v-model:search="electricSearchQuery"
+                        :items="electricSearchResults"
+                        :loading="electricSearchLoading"
+                        item-title="display"
+                        item-value="Customer_ID"
+                        label="ຄົ້ນຫາລູກຄ້າດ່ວນ (ຊື່, ລະຫັດ, ບໍລິສັດ)"
+                        prepend-inner-icon="mdi-account-search"
+                        variant="outlined"
+                        color="primary"
+                        clearable
+                        no-filter
+                        class="input-field mb-4"
+                        hint="ພິມຊື່ ຫຼື ລະຫັດລູກຄ້າເພື່ອຄົ້ນຫາ"
+                        persistent-hint
+                        @update:search="debouncedElectricSearch"
+                      >
+                        <template v-slot:no-data>
+                          <v-list-item>
+                            <v-list-item-title class="text-caption">
+                              {{ electricSearchQuery ? 'ບໍ່ພົບຂໍ້ມູນ' : 'ພິມເພື່ອຄົ້ນຫາ...' }}
+                            </v-list-item-title>
+                          </v-list-item>
+                        </template>
+                        <template v-slot:item="{ props, item }">
+                          <v-list-item v-bind="props">
+                            <template v-slot:prepend>
+                              <v-icon color="primary">mdi-account</v-icon>
+                            </template>
+                            <template v-slot:subtitle>
+                              <div class="text-caption">
+                                <span class="text-grey">ລະຫັດ:</span> {{ item.raw.Customer_ID }}
+                                <span class="ml-2 text-grey">ແຂວງ:</span> {{ item.raw.province_name }}
+                              </div>
+                            </template>
+                          </v-list-item>
+                        </template>
+                      </v-autocomplete>
+
                       <v-text-field
                         v-model="electronicId"
                         label="ລະຫັດເລກກົງເຕີໄຟຟ້າ"
@@ -157,7 +218,68 @@
                       </v-text-field>
                     </div>
 
-                    <div v-if="water" key="water" class="mb-5">
+                    <!-- Water Service Fields -->
+                    <div v-if="water" key="water" class="mb-6 service-input-group">
+                      <div class="input-group-header mb-3">
+                        <v-icon color="primary" size="20">mdi-water</v-icon>
+                        <span class="input-group-title">ຂໍ້ມູນນໍ້າປະປາ</span>
+                      </div>
+                      
+                      <v-autocomplete
+                        v-model="waterProvince"
+                        :items="provinces"
+                        item-title="name"
+                        item-value="id"
+                        label="ເລືອກແຂວງ (ທາງເລືອກ)"
+                        prepend-inner-icon="mdi-map-marker"
+                        variant="outlined"
+                        color="primary"
+                        clearable
+                        class="input-field mb-4"
+                        hint="ເລືອກແຂວງເພື່ອຊອກຫາໄວຂຶ້ນ"
+                        persistent-hint
+                      ></v-autocomplete>
+
+                      <v-autocomplete
+                        v-model="selectedWaterCustomer"
+                        v-model:search="waterSearchQuery"
+                        :items="waterSearchResults"
+                        :loading="waterSearchLoading"
+                        item-title="display"
+                        item-value="Customer_ID"
+                        label="ຄົ້ນຫາລູກຄ້າດ່ວນ (ຊື່, ລະຫັດ, ບໍລິສັດ)"
+                        prepend-inner-icon="mdi-account-search"
+                        variant="outlined"
+                        color="primary"
+                        clearable
+                        no-filter
+                        class="input-field mb-4"
+                        hint="ພິມຊື່ ຫຼື ລະຫັດລູກຄ້າເພື່ອຄົ້ນຫາ"
+                        persistent-hint
+                        @update:search="debouncedWaterSearch"
+                      >
+                        <template v-slot:no-data>
+                          <v-list-item>
+                            <v-list-item-title class="text-caption">
+                              {{ waterSearchQuery ? 'ບໍ່ພົບຂໍ້ມູນ' : 'ພິມເພື່ອຄົ້ນຫາ...' }}
+                            </v-list-item-title>
+                          </v-list-item>
+                        </template>
+                        <template v-slot:item="{ props, item }">
+                          <v-list-item v-bind="props">
+                            <template v-slot:prepend>
+                              <v-icon color="primary">mdi-account</v-icon>
+                            </template>
+                            <template v-slot:subtitle>
+                              <div class="text-caption">
+                                <span class="text-grey">ລະຫັດ:</span> {{ item.raw.Customer_ID }}
+                                <span class="ml-2 text-grey">ແຂວງ:</span> {{ item.raw.province_name }}
+                              </div>
+                            </template>
+                          </v-list-item>
+                        </template>
+                      </v-autocomplete>
+
                       <v-text-field
                         v-model="waterId"
                         label="ລະຫັດເລກກົງເຕີນໍ້າ"
@@ -180,7 +302,28 @@
                       </v-text-field>
                     </div>
 
-                    <div v-if="telecom" key="telecom" class="mb-5">
+                    <!-- Telecom Service Fields -->
+                    <div v-if="telecom" key="telecom" class="mb-6 service-input-group">
+                      <div class="input-group-header mb-3">
+                        <v-icon color="primary" size="20">mdi-phone</v-icon>
+                        <span class="input-group-title">ຂໍ້ມູນໂທລະຄົມ</span>
+                      </div>
+                      
+                      <v-autocomplete
+                        v-model="telecomProvince"
+                        :items="provinces"
+                        item-title="name"
+                        item-value="id"
+                        label="ເລືອກແຂວງ (ທາງເລືອກ)"
+                        prepend-inner-icon="mdi-map-marker"
+                        variant="outlined"
+                        color="primary"
+                        clearable
+                        class="input-field mb-4"
+                        hint="ເລືອກແຂວງເພື່ອຊອກຫາໄວຂຶ້ນ"
+                        persistent-hint
+                      ></v-autocomplete>
+
                       <v-text-field
                         v-model="telecomId"
                         label="ເບີໂທລະສັບ"
@@ -248,7 +391,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
@@ -270,6 +413,190 @@ const telecom = ref(false)
 const electronicId = ref('')
 const waterId = ref('')
 const telecomId = ref('')
+
+// Province selections
+const electricProvince = ref(null)
+const waterProvince = ref(null)
+const telecomProvince = ref(null)
+
+// Quick search states
+const electricSearchQuery = ref('')
+const waterSearchQuery = ref('')
+const electricSearchResults = ref([])
+const waterSearchResults = ref([])
+const electricSearchLoading = ref(false)
+const waterSearchLoading = ref(false)
+const selectedElectricCustomer = ref(null)
+const selectedWaterCustomer = ref(null)
+
+// Customer info for confirmation dialog
+const customerInfo = ref({
+  electric: null,
+  water: null,
+  telecom: null
+})
+
+// Debounce timers
+let electricSearchTimer = null
+let waterSearchTimer = null
+
+// Provinces data
+const provinces = ref([
+  { id: '1', name: 'ນະຄອນຫຼວງວຽງຈັນ' },
+  { id: '2', name: 'ຜົ້ງສາລີ' },
+  { id: '3', name: 'ຫຼວງນໍ້າທາ' },
+  { id: '4', name: 'ອຸດົມໄຊ' },
+  { id: '5', name: 'ບໍ່ແກ້ວ' },
+  { id: '6', name: 'ຫຼວງພະບາງ' },
+  { id: '7', name: 'ຫົວພັນ' },
+  { id: '8', name: 'ໄຊຍະບູລີ' },
+  { id: '9', name: 'ຊຽງຂວາງ' },
+  { id: '10', name: 'ວຽງຈັນ' },
+  { id: '11', name: 'ບໍລິຄໍາໄຊ' },
+  { id: '12', name: 'ຄໍາມ່ວນ' },
+  { id: '13', name: 'ສະຫວັນນະເຂດ' },
+  { id: '14', name: 'ສາລະວັນ' },
+  { id: '15', name: 'ເຊກອງ' },
+  { id: '16', name: 'ຈໍາປາສັກ' },
+  { id: '17', name: 'ອັດຕະປື' },
+  { id: '18', name: 'ໄຊສົມບູນ' }
+])
+
+// Clear session on mount to prevent back/forward navigation
+onMounted(() => {
+  sessionStorage.removeItem('utilitySearchResults')
+  sessionStorage.removeItem('searchCriteria')
+  sessionStorage.removeItem('reportAccessed')
+})
+
+// Watch for customer selection
+watch(selectedElectricCustomer, (newVal) => {
+  if (newVal) {
+    electronicId.value = newVal
+    // Store customer info
+    const customer = electricSearchResults.value.find(c => c.Customer_ID === newVal)
+    if (customer) {
+      customerInfo.value.electric = customer
+    }
+  }
+})
+
+watch(selectedWaterCustomer, (newVal) => {
+  if (newVal) {
+    waterId.value = newVal
+    // Store customer info
+    const customer = waterSearchResults.value.find(c => c.Customer_ID === newVal)
+    if (customer) {
+      customerInfo.value.water = customer
+    }
+  }
+})
+
+// Debounced search functions
+const debouncedElectricSearch = (query: string) => {
+  if (electricSearchTimer) {
+    clearTimeout(electricSearchTimer)
+  }
+  
+  if (!query || query.length < 2) {
+    electricSearchResults.value = []
+    return
+  }
+  
+  electricSearchLoading.value = true
+  electricSearchTimer = setTimeout(async () => {
+    await searchElectricCustomers(query)
+  }, 500)
+}
+
+const debouncedWaterSearch = (query: string) => {
+  if (waterSearchTimer) {
+    clearTimeout(waterSearchTimer)
+  }
+  
+  if (!query || query.length < 2) {
+    waterSearchResults.value = []
+    return
+  }
+  
+  waterSearchLoading.value = true
+  waterSearchTimer = setTimeout(async () => {
+    await searchWaterCustomers(query)
+  }, 500)
+}
+
+// Search customer functions
+const searchElectricCustomers = async (query: string) => {
+  try {
+    const config = useRuntimeConfig()
+    const token = localStorage.getItem('access_token')
+    
+    const params = {
+      query: query,
+      limit: 100
+    }
+    
+    if (electricProvince.value) {
+      params.province_id = electricProvince.value
+    }
+    
+    const response = await axios.get(
+      `${config.public.strapi.url}api/edl-customer-search/`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    )
+    
+    electricSearchResults.value = response.data.map(customer => ({
+      ...customer,
+      display: `${customer.Name} ${customer.Surname || ''} ${customer.Company_name ? `(${customer.Company_name})` : ''}`.trim()
+    }))
+  } catch (error) {
+    console.error('Electric customer search error:', error)
+    electricSearchResults.value = []
+  } finally {
+    electricSearchLoading.value = false
+  }
+}
+
+const searchWaterCustomers = async (query: string) => {
+  try {
+    const config = useRuntimeConfig()
+    const token = localStorage.getItem('access_token')
+    
+    const params = {
+      query: query,
+      limit: 100
+    }
+    
+    if (waterProvince.value) {
+      params.province_id = waterProvince.value
+    }
+    
+    const response = await axios.get(
+      `${config.public.strapi.url}api/water-customer-search/`,
+      {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    )
+    
+    waterSearchResults.value = response.data.map(customer => ({
+      ...customer,
+      display: `${customer.Name} ${customer.Surname || ''} ${customer.Company_name ? `(${customer.Company_name})` : ''}`.trim()
+    }))
+  } catch (error) {
+    console.error('Water customer search error:', error)
+    waterSearchResults.value = []
+  } finally {
+    waterSearchLoading.value = false
+  }
+}
 
 // Check authentication
 const checkAuth = () => {
@@ -326,17 +653,17 @@ const toggleService = (service: string) => {
 
 const fetchWaterReport = async (customerId: string) => {
   try {
-    const config = useRuntimeConfig();
-    const token = localStorage.getItem("access_token");
+    const config = useRuntimeConfig()
+    const token = localStorage.getItem('access_token')
     const response = await axios.get(
       `${config.public.strapi.url}api/utility-report/`,
       { 
         params: { water: customerId },
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`
         }
       }
-    );
+    )
     
     if (!response.data || Object.keys(response.data).length === 0) {
       return {
@@ -349,7 +676,8 @@ const fetchWaterReport = async (customerId: string) => {
     return {
       success: true,
       data: response.data,
-      type: 'water'
+      type: 'water',
+      customerInfo: customerInfo.value.water
     }
   } catch (error) {
     console.error('Water API Error:', error)
@@ -365,17 +693,17 @@ const fetchWaterReport = async (customerId: string) => {
 
 const fetchElectricReport = async (customerId: string) => {
   try {
-    const config = useRuntimeConfig();
-    const token = localStorage.getItem("access_token");
+    const config = useRuntimeConfig()
+    const token = localStorage.getItem('access_token')
     const response = await axios.get(
       `${config.public.strapi.url}api/edl-report/`,
       { 
         params: { edl: customerId },
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`
         }
       }
-    );
+    )
     
     if (!response.data || Object.keys(response.data).length === 0) {
       return {
@@ -388,7 +716,8 @@ const fetchElectricReport = async (customerId: string) => {
     return {
       success: true,
       data: response.data,
-      type: 'electric'
+      type: 'electric',
+      customerInfo: customerInfo.value.electric
     }
   } catch (error) {
     console.error('Electric API Error:', error)
@@ -419,8 +748,111 @@ const fetchTelecomReport = async (customerId: string) => {
   }
 }
 
-// Confirmation dialog with checkbox
-const showConfirmationDialog = async () => {
+// Show error alert for not found services
+const showNotFoundAlert = async (errors: any[]) => {
+  const errorMessages = errors.map(e => {
+    const serviceName = e.type === 'water' ? 'ນໍ້າປະປາ' : 
+                       e.type === 'electric' ? 'ໄຟຟ້າ' : 'ໂທລະຄົມ'
+    const icon = e.type === 'water' ? 'mdi-water' : 
+                 e.type === 'electric' ? 'mdi-flash' : 'mdi-phone'
+    
+    return `
+      <div style="padding: 12px; margin: 8px 0; background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 6px; text-align: left;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i class="${icon}" style="color: #ef4444; font-size: 20px;"></i>
+          <strong style="color: #991b1b;">${serviceName}:</strong>
+        </div>
+        <div style="margin-top: 4px; color: #7f1d1d; font-size: 14px;">
+          ${e.message}
+        </div>
+      </div>
+    `
+  }).join('')
+  
+  const result = await Swal.fire({
+    icon: 'warning',
+    title: 'ບາງບໍລິການບໍ່ພົບຂໍ້ມູນ',
+    html: `
+      <div style="text-align: left; padding: 10px;">
+        <p style="margin-bottom: 15px; color: #6b7280;">
+          ລະບົບພົບຂໍ້ມູນບາງສ່ວນ ແຕ່ບາງບໍລິການບໍ່ພົບຂໍ້ມູນ:
+        </p>
+        ${errorMessages}
+        <div style="margin-top: 20px; padding: 12px; background: #eff6ff; border-radius: 6px; border-left: 4px solid #2563eb;">
+          <p style="margin: 0; color: #1e40af; font-size: 14px;">
+            <strong>ທ່ານຕ້ອງການດຳເນີນການຕໍ່ກັບຂໍ້ມູນທີ່ພົບບໍ?</strong>
+          </p>
+        </div>
+      </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'ດຳເນີນການຕໍ່',
+    cancelButtonText: 'ຍົກເລີກ',
+    confirmButtonColor: '#1e40af',
+    cancelButtonColor: '#6b7280',
+    width: '600px'
+  })
+  
+  return result.isConfirmed
+}
+
+// Enhanced confirmation dialog with customer info
+const showConfirmationDialog = async (searchResults: any) => {
+  // Build customer info display
+  let customerInfoHtml = '<div style="margin-bottom: 20px;">'
+  
+  if (searchResults.electric) {
+    const customer = customerInfo.value.electric || {}
+    customerInfoHtml += `
+      <div style="padding: 12px; margin-bottom: 10px; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 6px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <i class="mdi mdi-flash" style="color: #1e40af; font-size: 20px;"></i>
+          <strong style="color: #1e40af;">ໄຟຟ້າ</strong>
+        </div>
+        <div style="font-size: 13px; color: #1f2937; line-height: 1.6;">
+          <div><strong>ລະຫັດ:</strong> ${electronicId.value}</div>
+          ${customer.Name ? `<div><strong>ຊື່:</strong> ${customer.Name} ${customer.Surname || ''}</div>` : ''}
+          ${customer.Company_name ? `<div><strong>ບໍລິສັດ:</strong> ${customer.Company_name}</div>` : ''}
+          ${customer.province_name ? `<div><strong>ແຂວງ:</strong> ${customer.province_name}</div>` : ''}
+        </div>
+      </div>
+    `
+  }
+  
+  if (searchResults.water) {
+    const customer = customerInfo.value.water || {}
+    customerInfoHtml += `
+      <div style="padding: 12px; margin-bottom: 10px; background: #f0fdfa; border-left: 4px solid #14b8a6; border-radius: 6px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <i class="mdi mdi-water" style="color: #0d9488; font-size: 20px;"></i>
+          <strong style="color: #0d9488;">ນໍ້າປະປາ</strong>
+        </div>
+        <div style="font-size: 13px; color: #1f2937; line-height: 1.6;">
+          <div><strong>ລະຫັດ:</strong> ${waterId.value}</div>
+          ${customer.Name ? `<div><strong>ຊື່:</strong> ${customer.Name} ${customer.Surname || ''}</div>` : ''}
+          ${customer.Company_name ? `<div><strong>ບໍລິສັດ:</strong> ${customer.Company_name}</div>` : ''}
+          ${customer.province_name ? `<div><strong>ແຂວງ:</strong> ${customer.province_name}</div>` : ''}
+        </div>
+      </div>
+    `
+  }
+  
+  if (searchResults.telecom) {
+    customerInfoHtml += `
+      <div style="padding: 12px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <i class="mdi mdi-phone" style="color: #d97706; font-size: 20px;"></i>
+          <strong style="color: #d97706;">ໂທລະຄົມ</strong>
+        </div>
+        <div style="font-size: 13px; color: #1f2937;">
+          <div><strong>ເບີໂທ:</strong> ${telecomId.value}</div>
+        </div>
+      </div>
+    `
+  }
+  
+  customerInfoHtml += '</div>'
+  
   const result = await Swal.fire({
     title: '<strong>ຢືນຢັນການເຂົ້າເບິ່ງຂໍ້ມູນ</strong>',
     icon: 'warning',
@@ -428,9 +860,13 @@ const showConfirmationDialog = async () => {
       <div style="text-align: left; padding: 20px 10px;">
         <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
           <p style="margin: 0; color: #856404; font-size: 14px;">
-            <i class="mdi mdi-alert" style="font-size: 18px; vertical-align: middle;"></i>
             <strong>ກະລຸນາອ່ານຢ່າງລະອຽດ</strong>
           </p>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h4 style="color: #1e40af; margin-bottom: 10px;">ຂໍ້ມູນລູກຄ້າທີ່ຈະເຂົ້າເບິ່ງ:</h4>
+          ${customerInfoHtml}
         </div>
         
         <div style="margin-bottom: 20px;">
@@ -448,23 +884,18 @@ const showConfirmationDialog = async () => {
         </div>
         
         <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; font-size: 13px; color: #6b7280;">
-          <i class="mdi mdi-information" style="font-size: 16px; vertical-align: middle; color: #1e40af;"></i>
           ການເຂົ້າເບິ່ງຂໍ້ມູນລູກຄ້າຕ້ອງໄດ້ຮັບອະນຸຍາດເທົ່ານັ້ນ
         </div>
       </div>
     `,
     showCancelButton: true,
-    confirmButtonText: '<i class="mdi mdi-check"></i> ຢືນຢັນ ແລະ ດຳເນີນການຕໍ່',
-    cancelButtonText: '<i class="mdi mdi-close"></i> ຍົກເລີກ',
+    confirmButtonText: 'ຢືນຢັນ ແລະ ດຳເນີນການຕໍ່',
+    cancelButtonText: 'ຍົກເລີກ',
     confirmButtonColor: '#1e40af',
     cancelButtonColor: '#6b7280',
     allowOutsideClick: false,
     allowEscapeKey: false,
-    customClass: {
-      popup: 'swal-wide',
-      confirmButton: 'swal-confirm-btn',
-      cancelButton: 'swal-cancel-btn'
-    },
+    width: '700px',
     didOpen: () => {
       const checkbox = document.getElementById('confirmCheckbox') as HTMLInputElement
       const confirmButton = Swal.getConfirmButton()
@@ -552,32 +983,10 @@ const handleSearch = async () => {
     
     const hasSuccessfulResults = searchResults.water || searchResults.electric || searchResults.telecom
     
-    if (hasSuccessfulResults) {
-      // Show confirmation dialog before navigating
-      const confirmed = await showConfirmationDialog()
-      
-      if (confirmed) {
-        sessionStorage.setItem('utilitySearchResults', JSON.stringify(searchResults))
-        sessionStorage.setItem('searchCriteria', JSON.stringify({
-          water: water.value ? waterId.value : null,
-          electric: electronic.value ? electronicId.value : null,
-          telecom: telecom.value ? telecomId.value : null
-        }))
-        
-        await Swal.fire({
-          icon: 'success',
-          title: 'ສຳເລັດ!',
-          text: 'ກຳລັງນຳທ່ານໄປຫາໜ້າລາຍງານ...',
-          timer: 1500,
-          showConfirmButton: false,
-          timerProgressBar: true
-        })
-        
-        await router.push('reportutility/report_utilities')
-      }
-    } else {
+    if (!hasSuccessfulResults) {
+      // All services failed
       await Swal.fire({
-        icon: 'info',
+        icon: 'error',
         title: 'ບໍ່ພົບຂໍ້ມູນ',
         html: `
           <div style="text-align: left; padding: 10px;">
@@ -591,6 +1000,43 @@ const handleSearch = async () => {
         confirmButtonText: 'ຕົກລົງ',
         confirmButtonColor: '#1e40af'
       })
+      return
+    }
+    
+    // Some services have errors, show warning
+    if (searchResults.hasErrors) {
+      const shouldContinue = await showNotFoundAlert(searchResults.errors)
+      if (!shouldContinue) {
+        return
+      }
+    }
+    
+    // Show confirmation dialog with customer info
+    const confirmed = await showConfirmationDialog(searchResults)
+    
+    if (confirmed) {
+      // Store results and mark as accessed
+      sessionStorage.setItem('utilitySearchResults', JSON.stringify(searchResults))
+      sessionStorage.setItem('searchCriteria', JSON.stringify({
+        water: water.value ? waterId.value : null,
+        electric: electronic.value ? electronicId.value : null,
+        telecom: telecom.value ? telecomId.value : null
+      }))
+      sessionStorage.setItem('reportAccessed', 'true')
+      
+      await Swal.fire({
+        icon: 'success',
+        title: 'ສຳເລັດ!',
+        text: 'ກຳລັງນຳທ່ານໄປຫາໜ້າລາຍງານ...',
+        timer: 1500,
+        showConfirmButton: false,
+        timerProgressBar: true
+      })
+      
+      // Navigate to report page
+      // await router.push('/Utility/Report/ReportUtilities')
+      await router.push('/test21')
+
     }
     
   } catch (error) {
@@ -608,9 +1054,27 @@ const handleSearch = async () => {
 }
 
 const clearInputs = () => {
-  if (!electronic.value) electronicId.value = ''
-  if (!water.value) waterId.value = ''
-  if (!telecom.value) telecomId.value = ''
+  if (!electronic.value) {
+    electronicId.value = ''
+    electricProvince.value = null
+    selectedElectricCustomer.value = null
+    electricSearchQuery.value = ''
+    electricSearchResults.value = []
+    customerInfo.value.electric = null
+  }
+  if (!water.value) {
+    waterId.value = ''
+    waterProvince.value = null
+    selectedWaterCustomer.value = null
+    waterSearchQuery.value = ''
+    waterSearchResults.value = []
+    customerInfo.value.water = null
+  }
+  if (!telecom.value) {
+    telecomId.value = ''
+    telecomProvince.value = null
+    customerInfo.value.telecom = null
+  }
 }
 
 watch([electronic, water, telecom], clearInputs)
@@ -689,7 +1153,6 @@ watch([electronic, water, telecom], clearInputs)
 .section-header {
   display: flex;
   align-items: center;
-  margin-bottom: 1.5rem;
 }
 
 .selection-title {
@@ -771,6 +1234,27 @@ watch([electronic, water, telecom], clearInputs)
   right: 12px;
 }
 
+.service-input-group {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.input-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.input-group-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+
 .input-field :deep(.v-field) {
   border-radius: 10px;
   background: #ffffff;
@@ -812,10 +1296,6 @@ watch([electronic, water, telecom], clearInputs)
   transform: translateY(-2px);
 }
 
-.search-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
 .button-text {
   font-size: 1.15rem;
   font-weight: 700;
@@ -827,28 +1307,6 @@ watch([electronic, water, telecom], clearInputs)
   font-weight: 500;
 }
 
-/* SweetAlert2 Custom Styles */
-:global(.swal-wide) {
-  width: 600px !important;
-  max-width: 90% !important;
-  border-radius: 16px !important;
-}
-
-:global(.swal-confirm-btn) {
-  border-radius: 8px !important;
-  padding: 12px 32px !important;
-  font-weight: 600 !important;
-  font-size: 15px !important;
-}
-
-:global(.swal-cancel-btn) {
-  border-radius: 8px !important;
-  padding: 12px 32px !important;
-  font-weight: 600 !important;
-  font-size: 15px !important;
-}
-
-/* Responsive */
 @media (max-width: 600px) {
   .search-container {
     padding: 1.5rem 0.5rem;
@@ -862,29 +1320,11 @@ watch([electronic, water, telecom], clearInputs)
     font-size: 1.6rem;
   }
   
-  .header-subtitle {
-    font-size: 0.95rem;
-  }
-  
-  .service-card {
-    margin-bottom: 1rem;
-  }
-  
-  .icon-container {
-    width: 70px;
-    height: 70px;
-  }
-  
-  .search-card {
-    border-radius: 12px !important;
-  }
-  
-  :global(.swal-wide) {
-    width: 95% !important;
+  .service-input-group {
+    padding: 1rem;
   }
 }
 
-/* Animations */
 .v-slide-y-transition-enter-active,
 .v-slide-y-transition-leave-active {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
