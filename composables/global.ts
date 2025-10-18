@@ -1,11 +1,5 @@
-
 import swal from "sweetalert2";
 import type { SweetAlertOptions } from "sweetalert2";
-
-
-
-
-
 
 export const goPath = (path: string | null) => {
   if (path !== null) {
@@ -23,11 +17,6 @@ export const goPreviousPath = () => {
   const router = useRouter();
   return router.go(-1);
 };
-
-
-
-
-
 
 export const onLogout = () => {
   localStorage.removeItem("user");
@@ -129,7 +118,6 @@ export const GetIdentitiesList = () => {
   ];
 };
 
-
 export const GetIdentitiesLabel = (type: number): string => {
   const list_indetities_label = {
     1: "ບັດປະຈຳຕົວ",
@@ -218,8 +206,6 @@ export const GetItemPerPageOptions = () => {
   ];
 };
 
-
-
 export const pushPath = (path: string) => {
   const router = useRouter();
   if (!path) {
@@ -230,8 +216,6 @@ export const pushPath = (path: string) => {
     path: path,
   });
 };
-
-
 
 export const GetCommissionOrExpenseTypeLabel = (label: string) => {
   let listOfLabel = {
@@ -253,12 +237,6 @@ export const GetCommissionOrExpenseTypeLabel = (label: string) => {
 
   return listOfLabel[label] ?? "N/A";
 };
-
-
-
-
-
-
 
 export const GetUserRoleList = () => {
   return [

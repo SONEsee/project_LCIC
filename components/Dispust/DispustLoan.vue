@@ -20,17 +20,17 @@ const {
   getUserInitials,
   loadUsers,
 } = useUserInfo();
-const { user, userId, isAdmin, isLoggedIn } = useUserData();
+const { user, userId, isAdmin, isLoggedIn,userid } = useUserData();
 const header = [
   { title: "ເລືອກ", value: "checkbox", align: "center" },
-  { title: "ລຳດັບ", value: "id", align: "start" },
+  { title: "ລຳດັບ", value: "id",  },
   { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
   { title: "ລະຫັດ ວິສາຫະກິດ", value: "com_enterprise_code" },
   { title: "ສະມາຊິກ", value: "bnk_code" },
   { title: "ສາຂາ", value: "branch_id" },
   { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
   { title: "ລະຫັດສະມາຊິກ", value: "customer_id" },
-  { title: "Actions", value: "actions", sortable: false },
+  // { title: "Actions", value: "actions", sortable: false },
 ] as any;
 
 const LoanStore = useLoanStore();
@@ -65,9 +65,7 @@ const isAllSelected = computed({
   },
 });
 
-
 const selectedCount = computed(() => selecData.value.length);
-
 
 const isReadyToSubmit = computed(() => {
   return file.value && selectedCount.value > 0;
@@ -109,7 +107,7 @@ const confirmUpload = async () => {
     LoanStore.form_create_dispust.dispute_ids = selecData.value;
     LoanStore.form_create_dispust.id_dispust = dispustId;
     LoanStore.form_create_dispust.user_id = userId.value;
-    // LoanStore.form_create_dispust.user_insert = 
+    LoanStore.form_create_dispust.user_insert =String(userid.value);
 
     await LoanStore.createDispust();
 
@@ -126,7 +124,7 @@ onMounted(() => {
   LoanStore.data_fiter.query.id_file = dispustId;
   LoanStore.getDataLoan();
   memberinfoStore.getMemberInfo();
-  loadUsers()
+  loadUsers();
 });
 </script>
 
@@ -205,20 +203,39 @@ onMounted(() => {
         </v-btn>
       </div>
     </v-col>
-  </v-row>
-
-  <!-- <pre>{{ selecData }}</pre> -->
-
-  <v-data-table
+      <v-data-table
+    density="compact"
     :items="disputese"
     :headers="header"
     :items-per-page="reques.page_size"
     :loading="LoanStore.isLoading"
-    class="elevation-1"
+    class="elevation-1 "
   >
+  <template v-slot:header.id="{column}" class="">
+   <b style="color: blue;"> {{ column.title }}</b>
+  </template>
+  <template v-slot:header.LCIC_code="{column}" class="">
+   <b style="color: blue;"> {{ column.title }}</b>
+  </template>
+  <template v-slot:header.com_enterprise_code="{column}" class="">
+   <b style="color: blue;"> {{ column.title }}</b>
+  </template>
+  <template v-slot:header.bnk_code="{column}" class="">
+   <b style="color: blue;"> {{ column.title }}</b>
+  </template>
+  <template v-slot:header.branch_id="{column}" class="">
+   <b style="color: blue;"> {{ column.title }}</b>
+  </template>
+  <template v-slot:header.loan_id="{column}" class="">
+   <b style="color: blue;"> {{ column.title }}</b>
+  </template>
+  <template v-slot:header.customer_id="{column}" class="">
+   <b style="color: blue;"> {{ column.title }}</b>
+  </template>
     <template v-slot:item.checkbox="{ item }">
       <v-checkbox
-        size="small"
+        class="compact-checkbox d-flex justify-center align-center"
+        size="x-small"
         v-model="selecData"
         :value="item.id"
         :aria-label="`Select row for ${item.LCIC_code}`"
@@ -228,7 +245,8 @@ onMounted(() => {
 
     <template v-slot:header.checkbox>
       <v-checkbox
-        size="small"
+        class="compact-checkbox d-flex justify-center align-center"
+        size="x-small"
         v-model="isAllSelected"
         :indeterminate="selectedCount > 0 && selectedCount < disputese.length"
         aria-label="Select all rows"
@@ -276,14 +294,19 @@ onMounted(() => {
       </v-alert>
     </template>
   </v-data-table>
+  </v-row>
+
+  <!-- <pre>{{ selecData }}</pre> -->
+
+
 </template>
 
 <style scoped>
-.ga-2 {
-  gap: 8px;
+.compact-checkbox :deep(.v-selection-control) {
+  --v-selection-control-size: 20px;
 }
 
-.ga-3 {
-  gap: 12px;
+.compact-checkbox :deep(.v-icon) {
+  font-size: 20px !important;
 }
 </style>

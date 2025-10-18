@@ -188,21 +188,21 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="dispute-container">
+  <div class="dispute-container ">
     <div v-if="isLoading" class="loading-container">
       <v-progress-circular indeterminate color="primary" />
       <span class="ml-3">ກຳລັງໂຫຼດຂໍ້ມູນ...</span>
-    </div>
+    </div >
 
-    <template v-else>
-     
-      <div v-if="fileUrl" class="file-preview-container">
+    <template v-else class="">
+     <div class="d-flex justify-center align-center " >
+      <div v-if="fileUrl" class="file-preview-container ">
         <div class="file-header">
           <h3>ຟາຍເອກະສານ</h3>
           <span class="file-type">{{ fileType.toUpperCase() }}</span>
         </div>
         
-        <!-- ສະແດງຮູບພາບຖ້າບໍ່ແມ່ນ PDF -->
+   
         <div v-if="!isPdf" class="image-preview-container">
           <img 
             :src="fileUrl" 
@@ -240,7 +240,7 @@ onMounted(() => {
           </div>
         </div>
       </div>
-      
+      </div>
      
       <GloBalGlobalFilePreview
         v-if="fileUrl"
@@ -310,6 +310,7 @@ onMounted(() => {
       
      
       <v-data-table
+      density="compact"
         v-if="dataDispust.length && dataDispust[0]?.disputes"
         :items="dataDispust[0]?.disputes"
         :items-per-page="requese.page_size"
@@ -344,7 +345,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
+  min-height: 100px;
 }
 
 .file-preview-container {
@@ -352,7 +353,7 @@ onMounted(() => {
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 16px;
-  max-width: 100%;
+  max-width: 70%;
 }
 
 .file-header {
