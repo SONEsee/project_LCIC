@@ -2,6 +2,7 @@
 import dayjs from "dayjs";
 import { ref, onMounted, computed, toRaw } from "vue";
 import { useRoute } from "vue-router";
+import axios from "~/helpers/axios";
 
 
 interface User {
