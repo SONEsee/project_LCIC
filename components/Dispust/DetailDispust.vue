@@ -4,7 +4,7 @@ import { useRequesDispustStore } from "~/stores/requesdispust";
 import axios from "~/helpers/axios";
 import { useUserData } from "~/composables/useUserData";
 import { ref, computed, onMounted, watch } from "vue";
-
+const config = useRuntimeConfig()
 const { user, userId, isAdmin, isLoggedIn } = useUserData();
 const DispustStore = useRequesDispustStore();
 const imagepath = ref("");
@@ -13,7 +13,7 @@ const pdfUrl = ref("");
 const isLoading = ref(false);
 const isFallbackMode = ref(false);
 const pdfObjectUrl = ref("");
-const viewerType = ref("iframe"); // ເລີ່ມຕົ້ນໃຊ້ iframe viewer
+const viewerType = ref("iframe"); 
 const useEmbedViewer = computed(() => viewerType.value === "embed");
 const useObjectViewer = computed(() => viewerType.value === "object");
 const getAPIHost = (): string => {
@@ -46,7 +46,7 @@ const getAPIHost = (): string => {
   }
   
 
-  return 'http://192.168.45.56:8000';
+  return config.public.strapi.url;
 };
 const dataDispust = computed(() => {
   const data = DispustStore.response_dispust_data_edit;
@@ -95,7 +95,10 @@ const fileUrl = computed(() => {
   const apiHost = getAPIHost();
   return `${apiHost}/${imageUrl}`;
 });
-
+const hearder = [
+  {title:"ລຳດັບ", value:"index"},
+  {title:"ລະຫັດ ຂສລ", value:"LCIC_code"},
+]
 const fileType = computed(() => {
   if (!fileUrl.value) return "";
   const extension = fileUrl.value.split('.').pop()?.toLowerCase();
@@ -307,9 +310,10 @@ onMounted(() => {
           </div>
         </v-card>
       </v-dialog>
-      
+      <pre>{{ dataDispust[0]?.disputes }}</pre>
      
       <v-data-table
+    
       density="compact"
         v-if="dataDispust.length && dataDispust[0]?.disputes"
         :items="dataDispust[0]?.disputes"
