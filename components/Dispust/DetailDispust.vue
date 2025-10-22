@@ -1,10 +1,19 @@
-
 <script setup lang="ts">
 import { useRequesDispustStore } from "~/stores/requesdispust";
 import axios from "~/helpers/axios";
 import { useUserData } from "~/composables/useUserData";
 import { ref, computed, onMounted, watch } from "vue";
-const config = useRuntimeConfig()
+import { useMemberInfo } from "@/composables/memberInfo";
+import { MemberStore } from "~/stores/memberinfo";
+import dayjs from "dayjs";
+import { useLoanStore } from "~/stores/loan";
+import Swal from "sweetalert2";
+const LoanStore = useLoanStore();
+const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
+const selecData = ref<any>([]);
+
+const config = useRuntimeConfig();
+const memberinfoStore = MemberStore();
 const { user, userId, isAdmin, isLoggedIn } = useUserData();
 const DispustStore = useRequesDispustStore();
 const imagepath = ref("");
@@ -13,11 +22,12 @@ const pdfUrl = ref("");
 const isLoading = ref(false);
 const isFallbackMode = ref(false);
 const pdfObjectUrl = ref("");
-const viewerType = ref("iframe"); 
+const viewerType = ref("iframe");
+const selectAll = ref(false);
+
 const useEmbedViewer = computed(() => viewerType.value === "embed");
 const useObjectViewer = computed(() => viewerType.value === "object");
 const getAPIHost = (): string => {
- 
   try {
     const config = useRuntimeConfig();
     if (config?.public?.apiBase) {
@@ -27,24 +37,20 @@ const getAPIHost = (): string => {
       return config.public.strapi.url;
     }
   } catch (e) {
-    console.warn('Cannot access runtimeConfig:', e);
+    console.warn("Cannot access runtimeConfig:", e);
   }
-  
 
   if (axios.defaults.baseURL) {
     return axios.defaults.baseURL;
   }
-  
- 
+
   if (imagepath.value) {
     return imagepath.value;
   }
-  
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     return window.location.origin;
   }
-  
 
   return config.public.strapi.url;
 };
@@ -60,58 +66,81 @@ const dispustData = computed(() => {
 
 const fileUrl = computed(() => {
   if (!dispustData.value.length || !dispustData.value[0]?.image_url) return "";
-  
 
   let imageUrl = dispustData.value[0]?.image_url || "";
-  
- 
-  if (imageUrl.startsWith('//')) {
+
+  if (imageUrl.startsWith("//")) {
     const apiHost = getAPIHost();
     imageUrl = apiHost + imageUrl.substring(1);
     return imageUrl;
   }
-  
- 
-  if (imageUrl.startsWith('/')) {
-    
+
+  if (imageUrl.startsWith("/")) {
     if (!imagepath.value) {
       const apiHost = getAPIHost();
       return `${apiHost}${imageUrl}`;
     }
-    
-  
-    const base = (imagepath.value.endsWith('/')) 
-      ? imagepath.value.slice(0, -1) 
+
+    const base = imagepath.value.endsWith("/")
+      ? imagepath.value.slice(0, -1)
       : imagepath.value;
     return `${base}${imageUrl}`;
   }
-  
 
-  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
     return imageUrl;
   }
-  
 
   const apiHost = getAPIHost();
   return `${apiHost}/${imageUrl}`;
 });
+
 const hearder = [
-  {title:"ລຳດັບ", value:"index"},
-  {title:"ລະຫັດ ຂສລ", value:"LCIC_code"},
-]
+  { title: "ເລືອກທັງໝົດ", value: "checkbox", align: "center" },
+  { title: "ລຳດັບ", value: "index" },
+  { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+  { title: "ລະຫັດວີສາຫະກິດ", value: "com_enterprise_code" },
+  { title: "ສະມາຊິກ", value: "bnk_code" },
+  { title: "ເດືອນປີ", value: "period" },
+  { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
+  { title: "ລະຫັດລູກຄ້າ", value: "customer_id" },
+] as any;
+
 const fileType = computed(() => {
   if (!fileUrl.value) return "";
-  const extension = fileUrl.value.split('.').pop()?.toLowerCase();
+  const extension = fileUrl.value.split(".").pop()?.toLowerCase();
   return extension || "";
 });
 
 const isPdf = computed(() => {
-  return fileType.value === 'pdf';
+  return fileType.value === "pdf";
 });
 
 const requese = DispustStore.data_edit_filter.query;
 const rout = useRoute();
 const id_dispust = rout.query.dispust_confirm as string;
+
+const selectedCount = computed(() => selecData.value.length);
+
+const canSubmit = computed(() => selectedCount.value > 0);
+
+// ຟັງຊັນສຳລັບການເລືອກທັງໝົດ
+const toggleSelectAll = () => {
+  if (selectAll.value) {
+    // ເລືອກທັງໝົດ
+    const allIds = dataDispust.value[0]?.disputes?.map((item: any) => item.id_dispust) || [];
+    selecData.value = [...allIds];
+  } else {
+    // ຍົກເລີກການເລືອກທັງໝົດ
+    selecData.value = [];
+  }
+};
+
+// ຕິດຕາມການປ່ຽນແປງຂອງ selecData ເພື່ອອັບເດດສະຖານະ selectAll
+watch(selecData, (newVal) => {
+  const totalItems = dataDispust.value[0]?.disputes?.length || 0;
+  selectAll.value = newVal.length === totalItems && totalItems > 0;
+});
 
 async function onSelectionChange(params: number) {
   requese.page_size = params;
@@ -123,6 +152,51 @@ async function onPagechange(params: number) {
   await DispustStore.getDataDispustEdit();
 }
 
+const isUploading = ref(false);
+
+const confirmupload = async () => {
+  // ແກ້ໄຂເງື່ອນໄຂ: ຖ້າບໍ່ມີການເລືອກ
+  if (selecData.value.length === 0) {
+    Swal.fire({
+      icon: "warning",
+      title: "ກະລຸນາເລືອກລາຍການ",
+      text: "ກະລຸນາເລືອກລາຍການຢ່າງໜ້ອຍ 1 ລາຍການກ່ອນ",
+    });
+    return;
+  }
+
+  const result = await Swal.fire({
+    icon: "question",
+    title: "ຢືນຢັນການດຳເນີນການ",
+    text: `ທ່ານຕ້ອງການປະມວນຜົນ ${selecData.value.length} ລາຍການແມ່ນບໍ່?`,
+    showCancelButton: true,
+    confirmButtonText: "ຢືນຢັນ",
+    cancelButtonText: "ຍົກເລີກ",
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+  });
+
+  if (!result.isConfirmed) {
+    return;
+  }
+
+  isUploading.value = true;
+
+  try {
+    // ແກ້ໄຂຊື່ຕົວແປ: form_confirm_dispust
+    LoanStore.from_confirm_dispust.id_dispust_list = selecData.value;
+
+    await LoanStore.confirmDitpust();
+
+    selecData.value = [];
+    goPreviousPath();
+  } catch (error) {
+    console.error("Error:", error);
+  } finally {
+    isUploading.value = false;
+  }
+};
+
 function openPdfViewer() {
   if (isPdf.value && fileUrl.value) {
     pdfUrl.value = "";
@@ -130,7 +204,6 @@ function openPdfViewer() {
 
     setTimeout(() => {
       try {
-
         pdfUrl.value = fileUrl.value;
 
         if (viewerType.value === "iframe") {
@@ -141,7 +214,7 @@ function openPdfViewer() {
           console.log("Using object PDF viewer");
         }
       } catch (error) {
-        console.error('Error setting PDF URL:', error);
+        console.error("Error setting PDF URL:", error);
         pdfUrl.value = fileUrl.value;
       }
     }, 300);
@@ -164,12 +237,13 @@ watch(fileUrl, (newUrl) => {
 });
 
 onMounted(() => {
+  memberinfoStore.getMemberInfo();
   imagepath.value = axios.defaults.baseURL || "";
 
   if (userId.value) {
     DispustStore.data_filter_dispust.query.bnk_code = userId.value;
   }
-  
+
   if (id_dispust) {
     DispustStore.data_edit_filter.query.confirm_dispust_id = id_dispust;
     DispustStore.data_filter_dispust.query.id_disput_loan = id_dispust;
@@ -178,250 +252,369 @@ onMounted(() => {
   isLoading.value = true;
   Promise.all([
     DispustStore.getDataDispustEdit(),
-    DispustStore.getDataDispust()
+    DispustStore.getDataDispust(),
   ]).finally(() => {
     isLoading.value = false;
-    
- 
-    if (dispustData.value.length && dispustData.value[0]?.image_url && isPdf.value) {
-      console.log('PDF URL:', fileUrl.value);
+
+    if (
+      dispustData.value.length &&
+      dispustData.value[0]?.image_url &&
+      isPdf.value
+    ) {
+      console.log("PDF URL:", fileUrl.value);
     }
   });
 });
 </script>
 
 <template>
-  <div class="dispute-container ">
+  <div class="dispute-container">
     <div v-if="isLoading" class="loading-container">
-      <v-progress-circular indeterminate color="primary" />
-      <span class="ml-3">ກຳລັງໂຫຼດຂໍ້ມູນ...</span>
-    </div >
+      <v-progress-circular indeterminate color="primary" size="50" />
+      <p class="loading-text">ກຳລັງໂຫຼດຂໍ້ມູນ...</p>
+    </div>
 
-    <template v-else class="">
-     <div class="d-flex justify-center align-center " >
-      <div v-if="fileUrl" class="file-preview-container ">
-        <div class="file-header">
-          <h3>ຟາຍເອກະສານ</h3>
-          <span class="file-type">{{ fileType.toUpperCase() }}</span>
-        </div>
-        
-   
-        <div v-if="!isPdf" class="image-preview-container">
-          <img 
-            :src="fileUrl" 
-            alt="Dispute Image"
-            class="preview-image"
-          />
-        </div>
-        
-     
-        <div v-else class="pdf-preview-container">
-          <div class="pdf-icon">
-            <v-icon size="64">mdi-file-pdf-box</v-icon>
+    <template v-else>
+      <!-- ສ່ວນສະແດງເອກະສານ -->
+      <v-card v-if="fileUrl" class="file-card elevation-2 mb-6">
+        <v-card-title class="file-card-header">
+          <div class="d-flex align-center justify-space-between w-100">
+            <div class="d-flex align-center">
+              <v-icon color="blue-darken-1" class="mr-2">mdi-file-document-outline</v-icon>
+              <span class="text-h6">ເອກະສານແນບ</span>
+            </div>
+            <v-chip size="small" color="blue-grey-lighten-4" class="file-type-chip">
+              <v-icon start size="small">mdi-file</v-icon>
+              {{ fileType.toUpperCase() }}
+            </v-chip>
           </div>
-          <span class="pdf-filename">
-            {{ dispustData[0]?.image_url?.split('/').pop()?.replace(/%E0%B8%/g, '') || 'ເອກະສານ PDF' }}
-          </span>
-          <div class="pdf-actions mt-3">
-            <v-btn 
-              color="primary" 
-              class="mr-2" 
-              @click="openPdfViewer"
-            >
-              <v-icon left>mdi-eye</v-icon>
-              ເປີດເບິ່ງເອກະສານ
-            </v-btn>
-            <v-btn 
-              color="secondary" 
-              :href="fileUrl" 
-              target="_blank"
-              download
-            >
-              <v-icon left>mdi-download</v-icon>
-              ດາວໂຫຼດ
-            </v-btn>
+        </v-card-title>
+
+        <v-divider></v-divider>
+
+        <v-card-text class="pa-6">
+          <div v-if="!isPdf" class="image-preview-wrapper">
+            <img :src="fileUrl" alt="Dispute Image" class="preview-image" />
           </div>
-        </div>
-      </div>
-      </div>
-     
-      <GloBalGlobalFilePreview
-        v-if="fileUrl"
-        :src="dispustData[0]?.image_url || ''"
-        size="medium"
-        show-preview
-        show-file-name
-        @click="isPdf && openPdfViewer()"
-      />
-      
-     
+
+          <div v-else class="pdf-preview-wrapper">
+            <div class="pdf-info-section">
+              <v-icon size="80" color="red-darken-1">mdi-file-pdf-box</v-icon>
+              <p class="pdf-filename mt-4">
+                {{
+                  dispustData[0]?.image_url
+                    ?.split("/")
+                    .pop()
+                    ?.replace(/%E0%B8%/g, "") || "ເອກະສານ PDF"
+                }}
+              </p>
+              <div class="pdf-actions mt-6">
+                <v-btn 
+                  variant="flat" 
+                  color="blue-darken-1" 
+                  class="mr-3"
+                  size="large"
+                  @click="openPdfViewer"
+                >
+                  <v-icon start>mdi-eye-outline</v-icon>
+                  ເປີດເບິ່ງເອກະສານ
+                </v-btn>
+                <v-btn 
+                  variant="outlined" 
+                  color="blue-darken-1"
+                  size="large"
+                  :href="fileUrl" 
+                  target="_blank" 
+                  download
+                >
+                  <v-icon start>mdi-download-outline</v-icon>
+                  ດາວໂຫຼດ
+                </v-btn>
+              </div>
+            </div>
+          </div>
+        </v-card-text>
+      </v-card>
+
+      <!-- PDF Dialog -->
       <v-dialog
         v-model="showPdfViewer"
         fullscreen
-        hide-overlay
         transition="dialog-bottom-transition"
       >
         <v-card>
-          <v-toolbar dark color="primary">
-            <v-btn icon dark @click="closePdfViewer">
+          <v-toolbar color="blue-darken-1" dark>
+            <v-btn icon @click="closePdfViewer">
               <v-icon>mdi-close</v-icon>
             </v-btn>
-            <v-toolbar-title>
-              {{ dispustData[0]?.image_url?.split('/').pop()?.replace(/%E0%B8%/g, '') || 'ເອກະສານ PDF' }}
+            <v-toolbar-title class="text-truncate">
+              {{
+                dispustData[0]?.image_url
+                  ?.split("/")
+                  .pop()
+                  ?.replace(/%E0%B8%/g, "") || "ເອກະສານ PDF"
+              }}
             </v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn 
-              icon 
-              dark 
-              :href="pdfUrl" 
-              target="_blank" 
+            <v-btn
+              icon
+              :href="pdfUrl"
+              target="_blank"
               title="ດາວໂຫຼດ"
               download
             >
               <v-icon>mdi-download</v-icon>
             </v-btn>
-            <v-btn 
-              icon 
-              dark 
-              :href="pdfUrl" 
-              target="_blank" 
+            <v-btn
+              icon
+              :href="pdfUrl"
+              target="_blank"
               title="ເປີດໃນແຖບໃໝ່"
               rel="noopener noreferrer"
             >
               <v-icon>mdi-open-in-new</v-icon>
             </v-btn>
           </v-toolbar>
-          
+
           <div class="pdf-container">
-            <iframe 
-              :src="pdfUrl" 
-              width="100%" 
-              height="100%" 
+            <iframe
+              v-if="pdfUrl"
+              :src="pdfUrl"
+              width="100%"
+              height="100%"
               frameborder="0"
               sandbox="allow-scripts allow-same-origin allow-forms"
               title="PDF Viewer"
               type="application/pdf"
-              v-if="pdfUrl"
             ></iframe>
             <div v-else class="pdf-loading">
-              <v-progress-circular indeterminate color="primary" />
-              <span class="ml-3">ກຳລັງໂຫຼດເອກະສານ PDF...</span>
+              <v-progress-circular indeterminate color="primary" size="50" />
+              <p class="mt-4">ກຳລັງໂຫຼດເອກະສານ PDF...</p>
             </div>
           </div>
         </v-card>
       </v-dialog>
-      <pre>{{ dataDispust[0]?.disputes }}</pre>
-     
-      <v-data-table
-    
-      density="compact"
-        v-if="dataDispust.length && dataDispust[0]?.disputes"
-        :items="dataDispust[0]?.disputes"
-        :items-per-page="requese.page_size"
-        class="mt-4"
-      >
- 
-        <template v-slot:bottom>
-          <GloBalTablePaginations
-            :page="requese.page"
-            :limit="requese.page_size"
-            :totalpage="DispustStore.response_dispust_data_edit?.pagination.total_pages || 0"
-            @onPagechange="onPagechange"
-            @onSelectionChange="onSelectionChange"
-          />
-        </template>
-      </v-data-table>
-      
-    
-      <div v-if="!dataDispust.length || !dataDispust[0]?.disputes" class="no-data-message">
-        ບໍ່ມີຂໍ້ມູນການໂຕ້ແຍ້ງທີ່ຈະສະແດງ
-      </div>
+
+      <!-- ສ່ວນຕາຕະລາງຂໍ້ມູນ -->
+      <v-card class="data-table-card elevation-2">
+        <!-- Action Bar -->
+        <v-card-title class="action-bar">
+          <div class="d-flex align-center justify-space-between w-100 flex-wrap ga-3">
+            <div class="d-flex align-center ga-2">
+              <v-icon color="blue-darken-1">mdi-table-large</v-icon>
+              <span class="text-h6">ລາຍການຂໍ້ມູນ</span>
+            </div>
+            
+            <div class="d-flex align-center ga-3">
+              <v-chip 
+                v-if="selectedCount > 0" 
+                color="blue-lighten-4" 
+                class="px-4"
+              >
+                <v-icon start size="small">mdi-check-circle</v-icon>
+                ເລືອກແລ້ວ: {{ selectedCount }} ລາຍການ
+              </v-chip>
+              
+              <v-btn
+                variant="flat"
+                color="green-darken-1"
+                :disabled="!canSubmit"
+                :loading="isUploading"
+                size="large"
+                @click="confirmupload"
+              >
+                <v-icon start>mdi-check-circle-outline</v-icon>
+                ຢືນຢັນການປະມວນຜົນ
+                <v-badge
+                  v-if="selectedCount > 0"
+                  :content="selectedCount"
+                  color="red-darken-1"
+                  inline
+                  class="ml-2"
+                />
+              </v-btn>
+            </div>
+          </div>
+        </v-card-title>
+
+        <v-divider></v-divider>
+
+        <!-- Table -->
+        <v-data-table
+          :headers="hearder"
+          :items="dataDispust[0]?.disputes || []"
+          :items-per-page="requese.page_size"
+          density="comfortable"
+          class="custom-table"
+          hover
+        >
+          <template v-slot:header.checkbox>
+            <v-checkbox
+              v-model="selectAll"
+              @change="toggleSelectAll"
+              hide-details
+              density="compact"
+              color="blue-darken-1"
+            />
+          </template>
+
+          <template v-slot:item.checkbox="{ item }">
+            <v-checkbox
+              v-model="selecData"
+              :value="(item as any).id_dispust"
+              hide-details
+              density="compact"
+              color="blue-darken-1"
+              @click.stop
+            />
+          </template>
+
+          <template v-slot:item.index="{ item, index }">
+            <v-chip size="small" color="grey-lighten-3">
+              {{ (requese.page - 1) * requese.page_size + index + 1 }}
+            </v-chip>
+          </template>
+
+          <template v-slot:item.bnk_code="{ item }">
+            <span class="font-weight-medium">
+              {{ mapMemberInfo((item as any).bnk_code || "") }}
+            </span>
+          </template>
+
+          <template v-slot:item.period="{ item }">
+            <v-chip size="small" color="blue-lighten-5" variant="flat">
+              <v-icon start size="small">mdi-calendar-month</v-icon>
+              {{ dayjs((item as any).period || "").format("YYYY-MM") }}
+            </v-chip>
+          </template>
+
+          <template v-slot:bottom>
+            <GloBalTablePaginations
+              :page="requese.page"
+              :limit="requese.page_size"
+              :totalpage="
+                DispustStore.response_dispust_data_edit?.pagination.total_pages || 0
+              "
+              @onPagechange="onPagechange"
+              @onSelectionChange="onSelectionChange"
+            />
+          </template>
+
+          <template v-slot:no-data>
+            <div class="no-data-wrapper">
+              <v-icon size="64" color="grey-lighten-1">mdi-file-document-alert-outline</v-icon>
+              <p class="text-h6 mt-4 text-grey-darken-1">ບໍ່ມີຂໍ້ມູນການໂຕ້ແຍ້ງທີ່ຈະສະແດງ</p>
+            </div>
+          </template>
+        </v-data-table>
+      </v-card>
     </template>
   </div>
 </template>
 
 <style scoped>
 .dispute-container {
-  padding: 16px;
+  padding: 24px;
+  background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+  min-height: 100vh;
 }
 
 .loading-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100px;
+  min-height: 400px;
+  gap: 16px;
 }
 
-.file-preview-container {
-  margin-bottom: 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 16px;
-  max-width: 70%;
+.loading-text {
+  font-size: 1.1rem;
+  color: #5f6368;
+  margin: 0;
 }
 
-.file-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.file-type {
-  background-color: #f0f0f0;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: bold;
-}
-
-.image-preview-container {
-  max-width: 100%;
+/* ສ່ວນເອກະສານ */
+.file-card {
+  border-radius: 12px !important;
   overflow: hidden;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.file-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.file-card-header {
+  background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);
+  padding: 20px 24px !important;
+}
+
+.file-type-chip {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.image-preview-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 16px;
 }
 
 .preview-image {
   max-width: 100%;
   height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.pdf-preview-container {
+.pdf-preview-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pdf-info-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background-color: #f9f9f9;
-  border-radius: 4px;
+  padding: 40px;
+  background: linear-gradient(135deg, #fff5f5 0%, #fafafa 100%);
+  border-radius: 12px;
+  border: 2px dashed #e0e0e0;
+  transition: all 0.3s ease;
 }
 
-.pdf-icon {
-  color: #d32f2f;
-  margin-bottom: 16px;
+.pdf-info-section:hover {
+  border-color: #1976d2;
+  transform: translateY(-2px);
 }
 
 .pdf-filename {
-  font-size: 0.9rem;
-  color: #555;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-bottom: 16px;
+  font-size: 1rem;
+  color: #424242;
   text-align: center;
+  max-width: 400px;
+  word-break: break-word;
+  font-weight: 500;
 }
 
 .pdf-actions {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
 }
 
+/* PDF Dialog */
 .pdf-container {
   height: calc(100vh - 64px);
   width: 100%;
-  overflow: hidden;
+  background: #f5f5f5;
   position: relative;
 }
 
@@ -433,21 +626,119 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 24px;
+  gap: 16px;
 }
 
-.no-data-message {
-  padding: 24px;
-  text-align: center;
-  color: #666;
-  background-color: #f9f9f9;
-  border-radius: 4px;
-  border: 1px dashed #ddd;
-  margin-top: 16px;
+.pdf-loading p {
+  color: #5f6368;
+  font-size: 1rem;
+}
+
+/* ສ່ວນຕາຕະລາງ */
+.data-table-card {
+  border-radius: 12px !important;
+  overflow: hidden;
+  background: white;
+}
+
+.action-bar {
+  background: linear-gradient(135deg, #e8f5e9 0%, #f5f5f5 100%);
+  padding: 20px 24px !important;
+}
+
+.custom-table {
+  background: transparent;
+}
+
+.custom-table :deep(thead) {
+  background: #fafafa;
+}
+
+.custom-table :deep(thead th) {
+  font-weight: 600 !important;
+  color: #424242 !important;
+  border-bottom: 2px solid #e0e0e0 !important;
+  padding: 16px 12px !important;
+}
+
+.custom-table :deep(tbody tr) {
+  transition: all 0.2s ease;
+}
+
+.custom-table :deep(tbody tr:hover) {
+  background: #f8f9fa !important;
+}
+
+.custom-table :deep(tbody td) {
+  padding: 14px 12px !important;
+  color: #616161;
+}
+
+.no-data-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%);
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  .dispute-container {
+    padding: 16px;
+  }
+
+  .action-bar {
+    padding: 16px !important;
+  }
+
+  .action-bar > div {
+    flex-direction: column;
+    gap: 12px !important;
+  }
+
+  .pdf-info-section {
+    padding: 24px;
+  }
+
+  .pdf-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .pdf-actions .v-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .file-card-header,
+  .action-bar {
+    padding: 16px !important;
+  }
+
+  .custom-table :deep(thead th),
+  .custom-table :deep(tbody td) {
+    padding: 10px 8px !important;
+    font-size: 0.875rem;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.file-card,
+.data-table-card {
+  animation: fadeIn 0.5s ease-out;
 }
 </style>
-
-
-
-
