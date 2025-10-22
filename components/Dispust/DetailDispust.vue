@@ -392,7 +392,7 @@ onMounted(() => {
         </v-card>
       </v-dialog>
 
-      <!-- Data Table -->
+      
       <v-card class="data-table-card elevation-2">
         <div class="action-bar">
           <div class="d-flex align-center justify-space-between">
