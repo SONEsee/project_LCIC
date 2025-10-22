@@ -1,3 +1,4 @@
+import { goPreviousPath } from './../composables/global';
 import { defineStore } from "pinia";
 import axios from "~/helpers/axios";
 import pinia from "~/plugins/pinia";
@@ -34,6 +35,9 @@ export const useLoanStore = defineStore("loan", {
         user_id: "" as string,
         deception: "test" as string,
       },
+      from_confirm_dispust: {
+        id_dispust_list: [] as number[],
+      },
     };
   },
   actions: {
@@ -51,6 +55,7 @@ export const useLoanStore = defineStore("loan", {
         if (res.status === 200) {
           this.respons_data_loan_list = res.data.data;
           console.log("check data", this.respons_data_loan_list);
+          goPreviousPath();
         }
       } catch (error) {
         Swal.fire({
@@ -62,6 +67,43 @@ export const useLoanStore = defineStore("loan", {
         this.isLoading = false;
       }
     },
+  // ໃນ Store
+async confirmDitpust() {
+  this.isLoading = true;
+  try {
+    const req = await axios.post(
+      `/api/process-multiple-disputes/`,
+      this.from_confirm_dispust 
+    );
+    
+    if (req.status === 200 || req.status === 201) {
+      const data = req.data;
+      
+      // ສະແດງຜົນລັບລະອຽດ
+      await Swal.fire({
+        icon: "success",
+        title: "ສຳເລັດ",
+        html: `
+          <p>ປະມວນຜົນສຳເລັດ ${data.summary.success}/${data.summary.total} ລາຍການ</p>
+          ${data.summary.failed > 0 ? `<p style="color: red;">ຜິດພາດ: ${data.summary.failed} ລາຍການ</p>` : ''}
+        `,
+      });
+      
+      this.isLoading = false;
+      
+      // Refresh ຂໍ້ມູນ
+      await this.getDataLoan();
+    }
+  } catch (error: any) {
+    this.isLoading = false;
+    
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: error?.response?.data?.message || `ບໍ່ສາມາດປະມວນຜົນໄດ້: ${error}`,
+    });
+  }
+},
 
     async createDispust() {
       this.isLoading = true;
@@ -85,7 +127,6 @@ export const useLoanStore = defineStore("loan", {
           return;
         }
 
-       
         const formData = new FormData();
         formData.append("file", this.form_create_dispust.file);
         formData.append(
@@ -94,9 +135,11 @@ export const useLoanStore = defineStore("loan", {
         );
         formData.append("id_dispust", this.form_create_dispust.id_dispust);
         formData.append("user_id", this.form_create_dispust.user_id);
-        formData.append("user_insert", String(this.form_create_dispust.user_insert));
+        formData.append(
+          "user_insert",
+          String(this.form_create_dispust.user_insert)
+        );
 
-      
         const res = await axios.post(`/api/api/disputes/confirm/`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -108,22 +151,20 @@ export const useLoanStore = defineStore("loan", {
             icon: "success",
             title: "ສຳເລັດ",
             text: res.data.message || "ບັນທຶກຂໍ້ມູນສຳເລັດ",
-            timer:1500,
-            showConfirmButton:false
-          });setTimeout(() => {
-            goPreviousPath()
-          },1000);
+            timer: 1500,
+            showConfirmButton: false,
+          });
+          setTimeout(() => {
+            goPreviousPath();
+          }, 1000);
 
-        
           this.resetForm();
 
-          
           await this.getDataLoan();
         }
       } catch (error: any) {
         console.error("Upload error:", error);
 
- 
         const errorMessage =
           error.response?.data?.message ||
           error.response?.data?.errors?.join(", ") ||
@@ -146,7 +187,7 @@ export const useLoanStore = defineStore("loan", {
         dispute_ids: [],
         id_dispust: "",
         user_id: "",
-        user_insert:"",
+        user_insert: "",
         deception: "",
       };
     },

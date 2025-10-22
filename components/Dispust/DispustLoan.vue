@@ -7,7 +7,8 @@ import { useMemberInfo } from "@/composables/memberInfo";
 import dayjs from "dayjs";
 import { useUserData } from "~/composables/useUserData";
 import { useUserInfo } from "@/composables/useUserInfo";
-
+import { useRequesDispustStore } from "~/stores/requesdispust";
+const DispustStore = useRequesDispustStore();
 const {
   userData,
   mapUserInfo,
@@ -20,10 +21,10 @@ const {
   getUserInitials,
   loadUsers,
 } = useUserInfo();
-const { user, userId, isAdmin, isLoggedIn,userid } = useUserData();
+const { user, userId, isAdmin, isLoggedIn, userid } = useUserData();
 const header = [
   { title: "ເລືອກ", value: "checkbox", align: "center" },
-  { title: "ລຳດັບ", value: "id",  },
+  { title: "ລຳດັບ", value: "id" },
   { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
   { title: "ລະຫັດ ວິສາຫະກິດ", value: "com_enterprise_code" },
   { title: "ສະມາຊິກ", value: "bnk_code" },
@@ -51,14 +52,33 @@ const disputese = computed(() => {
   return [];
 });
 
+const dispushMate = computed(() => {
+  const data = DispustStore.response_dispust_data_edit;
+  if (Array.isArray(data)) {
+    return data;
+  }
+  if (data && typeof data === "object") {
+    return [data];
+  }
+  return [];
+});
+
+
+const selectableItems = computed(() => {
+  return disputese.value.filter((item) => item.status === "1");
+});
+
 const isAllSelected = computed({
   get: () => {
-    if (disputese.value.length === 0) return false;
-    return disputese.value.every((item) => selecData.value.includes(item.id));
+    if (selectableItems.value.length === 0) return false;
+    return selectableItems.value.every((item) =>
+      selecData.value.includes(item.id)
+    );
   },
   set: (value: boolean) => {
     if (value) {
-      selecData.value = disputese.value.map((item) => item.id);
+      
+      selecData.value = selectableItems.value.map((item) => item.id);
     } else {
       selecData.value = [];
     }
@@ -107,7 +127,7 @@ const confirmUpload = async () => {
     LoanStore.form_create_dispust.dispute_ids = selecData.value;
     LoanStore.form_create_dispust.id_dispust = dispustId;
     LoanStore.form_create_dispust.user_id = userId.value;
-    LoanStore.form_create_dispust.user_insert =String(userid.value);
+    LoanStore.form_create_dispust.user_insert = String(userid.value);
 
     await LoanStore.createDispust();
 
@@ -132,7 +152,9 @@ onMounted(() => {
   <v-card height="60" class="d-flex align-center pa-4 mb-4" outlined>
     <h3 style="color: #1a237e">ຈັດການແກ້ໄຂຂໍ້ມູນທີ່ເກິດ Dispute</h3>
   </v-card>
-
+  <!-- <pre>
+  {{ disputese }}
+</pre> -->
   <v-row class="mb-4">
     <v-col cols="12" md="6">
       <VFileUpload
@@ -203,102 +225,129 @@ onMounted(() => {
         </v-btn>
       </div>
     </v-col>
-      <v-data-table
-    density="compact"
-    :items="disputese"
-    :headers="header"
-    :items-per-page="reques.page_size"
-    :loading="LoanStore.isLoading"
-    class="elevation-1 "
-  >
-  <template v-slot:header.id="{column}" class="">
-   <b style="color: blue;"> {{ column.title }}</b>
-  </template>
-  <template v-slot:header.LCIC_code="{column}" class="">
-   <b style="color: blue;"> {{ column.title }}</b>
-  </template>
-  <template v-slot:header.com_enterprise_code="{column}" class="">
-   <b style="color: blue;"> {{ column.title }}</b>
-  </template>
-  <template v-slot:header.bnk_code="{column}" class="">
-   <b style="color: blue;"> {{ column.title }}</b>
-  </template>
-  <template v-slot:header.branch_id="{column}" class="">
-   <b style="color: blue;"> {{ column.title }}</b>
-  </template>
-  <template v-slot:header.loan_id="{column}" class="">
-   <b style="color: blue;"> {{ column.title }}</b>
-  </template>
-  <template v-slot:header.customer_id="{column}" class="">
-   <b style="color: blue;"> {{ column.title }}</b>
-  </template>
-    <template v-slot:item.checkbox="{ item }">
-      <v-checkbox
-        class="compact-checkbox d-flex justify-center align-center"
-        size="x-small"
-        v-model="selecData"
-        :value="item.id"
-        :aria-label="`Select row for ${item.LCIC_code}`"
-        @click.stop
-      ></v-checkbox>
-    </template>
+    <v-data-table
+      density="compact"
+      :items="disputese"
+      :headers="header"
+      :items-per-page="reques.page_size"
+      :loading="LoanStore.isLoading"
+      class="elevation-1"
+    >
+      <template v-slot:header.id="{ column }" class="">
+        <b style="color: blue"> {{ column.title }}</b>
+      </template>
+      <template v-slot:header.LCIC_code="{ column }" class="">
+        <b style="color: blue"> {{ column.title }}</b>
+      </template>
+      <template v-slot:header.com_enterprise_code="{ column }" class="">
+        <b style="color: blue"> {{ column.title }}</b>
+      </template>
+      <template v-slot:header.bnk_code="{ column }" class="">
+        <b style="color: blue"> {{ column.title }}</b>
+      </template>
+      <template v-slot:header.branch_id="{ column }" class="">
+        <b style="color: blue"> {{ column.title }}</b>
+      </template>
+      <template v-slot:header.loan_id="{ column }" class="">
+        <b style="color: blue"> {{ column.title }}</b>
+      </template>
+      <template v-slot:header.customer_id="{ column }" class="">
+        <b style="color: blue"> {{ column.title }}</b>
+      </template>
+      <template v-slot:item.checkbox="{ item }">
+        <v-checkbox
+          v-if="item.status === '1'"
+          class="compact-checkbox d-flex justify-center align-center"
+          size="x-small"
+          v-model="selecData"
+          :value="item.id"
+          :aria-label="`Select row for ${item.LCIC_code}`"
+          @click.stop
+        ></v-checkbox>
+        <v-tooltip
+          text="ຢືນຢັນແລ້ວແລ້ວລໍຖ້າການກວດສອບ"
+          v-else-if="item.status === '0'"
+        >
+          <template v-slot:activator="{ props }">
+            <v-chip
+              class="d-flex justify-center align-center"
+              size="x-small"
+              color="warning"
+              v-bind="props"
+            >
+              ລໍຖ້າອະນຸມັດ
+            </v-chip>
+          </template>
+        </v-tooltip>
+        <v-chip
+          v-else-if="item.status === '2'"
+          class="d-flex justify-center align-center"
+          size="x-small"
+          color="success"
+        >
+          ສຳເລັດ
+        </v-chip>
+      </template>
 
-    <template v-slot:header.checkbox>
-      <v-checkbox
-        class="compact-checkbox d-flex justify-center align-center"
-        size="x-small"
-        v-model="isAllSelected"
-        :indeterminate="selectedCount > 0 && selectedCount < disputese.length"
-        aria-label="Select all rows"
-        @click.stop
-      ></v-checkbox>
-    </template>
+      <template v-slot:header.checkbox>
+        <v-checkbox
+          class="compact-checkbox d-flex justify-center align-center"
+          size="x-small"
+          v-model="isAllSelected"
+          :indeterminate="
+            selectedCount > 0 && selectedCount < selectableItems.length
+          "
+          :disabled="selectableItems.length === 0"
+          aria-label="Select all rows"
+          @click.stop
+        ></v-checkbox>
+      </template>
 
-    <template v-slot:item.id="{ item, index }">
-      {{ (reques.page - 1) * reques.page_size + index + 1 }}
-    </template>
+      <template v-slot:item.id="{ item, index }">
+        {{ (reques.page - 1) * reques.page_size + index + 1 }}
+      </template>
 
-    <template v-slot:item.LCIC_code="{ item }">
-      <v-chip size="small" color="primary" variant="flat">
-        {{ item.LCIC_code }}
-      </v-chip>
-    </template>
+      <template v-slot:item.LCIC_code="{ item }">
+        <v-chip size="small" color="primary" variant="flat">
+          {{ item.LCIC_code }}
+        </v-chip>
+      </template>
 
-    <template v-slot:item.bnk_code="{ item }">
-      <v-chip size="small" color="success">
-        {{ mapMemberInfo(item.bnk_code) }}
-      </v-chip>
-    </template>
+      <template v-slot:item.bnk_code="{ item }">
+        <v-chip size="small" color="success">
+          {{ mapMemberInfo(item.bnk_code) }}
+        </v-chip>
+      </template>
 
-    <template v-slot:item.actions="{ item }">
-      <v-btn size="small" color="info" variant="outlined">
-        <v-icon start size="18">mdi-eye</v-icon>
-        ເບິ່ງ
-      </v-btn>
-    </template>
+      <template v-slot:item.actions="{ item }">
+        <v-btn size="small" color="info" variant="outlined">
+          <v-icon start size="18">mdi-eye</v-icon>
+          ເບິ່ງ
+        </v-btn>
+      </template>
 
-    <template v-slot:bottom>
-      <GloBalTablePaginations
-        :page="LoanStore.data_fiter.query.page"
-        :totalpage="LoanStore.respons_data_loan_list?.disputes.total_pages || 0"
-        :limit="LoanStore.data_fiter.query.page_size"
-        @onSelectionChange="onSelect"
-        @onPagechange="onChang"
-      />
-    </template>
+      <template v-slot:bottom>
+        <GloBalTablePaginations
+          :page="LoanStore.data_fiter.query.page"
+          :totalpage="
+            LoanStore.respons_data_loan_list?.disputes.total_pages || 0
+          "
+          :limit="LoanStore.data_fiter.query.page_size"
+          @onSelectionChange="onSelect"
+          @onPagechange="onChang"
+        />
+      </template>
 
-    <template v-slot:no-data>
-      <v-alert type="info" variant="tonal" class="ma-4">
-        <v-icon start>mdi-information</v-icon>
-        ບໍ່ມີຂໍ້ມູນ Dispute
-      </v-alert>
-    </template>
-  </v-data-table>
+      <template v-slot:no-data>
+        <v-alert type="info" variant="tonal" class="ma-4">
+          <v-icon start>mdi-information</v-icon>
+          ບໍ່ມີຂໍ້ມູນ Dispute
+        </v-alert>
+      </template>
+    </v-data-table>
   </v-row>
 
   <!-- <pre>{{ selecData }}</pre> -->
-
-
 </template>
 
 <style scoped>
