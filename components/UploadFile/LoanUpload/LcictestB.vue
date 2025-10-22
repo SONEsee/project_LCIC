@@ -463,7 +463,7 @@ const fetchData = async () => {
     Swal.fire({
       icon: "error",
       title: "ຜິດພາດ",
-      text: "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້",
+      text: `ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້ ${error}`,
     });
   } finally {
     isLoading.value = false;
@@ -838,7 +838,11 @@ const confirmAction = async (item: FileItem) => {
 
       await Swal.fire("ຢືນຢັນສຳເລັດ!", "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.", "success");
       await fetchFilteredData();
-    } else {
+    }
+    else if (confirmResponse.data.status === "error") {
+  item.statussubmit = "2"; // ສອດຄ່ອງກັບ backend
+  Swal.fire("ລົ້ມເຫຼວ!", confirmResponse.data.message || "ການຢືນຢັນລົ້ມເຫຼວ.", "error");
+} else {
       item.statussubmit = "1";
       Swal.fire(
         "ລົ້ມເຫຼວ!",
@@ -846,10 +850,10 @@ const confirmAction = async (item: FileItem) => {
         "error"
       );
     }
-  } catch (error) {
-    console.error("Failed to confirm upload:", error);
+  } catch (error:any) {
+
     item.statussubmit = "1";
-    Swal.fire("ຜິດພາດ!", "ການຢືນຢັນລົ້ມເຫຼວ. ກະລຸນາລອງໃໝ່.", "error");
+    Swal.fire("ຜິດພາດ!",  `ບໍ່ສາມາດອະນຸມັດຂໍ້ມູນຍອ້ນຫຫຼັງເຂົ້າຖານຂໍ້ມູນໄດ້` );
   }
 };
 
@@ -1222,15 +1226,16 @@ watch(
       >
         ບໍ່ມີ
       </v-chip>
-      <v-btn
+      <v-fab
+      variant="outlined"
+     size="small"
       @click="goPath(`../disuste/?id_dispust=${item.FID}`)"
         v-else-if="(item.dispuste?.length ?? 0) > 0"
         color="warning"
-        size="small"
-        flat
+      
       >
-        ມີ {{ item.dispuste }} Dispute
-      </v-btn>
+        {{ item.dispuste }} 
+      </v-fab>
     </template>
 
     <template v-slot:item.statussubmit="{ item }">

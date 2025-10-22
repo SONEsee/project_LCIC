@@ -32,9 +32,9 @@ export function useUserInfo() {
   });
 
   /**
-   * ດຶງຂໍ້ມູນຜູ້ໃຊ້ແບບເຕັມ
-   * @param UID - ລະຫັດຜູ້ໃຊ້
-   * @returns "UID - username - nameL surnameL"
+ 
+   * @param UID 
+   * @returns 
    */
   const mapUserInfo = (UID: number | string): string => {
     if (!UID || !Array.isArray(userData.value)) {
