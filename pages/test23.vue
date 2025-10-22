@@ -1,42 +1,42 @@
-// pages/charge-report.vue
+// pages/searchlog-report.vue
 <template>
   <div class="dashboard-container">
     <div class="header">
-      <h1>ລາຍງານຄ່າທຳນຽມ</h1>
+      <h1>ລາຍງານການຄົ້ນຫາ</h1>
+      <p class="subtitle">{{ userInfo.is_admin ? 'ທະນາຄານທັງໝົດ' : `ທະນາຄານ ${userInfo.bank_code}` }}</p>
     </div>
 
     <!-- Summary Cards -->
     <div class="summary-grid">
       <div class="card card-primary">
-        <div class="card-icon">💰</div>
+        <div class="card-icon">🔍</div>
         <div class="card-content">
-          <p class="card-label">ຄ່າທຳນຽມເດືອນນີ້</p>
-          <h2 class="card-value">{{ formatCurrency(summaryStats.monthlyFee) }}</h2>
+          <p class="card-label">ການຄົ້ນຫາເດືອນນີ້</p>
+          <h2 class="card-value">{{ summaryStats.monthlySearches.toLocaleString() }}</h2>
         </div>
       </div>
 
       <div class="card card-success">
         <div class="card-icon">📅</div>
         <div class="card-content">
-          <p class="card-label">ຄ່າທຳນຽມມື້ນີ້</p>
-          <h2 class="card-value">{{ formatCurrency(summaryStats.dailyFee) }}</h2>
+          <p class="card-label">ການຄົ້ນຫາມື້ນີ້</p>
+          <h2 class="card-value">{{ summaryStats.dailySearches.toLocaleString() }}</h2>
         </div>
       </div>
 
       <div class="card card-info">
-        <div class="card-icon">📊</div>
+        <div class="card-icon">🏢</div>
         <div class="card-content">
-          <p class="card-label">ທຸລະກໍາທັງໝົດ</p>
-          <h2 class="card-value">{{ summaryStats.totalTransactions.toLocaleString() }}</h2>
+          <p class="card-label">ວິສາຫະກິດທີ່ຄົ້ນຫາ</p>
+          <h2 class="card-value">{{ summaryStats.totalEnterprises.toLocaleString() }}</h2>
         </div>
       </div>
 
       <div class="card card-warning">
-        <div class="card-icon">🏦</div>
+        <div class="card-icon">💰</div>
         <div class="card-content">
-          <p class="card-label">ທະນາຄານທີ່ມີທຸລະກໍາຫຼາຍສຸດ</p>
-          <h2 class="card-value-small">{{ summaryStats.topBank.bank }}</h2>
-          <p class="card-subtext">{{ summaryStats.topBank.count }} ທຸລະກໍາ</p>
+          <p class="card-label">ມູນຄ່າສິນເຊື່ອລວມ</p>
+          <h2 class="card-value-small">{{ formatCurrency(summaryStats.totalLoanAmount) }}</h2>
         </div>
       </div>
     </div>
@@ -86,23 +86,25 @@
               <th>ທະນາຄານ</th>
               <th>ປີ</th>
               <th>ເດືອນ</th>
-              <th>ຍອດລວມ</th>
-              <th>ຈຳນວນທຸລະກໍາ</th>
-              <th>ຄ່າສະເລ່ຍ</th>
+              <th>ການຄົ້ນຫາ</th>
+              <th>ວິສາຫະກິດ</th>
+              <th>ມູນຄ່າສິນເຊື່ອ</th>
+              <th>ສະເລ່ຍຕໍ່ລາຍການ</th>
               <th>ການດຳເນີນການ</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="reportData.length === 0">
-              <td colspan="7" class="text-center">ບໍ່ມີຂໍ້ມູນ</td>
+              <td colspan="8" class="text-center">ບໍ່ມີຂໍ້ມູນ</td>
             </tr>
             <tr v-for="item in reportData" :key="`${item.bank_code}-${item.year}-${item.month}`">
               <td><span class="badge">{{ item.bank_display }}</span></td>
               <td>{{ item.year }}</td>
               <td>{{ item.month_name }}</td>
-              <td class="amount">{{ formatCurrency(item.total_charge_amount) }}</td>
-              <td>{{ item.transaction_count.toLocaleString() }}</td>
-              <td>{{ formatCurrency(item.avg_charge_amount) }}</td>
+              <td>{{ item.total_searches.toLocaleString() }}</td>
+              <td>{{ item.unique_enterprises.toLocaleString() }}</td>
+              <td class="amount">{{ formatCurrency(item.total_loan_amount) }}</td>
+              <td>{{ formatCurrency(item.avg_loan_amount) }}</td>
               <td>
                 <button 
                   @click="viewDetails(item)" 
@@ -121,15 +123,16 @@
     <div v-if="showDetailModal" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>ລາຍລະອຽດທຸລະກໍາ - {{ selectedBank?.bank_display }}</h2>
+          <h2>ລາຍລະອຽດການຄົ້ນຫາ - {{ selectedBank?.bank_display }}</h2>
           <button @click="closeModal" class="btn-close">&times;</button>
         </div>
 
         <div class="modal-body">
           <div class="detail-info">
             <p><strong>ໄລຍະເວລາ:</strong> {{ selectedBank?.month_name }} {{ selectedBank?.year }}</p>
-            <p><strong>ຍອດລວມ:</strong> {{ formatCurrency(selectedBank?.total_charge_amount) }}</p>
-            <p><strong>ທຸລະກໍາ:</strong> {{ selectedBank?.transaction_count }} ລາຍການ</p>
+            <p><strong>ການຄົ້ນຫາ:</strong> {{ selectedBank?.total_searches }} ລາຍການ</p>
+            <p><strong>ວິສາຫະກິດ:</strong> {{ selectedBank?.unique_enterprises }} ແຫ່ງ</p>
+            <p><strong>ມູນຄ່າລວມ:</strong> {{ formatCurrency(selectedBank?.total_loan_amount) }}</p>
           </div>
 
           <div class="table-container">
@@ -138,9 +141,9 @@
                 <tr>
                   <th>ລະຫັດ</th>
                   <th>ວິສາຫະກິດ</th>
-                  <th>ຈຸດປະສົງສິນເຊື່ອ</th>
-                  <th>ຈຳນວນເງິນ</th>
-                  <th>ສະຖານະ</th>
+                  <th>ປະເພດສິນເຊື່ອ</th>
+                  <th>ມູນຄ່າສິນເຊື່ອ</th>
+                  <th>ຈຸດປະສົງ</th>
                   <th>ວັນທີ</th>
                 </tr>
               </thead>
@@ -148,17 +151,13 @@
                 <tr v-if="detailData.length === 0">
                   <td colspan="6" class="text-center">ບໍ່ມີຂໍ້ມູນ</td>
                 </tr>
-                <tr v-for="detail in detailData" :key="detail.rec_charge_ID">
-                  <td>{{ detail.rec_charge_ID }}</td>
+                <tr v-for="detail in detailData" :key="detail.search_ID">
+                  <td>{{ detail.search_ID }}</td>
                   <td class="text-left">{{ detail.enterprise_display || detail.LCIC_code }}</td>
-                  <td>{{ detail.lon_purpose }}</td>
-                  <td class="amount">{{ formatCurrency(detail.chg_amount) }} {{ detail.chg_unit }}</td>
-                  <td>
-                    <span :class="['status-badge', `status-${detail.status}`]">
-                      {{ detail.status_lao || detail.status }}
-                    </span>
-                  </td>
-                  <td>{{ formatDate(detail.insert_date) }}</td>
+                  <td>{{ detail.credit_type_lao || detail.credit_type }}</td>
+                  <td class="amount">{{ formatCurrency(detail.rec_loan_amount) }} {{ detail.rec_loan_amount_currency }}</td>
+                  <td>{{ detail.rec_loan_purpose }}</td>
+                  <td>{{ formatDate(detail.inquiry_date) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -178,51 +177,47 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 
-definePageMeta({
-  middleware: "auth",
-  layout: "backend",
-});
-
-interface ChargeReport {
+interface SearchLogReport {
   bank_code: string
   bank_name: string
   bank_display: string
   year: number
   month: number
   month_name: string
-  total_charge_amount: number
-  transaction_count: number
-  avg_charge_amount: number
+  total_searches: number
+  unique_enterprises: number
+  total_loan_amount: number
+  avg_loan_amount: number
   currency: string
 }
 
-interface ChargeDetail {
-  rec_charge_ID: number
+interface SearchLogDetail {
+  search_ID: number
   bnk_code: string
   bank_display: string
   LCIC_code: string
   enterprise_display: string
-  lon_purpose: string
-  chg_amount: number
-  chg_unit: string
-  status: string
-  status_lao: string
-  insert_date: string
+  credit_type: string
+  credit_type_lao: string
+  rec_loan_amount: number
+  rec_loan_amount_currency: string
+  rec_loan_purpose: string
+  inquiry_date: string
 }
 
 // Use the composable
 const { 
-  fetchSummaryReport, 
-  fetchDetailReport, 
-  loadingSummary, 
-  loadingDetail,
+  fetchSearchLogSummary, 
+  fetchSearchLogDetail, 
+  loadingSearchLogSummary, 
+  loadingSearchLogDetail,
   getCurrentUser 
-} = useChargeReportApi()
+} = useSearchLogReportApi()
 
-const reportData = ref<ChargeReport[]>([])
-const detailData = ref<ChargeDetail[]>([])
+const reportData = ref<SearchLogReport[]>([])
+const detailData = ref<SearchLogDetail[]>([])
 const showDetailModal = ref(false)
-const selectedBank = ref<ChargeReport | null>(null)
+const selectedBank = ref<SearchLogReport | null>(null)
 
 const userInfo = ref({
   role_id: 0,
@@ -237,10 +232,10 @@ const filters = ref({
 })
 
 const summaryStats = ref({
-  monthlyFee: 0,
-  dailyFee: 0,
-  totalTransactions: 0,
-  topBank: { bank: '-', count: 0 }
+  monthlySearches: 0,
+  dailySearches: 0,
+  totalEnterprises: 0,
+  totalLoanAmount: 0
 })
 
 const years = computed(() => {
@@ -278,7 +273,7 @@ const uniqueBanks = computed(() => {
 
 const fetchData = async () => {
   try {
-    const data = await fetchSummaryReport({
+    const data = await fetchSearchLogSummary({
       year: filters.value.year,
       month: filters.value.month,
       bank: filters.value.bank
@@ -289,51 +284,39 @@ const fetchData = async () => {
       userInfo.value = data.user_info
       
       // Calculate summary stats
-      summaryStats.value.monthlyFee = data.summary.total_amount
-      summaryStats.value.totalTransactions = data.summary.total_transactions
+      summaryStats.value.monthlySearches = data.summary.total_searches
+      summaryStats.value.totalEnterprises = data.summary.total_enterprises
+      summaryStats.value.totalLoanAmount = data.summary.total_loan_amount
       
-      // Find top bank
-      if (data.data.length > 0) {
-        const topBankData = data.data.reduce((max: ChargeReport, item: ChargeReport) => 
-          item.transaction_count > max.transaction_count ? item : max
-        )
-        summaryStats.value.topBank = {
-          bank: topBankData.bank_display,
-          count: topBankData.transaction_count
-        }
-      }
-      
-      // Get today's fee
-      await fetchDailyFee()
+      // Get today's searches
+      await fetchDailySearches()
     }
   } catch (error) {
     console.error('ຂໍ້ຜິດພາດໃນການດຶງຂໍ້ມູນ:', error)
   }
 }
 
-const fetchDailyFee = async () => {
+const fetchDailySearches = async () => {
   try {
     const today = new Date().toISOString().split('T')[0]
-    const data = await fetchDetailReport({
+    const data = await fetchSearchLogDetail({
       fromDate: today,
       toDate: today
     })
     
     if (data.status === 'success') {
-      summaryStats.value.dailyFee = data.data.reduce((sum: number, item: ChargeDetail) => 
-        sum + item.chg_amount, 0
-      )
+      summaryStats.value.dailySearches = data.total_records
     }
   } catch (error) {
-    console.error('ຂໍ້ຜິດພາດໃນການດຶງຄ່າທຳນຽມປະຈຳວັນ:', error)
+    console.error('ຂໍ້ຜິດພາດໃນການດຶງການຄົ້ນຫາປະຈຳວັນ:', error)
   }
 }
 
-const viewDetails = async (item: ChargeReport) => {
+const viewDetails = async (item: SearchLogReport) => {
   selectedBank.value = item
   
   try {
-    const data = await fetchDetailReport({
+    const data = await fetchSearchLogDetail({
       bank: item.bank_code,
       year: item.year.toString(),
       month: item.month.toString(),
@@ -379,7 +362,7 @@ const formatDate = (date: string) => {
   return `${day}/${month}/${year}`
 }
 
-const loading = computed(() => loadingSummary.value || loadingDetail.value)
+const loading = computed(() => loadingSearchLogSummary.value || loadingSearchLogDetail.value)
 
 onMounted(() => {
   // Get user info from localStorage
@@ -397,6 +380,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Same styles as charge-report.vue */
 .dashboard-container {
   max-width: 1400px;
   margin: 0 auto;
@@ -445,7 +429,7 @@ onMounted(() => {
 }
 
 .card-primary {
-  border-top: 4px solid #4f46e5;
+  border-top: 4px solid #8b5cf6;
 }
 
 .card-success {
@@ -490,12 +474,6 @@ onMounted(() => {
   line-height: 1.3;
 }
 
-.card-subtext {
-  color: #999;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
 .filters-section {
   background: white;
   border-radius: 12px;
@@ -538,7 +516,7 @@ onMounted(() => {
 
 .filter-group select:focus {
   outline: none;
-  border-color: #4f46e5;
+  border-color: #8b5cf6;
 }
 
 .btn-clear {
@@ -610,6 +588,10 @@ onMounted(() => {
   font-style: italic;
 }
 
+.text-left {
+  text-align: left !important;
+}
+
 .amount {
   font-weight: 600;
   color: #10b981;
@@ -627,7 +609,7 @@ onMounted(() => {
 
 .btn-detail {
   padding: 0.5rem 1rem;
-  background: #4f46e5;
+  background: #8b5cf6;
   color: white;
   border: none;
   border-radius: 6px;
@@ -639,7 +621,7 @@ onMounted(() => {
 }
 
 .btn-detail:hover {
-  background: #4338ca;
+  background: #7c3aed;
 }
 
 .modal-overlay {
@@ -739,44 +721,6 @@ onMounted(() => {
   border-bottom: 1px solid #f3f4f6;
 }
 
-.text-left {
-  text-align: left !important;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.status-pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-completed, .status-approved, .status-success, .status-paid {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.status-failed, .status-rejected {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.status-processing {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.status-cancelled, .status-unpaid {
-  background: #f3f4f6;
-  color: #374151;
-}
-
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -795,7 +739,7 @@ onMounted(() => {
   width: 50px;
   height: 50px;
   border: 4px solid #f3f4f6;
-  border-top-color: #4f46e5;
+  border-top-color: #8b5cf6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -803,7 +747,7 @@ onMounted(() => {
 .loading-text {
   margin-top: 1rem;
   font-size: 1rem;
-  color: #4f46e5;
+  color: #8b5cf6;
   font-weight: 600;
 }
 
