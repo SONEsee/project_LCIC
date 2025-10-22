@@ -1226,15 +1226,16 @@ watch(
       >
         ບໍ່ມີ
       </v-chip>
-      <v-btn
+      <v-fab
+      variant="outlined"
+     size="small"
       @click="goPath(`../disuste/?id_dispust=${item.FID}`)"
         v-else-if="(item.dispuste?.length ?? 0) > 0"
         color="warning"
-        size="small"
-        flat
+      
       >
-        ມີ {{ item.dispuste }} Dispute
-      </v-btn>
+        {{ item.dispuste }} 
+      </v-fab>
     </template>
 
     <template v-slot:item.statussubmit="{ item }">

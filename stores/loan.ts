@@ -55,7 +55,7 @@ export const useLoanStore = defineStore("loan", {
         if (res.status === 200) {
           this.respons_data_loan_list = res.data.data;
           console.log("check data", this.respons_data_loan_list);
-          goPreviousPath();
+         
         }
       } catch (error) {
         Swal.fire({
@@ -79,7 +79,7 @@ async confirmDitpust() {
     if (req.status === 200 || req.status === 201) {
       const data = req.data;
       
-      // ສະແດງຜົນລັບລະອຽດ
+     
       await Swal.fire({
         icon: "success",
         title: "ສຳເລັດ",
@@ -91,7 +91,6 @@ async confirmDitpust() {
       
       this.isLoading = false;
       
-      // Refresh ຂໍ້ມູນ
       await this.getDataLoan();
     }
   } catch (error: any) {
@@ -108,7 +107,7 @@ async confirmDitpust() {
     async createDispust() {
       this.isLoading = true;
       try {
-        // ກວດສອບກ່ອນສົ່ງ
+       
         if (!this.form_create_dispust.file) {
           Swal.fire({
             icon: "warning",
