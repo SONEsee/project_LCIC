@@ -545,6 +545,8 @@
     statusPollingInterval = setInterval(async () => {
       await loadTrackingStatus()
       
+
+      
       // Stop polling if completed or failed
       if (currentTracking.value && 
           ['completed', 'failed', 'partial'].includes(currentTracking.value.status)) {
