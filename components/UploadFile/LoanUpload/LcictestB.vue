@@ -1096,7 +1096,7 @@ watch(
       </v-col>
     </v-row>
   </v-col>
-
+<!-- <pre>{{ items }}</pre> -->
   <!-- Data Table Section -->
   <v-data-table
     item-value="FID"
@@ -1219,23 +1219,24 @@ watch(
       </div>
     </template>
     <template v-slot:item.dispuste="{ item }">
-      <v-chip
-        v-if="(item.dispuste?.length ?? 0) === 0"
-        color="success"
-        size="small"
-      >
-        ບໍ່ມີ
-      </v-chip>
+      
       <v-fab
       variant="outlined"
      size="small"
       @click="goPath(`../disuste/?id_dispust=${item.FID}`)"
-        v-else-if="(item.dispuste?.length ?? 0) > 0"
+        v-if="item.dispuste !== null && item.dispuste !== '0'"
         color="warning"
       
       >
         {{ item.dispuste }} 
       </v-fab>
+      <v-chip
+        v-else
+        color="success"
+        size="small"
+      >
+        ບໍ່ມີ
+      </v-chip>
     </template>
 
     <template v-slot:item.statussubmit="{ item }">

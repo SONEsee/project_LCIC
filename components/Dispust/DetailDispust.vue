@@ -14,7 +14,7 @@ const selecData = ref<any>([]);
 
 const config = useRuntimeConfig();
 const memberinfoStore = MemberStore();
-const { user, userId, isAdmin, isLoggedIn } = useUserData();
+const { user, userId, isAdmin, isLoggedIn, userid } = useUserData();
 const DispustStore = useRequesDispustStore();
 const imagepath = ref("");
 const showPdfViewer = ref(false);
@@ -197,8 +197,10 @@ const confirmupload = async () => {
 
   try {
     LoanStore.from_confirm_dispust.id_dispust_list = selecData.value;
+    LoanStore.update_status.user_update = userid.value
 
     await LoanStore.confirmDitpust();
+    await LoanStore.UpdateStatus(id_dispust)
 
     selecData.value = [];
     goPreviousPath();
@@ -249,6 +251,7 @@ watch(fileUrl, (newUrl) => {
 });
 
 onMounted(() => {
+  // LoanStore.UpdateStatus(id_dispust)
   memberinfoStore.getMemberInfo();
   imagepath.value = axios.defaults.baseURL || "";
 
