@@ -1,4 +1,4 @@
-import { goPreviousPath } from './../composables/global';
+import { goPreviousPath } from "./../composables/global";
 import { defineStore } from "pinia";
 import axios from "~/helpers/axios";
 import pinia from "~/plugins/pinia";
@@ -38,9 +38,33 @@ export const useLoanStore = defineStore("loan", {
       from_confirm_dispust: {
         id_dispust_list: [] as number[],
       },
+      update_status: {
+        status: "APPROVED",
+        user_update: "",
+      },
     };
   },
   actions: {
+    async UpdateStatus(id: string) {
+      this.isLoading = true;
+      try {
+       const req = await axios.patch(
+        `/api/api/dispute-loan/${id}/status/`,
+        this.update_status
+      );if(req.status ===201 || req.status ===200 || req.status ===203) {
+         this.isLoading = false;
+      }
+      } catch (error) {
+        Swal.fire({
+          icon:"error",
+          title:"ຜິດພາດ",
+          text:"ບໍ່ສາມາດອັບເດດຂໍ້ມູນໄດ້"
+        })
+      }finally{
+         this.isLoading = false;
+      }
+      
+    },
     async getDataLoan() {
       this.isLoading = true;
       try {
@@ -55,7 +79,6 @@ export const useLoanStore = defineStore("loan", {
         if (res.status === 200) {
           this.respons_data_loan_list = res.data.data;
           console.log("check data", this.respons_data_loan_list);
-          goPreviousPath();
         }
       } catch (error) {
         Swal.fire({
@@ -67,48 +90,52 @@ export const useLoanStore = defineStore("loan", {
         this.isLoading = false;
       }
     },
-  // ໃນ Store
-async confirmDitpust() {
-  this.isLoading = true;
-  try {
-    const req = await axios.post(
-      `/api/process-multiple-disputes/`,
-      this.from_confirm_dispust 
-    );
-    
-    if (req.status === 200 || req.status === 201) {
-      const data = req.data;
-      
-      // ສະແດງຜົນລັບລະອຽດ
-      await Swal.fire({
-        icon: "success",
-        title: "ສຳເລັດ",
-        html: `
-          <p>ປະມວນຜົນສຳເລັດ ${data.summary.success}/${data.summary.total} ລາຍການ</p>
-          ${data.summary.failed > 0 ? `<p style="color: red;">ຜິດພາດ: ${data.summary.failed} ລາຍການ</p>` : ''}
+    // ໃນ Store
+    async confirmDitpust() {
+      this.isLoading = true;
+      try {
+        const req = await axios.post(
+          `/api/process-multiple-disputes/`,
+          this.from_confirm_dispust
+        );
+
+        if (req.status === 200 || req.status === 201) {
+          const data = req.data;
+
+          await Swal.fire({
+            icon: "success",
+            title: "ສຳເລັດ",
+            html: `
+          <p>ປະມວນຜົນສຳເລັດ ${data.summary.success}/${
+              data.summary.total
+            } ລາຍການ</p>
+          ${
+            data.summary.failed > 0
+              ? `<p style="color: red;">ຜິດພາດ: ${data.summary.failed} ລາຍການ</p>`
+              : ""
+          }
         `,
-      });
-      
-      this.isLoading = false;
-      
-      // Refresh ຂໍ້ມູນ
-      await this.getDataLoan();
-    }
-  } catch (error: any) {
-    this.isLoading = false;
-    
-    Swal.fire({
-      icon: "error",
-      title: "ຜິດພາດ",
-      text: error?.response?.data?.message || `ບໍ່ສາມາດປະມວນຜົນໄດ້: ${error}`,
-    });
-  }
-},
+          });
+
+          this.isLoading = false;
+
+          await this.getDataLoan();
+        }
+      } catch (error: any) {
+        this.isLoading = false;
+
+        Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text:
+            error?.response?.data?.message || `ບໍ່ສາມາດປະມວນຜົນໄດ້: ${error}`,
+        });
+      }
+    },
 
     async createDispust() {
       this.isLoading = true;
       try {
-        // ກວດສອບກ່ອນສົ່ງ
         if (!this.form_create_dispust.file) {
           Swal.fire({
             icon: "warning",

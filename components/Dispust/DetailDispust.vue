@@ -14,7 +14,7 @@ const selecData = ref<any>([]);
 
 const config = useRuntimeConfig();
 const memberinfoStore = MemberStore();
-const { user, userId, isAdmin, isLoggedIn } = useUserData();
+const { user, userId, isAdmin, isLoggedIn, userid } = useUserData();
 const DispustStore = useRequesDispustStore();
 const imagepath = ref("");
 const showPdfViewer = ref(false);
@@ -124,22 +124,36 @@ const selectedCount = computed(() => selecData.value.length);
 
 const canSubmit = computed(() => selectedCount.value > 0);
 
-// ຟັງຊັນສຳລັບການເລືອກທັງໝົດ
+
+const availableItems = computed(() => {
+  return (
+    dataDispust.value[0]?.disputes?.filter(
+      (item: any) => item.status !== "2"
+    ) || []
+  );
+});
+
+
+const canSelectAll = computed(() => {
+  return availableItems.value.length > 0;
+});
+
 const toggleSelectAll = () => {
   if (selectAll.value) {
-    // ເລືອກທັງໝົດ
-    const allIds = dataDispust.value[0]?.disputes?.map((item: any) => item.id_dispust) || [];
-    selecData.value = [...allIds];
+ 
+    const allAvailableIds =
+      availableItems.value.map((item: any) => item.id_dispust) || [];
+    selecData.value = [...allAvailableIds];
   } else {
-    // ຍົກເລີກການເລືອກທັງໝົດ
     selecData.value = [];
   }
 };
 
-// ຕິດຕາມການປ່ຽນແປງຂອງ selecData ເພື່ອອັບເດດສະຖານະ selectAll
+
 watch(selecData, (newVal) => {
-  const totalItems = dataDispust.value[0]?.disputes?.length || 0;
-  selectAll.value = newVal.length === totalItems && totalItems > 0;
+  const totalAvailableItems = availableItems.value.length;
+  selectAll.value =
+    newVal.length === totalAvailableItems && totalAvailableItems > 0;
 });
 
 async function onSelectionChange(params: number) {
@@ -155,7 +169,6 @@ async function onPagechange(params: number) {
 const isUploading = ref(false);
 
 const confirmupload = async () => {
-  // ແກ້ໄຂເງື່ອນໄຂ: ຖ້າບໍ່ມີການເລືອກ
   if (selecData.value.length === 0) {
     Swal.fire({
       icon: "warning",
@@ -183,10 +196,11 @@ const confirmupload = async () => {
   isUploading.value = true;
 
   try {
-    // ແກ້ໄຂຊື່ຕົວແປ: form_confirm_dispust
     LoanStore.from_confirm_dispust.id_dispust_list = selecData.value;
+    LoanStore.update_status.user_update = userid.value
 
     await LoanStore.confirmDitpust();
+    await LoanStore.UpdateStatus(id_dispust)
 
     selecData.value = [];
     goPreviousPath();
@@ -237,6 +251,7 @@ watch(fileUrl, (newUrl) => {
 });
 
 onMounted(() => {
+  // LoanStore.UpdateStatus(id_dispust)
   memberinfoStore.getMemberInfo();
   imagepath.value = axios.defaults.baseURL || "";
 
@@ -275,15 +290,20 @@ onMounted(() => {
     </div>
 
     <template v-else>
-      <!-- ສ່ວນສະແດງເອກະສານ -->
       <v-card v-if="fileUrl" class="file-card elevation-2 mb-6">
         <v-card-title class="file-card-header">
           <div class="d-flex align-center justify-space-between w-100">
             <div class="d-flex align-center">
-              <v-icon color="blue-darken-1" class="mr-2">mdi-file-document-outline</v-icon>
+              <v-icon color="blue-darken-1" class="mr-2"
+                >mdi-file-document-outline</v-icon
+              >
               <span class="text-h6">ເອກະສານແນບ</span>
             </div>
-            <v-chip size="small" color="blue-grey-lighten-4" class="file-type-chip">
+            <v-chip
+              size="small"
+              color="blue-grey-lighten-4"
+              class="file-type-chip"
+            >
               <v-icon start size="small">mdi-file</v-icon>
               {{ fileType.toUpperCase() }}
             </v-chip>
@@ -309,25 +329,24 @@ onMounted(() => {
                 }}
               </p>
               <div class="pdf-actions mt-6">
-                <v-btn 
-                  variant="flat" 
-                  color="blue-darken-1" 
-                  class="mr-3"
-                  size="large"
-                  @click="openPdfViewer"
-                >
-                  <v-icon start>mdi-eye-outline</v-icon>
-                  ເປີດເບິ່ງເອກະສານ
-                </v-btn>
-                <v-btn 
-                  variant="outlined" 
+                <v-btn
+                  variant="flat"
                   color="blue-darken-1"
+                  class="mr-3"
+                  @click="openPdfViewer"
+                  prepend-icon="mdi-eye"
                   size="large"
-                  :href="fileUrl" 
-                  target="_blank" 
-                  download
                 >
-                  <v-icon start>mdi-download-outline</v-icon>
+                  ເປີດໄຟລ໌
+                </v-btn>
+                <v-btn
+                  variant="outlined"
+                  color="blue-darken-1"
+                  :href="fileUrl"
+                  target="_blank"
+                  prepend-icon="mdi-download"
+                  size="large"
+                >
                   ດາວໂຫຼດ
                 </v-btn>
               </div>
@@ -339,112 +358,103 @@ onMounted(() => {
       <!-- PDF Dialog -->
       <v-dialog
         v-model="showPdfViewer"
-        fullscreen
-        transition="dialog-bottom-transition"
+        max-width="95vw"
+        max-height="95vh"
+        persistent
       >
-        <v-card>
+        <v-card class="pdf-dialog">
           <v-toolbar color="blue-darken-1" dark>
-            <v-btn icon @click="closePdfViewer">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-            <v-toolbar-title class="text-truncate">
-              {{
-                dispustData[0]?.image_url
-                  ?.split("/")
-                  .pop()
-                  ?.replace(/%E0%B8%/g, "") || "ເອກະສານ PDF"
-              }}
+            <v-toolbar-title>
+              <v-icon class="mr-2">mdi-file-pdf-box</v-icon>
+              ເບິ່ງ PDF
             </v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn
-              icon
-              :href="pdfUrl"
-              target="_blank"
-              title="ດາວໂຫຼດ"
-              download
-            >
-              <v-icon>mdi-download</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              :href="pdfUrl"
-              target="_blank"
-              title="ເປີດໃນແຖບໃໝ່"
-              rel="noopener noreferrer"
-            >
-              <v-icon>mdi-open-in-new</v-icon>
+            <v-btn icon @click="closePdfViewer">
+              <v-icon>mdi-close</v-icon>
             </v-btn>
           </v-toolbar>
 
           <div class="pdf-container">
+            <div v-if="!pdfUrl" class="pdf-loading">
+              <v-progress-circular
+                indeterminate
+                color="blue-darken-1"
+                size="50"
+              />
+              <p>ກຳລັງໂຫຼດ PDF...</p>
+            </div>
+
             <iframe
-              v-if="pdfUrl"
+              v-if="pdfUrl && viewerType === 'iframe'"
               :src="pdfUrl"
               width="100%"
               height="100%"
-              frameborder="0"
-              sandbox="allow-scripts allow-same-origin allow-forms"
-              title="PDF Viewer"
-              type="application/pdf"
+              style="border: none"
             ></iframe>
-            <div v-else class="pdf-loading">
-              <v-progress-circular indeterminate color="primary" size="50" />
-              <p class="mt-4">ກຳລັງໂຫຼດເອກະສານ PDF...</p>
-            </div>
+
+            <embed
+              v-else-if="pdfUrl && useEmbedViewer"
+              :src="pdfUrl"
+              type="application/pdf"
+              width="100%"
+              height="100%"
+            />
+
+            <object
+              v-else-if="pdfUrl && useObjectViewer"
+              :data="pdfUrl"
+              type="application/pdf"
+              width="100%"
+              height="100%"
+            >
+              <p>
+                ບໍ່ສາມາດສະແດງ PDF ໄດ້.
+                <a :href="pdfUrl" target="_blank"
+                  >ກົດທີ່ນີ້ເພື່ອເປີດໃນ tab ໃໝ່</a
+                >
+              </p>
+            </object>
           </div>
         </v-card>
       </v-dialog>
 
-      <!-- ສ່ວນຕາຕະລາງຂໍ້ມູນ -->
       <v-card class="data-table-card elevation-2">
-        <!-- Action Bar -->
-        <v-card-title class="action-bar">
-          <div class="d-flex align-center justify-space-between w-100 flex-wrap ga-3">
-            <div class="d-flex align-center ga-2">
-              <v-icon color="blue-darken-1">mdi-table-large</v-icon>
-              <span class="text-h6">ລາຍການຂໍ້ມູນ</span>
+        <div class="action-bar">
+          <div class="d-flex align-center justify-space-between">
+            <div class="d-flex align-center gap-3">
+              <div>
+                <p class="text-caption text-grey-darken-1 mb-0">
+                  ເລືອກແລ້ວ: {{ selectedCount }} ລາຍການ
+                  <span v-if="!canSelectAll" class="text-warning ml-2">
+                    (ບາງລາຍການສຳເລັດແລ້ວ ບໍ່ສາມາດເລືອກໄດ້)
+                  </span>
+                </p>
+              </div>
             </div>
-            
-            <div class="d-flex align-center ga-3">
-              <v-chip 
-                v-if="selectedCount > 0" 
-                color="blue-lighten-4" 
-                class="px-4"
-              >
-                <v-icon start size="small">mdi-check-circle</v-icon>
-                ເລືອກແລ້ວ: {{ selectedCount }} ລາຍການ
-              </v-chip>
-              
+
+            <div class="d-flex align-center gap-3">
               <v-btn
                 variant="flat"
-                color="green-darken-1"
-                :disabled="!canSubmit"
-                :loading="isUploading"
+                color="blue-darken-1"
                 size="large"
+                prepend-icon="mdi-check-circle"
+                :disabled="!canSubmit || isUploading"
+                :loading="isUploading"
                 @click="confirmupload"
               >
-                <v-icon start>mdi-check-circle-outline</v-icon>
-                ຢືນຢັນການປະມວນຜົນ
-                <v-badge
-                  v-if="selectedCount > 0"
-                  :content="selectedCount"
-                  color="red-darken-1"
-                  inline
-                  class="ml-2"
-                />
+                ຢືນຢັນການດຳເນີນການ
               </v-btn>
             </div>
           </div>
-        </v-card-title>
+        </div>
 
         <v-divider></v-divider>
 
-        <!-- Table -->
         <v-data-table
           :headers="hearder"
           :items="dataDispust[0]?.disputes || []"
           :items-per-page="requese.page_size"
-          density="comfortable"
+          density="compact"
           class="custom-table"
           hover
         >
@@ -455,11 +465,13 @@ onMounted(() => {
               hide-details
               density="compact"
               color="blue-darken-1"
+              :disabled="!canSelectAll"
             />
           </template>
 
           <template v-slot:item.checkbox="{ item }">
             <v-checkbox
+              v-if="(item as any).status === '1'"
               v-model="selecData"
               :value="(item as any).id_dispust"
               hide-details
@@ -467,6 +479,17 @@ onMounted(() => {
               color="blue-darken-1"
               @click.stop
             />
+            <v-tooltip text="ກວດສອບແລະບັນທືກສຳເລັດແລ້ວ">
+              <template v-slot:activator="{ props }">
+                <v-chip
+                  color="success"
+                  v-bind="props"
+                  v-if="(item as any).status === '2'"
+                >
+                  ສຳເລັດ
+                </v-chip>
+              </template>
+            </v-tooltip>
           </template>
 
           <template v-slot:item.index="{ item, index }">
@@ -493,7 +516,8 @@ onMounted(() => {
               :page="requese.page"
               :limit="requese.page_size"
               :totalpage="
-                DispustStore.response_dispust_data_edit?.pagination.total_pages || 0
+                DispustStore.response_dispust_data_edit?.pagination
+                  .total_pages || 0
               "
               @onPagechange="onPagechange"
               @onSelectionChange="onSelectionChange"
@@ -502,8 +526,12 @@ onMounted(() => {
 
           <template v-slot:no-data>
             <div class="no-data-wrapper">
-              <v-icon size="64" color="grey-lighten-1">mdi-file-document-alert-outline</v-icon>
-              <p class="text-h6 mt-4 text-grey-darken-1">ບໍ່ມີຂໍ້ມູນການໂຕ້ແຍ້ງທີ່ຈະສະແດງ</p>
+              <v-icon size="64" color="grey-lighten-1"
+                >mdi-file-document-alert-outline</v-icon
+              >
+              <p class="text-h6 mt-4 text-grey-darken-1">
+                ບໍ່ມີຂໍ້ມູນການໂຕ້ແຍ້ງທີ່ຈະສະແດງ
+              </p>
             </div>
           </template>
         </v-data-table>
@@ -534,7 +562,6 @@ onMounted(() => {
   margin: 0;
 }
 
-/* ສ່ວນເອກະສານ */
 .file-card {
   border-radius: 12px !important;
   overflow: hidden;
