@@ -89,6 +89,7 @@ interface FileItem {
   insertDate?: string;
   updateDate?: string;
   status: string;
+  dispuste: string;
   status_display?: string;
   confirmed: boolean;
 }
@@ -155,6 +156,7 @@ const headers = computed(() => {
     { title: "ຊື່ໄຟລ໌", value: "fileName" },
     { title: "ຂະໜາດຟາຍ", value: "fileSize" },
     { title: "ໄລຍະເວລາ", value: "period" },
+    { title: "ຂໍ້ມູນ dispuste", value: "dispuste" },
     // { title: "ປະເພດ", value: "FileType" },
     { title: "ສະຖານະ", value: "statussubmit" },
     { title: "ອັດຕາສ່ວນ", value: "percentage" },
@@ -747,6 +749,9 @@ onMounted(async () => {
     <template v-slot:header.fileName>
       <th style="color: #0d47a1">ຊື່ໄຟລ໌</th>
     </template>
+    <template v-slot:header.dispuste>
+      <th style="color: #0d47a1">ຂໍ້ມູນ dispust</th>
+    </template>
 
     <template v-slot:header.fileSize>
       <th style="color: #0d47a1">ຂະໜາດຟາຍ</th>
@@ -796,7 +801,18 @@ onMounted(async () => {
         </template>
       </v-tooltip>
     </template>
-
+    <template v-slot:item.dispuste="{ item }">
+      <v-fab
+        variant="outlined"
+        size="small"
+        @click="goPath(`../disuste/?id_dispust=${item.FID}`)"
+        v-if="item.dispuste !== null && item.dispuste !== '0'"
+        color="warning"
+      >
+        {{ item.dispuste }}
+      </v-fab>
+      <v-chip v-else color="success" size="small"> ບໍ່ມີ </v-chip>
+    </template>
     <template v-slot:item.fileSize="{ item }">
       <span class="text-body-2">
         <!-- <span v-if="Number(item.fileSize) / 1024 / 1024 < 1">
