@@ -92,16 +92,16 @@ const dispustData = computed(() => {
   }
   return [];
 });
-// const dispustCount = computed(() => {
-//   const data = DispustStore.response_data_dispust_count;
-//   if (Array.isArray(data)) {
-//     return data;
-//   }
-//   if (data && typeof data === "object") {
-//     return [data];
-//   }
-//   return [];
-// });
+const dispustCount = computed(() => {
+  const data = DispustStore.pagination?.total_items;
+  if (Array.isArray(data)) {
+    return data;
+  }
+  if (data && typeof data === "object") {
+    return [data];
+  }
+  return [];
+});
 onMounted(() => {
   DispustStore.data_filter_dispust.query.bnk_code = userId.value;
   DispustStore.getDataDispust();
@@ -119,10 +119,10 @@ onMounted(() => {
   </v-card>
   <div class="justify-md-space-between d-flex pa-4">
     <div>
-      <!-- <h4>
-        ຈຳນວນຂໍ້ມູນທັງໝົດ: <v-chip>{{ dispustCount[0]?.total_items }}</v-chip
+      <h4>
+        ຈຳນວນຂໍ້ມູນທັງໝົດ: <v-chip>{{ DispustStore.respons_data_dispust_allert_count?.pagination.total_items }}</v-chip
         >ລາຍການ
-      </h4> -->
+      </h4>
     </div>
     <div class="justify-md-space-between d-flex pa-4" v-if="userId === '01'">
       <div>
@@ -203,7 +203,7 @@ onMounted(() => {
         prepend-icon="mdi-eye"
         @click="
           goPath(
-            `/requesdispust/detail/?dispust_confirm=${item.id_disput_loan}`
+            `/requesdispust/confirm_collateral/?dispust_confirm=${item.id_disput_loan}`
           )
         "
         >ລາຍລະອຽດ</v-btn

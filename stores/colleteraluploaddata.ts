@@ -7,6 +7,7 @@ export const useDipustCallateralStore = defineStore("dispust", {
     return {
       respons_data_dispust: null as DispustCallateralModel.Data | null,
       respons_data_dispust_allert: null as AlertCallateralModel.Item |null,
+      respons_data_dispust_allert_count: null as AlertCallateralModel.Data |null,
       pagination: null as AlertCallateralModel.Pagination | null,
       isLoading: false,
       data_fiter: {
@@ -147,6 +148,7 @@ export const useDipustCallateralStore = defineStore("dispust", {
         );
         if (res.status === 200) {
           this.respons_data_dispust_allert = res.data.data.items;
+          this.respons_data_dispust_allert_count = res.data.data
           
         }
       } catch (error) {
