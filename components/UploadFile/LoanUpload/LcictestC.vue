@@ -721,6 +721,8 @@ const latestPeriodByUser = computed(() => {
     }
   });
   
+
+  
   return userPeriods;
 });
 const hasLatestPeriod = (item: FileItem): boolean => {
