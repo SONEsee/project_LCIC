@@ -92,7 +92,7 @@ const headers1 = [
     value: "com_enterprise_code",
     key: "com_enterprise_code_or_c2",
   },
-  { title: "ສະມາຊຶກ", value: "user_id", key: "user_id_or_c3" },
+  // { title: "ສະມາຊຶກ", value: "user_id", key: "user_id_or_c3" },
   { title: "ສາຂາ", value: "branch_id_code", key: "branch_id_code_or_c5" },
   { title: "ລະຫັດເງິນກູ້", value: "loan_id", key: "loan_id_or_c6" },
   { title: "ລະຫັດຫຼັກຊັບ", value: "col_id", key: "col_id_or_c7" },
@@ -100,15 +100,15 @@ const headers1 = [
 ];
 
 const headers2 = [
-  { title: "ID", value: "id" },
-  { title: "LCIC_code", value: "LCIC_code" },
-  { title: "Com_Enterprise_Code", value: "com_enterprise_code" },
-  { title: "Bank_customer_ID", value: "bank_customer_ID" },
-  { title: "Branch_id_Code", value: "branch_id_code" },
-  { title: "Loan_id", value: "loan_id" },
-  { title: "Col_id", value: "col_id" },
-  { title: "com_enterprise_code", value: "datamatch" },
-  { title: "status", value: "collateral_status" },
+  { title: "ລຳດັບ", value: "id" },
+  { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+  { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+  { title: "ລະຫັດລູກຄ້າ", value: "bank_customer_ID" },
+  { title: "ລະຫັດສາຂາ", value: "branch_id_code" },
+  { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
+  { title: "ລະຫັດຫຼັກຊັບ", value: "col_id" },
+  { title: "ລະຫັດວິສາຫະກິດໃນຖານຂໍ້ມູນ ຂສລ", value: "datamatch" },
+  { title: "ສະຖານະ", value: "collateral_status" },
 ];
 
 const headers3 = [
@@ -124,34 +124,34 @@ const headers3 = [
 ];
 
 const headers4 = [
-  { title: "ID", value: "id" },
-  { title: "LCIC_code", value: "LCIC_code" },
-  { title: "Com_Enterprise_Code", value: "com_enterprise_code" },
-  { title: "Bank_customer_ID", value: "bank_customer_ID" },
-  { title: "Branch_id_Code", value: "branch_id_code" },
-  { title: "Loan_id", value: "loan_id" },
-  { title: "Col_id", value: "col_id" },
-  { title: "status", value: "collateral_status" },
+   { title: "ລຳດັບ", value: "id" },
+  { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+  { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+  { title: "ລະຫັດລູກຄ້າໍ", value: "bank_customer_ID" },
+  { title: "ລະຫັດສາຂາ", value: "branch_id_code" },
+  { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
+  { title: "ລະຫັດຊັບສິນ", value: "col_id" },
+  { title: "ສະຖານະ", value: "collateral_status" },
 ];
 
 const headers5 = [
-  { title: "ID", value: "id" },
-  { title: "LCIC_code", value: "LCIC_code" },
-  { title: "Com_Enterprise_Code", value: "com_enterprise_code" },
-  { title: "Bank_customer_ID", value: "bank_customer_ID" },
-  { title: "Branch_id_Code", value: "branch_id_code" },
-  { title: "Loan_id", value: "loan_id" },
-  { title: "Col_id", value: "col_id" },
+  { title: "ລຳດັບ", value: "id" },
+  { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+  { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+  { title: "ລະຫັດລູກຄ້າໍ", value: "bank_customer_ID" },
+  { title: "ລະຫັດສາຂາ", value: "branch_id_code" },
+  { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
+  { title: "ລະຫັດຊັບສິນ", value: "col_id" },
 ];
 
 const headers6 = [
-  { title: "ID", value: "id" },
-  { title: "LCIC_code", value: "LCIC_code" },
-  { title: "Com_Enterprise_Code", value: "com_enterprise_code" },
-  { title: "Bank_customer_ID", value: "bank_customer_ID" },
-  { title: "Branch_id_Code", value: "branch_id_code" },
-  { title: "Loan_id", value: "loan_id" },
-  { title: "Col_id", value: "col_id" },
+  { title: "ລຳດັບ", value: "id" },
+  { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+  { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+  { title: "ລະຫັດລູກຄ້າໍ", value: "bank_customer_ID" },
+  { title: "ລະຫັດສາຂາ", value: "branch_id_code" },
+  { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
+  { title: "ລະຫັດຊັບສິນ", value: "col_id" },
 ];
 const TypeCollateral = [
   { title: "ທັງໝົດ", value: "" },
@@ -291,8 +291,8 @@ onMounted(() => {
     <v-row>
       <v-col cols="12" md="4">
         <v-autocomplete
-        class="mt-2"
-        prepend-inner-icon="mdi-format-list-bulleted-type"
+          class="mt-2"
+          prepend-inner-icon="mdi-format-list-bulleted-type"
           clearable
           :items="TypeCollateral"
           v-model="selectType"
@@ -313,23 +313,34 @@ onMounted(() => {
             >
           </template>
         </v-autocomplete>
-        <v-chip color="primary">ຈຳນວນທັງໝົດ: <b>{{
-              Number(
-                collateralStore.response_data_collateral_detail_count?.total_cdl
-              ) +
-              Number(
-                collateralStore.response_data_collateral_detail_count
-                  ?.total_errors
-              )
-            }}</b> ລາຍການ</v-chip>
         
-      </v-col>
-      <v-col cols="12" md="8" class="d-flex align-center justify-end">
-        <div class="text-end">
-          <p>
+         <p>
             ສະມາຊິກ:
             <b>{{ mapMemberInfo(combinedData[0]?.user_id ?? "ບໍ່ມີ") }}</b>
           </p>
+          <p>
+            ນຳສົ່ງປະຈຳເດືອນ:
+            <b>{{ dayjs(combinedData[0]?.period).format("MM/YYYY") }}</b>
+          </p><v-chip color="primary"
+          >ຈຳນວນທັງໝົດ:
+          <b>{{
+            Number(
+              collateralStore.response_data_collateral_detail_count?.total_cdl
+            ) +
+            Number(
+              collateralStore.response_data_collateral_detail_count
+                ?.total_errors
+            )
+          }}</b>
+          ລາຍການ</v-chip
+        >
+      </v-col>
+      <v-col cols="12" md="8" class="d-flex align-center justify-end">
+        <div class="text-end">
+          <!-- <p>
+            ສະມາຊິກ:
+            <b>{{ mapMemberInfo(combinedData[0]?.user_id ?? "ບໍ່ມີ") }}</b>
+          </p> -->
           <p>
             ນຳສົ່ງປະຈຳເດືອນ:
             <b>{{ dayjs(combinedData[0]?.period).format("MM/YYYY") }}</b>
@@ -505,7 +516,7 @@ onMounted(() => {
 
               <v-col cols="12">
                 <v-row>
-                  <v-col cols="6" class="text-center">
+                  <v-col cols="8" class="text-center">
                     <div
                       class="pa-3 text-center"
                       style="
@@ -524,8 +535,8 @@ onMounted(() => {
                       >
                     </div>
                   </v-col>
-                  <v-col cols="6">
-                   <div
+                  <v-col cols="4">
+                    <div
                       class="pa-3 text-center"
                       style="
                         background: #e0e7ff;
@@ -547,7 +558,7 @@ onMounted(() => {
               </v-col>
 
               <v-data-table
-              :loading="collateralStore.isLoading"
+                :loading="collateralStore.isLoading"
                 :items-per-page="request.page_size"
                 :items="enterpriseodeerror"
                 :headers="headers2"
@@ -591,7 +602,7 @@ onMounted(() => {
                     >ບໍຖືກ ({{ item.com_enterprise_code }})</v-chip
                   >
                 </template>
-                <template v-slot:item.datamatch="{item}">
+                <template v-slot:item.datamatch="{ item }">
                   <v-chip color="primary" size="small" variant="flat">
                     {{ item.datamatch ?? "-" }}
                   </v-chip>
@@ -678,7 +689,7 @@ onMounted(() => {
               </v-col>
 
               <v-data-table
-              :loading="collateralStore.isLoading"
+                :loading="collateralStore.isLoading"
                 :items-per-page="request.page_size"
                 :items="lcicerror"
                 :headers="headers3"
@@ -715,10 +726,12 @@ onMounted(() => {
                   {{ (request.page - 1) * request.page_size + index + 1 }}
                 </template>
                 <template v-slot:item.LCIC_code="{ item }">
-                  <v-chip v-if="item.LCIC_code ===''" color="error"
+                  <v-chip v-if="item.LCIC_code === ''" color="error"
                     >ບໍ່ມີ</v-chip
                   >
-                  <v-chip v-else color="warning">ບໍ່ຖືກ{{ item.LCIC_code }}</v-chip>
+                  <v-chip v-else color="warning"
+                    >ບໍ່ຖືກ{{ item.LCIC_code }}</v-chip
+                  >
                 </template>
                 <template v-slot:item.datamatch="{ item }">
                   <v-chip color="success" size="small">{{
@@ -749,7 +762,6 @@ onMounted(() => {
               </v-data-table>
             </v-window-item>
 
-           
             <v-window-item value="two-three">
               <h3 style="color: dodgerblue">
                 # ຂໍ້ມູນທີ່ມີ LCIC_code ແລະ com_enterprise_code_error ຜິດ ຫຼື
@@ -760,7 +772,7 @@ onMounted(() => {
               </p>
 
               <v-data-table
-              :loading="collateralStore.isLoading"
+                :loading="collateralStore.isLoading"
                 :items-per-page="request.page_size"
                 :items="lcicenterpriseerror"
                 :headers="headers4"
@@ -787,7 +799,7 @@ onMounted(() => {
                 <template v-slot:header.col_id>
                   <th style="color: #0d47a1">ລະຫັດຫຼັກຊັບ</th>
                 </template>
-               
+
                 <template v-slot:header.collateral_status>
                   <th style="color: #0d47a1">ສະຖານະ</th>
                 </template>
@@ -855,13 +867,13 @@ onMounted(() => {
               </p>
 
               <v-data-table
-              :loading="collateralStore.isLoading"
+                :loading="collateralStore.isLoading"
                 :items-per-page="request.page_size"
                 :items="Cdisputes"
                 :headers="headers5"
                 density="compact"
               >
-                 <template v-slot:header.id>
+                <template v-slot:header.id>
                   <th style="color: #0d47a1">ລຳດັບ</th>
                 </template>
                 <template v-slot:header.LCIC_code>
@@ -882,8 +894,7 @@ onMounted(() => {
                 <template v-slot:header.col_id>
                   <th style="color: #0d47a1">ລະຫັດຫຼັກຊັບ</th>
                 </template>
-               
-                
+
                 <template v-slot:item.id="{ item, index }">
                   {{ (request.page - 1) * request.page_size + index + 1 }}
                 </template>
@@ -914,7 +925,6 @@ onMounted(() => {
           </v-window>
         </v-window-item>
 
-        
         <v-window-item value="three">
           <h3 style="color: dodgerblue"># ຂໍ້ມູນທີ່ອັບໂຫຼດສົມບູນ</h3>
           <p>ເປັນຂໍ້ມູນທີ່ຜ່ານການກວດສອບ ແລະ ຖືກບັນທຶກລົງຖານຂໍ້ມູນແລ້ວ</p>
@@ -929,25 +939,25 @@ onMounted(() => {
             density="compact"
           >
             <template v-slot:header.id>
-              <th style="color: #0d47a1">ID</th>
+              <th style="color: #0d47a1">ລຳດັບ</th>
             </template>
             <template v-slot:header.LCIC_code>
-              <th style="color: #0d47a1">LCIC_code</th>
+              <th style="color: #0d47a1">ລະຫັດ ຂສລ </th>
             </template>
             <template v-slot:header.com_enterprise_code>
-              <th style="color: #0d47a1">Com_Enterprise_Code</th>
+              <th style="color: #0d47a1">ລະຫັດວິສາຫະກິດ</th>
             </template>
             <template v-slot:header.bank_customer_ID>
-              <th style="color: #0d47a1">Bank_customer_ID</th>
+              <th style="color: #0d47a1">ລະຫັດລູກຄ້າ</th>
             </template>
             <template v-slot:header.branch_id_code>
-              <th style="color: #0d47a1">Branch_id_Code</th>
+              <th style="color: #0d47a1">ລະຫັດສາຂາ</th>
             </template>
             <template v-slot:header.loan_id>
-              <th style="color: #0d47a1">Loan_id</th>
+              <th style="color: #0d47a1">ລະຫັດເງິນກູ້</th>
             </template>
             <template v-slot:header.col_id>
-              <th style="color: #0d47a1">Col_id</th>
+              <th style="color: #0d47a1">ລະຫັດຫຼັກຊັບ</th>
             </template>
             <template v-slot:item.id="{ item, index }">
               {{ (request.page - 1) * request.page_size + index + 1 }}

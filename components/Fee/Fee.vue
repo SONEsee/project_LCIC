@@ -9,13 +9,12 @@ const res = computed(()=>{
     data
   }
   if(data && typeof data==="object"){
-    return [data]
+    return data
   }
   return []
 })
-// const res = computed(() => feestore.response_data_fee || []);
 const header = [
-  { title: "ID", value: "chg_sys_id" },
+  { title: "ໄອດີ", value: "chg_sys_id" },
   { title: "ອັກສອນຫຍໍ້", value: "chg_code" },
   { title: "ຊື່ເຕັມ", value: "chg_type" },
   { title: "ປະເພດບົດລາຍງານ", value: "chg_lao_type" },
@@ -56,6 +55,8 @@ onMounted(() => {
       ເພີ່ມຂໍ້ມູນຄ່າທຳນຽມ
     </v-btn>
   </div>
+  
+ 
   <v-data-table :items="res" :headers="header" :loading="feestore.loading">
     <template v-slot:item.chg_sys_id="{ item }">
       {{ item.chg_sys_id }}

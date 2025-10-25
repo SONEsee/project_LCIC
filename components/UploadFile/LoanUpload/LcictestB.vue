@@ -11,17 +11,17 @@ const statusCheckInterval = ref<NodeJS.Timeout | null>(null);
 const processingFID = ref<string | null>(null);
 const startStatusPolling = (FID: string) => {
   processingFID.value = FID;
-
+  
   // ຢຸດ interval ເກົ່າຖ້າມີ
   if (statusCheckInterval.value) {
     clearInterval(statusCheckInterval.value);
   }
-
+  
   // ເຊັກທຸກໆ 2 ວິນາທີ
   statusCheckInterval.value = setInterval(async () => {
     await checkUploadStatus(FID);
   }, 2000);
-
+  
   // ເຊັກທັນທີຄັ້ງທຳອິດ
   checkUploadStatus(FID);
 };
@@ -32,50 +32,52 @@ const checkUploadStatus = async (FID: string) => {
     const response = await axios.get(
       `${config.public.strapi.url}api/check-upload-status/${FID}/`
     );
-
+    
     const data = response.data;
-    console.log("Upload status:", data);
-
+    console.log('Upload status:', data);
+    
     // ອັບເດດ item ໃນ list
-    const item = items.value.find((i) => i.FID === FID);
+    const item = items.value.find(i => i.FID === FID);
     if (item && data.progress !== undefined) {
       item.percentage = data.progress;
     }
-
-    if (data.status === "completed") {
+    
+    if (data.status === 'completed') {
       // ສຳເລັດ
       if (statusCheckInterval.value) {
         clearInterval(statusCheckInterval.value);
         statusCheckInterval.value = null;
       }
-
+      
       Swal.fire({
-        icon: "success",
-        title: "ສຳເລັດ!",
-        text: "ການປະມວນຜົນສຳເລັດແລ້ວ",
-        timer: 2000,
+        icon: 'success',
+        title: 'ສຳເລັດ!',
+        text: 'ການປະມວນຜົນສຳເລັດແລ້ວ',
+        timer: 2000
       });
-
+      
       // Refresh data
       await fetchFilteredData();
-    } else if (data.status === "failed") {
+      
+    } else if (data.status === 'failed') {
       // ຜິດພາດ
       if (statusCheckInterval.value) {
         clearInterval(statusCheckInterval.value);
         statusCheckInterval.value = null;
       }
-
+      
       Swal.fire({
-        icon: "error",
-        title: "ຜິດພາດ!",
-        text: data.message || "ເກີດຂໍ້ຜິດພາດໃນການປະມວນຜົນ",
+        icon: 'error',
+        title: 'ຜິດພາດ!',
+        text: data.message || 'ເກີດຂໍ້ຜິດພາດໃນການປະມວນຜົນ'
       });
-
+      
       await fetchFilteredData();
     }
     // ຖ້າ status === 'processing' → ສືບຕໍ່ polling
+    
   } catch (error) {
-    console.error("Error checking status:", error);
+    console.error('Error checking status:', error);
   }
 };
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
@@ -97,22 +99,22 @@ const getUserStorageKey = (baseKey: string) => {
 };
 const latestPeriodByUser = computed(() => {
   const userPeriods = new Map<string, string>();
-
-  items.value.forEach((item) => {
+  
+  items.value.forEach(item => {
     if (item.user_id && item.period) {
       const currentLatest = userPeriods.get(item.user_id);
-
+      
       if (!currentLatest || item.period > currentLatest) {
         userPeriods.set(item.user_id, item.period);
       }
     }
   });
-
+  
   return userPeriods;
 });
 const hasLatestPeriod = (item: FileItem): boolean => {
   if (!item.user_id || !item.period) return false;
-
+  
   const latestPeriod = latestPeriodByUser.value.get(item.user_id);
   return item.period === latestPeriod;
 };
@@ -192,8 +194,8 @@ interface FileItem {
   insertDate?: string;
   updateDate?: string;
   status: string;
+  dispuste:string;
   status_display?: string;
-  dispuste?: string;
   confirmed: boolean;
 }
 
@@ -260,7 +262,6 @@ const headers = computed(() => {
     { title: "ຊື່ໄຟລ໌", value: "fileName" },
     { title: "ຂະໜາດຟາຍ", value: "fileSize" },
     { title: "ຂໍ້ມູນ dispuste", value: "dispuste" },
-
     // { title: "ປະເພດ", value: "FileType" },
     { title: "ສະຖານະການຢືນຢັນ", value: "statussubmit" },
     { title: "ເປີເຊັນຄວາມຖືກຕ້ອງ", value: "percentage" },
@@ -463,7 +464,7 @@ const fetchData = async () => {
     Swal.fire({
       icon: "error",
       title: "ຜິດພາດ",
-      text: `ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້ ${error}`,
+      text: "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້",
     });
   } finally {
     isLoading.value = false;
@@ -776,6 +777,138 @@ const unloadUpload = async (item: FileItem) => {
 //     Swal.fire("ຜິດພາດ!", "ການຢືນຢັນລົ້ມເຫຼວ. ກະລຸນາລອງໃໝ່.", "error");
 //   }
 // };
+// const confirmAction = async (item: FileItem) => {
+//   const result = await Swal.fire({
+//     title: "ຢືນຢັນການດຳເນີນການ",
+//     text: "ທ່ານແນ່ໃຈຫຼືບໍ່ທີ່ຢືນຢັນການອັບໂຫຼດນີ້?",
+//     icon: "warning",
+//     showCancelButton: true,
+//     confirmButtonColor: "#3085d6",
+//     cancelButtonColor: "#d33",
+//     confirmButtonText: "ແນ່ໃຈ, ຢືນຢັນ!",
+//     cancelButtonText: "ຍົກເລີກ",
+//   });
+
+//   if (!result.isConfirmed) {
+//     return;
+//   }
+
+//   try {
+//     // ໃຊ້ FormData ສຳລັບ multipart/form-data
+//     const formData = new FormData();
+//     formData.append("FID", item.FID!);
+
+//     // ເອີ້ນ confirm_upload ກ່ອນ (ເພາະມີ @csrf_exempt)
+//     const confirmResponse = await axios.post(
+//       `${config.public.strapi.url}api/confirm_upload/`,
+//       formData,
+//       {
+//         headers: {
+//           'Content-Type': 'multipart/form-data',
+//           'X-Requested-With': 'XMLHttpRequest',  // ເພີ່ມ header ນີ້
+//         },
+//         withCredentials: true,
+//       }
+//     );
+
+//     console.log("Confirm response:", confirmResponse.data);
+
+//     // ກວດສອບ response status
+//     if (confirmResponse.status !== 200 && confirmResponse.status !== 201) {
+//       item.statussubmit = "2";
+//       return Swal.fire("ລົ້ມເຫຼວ!", confirmResponse.data.message || "ການຢືນຢັນລົ້ມເຫຼວ.", "error");
+//     }
+
+//     // ຖ້າ confirm สำเร็จ, ເອີ້ນ update status
+//     const updateResponse = await axios.post(
+//       `${config.public.strapi.url}api/api/update-statussubmit/`,
+//       `FID=${item.FID}`,
+//       {
+//         headers: {
+//           'Content-Type': 'application/x-www-form-urlencoded',
+//           'X-Requested-With': 'XMLHttpRequest',
+//         },
+//         withCredentials: true,
+//       }
+//     );
+
+//     if (updateResponse.data.status !== "success") {
+//       item.statussubmit = "1";
+//       return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
+//     }
+
+//     // ຈັດການ response ຕາມສະຖານະ
+//     if (confirmResponse.data.status === "processing") {
+//       Swal.fire({
+//         title: "ກຳລັງປະມວນຜົນ...",
+//         html: '<div id="progress-text">0%</div>',
+//         allowOutsideClick: false,
+//         didOpen: () => {
+//           Swal.showLoading();
+//         },
+//       });
+
+//       startStatusPolling(item.FID!);
+//     } else if (confirmResponse.data.status === "success") {
+//       const confirmedItem = items.value.find((i) => i.FID === item.FID);
+//       if (confirmedItem) {
+//         confirmedItem.confirmed = true;
+//         confirmedItem.statussubmit = "0";
+//       }
+
+//       await Swal.fire("ຢືນຢັນສຳເລັດ!", confirmResponse.data.message || "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.", "success");
+//       await fetchFilteredData();
+//     } else if (confirmResponse.data.status === "error") {
+//       item.statussubmit = "2";
+//       Swal.fire(
+//         "ລົ້ມເຫຼວ!",
+//         confirmResponse.data.message || "ການຢືນຢັນລົ້ມເຫຼວ.",
+//         "error"
+//       );
+//     } else {
+//       item.statussubmit = "1";
+//       Swal.fire(
+//         "ລົ້ມເຫຼວ!",
+//         confirmResponse.data.message || "ການຢືນຢັນລົ້ມເຫຼວ.",
+//         "error"
+//       );
+//     }
+//   } catch (error: any) {
+//     console.error('Error confirming upload:', error);
+//     console.error('Error details:', {
+//       status: error.response?.status,
+//       statusText: error.response?.statusText,
+//       data: error.response?.data,
+//       headers: error.response?.headers,
+//     });
+    
+//     item.statussubmit = "1";
+    
+//     // ຮັບ error message ຈາກ backend
+//     let errorMessage = "ບໍ່ສາມາດອະນຸມັດຂໍ້ມູນຍ້ອນຫຼັງເຂົ້າຖານຂໍ້ມູນໄດ້";
+//     let errorTitle = "ຜິດພາດ!";
+    
+//     if (error.response?.data?.message) {
+//       errorMessage = error.response.data.message;
+//     } else if (error.response?.status === 403) {
+//       errorTitle = "ບໍ່ມີສິດເຂົ້າເຖິງ!";
+//       errorMessage = "CSRF verification failed. ກະລຸນາ refresh ໜ້າແລະລອງໃໝ່";
+//     } else if (error.response?.status === 404) {
+//       errorTitle = "ບໍ່ພົບ API!";
+//       errorMessage = "ບໍ່ພົບ API endpoint. ກະລຸນາກວດສອບ URL";
+//     } else if (error.code === 'NETWORK_ERROR') {
+//       errorTitle = "ບັນຫາເຄືອຂ່າຍ!";
+//       errorMessage = "ບໍ່ສາມາດເຊື່ອມຕໍ່ກັບເຊີເວີໄດ້";
+//     } else if (error.message) {
+//       errorMessage = error.message;
+//     }
+    
+//     Swal.fire(errorTitle, errorMessage, "error");
+    
+//     // Refresh ຂໍ້ມູນ
+//     await fetchFilteredData();
+//   }
+// };
 const confirmAction = async (item: FileItem) => {
   const result = await Swal.fire({
     title: "ຢືນຢັນການດຳເນີນການ",
@@ -793,10 +926,49 @@ const confirmAction = async (item: FileItem) => {
   }
 
   try {
-    // Update status ກ່ອນ
+    // ດຶງ JWT token ຈາກ localStorage
+    const userData = localStorage.getItem("user_data");
+    let accessToken = "";
+    if (userData) {
+      const parsedUserData = JSON.parse(userData);
+      accessToken = parsedUserData.access; // ດຶງ access token
+    } else {
+      throw new Error("ບໍ່ພົບ user data ໃນ localStorage");
+    }
+
+    const params = new URLSearchParams();
+    params.append("FID", item.FID!);
+
+    const confirmResponse = await axios.post(
+      `${config.public.strapi.url}api/confirm_upload/`,
+      params,
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Bearer ${accessToken}`, // ເພີ່ມ JWT token
+          'X-CSRFToken': getCookie('csrftoken'), // ຖ້າຕ້ອງການ CSRF
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        withCredentials: true,
+      }
+    );
+
+    // ກວດສອບ response status
+    if (confirmResponse.status !== 200 && confirmResponse.status !== 201) {
+      item.statussubmit = "2";
+      return Swal.fire("ລົ້ມເຫຼວ!", confirmResponse.data.message || "ການຢືນຢັນລົ້ມເຫຼວ.", "error");
+    }
+
     const updateResponse = await axios.post(
       `${config.public.strapi.url}api/api/update-statussubmit/`,
-      `FID=${item.FID}`
+      `FID=${item.FID}`,
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Bearer ${accessToken}`, 
+        },
+        withCredentials: true,
+      }
     );
 
     if (updateResponse.data.status !== "success") {
@@ -804,19 +976,9 @@ const confirmAction = async (item: FileItem) => {
       return Swal.fire("ລົ້ມເຫຼວ!", "ບໍ່ສາມາດອັບເດດສະຖານະໄດ້", "error");
     }
 
-    // ສົ່ງ request confirm
-    const params = new URLSearchParams();
-    params.append("FID", item.FID!);
-
-    const confirmResponse = await axios.post(
-      `${config.public.strapi.url}api/confirm_upload/`,
-      params
-    );
-
     console.log("Confirm response:", confirmResponse.data);
 
     if (confirmResponse.data.status === "processing") {
-      // ສະແດງ loading ແລະ ເລີ່ມ polling
       Swal.fire({
         title: "ກຳລັງປະມວນຜົນ...",
         html: '<div id="progress-text">0%</div>',
@@ -826,23 +988,24 @@ const confirmAction = async (item: FileItem) => {
         },
       });
 
-      // ເລີ່ມ polling
       startStatusPolling(item.FID!);
     } else if (confirmResponse.data.status === "success") {
-      // ສຳເລັດທັນທີ (ກໍລະນີຂໍ້ມູນນ້ອຍ)
       const confirmedItem = items.value.find((i) => i.FID === item.FID);
       if (confirmedItem) {
         confirmedItem.confirmed = true;
         confirmedItem.statussubmit = "0";
       }
 
-      await Swal.fire("ຢືນຢັນສຳເລັດ!", "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.", "success");
+      await Swal.fire("ຢືນຢັນສຳເລັດ!", confirmResponse.data.message || "ການອັບໂຫຼດໄດ້ຖືກຢືນຢັນ.", "success");
       await fetchFilteredData();
-    }
-    else if (confirmResponse.data.status === "error") {
-  item.statussubmit = "2"; // ສອດຄ່ອງກັບ backend
-  Swal.fire("ລົ້ມເຫຼວ!", confirmResponse.data.message || "ການຢືນຢັນລົ້ມເຫຼວ.", "error");
-} else {
+    } else if (confirmResponse.data.status === "error") {
+      item.statussubmit = "2";
+      Swal.fire(
+        "ລົ້ມເຫຼວ!",
+        confirmResponse.data.message || "ການຢືນຢັນລົ້ມເຫຼວ.",
+        "error"
+      );
+    } else {
       item.statussubmit = "1";
       Swal.fire(
         "ລົ້ມເຫຼວ!",
@@ -850,12 +1013,42 @@ const confirmAction = async (item: FileItem) => {
         "error"
       );
     }
-  } catch (error:any) {
-
+  } catch (error: any) {
+    console.error('Error confirming upload:', error);
+    
     item.statussubmit = "1";
-    Swal.fire("ຜິດພາດ!",  `ບໍ່ສາມາດອະນຸມັດຂໍ້ມູນຍອ້ນຫຫຼັງເຂົ້າຖານຂໍ້ມູນໄດ້` );
+    
+    let errorMessage = "ບໍ່ສາມາດອະນຸມັດຂໍ້ມູນຍ້ອນຫຼັງເຂົ້າຖານຂໍ້ມູນໄດ້";
+    
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.response?.status === 403) {
+      errorMessage = "ການກວດສອບສິດບໍ່ຜ່ານ - ກະລຸນາກວດສອບ JWT token ຫຼື refresh ໜ້າ";
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    Swal.fire("ຜິດພາດ!", errorMessage, "error");
+    
+    await fetchFilteredData();
   }
 };
+
+// ຟັງຊັນເອົາ CSRF token ຈາກ cookie
+function getCookie(name: string) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 
 // ຢຸດ polling ເມື່ອ component unmount
 onUnmounted(() => {
@@ -1122,15 +1315,15 @@ watch(
         ></v-text-field>
       </v-toolbar>
     </template>
+     <template v-slot:header.dispuste>
+      <th style="color: #0d47a1">ຂໍ້ມູນ dispust</th>
+    </template>
 
     <template v-slot:header.FID>
       <th style="color: #0d47a1">ໄອດີ</th>
     </template>
     <template v-slot:header.fileName>
       <th style="color: #0d47a1">ຊື່ໄຟລ໌</th>
-    </template>
-    <template v-slot:header.dispuste>
-      <th style="color: #0d47a1">ຂໍ້ມູນ dispust</th>
     </template>
     <template v-slot:header.user_id>
       <th style="color: #0d47a1" v-if="user && user.MID.id === '01'">
@@ -1178,6 +1371,18 @@ watch(
         </template>
       </v-tooltip>
     </template>
+     <template v-slot:item.dispuste="{ item }">
+      <v-fab
+        variant="outlined"
+        size="small"
+        @click="goPath(`../disuste/?id_dispust=${item.FID}`)"
+        v-if="item.dispuste !== null && item.dispuste !== '0'"
+        color="warning"
+      >
+        {{ item.dispuste }}
+      </v-fab>
+      <v-chip v-else color="success" size="small"> ບໍ່ມີ </v-chip>
+    </template>
 
     <template
       v-slot:item.user_id="{ item }"
@@ -1217,25 +1422,6 @@ watch(
           {{ item.percentage?.toFixed(1) }}%
         </span>
       </div>
-    </template>
-    <template v-slot:item.dispuste="{ item }">
-      <v-chip
-        v-if="(item.dispuste?.length ?? 0) === 0"
-        color="success"
-        size="small"
-      >
-        ບໍ່ມີ
-      </v-chip>
-      <v-fab
-      variant="outlined"
-     size="small"
-      @click="goPath(`../disuste/?id_dispust=${item.FID}`)"
-        v-else-if="(item.dispuste?.length ?? 0) > 0"
-        color="warning"
-      
-      >
-        {{ item.dispuste }} 
-      </v-fab>
     </template>
 
     <template v-slot:item.statussubmit="{ item }">
@@ -1313,23 +1499,18 @@ watch(
           <v-icon icon="mdi-eye" size="16" class="mr-1"></v-icon>
           ເບິ່ງລາຍລະອຽດ
         </v-btn>
-        <template
-          v-if="
-            (item.statussubmit === '0' || item.statussubmit === '2') &&
-            hasLatestPeriod(item)
-          "
-        >
-          <v-btn
-            @click="unloadUpload(item)"
-            color="warning"
-            size="small"
-            variant="outlined"
-            :disabled="isUserUnloading(item.user_id)"
-          >
-            <v-icon icon="mdi-download" size="16" class="mr-1"></v-icon>
-            ອັນໂຫຼດ
-          </v-btn>
-        </template>
+        <template v-if="(item.statussubmit === '0' || item.statussubmit === '2') && hasLatestPeriod(item)">
+      <v-btn
+        @click="unloadUpload(item)"
+        color="warning"
+        size="small"
+        variant="outlined"
+        :disabled="isUserUnloading(item.user_id)"
+      >
+        <v-icon icon="mdi-download" size="16" class="mr-1"></v-icon>
+        ອັນໂຫຼດ
+      </v-btn>
+    </template>
         <template v-else-if="item.statussubmit === '4'">
           <v-chip color="info" size="small">
             <v-progress-circular
