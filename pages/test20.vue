@@ -1,577 +1,738 @@
-// pages/charge-report.vue
 <template>
-  <div class="dashboard-container">
-    <div class="header">
-      <h1>ລາຍງານຄ່າທຳນຽມ</h1>
+  <div class="charge-report-dashboard">
+    <!-- Header with Filters -->
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">
+        <Icon name="mdi:chart-line" />
+        <span>ລາຍງານຄ່າທຳນຽມ</span>
+      </h1>
+      
+      <!-- Filter Section -->
+      <div class="filter-section">
+        <div class="filter-row">
+          <!-- Date Range Filter -->
+          <div class="filter-group">
+            <label class="filter-label">ຊ່ວງວັນທີ</label>
+            <div class="date-range">
+              <input 
+                v-model="filters.fromDate" 
+                type="date" 
+                class="date-input"
+                placeholder="ວັນທີເລີ່ມຕົ້ນ"
+                @change="handleDateChange"
+              />
+              <span class="date-separator">ຫາ</span>
+              <input 
+                v-model="filters.toDate" 
+                type="date" 
+                class="date-input"
+                placeholder="ວັນທີສິ້ນສຸດ"
+                @change="handleDateChange"
+              />
+            </div>
+          </div>
+          
+          <!-- Month Filter -->
+          <div class="filter-group">
+            <label class="filter-label">ເດືອນ</label>
+            <select v-model="filters.month" class="filter-select" @change="handleMonthYearChange">
+              <option value="">ທັງໝົດ</option>
+              <option value="1">ມັງກອນ</option>
+              <option value="2">ກຸມພາ</option>
+              <option value="3">ມີນາ</option>
+              <option value="4">ເມສາ</option>
+              <option value="5">ພຶດສະພາ</option>
+              <option value="6">ມິຖຸນາ</option>
+              <option value="7">ກໍລະກົດ</option>
+              <option value="8">ສິງຫາ</option>
+              <option value="9">ກັນຍາ</option>
+              <option value="10">ຕຸລາ</option>
+              <option value="11">ພະຈິກ</option>
+              <option value="12">ທັນວາ</option>
+            </select>
+          </div>
+          
+          <!-- Year Filter -->
+          <div class="filter-group">
+            <label class="filter-label">ປີ</label>
+            <select v-model="filters.year" class="filter-select" @change="handleMonthYearChange">
+              <option value="">ທັງໝົດ</option>
+              <option v-for="year in yearOptions" :key="year" :value="year">
+                {{ year }}
+              </option>
+            </select>
+          </div>
+          
+          <!-- Bank Filter (Admin Only) -->
+          <div class="filter-group" v-if="isAdmin">
+            <label class="filter-label">ທະນາຄານ</label>
+            <select v-model="filters.bank" class="filter-select">
+              <option value="all">ທັງໝົດ</option>
+              <option v-for="bank in bankList" :key="bank.bnk_code" :value="bank.bnk_code">
+                {{ bank.bnk_code }} - {{ bank.nameL || bank.nameE }}
+              </option>
+            </select>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="filter-actions">
+            <button 
+              @click="applyFilters" 
+              class="btn btn-primary" 
+              :disabled="loading"
+            >
+              <Icon name="mdi:magnify" />
+              <span>ຄົ້ນຫາ</span>
+            </button>
+            <button @click="resetFilters" class="btn btn-secondary">
+              <Icon name="mdi:refresh" />
+              <span>ລ້າງຄ່າ</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-
+    
     <!-- Summary Cards -->
-    <div class="summary-grid">
-      <div class="card card-primary">
-        <div class="card-icon">💰</div>
-        <div class="card-content">
-          <p class="card-label">ຄ່າທຳນຽມເດືອນນີ້</p>
-          <h2 class="card-value">{{ formatCurrency(summaryStats.monthlyFee) }}</h2>
+    <div class="summary-cards">
+      <!-- Card 1: Monthly Transactions -->
+      <div class="summary-card">
+        <div class="card-header">
+          <Icon name="mdi:receipt-text-outline" class="card-icon" />
+          <span class="card-title">ທຸລະກຳລວມ</span>
+        </div>
+        <div class="card-body">
+          <div class="main-value">
+            <span class="month-label">{{ currentMonthLabel }}</span>
+            <span class="value">{{ formatNumber(monthlyTransactions) }}</span>
+          </div>
+          <div class="today-value" :class="{ positive: todayTransactions > 0 }">
+            <Icon name="mdi:trending-up" v-if="todayTransactions > 0" />
+            <span>+{{ todayTransactions }} ວັນນີ້</span>
+          </div>
         </div>
       </div>
-
-      <div class="card card-success">
-        <div class="card-icon">📅</div>
-        <div class="card-content">
-          <p class="card-label">ຄ່າທຳນຽມມື້ນີ້</p>
-          <h2 class="card-value">{{ formatCurrency(summaryStats.dailyFee) }}</h2>
+      
+      <!-- Card 2: Monthly Amount -->
+      <div class="summary-card">
+        <div class="card-header">
+          <Icon name="mdi:cash-multiple" class="card-icon amount-icon" />
+          <span class="card-title">ຍອດເງິນລວມ</span>
+        </div>
+        <div class="card-body">
+          <div class="main-value">
+            <span class="month-label">{{ currentMonthLabel }}</span>
+            <span class="value amount-value">{{ formatCurrency(monthlyAmount) }}</span>
+          </div>
+          <div class="today-value" :class="{ positive: todayAmount > 0 }">
+            <Icon name="mdi:trending-up" v-if="todayAmount > 0" />
+            <span>+{{ formatCurrency(todayAmount) }} ວັນນີ້</span>
+          </div>
         </div>
       </div>
-
-      <div class="card card-info">
-        <div class="card-icon">📊</div>
-        <div class="card-content">
-          <p class="card-label">ທຸລະກໍາທັງໝົດ</p>
-          <h2 class="card-value">{{ summaryStats.totalTransactions.toLocaleString() }}</h2>
+      
+      <!-- Card 3: Top Bank by Amount (Admin Only) -->
+      <div class="summary-card top-bank-card" v-if="isAdmin && topBankByAmount">
+        <div class="card-header">
+          <Icon name="mdi:bank" class="card-icon bank-icon" />
+          <span class="card-title">ທະນາຄານຍອດເງິນສູງສຸດ</span>
+        </div>
+        <div class="card-body">
+          <div class="bank-info">
+            <span class="bank-name">{{ topBankByAmount.bank_name }}</span>
+            <span class="bank-code">({{ topBankByAmount.bank_code }})</span>
+          </div>
+          <div class="main-value">
+            <span class="value">{{ formatCurrency(topBankByAmount.total_amount) }}</span>
+          </div>
+          <div class="today-value" :class="{ positive: topBankByAmount.today_amount > 0 }">
+            <Icon name="mdi:trending-up" v-if="topBankByAmount.today_amount > 0" />
+            <span>+{{ formatCurrency(topBankByAmount.today_amount) }} ວັນນີ້</span>
+          </div>
         </div>
       </div>
-
-      <div class="card card-warning">
-        <div class="card-icon">🏦</div>
-        <div class="card-content">
-          <p class="card-label">ທະນາຄານທີ່ມີທຸລະກໍາຫຼາຍສຸດ</p>
-          <h2 class="card-value-small">{{ summaryStats.topBank.bank }}</h2>
-          <p class="card-subtext">{{ summaryStats.topBank.count }} ທຸລະກໍາ</p>
+      
+      <!-- Card 4: Top Bank by Transactions (Admin Only) -->
+      <div class="summary-card top-bank-card" v-if="isAdmin && topBankByTransactions">
+        <div class="card-header">
+          <Icon name="mdi:bank-transfer" class="card-icon transaction-icon" />
+          <span class="card-title">ທະນາຄານທຸລະກຳສູງສຸດ</span>
+        </div>
+        <div class="card-body">
+          <div class="bank-info">
+            <span class="bank-name">{{ topBankByTransactions.bank_name }}</span>
+            <span class="bank-code">({{ topBankByTransactions.bank_code }})</span>
+          </div>
+          <div class="main-value">
+            <span class="value">{{ formatNumber(topBankByTransactions.total_transactions) }} ລາຍການ</span>
+          </div>
+          <div class="today-value" :class="{ positive: topBankByTransactions.today_transactions > 0 }">
+            <Icon name="mdi:trending-up" v-if="topBankByTransactions.today_transactions > 0" />
+            <span>+{{ topBankByTransactions.today_transactions }} ວັນນີ້</span>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- Filters -->
-    <div class="filters-section">
-      <div class="filters-row">
-        <div class="filter-group">
-          <label>ປີ</label>
-          <select v-model="filters.year" @change="fetchData">
-            <option value="">ທັງໝົດ</option>
-            <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label>ເດືອນ</label>
-          <select v-model="filters.month" @change="fetchData">
-            <option value="">ທັງໝົດ</option>
-            <option v-for="month in months" :key="month.value" :value="month.value">
-              {{ month.label }}
-            </option>
-          </select>
-        </div>
-
-        <div class="filter-group" v-if="userInfo.is_admin">
-          <label>ທະນາຄານ</label>
-          <select v-model="filters.bank" @change="fetchData">
-            <option value="">ທັງໝົດ</option>
-            <option v-for="bank in uniqueBanks" :key="bank.code" :value="bank.code">
-              {{ bank.display }}
-            </option>
-          </select>
-        </div>
-
-        <button @click="clearFilters" class="btn-clear">ລ້າງຕົວກອງ</button>
+    
+    <!-- Data Table Section -->
+    <div class="data-section">
+      <div class="section-header">
+        <h2 class="section-title">ຂໍ້ມູນທະນາຄານ</h2>
+        <button @click="exportData" class="btn btn-export">
+          <Icon name="mdi:download" />
+          <span>ສົ່ງອອກ</span>
+        </button>
       </div>
-    </div>
-
-    <!-- Monthly Report by Bank -->
-    <div class="report-section">
-      <h2>ລາຍງານປະຈຳເດືອນແຍກຕາມທະນາຄານ</h2>
-      <div class="table-container">
+      
+      <!-- Loading State -->
+      <div v-if="loading" class="loading-container">
+        <div class="spinner"></div>
+        <p>ກຳລັງໂຫຼດຂໍ້ມູນ...</p>
+      </div>
+      
+      <!-- Data Table -->
+      <div v-else-if="mainReportData.length > 0" class="table-container">
         <table class="data-table">
           <thead>
             <tr>
-              <th>ທະນາຄານ</th>
-              <th>ປີ</th>
-              <th>ເດືອນ</th>
-              <th>ຍອດລວມ</th>
-              <th>ຈຳນວນທຸລະກໍາ</th>
-              <th>ຄ່າສະເລ່ຍ</th>
-              <th>ການດຳເນີນການ</th>
+              <th>ລະຫັດທະນາຄານ</th>
+              <th>ຊື່ທະນາຄານ</th>
+              <th class="text-right">ຈຳນວນທຸລະກຳ</th>
+              <th class="text-right">ຍອດເງິນລວມ</th>
+              <th class="text-right">ຄ່າສະເລ່ຍ</th>
+              <th class="text-center">ການດຳເນີນການ</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-if="reportData.length === 0">
-              <td colspan="7" class="text-center">ບໍ່ມີຂໍ້ມູນ</td>
-            </tr>
-            <tr v-for="item in reportData" :key="`${item.bank_code}-${item.year}-${item.month}`">
-              <td><span class="badge">{{ item.bank_display }}</span></td>
-              <td>{{ item.year }}</td>
-              <td>{{ item.month_name }}</td>
-              <td class="amount">{{ formatCurrency(item.total_charge_amount) }}</td>
-              <td>{{ item.transaction_count.toLocaleString() }}</td>
-              <td>{{ formatCurrency(item.avg_charge_amount) }}</td>
-              <td>
+            <tr v-for="bank in mainReportData" :key="bank.bank_code">
+              <td class="text-center">{{ bank.bank_code }}</td>
+              <td>{{ bank.bank_name }}</td>
+              <td class="text-right">{{ formatNumber(bank.transaction_count) }}</td>
+              <td class="text-right">{{ formatCurrency(bank.total_charge_amount) }}</td>
+              <td class="text-right">
+                {{ formatCurrency(bank.total_charge_amount / (bank.transaction_count || 1)) }}
+              </td>
+              <td class="text-center">
                 <button 
-                  @click="viewDetails(item)" 
-                  class="btn-detail"
+                  @click="viewDetails(bank.bank_code)" 
+                  class="btn-view-details"
+                  title="ເບິ່ງລາຍລະອຽດ"
                 >
-                  ເບິ່ງລາຍລະອຽດ
+                  <Icon name="mdi:eye" />
                 </button>
               </td>
             </tr>
           </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="2" class="text-right">ລວມທັງໝົດ:</td>
+              <td class="text-right">{{ formatNumber(totalTransactions) }}</td>
+              <td class="text-right">{{ formatCurrency(totalAmount) }}</td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
-    </div>
-
-    <!-- Detail Modal -->
-    <div v-if="showDetailModal" class="modal-overlay" @click="closeModal">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2>ລາຍລະອຽດທຸລະກໍາ - {{ selectedBank?.bank_display }}</h2>
-          <button @click="closeModal" class="btn-close">&times;</button>
-        </div>
-
-        <div class="modal-body">
-          <div class="detail-info">
-            <p><strong>ໄລຍະເວລາ:</strong> {{ selectedBank?.month_name }} {{ selectedBank?.year }}</p>
-            <p><strong>ຍອດລວມ:</strong> {{ formatCurrency(selectedBank?.total_charge_amount) }}</p>
-            <p><strong>ທຸລະກໍາ:</strong> {{ selectedBank?.transaction_count }} ລາຍການ</p>
-          </div>
-
-          <div class="table-container">
-            <table class="detail-table">
-              <thead>
-                <tr>
-                  <th>ລະຫັດ</th>
-                  <th>ວິສາຫະກິດ</th>
-                  <th>ຈຸດປະສົງສິນເຊື່ອ</th>
-                  <th>ຈຳນວນເງິນ</th>
-                  <th>ສະຖານະ</th>
-                  <th>ວັນທີ</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="detailData.length === 0">
-                  <td colspan="6" class="text-center">ບໍ່ມີຂໍ້ມູນ</td>
-                </tr>
-                <tr v-for="detail in detailData" :key="detail.rec_charge_ID">
-                  <td>{{ detail.rec_charge_ID }}</td>
-                  <td class="text-left">{{ detail.enterprise_display || detail.LCIC_code }}</td>
-                  <td>{{ detail.lon_purpose }}</td>
-                  <td class="amount">{{ formatCurrency(detail.chg_amount) }} {{ detail.chg_unit }}</td>
-                  <td>
-                    <span :class="['status-badge', `status-${detail.status}`]">
-                      {{ detail.status_lao || detail.status }}
-                    </span>
-                  </td>
-                  <td>{{ formatDate(detail.insert_date) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+      
+      <!-- Empty State -->
+      <div v-else class="empty-state">
+        <Icon name="mdi:database-off" class="empty-icon" />
+        <h3>ບໍ່ພົບຂໍ້ມູນ</h3>
+        <p>ກະລຸນາເລືອກເງື່ອນໄຂການຄົ້ນຫາ</p>
       </div>
-    </div>
-
-    <!-- Loading -->
-    <div v-if="loading" class="loading-overlay">
-      <div class="spinner"></div>
-      <p class="loading-text">ກຳລັງໂຫຼດຂໍ້ມູນ...</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useChargeReportApi } from '~/composables/useChargeReportApi'
 
 definePageMeta({
-  middleware: "auth",
-  layout: "backend",
-});
+  middleware: 'auth',
+  layout: 'backend'
+})
 
-interface ChargeReport {
-  bank_code: string
-  bank_name: string
-  bank_display: string
-  year: number
-  month: number
-  month_name: string
-  total_charge_amount: number
-  transaction_count: number
-  avg_charge_amount: number
-  currency: string
-}
-
-interface ChargeDetail {
-  rec_charge_ID: number
-  bnk_code: string
-  bank_display: string
-  LCIC_code: string
-  enterprise_display: string
-  lon_purpose: string
-  chg_amount: number
-  chg_unit: string
-  status: string
-  status_lao: string
-  insert_date: string
-}
-
-// Use the composable
-const { 
-  fetchSummaryReport, 
-  fetchDetailReport, 
-  loadingSummary, 
-  loadingDetail,
-  getCurrentUser 
+// Composable
+const {
+  summaryData,
+  mainReportData,
+  bankList,
+  userInfo,
+  loadingSummary,
+  loadingMain,
+  isAdmin,
+  fetchSummaryStats,
+  fetchMainReport,
+  fetchBankList,
+  formatNumber,
+  formatCurrency
 } = useChargeReportApi()
 
-const reportData = ref<ChargeReport[]>([])
-const detailData = ref<ChargeDetail[]>([])
-const showDetailModal = ref(false)
-const selectedBank = ref<ChargeReport | null>(null)
+// compute today's date in YYYY-MM-DD
+const pad = (n: number) => String(n).padStart(2, '0')
+const now = new Date()
+const todayISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 
-const userInfo = ref({
-  role_id: 0,
-  is_admin: false,
-  bank_code: ''
-})
-
+// Filters
 const filters = ref({
+  fromDate: todayISO,   // default to today
+  toDate: todayISO,     // default to today
+  month: '',
   year: new Date().getFullYear().toString(),
-  month: (new Date().getMonth() + 1).toString(),
-  bank: ''
+  bank: 'all'
 })
 
-const summaryStats = ref({
-  monthlyFee: 0,
-  dailyFee: 0,
-  totalTransactions: 0,
-  topBank: { bank: '-', count: 0 }
-})
+// Loading state
+const loading = computed(() => loadingSummary.value || loadingMain.value)
 
-const years = computed(() => {
+// Year options (last 5 years)
+const yearOptions = computed(() => {
   const currentYear = new Date().getFullYear()
-  return Array.from({ length: 5 }, (_, i) => currentYear - i)
+  const years = []
+  for (let i = 0; i < 5; i++) {
+    years.push(currentYear - i)
+  }
+  return years
 })
 
-const months = [
-  { value: '1', label: 'ມັງກອນ' },
-  { value: '2', label: 'ກຸມພາ' },
-  { value: '3', label: 'ມີນາ' },
-  { value: '4', label: 'ເມສາ' },
-  { value: '5', label: 'ພຶດສະພາ' },
-  { value: '6', label: 'ມິຖຸນາ' },
-  { value: '7', label: 'ກໍລະກົດ' },
-  { value: '8', label: 'ສິງຫາ' },
-  { value: '9', label: 'ກັນຍາ' },
-  { value: '10', label: 'ຕຸລາ' },
-  { value: '11', label: 'ພະຈິກ' },
-  { value: '12', label: 'ທັນວາ' }
-]
-
-const uniqueBanks = computed(() => {
-  const banksMap = new Map()
-  reportData.value.forEach(item => {
-    if (!banksMap.has(item.bank_code)) {
-      banksMap.set(item.bank_code, {
-        code: item.bank_code,
-        display: item.bank_display
-      })
-    }
-  })
-  return Array.from(banksMap.values())
+// Current month label
+const currentMonthLabel = computed(() => {
+  if (summaryData.value?.current_month_stats?.month_label) {
+    return summaryData.value.current_month_stats.month_label
+  }
+  const now = new Date()
+  return `${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`
 })
 
-const fetchData = async () => {
-  try {
-    const data = await fetchSummaryReport({
-      year: filters.value.year,
-      month: filters.value.month,
-      bank: filters.value.bank
-    })
-    
-    if (data.status === 'success') {
-      reportData.value = data.data
-      userInfo.value = data.user_info
-      
-      // Calculate summary stats
-      summaryStats.value.monthlyFee = data.summary.total_amount
-      summaryStats.value.totalTransactions = data.summary.total_transactions
-      
-      // Find top bank
-      if (data.data.length > 0) {
-        const topBankData = data.data.reduce((max: ChargeReport, item: ChargeReport) => 
-          item.transaction_count > max.transaction_count ? item : max
-        )
-        summaryStats.value.topBank = {
-          bank: topBankData.bank_display,
-          count: topBankData.transaction_count
-        }
-      }
-      
-      // Get today's fee
-      await fetchDailyFee()
-    }
-  } catch (error) {
-    console.error('ຂໍ້ຜິດພາດໃນການດຶງຂໍ້ມູນ:', error)
+// Summary computed values
+const monthlyTransactions = computed(() => {
+  return summaryData.value?.current_month_stats?.total_transactions || 0
+})
+
+const monthlyAmount = computed(() => {
+  return summaryData.value?.current_month_stats?.total_amount || 0
+})
+
+const todayTransactions = computed(() => {
+  return summaryData.value?.current_month_stats?.today_transactions || 0
+})
+
+const todayAmount = computed(() => {
+  return summaryData.value?.current_month_stats?.today_amount || 0
+})
+
+const topBankByAmount = computed(() => {
+  return summaryData.value?.top_banks?.by_amount || null
+})
+
+const topBankByTransactions = computed(() => {
+  return summaryData.value?.top_banks?.by_transactions || null
+})
+
+const totalTransactions = computed(() => {
+  return mainReportData.value.reduce((sum, bank) => sum + bank.transaction_count, 0)
+})
+
+const totalAmount = computed(() => {
+  return mainReportData.value.reduce((sum, bank) => sum + bank.total_charge_amount, 0)
+})
+
+// Handle date change (clear month/year when date range is selected)
+const handleDateChange = () => {
+  if (filters.value.fromDate || filters.value.toDate) {
+    filters.value.month = ''
+    filters.value.year = ''
   }
 }
 
-const fetchDailyFee = async () => {
-  try {
-    const today = new Date().toISOString().split('T')[0]
-    const data = await fetchDetailReport({
-      fromDate: today,
-      toDate: today
-    })
-    
-    if (data.status === 'success') {
-      summaryStats.value.dailyFee = data.data.reduce((sum: number, item: ChargeDetail) => 
-        sum + item.chg_amount, 0
-      )
-    }
-  } catch (error) {
-    console.error('ຂໍ້ຜິດພາດໃນການດຶງຄ່າທຳນຽມປະຈຳວັນ:', error)
+// Handle month/year change (clear date range when month/year is selected)
+const handleMonthYearChange = () => {
+  if (filters.value.month || filters.value.year) {
+    filters.value.fromDate = ''
+    filters.value.toDate = ''
   }
 }
 
-const viewDetails = async (item: ChargeReport) => {
-  selectedBank.value = item
+// Apply filters
+const applyFilters = async () => {
+  const filterParams: any = {}
   
-  try {
-    const data = await fetchDetailReport({
-      bank: item.bank_code,
-      year: item.year.toString(),
-      month: item.month.toString(),
-      limit: 1000
-    })
-    
-    if (data.status === 'success') {
-      detailData.value = data.data
-      showDetailModal.value = true
-    }
-  } catch (error) {
-    console.error('ຂໍ້ຜິດພາດໃນການດຶງລາຍລະອຽດ:', error)
-  }
+  if (filters.value.fromDate) filterParams.fromDate = filters.value.fromDate
+  if (filters.value.toDate) filterParams.toDate = filters.value.toDate
+  if (filters.value.month) filterParams.month = filters.value.month
+  if (filters.value.year) filterParams.year = filters.value.year
+  if (filters.value.bank && filters.value.bank !== 'all') filterParams.bank = filters.value.bank
+  
+  // Fetch data with filters
+  await Promise.all([
+    fetchSummaryStats(filterParams),
+    fetchMainReport(filterParams)
+  ])
 }
 
-const closeModal = () => {
-  showDetailModal.value = false
-  selectedBank.value = null
-  detailData.value = []
-}
-
-const clearFilters = () => {
+// Reset filters
+const resetFilters = () => {
+  const now = new Date()
   filters.value = {
-    year: '',
+    fromDate: '',
+    toDate: '',
     month: '',
-    bank: ''
+    year: now.getFullYear().toString(),
+    bank: 'all'
   }
-  fetchData()
+  applyFilters()
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
-  }).format(amount) + ' ກີບ'
+// View details
+const viewDetails = (bankCode: string) => {
+  // Navigate to detail page or open modal
+  navigateTo(`/test25?bank=${bankCode}`)
 }
 
-const formatDate = (date: string) => {
-  const d = new Date(date)
-  const day = d.getDate().toString().padStart(2, '0')
-  const month = (d.getMonth() + 1).toString().padStart(2, '0')
-  const year = d.getFullYear()
-  return `${day}/${month}/${year}`
+// Export data
+const exportData = () => {
+  // Implement export functionality
+  console.log('Export data')
 }
 
-const loading = computed(() => loadingSummary.value || loadingDetail.value)
-
-onMounted(() => {
-  // Get user info from localStorage
-  const user = getCurrentUser()
-  if (user) {
-    userInfo.value = {
-      role_id: user.GID?.GID || 0,
-      is_admin: [1, 2, 3, 4, 5].includes(user.GID?.GID || 0),
-      bank_code: user.MID?.id || ''
-    }
-  }
-  
-  fetchData()
+// Initialize data on mount
+onMounted(async () => {
+  // Load initial data
+  await Promise.all([
+    fetchBankList(),
+    applyFilters()
+  ])
 })
 </script>
 
 <style scoped>
-.dashboard-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f8f9fa;
+/* Global Dashboard Styles */
+.charge-report-dashboard {
+  padding: 24px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
   min-height: 100vh;
+  font-family: 'Phetsarath OT', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.header {
-  margin-bottom: 2rem;
+/* Dashboard Header */
+.dashboard-header {
+  margin-bottom: 24px;
+  animation: slideDown 0.3s ease-out;
 }
 
-.header h1 {
-  font-size: 2rem;
+.dashboard-title {
+  font-size: 28px;
   font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  color: #666;
-  font-size: 1rem;
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  color: #2c3e50;
+  margin-bottom: 20px;
   display: flex;
-  gap: 1rem;
-  transition: transform 0.2s, box-shadow 0.2s;
+  align-items: center;
+  gap: 12px;
 }
 
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+.dashboard-title svg {
+  font-size: 32px;
+  color: #3b82f6;
 }
 
-.card-primary {
-  border-top: 4px solid #4f46e5;
-}
-
-.card-success {
-  border-top: 4px solid #10b981;
-}
-
-.card-info {
-  border-top: 4px solid #3b82f6;
-}
-
-.card-warning {
-  border-top: 4px solid #f59e0b;
-}
-
-.card-icon {
-  font-size: 2.5rem;
-  line-height: 1;
-}
-
-.card-content {
-  flex: 1;
-}
-
-.card-label {
-  color: #666;
-  font-size: 0.875rem;
-  margin-bottom: 0.5rem;
-}
-
-.card-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0;
-}
-
-.card-value-small {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0;
-  line-height: 1.3;
-}
-
-.card-subtext {
-  color: #999;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-.filters-section {
-  background: white;
+/* Filter Section */
+.filter-section {
+  background: #ffffff;
   border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  border: 1px solid #e5e7eb;
 }
 
-.filters-row {
+.filter-row {
   display: flex;
-  gap: 1rem;
   flex-wrap: wrap;
+  gap: 16px;
   align-items: flex-end;
 }
 
 .filter-group {
-  flex: 1;
-  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
-.filter-group label {
-  display: block;
-  font-size: 0.875rem;
+.filter-label {
+  font-size: 13px;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 0.5rem;
+  color: #6b7280;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.filter-group select {
-  width: 100%;
-  padding: 0.625rem;
-  border: 1px solid #ddd;
+.date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-input,
+.filter-select {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
-  font-size: 0.875rem;
-  background: white;
-  cursor: pointer;
-  transition: border-color 0.2s;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+  font-size: 14px;
+  transition: all 0.2s;
+  background: #ffffff;
+  color: #374151;
+  min-width: 140px;
 }
 
-.filter-group select:focus {
+.date-input:focus,
+.filter-select:focus {
   outline: none;
-  border-color: #4f46e5;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.btn-clear {
-  padding: 0.625rem 1.25rem;
-  background: #f3f4f6;
-  border: none;
+.date-input:hover,
+.filter-select:hover {
+  border-color: #9ca3af;
+}
+
+.date-separator {
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+/* Button Styles */
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
   border-radius: 8px;
-  font-size: 0.875rem;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+.btn-export {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  font-size: 13px;
+  padding: 8px 16px;
+}
+
+.btn-export:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Summary Cards */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.summary-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.card-icon {
+  font-size: 28px;
+  margin-right: 10px;
+  color: #3b82f6;
+}
+
+.card-icon.amount-icon {
+  color: #10b981;
+}
+
+.card-icon.bank-icon {
+  color: #f59e0b;
+}
+
+.card-icon.transaction-icon {
+  color: #8b5cf6;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.main-value {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.month-label {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.amount-value {
+  color: #059669;
+}
+
+.today-value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #6b7280;
+  padding-top: 8px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.today-value.positive {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.today-value svg {
+  font-size: 16px;
+}
+
+.bank-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.bank-name {
+  font-size: 14px;
   font-weight: 600;
   color: #374151;
-  cursor: pointer;
-  transition: background 0.2s;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
 }
 
-.btn-clear:hover {
-  background: #e5e7eb;
+.bank-code {
+  font-size: 12px;
+  color: #9ca3af;
 }
 
-.report-section {
-  background: white;
+/* Data Section */
+.data-section {
+  background: #ffffff;
   border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  animation: fadeInUp 0.5s ease-out;
 }
 
-.report-section h2 {
-  font-size: 1.25rem;
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(to right, #fafbfc, #f9fafb);
+}
+
+.section-title {
+  font-size: 18px;
   font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 1.5rem;
+  color: #1f2937;
 }
 
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+/* Table Styles */
 .table-container {
   overflow-x: auto;
 }
@@ -581,265 +742,233 @@ onMounted(() => {
   border-collapse: collapse;
 }
 
+.data-table thead {
+  background: linear-gradient(to right, #f9fafb, #f3f4f6);
+}
+
 .data-table th {
-  background: #f9fafb;
-  padding: 0.75rem 1rem;
+  padding: 14px 16px;
   text-align: left;
-  font-size: 0.875rem;
+  font-size: 12px;
   font-weight: 600;
-  color: #374151;
+  color: #4b5563;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   border-bottom: 2px solid #e5e7eb;
-  white-space: nowrap;
 }
 
 .data-table td {
-  padding: 1rem;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #374151;
   border-bottom: 1px solid #f3f4f6;
-  font-size: 0.875rem;
-  color: #1a1a1a;
-  text-align: left;
 }
 
-.data-table tr:hover {
-  background: #f9fafb;
+.data-table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background-color: #fafbfc;
+}
+
+.total-row {
+  background: linear-gradient(to right, #f3f4f6, #e5e7eb);
+  font-weight: 700;
+}
+
+.total-row td {
+  padding: 16px;
+  font-size: 15px;
+  color: #1f2937;
+  border-bottom: none;
 }
 
 .text-center {
-  text-align: center !important;
-  color: #999;
-  font-style: italic;
+  text-align: center;
 }
 
-.amount {
-  font-weight: 600;
-  color: #10b981;
+.text-right {
+  text-align: right;
 }
 
-.badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  background: #dbeafe;
-  color: #1e40af;
+.btn-view-details {
+  padding: 6px 10px;
+  background: #eff6ff;
+  color: #3b82f6;
+  border: 1px solid #dbeafe;
   border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.btn-detail {
-  padding: 0.5rem 1rem;
-  background: #4f46e5;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
-  font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
-}
-
-.btn-detail:hover {
-  background: #4338ca;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
+  transition: all 0.2s;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
 }
 
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  max-width: 1200px;
-  width: 100%;
-  max-height: 90vh;
-  overflow: hidden;
+.btn-view-details:hover {
+  background: #3b82f6;
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+.btn-view-details svg {
+  font-size: 18px;
+}
+
+/* Empty State */
+.empty-state {
   display: flex;
   flex-direction: column;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.modal-header h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0;
-}
-
-.btn-close {
-  background: none;
-  border: none;
-  font-size: 2rem;
+  justify-content: center;
+  padding: 80px 20px;
   color: #9ca3af;
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
-  width: 2rem;
-  height: 2rem;
 }
 
-.btn-close:hover {
-  color: #374151;
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  color: #d1d5db;
 }
 
-.modal-body {
-  padding: 1.5rem;
-  overflow-y: auto;
-}
-
-.detail-info {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: #f9fafb;
-  border-radius: 8px;
-  flex-wrap: wrap;
-}
-
-.detail-info p {
-  margin: 0;
-  font-size: 0.875rem;
-}
-
-.detail-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-.detail-table th {
-  background: #f9fafb;
-  padding: 0.75rem;
-  text-align: left;
+.empty-state h3 {
+  font-size: 18px;
   font-weight: 600;
-  color: #374151;
-  border-bottom: 2px solid #e5e7eb;
-  white-space: nowrap;
+  color: #6b7280;
+  margin-bottom: 8px;
 }
 
-.detail-table td {
-  padding: 0.75rem;
-  border-bottom: 1px solid #f3f4f6;
+.empty-state p {
+  font-size: 14px;
+  color: #9ca3af;
 }
 
-.text-left {
-  text-align: left !important;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.status-pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-completed, .status-approved, .status-success, .status-paid {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.status-failed, .status-rejected {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.status-processing {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.status-cancelled, .status-unpaid {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.9);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #f3f4f6;
-  border-top-color: #4f46e5;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.loading-text {
-  margin-top: 1rem;
-  font-size: 1rem;
-  color: #4f46e5;
-  font-weight: 600;
-}
-
+/* Animations */
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .dashboard-container {
-    padding: 1rem;
+  .charge-report-dashboard {
+    padding: 16px;
   }
-  
-  .summary-grid {
-    grid-template-columns: 1fr;
+
+  .dashboard-title {
+    font-size: 24px;
   }
-  
-  .filters-row {
+
+  .filter-row {
     flex-direction: column;
   }
-  
+
   .filter-group {
     width: 100%;
   }
-  
-  .detail-info {
+
+  .date-range {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 10px;
   }
-  
-  .data-table, .detail-table {
-    font-size: 0.75rem;
+
+  .date-input,
+  .filter-select {
+    width: 100%;
   }
-  
-  .data-table th, .data-table td,
-  .detail-table th, .detail-table td {
-    padding: 0.5rem;
+
+  .filter-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .data-table {
+    font-size: 12px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px 8px;
+  }
+
+  .value {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-title {
+    font-size: 20px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn-export {
+    width: 100%;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .filter-section,
+  .filter-actions,
+  .btn-export,
+  .btn-view-details {
+    display: none !important;
+  }
+
+  .charge-report-dashboard {
+    background: #ffffff;
+    padding: 0;
+  }
+
+  .summary-card,
+  .data-section {
+    box-shadow: none;
+    border: 1px solid #e5e7eb;
+    page-break-inside: avoid;
   }
 }
 </style>

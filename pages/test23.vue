@@ -177,6 +177,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 
+definePageMeta({
+  middleware: "auth",
+  layout: "backend",
+});
+
 interface SearchLogReport {
   bank_code: string
   bank_name: string

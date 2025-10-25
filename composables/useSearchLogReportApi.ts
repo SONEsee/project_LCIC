@@ -1,4 +1,6 @@
 // composables/useSearchLogReportApi.ts
+import { ref } from 'vue'
+import axios from 'axios'
 
 export const useSearchLogReportApi = () => {
   const config = useRuntimeConfig()
@@ -6,6 +8,7 @@ export const useSearchLogReportApi = () => {
   // Loading states
   const loadingSearchLogSummary = ref(false)
   const loadingSearchLogDetail = ref(false)
+  const loadingBankList = ref(false)
   
   // Data states
   const searchLogSummaryData = ref<any>(null)
@@ -15,6 +18,40 @@ export const useSearchLogReportApi = () => {
   const showNotification = (message: string, type: 'success' | 'error' | 'info') => {
     // You can integrate with your existing notification system
     console.log(`[${type.toUpperCase()}] ${message}`)
+  }
+
+  // Fetch Bank List from memberinfo API
+  const fetchBankList = async () => {
+    loadingBankList.value = true
+    try {
+      const response = await axios.get(
+        `${config.public.strapi.url}api/memberinfo/`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          }
+        }
+      )
+      
+      // Return formatted bank list
+      return response.data.map((bank: any) => ({
+        id: bank.id,
+        code: bank.code,
+        bnk_code: bank.bnk_code,
+        bnk_type: bank.bnk_type,
+        nameL: bank.nameL,
+        nameE: bank.nameE
+      }))
+    } catch (error: any) {
+      console.error('Error fetching bank list:', error)
+      showNotification(
+        error.response?.data?.error || 'ການໂຫຼດລາຍຊື່ທະນາຄານລົ້ມເຫຼວ',
+        'error'
+      )
+      return []
+    } finally {
+      loadingBankList.value = false
+    }
   }
 
   // Fetch SearchLog Summary Report
@@ -104,6 +141,7 @@ export const useSearchLogReportApi = () => {
     // Loading states
     loadingSearchLogSummary,
     loadingSearchLogDetail,
+    loadingBankList,
     
     // Data states
     searchLogSummaryData,
@@ -112,6 +150,7 @@ export const useSearchLogReportApi = () => {
     // Methods
     fetchSearchLogSummary,
     fetchSearchLogDetail,
+    fetchBankList,
     getCurrentUser
   }
 }

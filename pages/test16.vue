@@ -501,6 +501,10 @@ import { ref, computed, onMounted, reactive, nextTick, watch } from 'vue'
 import axios from 'axios'
 import Chart from 'chart.js/auto'
 
+definePageMeta({
+  middleware: "auth",
+  layout: "backend",
+});
 // Configuration
 const config = useRuntimeConfig()
 const apiUrl = computed(() => config.public.apiUrl || 'http://192.168.45.56:8000/')
