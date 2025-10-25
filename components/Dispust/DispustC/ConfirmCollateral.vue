@@ -5,6 +5,7 @@ import { useUserData } from "~/composables/useUserData";
 import { ref, computed, onMounted, watch } from "vue";
 import { useMemberInfo } from "@/composables/memberInfo";
 import { MemberStore } from "~/stores/memberinfo";
+import {useDipustCallateralStore} from "@/stores/colleteraluploaddata"
 import dayjs from "dayjs";
 import { useLoanStore } from "~/stores/loan";
 import Swal from "sweetalert2";
@@ -15,7 +16,7 @@ const selecData = ref<any>([]);
 const config = useRuntimeConfig();
 const memberinfoStore = MemberStore();
 const { user, userId, isAdmin, isLoggedIn, userid } = useUserData();
-const DispustStore = useRequesDispustStore();
+const DispustStore = useDipustCallateralStore();
 const imagepath = ref("");
 const showPdfViewer = ref(false);
 const pdfUrl = ref("");
@@ -55,12 +56,12 @@ const getAPIHost = (): string => {
   return config.public.strapi.url;
 };
 const dataDispust = computed(() => {
-  const data = DispustStore.response_dispust_data_edit;
+  const data = DispustStore.respons_data_detail_confirm_dispust;
   return Array.isArray(data) ? data : data ? [data] : [];
 });
 
 const dispustData = computed(() => {
-  const data = DispustStore.response_data_dispust?.items;
+  const data = DispustStore.respons_data_detail_confirm_dispust;
   return Array.isArray(data) ? data : data ? [data] : [];
 });
 
@@ -449,10 +450,10 @@ onMounted(() => {
         </div>
 
         <v-divider></v-divider>
-
+<pre>{{ dataDispust }}</pre>
         <v-data-table
           :headers="hearder"
-          :items="dataDispust[0]?.disputes || []"
+          :items="dataDispust"
           :items-per-page="requese.page_size"
           density="compact"
           class="custom-table"
@@ -516,8 +517,8 @@ onMounted(() => {
               :page="requese.page"
               :limit="requese.page_size"
               :totalpage="
-                DispustStore.response_dispust_data_edit?.pagination
-                  .total_pages || 0
+                DispustStore.pagination?.total_pages
+                   || 0
               "
               @onPagechange="onPagechange"
               @onSelectionChange="onSelectionChange"

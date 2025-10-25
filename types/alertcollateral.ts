@@ -36,6 +36,7 @@ export interface FiltersApplied {
     status:          string;
     id_disput_loan:  string;
 }
+
 export interface ConfirmCallateralRepues {
     status:          string;
     data:            Data;
@@ -44,7 +45,7 @@ export interface ConfirmCallateralRepues {
 
 export interface Data {
     confirm_loan_info: ConfirmLoanInfo;
-    disputes:          Dispute[];
+    disputes:          Dispute;
     pagination:        Pagination;
     statistics:        Statistics;
 }

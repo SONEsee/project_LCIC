@@ -8,6 +8,7 @@ export const useDipustCallateralStore = defineStore("dispust", {
       respons_data_dispust: null as DispustCallateralModel.Data | null,
       respons_data_dispust_allert: null as AlertCallateralModel.Item |null,
       respons_data_dispust_allert_count: null as AlertCallateralModel.Data |null,
+      respons_data_detail_confirm_dispust:null as AlertCallateralModel.Dispute | null,
       pagination: null as AlertCallateralModel.Pagination | null,
       isLoading: false,
       data_fiter: {
@@ -37,6 +38,14 @@ export const useDipustCallateralStore = defineStore("dispust", {
           page_size: 20,
         },
       },
+       data_edit_filter:{
+        isLoading:false,
+        query:{
+            page:1,
+            page_size:20,
+            confirm_dispust_id:"",
+        }
+      }
     };
   },
   actions: {
@@ -162,6 +171,27 @@ export const useDipustCallateralStore = defineStore("dispust", {
         this.data_filter_dispust.isLoading = false;
       }
     },
+        async getDataDispustEdit(){
+        this.isLoading=true
+        try {
+            const res  =await axios.get<AlertCallateralModel.ConfirmCallateralRepues>(`/api/api/disputes-by-confirm_collateral/`,{
+                params:{
+                    ...this.data_edit_filter.query
+                }
+            });if(res.status===200){
+                this.respons_data_detail_confirm_dispust= res.data.data.disputes
+            }
+        } catch (error) {
+           Swal.fire({
+            icon:"error",
+            title:"ຜິດພາດ" ,
+            text:"ບໍ່ສາມາດດືງຂໍ້ມູນໄດ້"
+           }) 
+        }finally{
+            this.isLoading = false
+        }
+    }
+  
 
   },
 });
