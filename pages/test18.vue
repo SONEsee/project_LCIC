@@ -571,9 +571,9 @@ const config = useRuntimeConfig()
 
 // Define page meta
 definePageMeta({
-  title: 'ສະຫຼຸບການໂຫຼດນ້ຳປະປາ',
-  layout: 'default'
-})
+  middleware: "auth",
+  layout: "backend",
+});
 
 // Head management
 useHead({
