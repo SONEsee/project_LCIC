@@ -93,6 +93,7 @@ interface FileItem {
   insertDate?: string;
   updateDate?: string;
   status: string;
+  dispuste:string
   status_display?: string;
   confirmed: boolean;
 }
@@ -162,6 +163,7 @@ const headers = computed(() => {
     { title: "ໄລຍະເວລາ", value: "period" },
     { title: "ຊື່ໄຟລ໌", value: "fileName" },
     { title: "ຂະໜາດຟາຍ", value: "fileSize" },
+    { title: "ຂໍ້ມູນ Dispust", value: "dispuste" },
     
     { title: "ປະເພດ", value: "FileType" },
     { title: "ສະຖານະ", value: "statussubmit" },
@@ -805,6 +807,9 @@ UplodafileStore.getDataUplodC();
     <template v-slot:header.percentage>
       <th style="color: #0d47a1">{{ $t("percentage") }}</th>
     </template>
+    <template v-slot:header.dispuste="{column}">
+      <th style="color: #0d47a1">{{ column.title }}</th>
+    </template>
     <template v-slot:header.actions>
       <th style="color: #0d47a1">ການດຳເນີນການ</th>
     </template>
@@ -872,6 +877,18 @@ UplodafileStore.getDataUplodC();
           {{ item.percentage?.toFixed(1) }}%
         </span>
       </div>
+    </template>
+     <template v-slot:item.dispuste="{ item }">
+      <v-fab
+        variant="outlined"
+        size="small"
+        @click="goPath(`../dispustc/?id_dispust=${item.CID}`)"
+        v-if="item.dispuste !== null && item.dispuste !== '0'"
+        color="warning"
+      >
+        {{ item.dispuste }}
+      </v-fab>
+      <v-chip v-else color="success" size="small"> ບໍ່ມີ </v-chip>
     </template>
     <template v-slot:item.statussubmit="{ item }">
       <v-chip

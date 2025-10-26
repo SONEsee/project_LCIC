@@ -1,0 +1,156 @@
+// composables/useSearchLogReportApi.ts
+import { ref } from 'vue'
+import axios from 'axios'
+
+export const useSearchLogReportApi = () => {
+  const config = useRuntimeConfig()
+  
+  // Loading states
+  const loadingSearchLogSummary = ref(false)
+  const loadingSearchLogDetail = ref(false)
+  const loadingBankList = ref(false)
+  
+  // Data states
+  const searchLogSummaryData = ref<any>(null)
+  const searchLogDetailData = ref<any[]>([])
+
+  // Notification helper (optional - customize based on your notification system)
+  const showNotification = (message: string, type: 'success' | 'error' | 'info') => {
+    // You can integrate with your existing notification system
+    console.log(`[${type.toUpperCase()}] ${message}`)
+  }
+
+  // Fetch Bank List from memberinfo API
+  const fetchBankList = async () => {
+    loadingBankList.value = true
+    try {
+      const response = await axios.get(
+        `${config.public.strapi.url}api/memberinfo/`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          }
+        }
+      )
+      
+      // Return formatted bank list
+      return response.data.map((bank: any) => ({
+        id: bank.id,
+        code: bank.code,
+        bnk_code: bank.bnk_code,
+        bnk_type: bank.bnk_type,
+        nameL: bank.nameL,
+        nameE: bank.nameE
+      }))
+    } catch (error: any) {
+      console.error('Error fetching bank list:', error)
+      showNotification(
+        error.response?.data?.error || 'ການໂຫຼດລາຍຊື່ທະນາຄານລົ້ມເຫຼວ',
+        'error'
+      )
+      return []
+    } finally {
+      loadingBankList.value = false
+    }
+  }
+
+  // Fetch SearchLog Summary Report
+  const fetchSearchLogSummary = async (filters: {
+    year?: string
+    month?: string
+    bank?: string
+    fromDate?: string
+    toDate?: string
+    credit_type?: string
+  }) => {
+    loadingSearchLogSummary.value = true
+    try {
+      const response = await axios.get(
+        `${config.public.strapi.url}api/searchlog_report_main/`,
+        {
+          params: filters,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          }
+        }
+      )
+      
+      searchLogSummaryData.value = response.data
+      showNotification('ໂຫຼດຂໍ້ມູນສະຫຼຸບການຄົ້ນຫາສຳເລັດແລ້ວ', 'success')
+      return response.data
+    } catch (error: any) {
+      console.error('Error fetching search log summary:', error)
+      showNotification(
+        error.response?.data?.error || 'ການໂຫຼດຂໍ້ມູນສະຫຼຸບການຄົ້ນຫາລົ້ມເຫຼວ',
+        'error'
+      )
+      throw error
+    } finally {
+      loadingSearchLogSummary.value = false
+    }
+  }
+
+  // Fetch SearchLog Detail Report
+  const fetchSearchLogDetail = async (filters: {
+    year?: string
+    month?: string
+    bank?: string
+    fromDate?: string
+    toDate?: string
+    credit_type?: string
+    cusType?: string
+    limit?: number
+  }) => {
+    loadingSearchLogDetail.value = true
+    try {
+      const response = await axios.get(
+        `${config.public.strapi.url}api/searchlog_report_detail/`,
+        {
+          params: filters,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          }
+        }
+      )
+      
+      searchLogDetailData.value = response.data.data || []
+      showNotification('ໂຫຼດລາຍລະອຽດການຄົ້ນຫາສຳເລັດແລ້ວ', 'success')
+      return response.data
+    } catch (error: any) {
+      console.error('Error fetching search log detail:', error)
+      showNotification(
+        error.response?.data?.error || 'ການໂຫຼດລາຍລະອຽດການຄົ້ນຫາລົ້ມເຫຼວ',
+        'error'
+      )
+      throw error
+    } finally {
+      loadingSearchLogDetail.value = false
+    }
+  }
+
+  // Get current user info from localStorage
+  const getCurrentUser = () => {
+    const userStr = localStorage.getItem('user_info')
+    if (userStr) {
+      return JSON.parse(userStr)
+    }
+    return null
+  }
+
+  return {
+    // Loading states
+    loadingSearchLogSummary,
+    loadingSearchLogDetail,
+    loadingBankList,
+    
+    // Data states
+    searchLogSummaryData,
+    searchLogDetailData,
+    
+    // Methods
+    fetchSearchLogSummary,
+    fetchSearchLogDetail,
+    fetchBankList,
+    getCurrentUser
+  }
+}
