@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useI18n } from "vue-i18n";
-import { useSidebar } from "./sidebarItems"; 
+import { useSidebar } from "./sidebarItems";
 
 interface SubItem {
   id: number;
@@ -21,11 +21,11 @@ interface SidebarItem {
 
 interface User {
   username: string;
-  GID: { GID: number }; 
+  GID: { GID: number };
 }
 
 const user = ref<User | null>(null);
-const sidebarItems = ref<SidebarItem[]>([]); 
+const sidebarItems = ref<SidebarItem[]>([]);
 const expandedItems = ref<Set<number>>(new Set());
 
 // Load user data
@@ -38,13 +38,13 @@ onMounted(() => {
 
 // Fetch sidebar items
 onMounted(async () => {
-  const fetchedItems = await useSidebar(); 
+  const fetchedItems = await useSidebar();
   sidebarItems.value = fetchedItems.value || [];
-  
+
   // Auto-expand items that have accessible sub-items
   if (user.value?.GID) {
     const userGID = user.value.GID.GID;
-    sidebarItems.value.forEach(item => {
+    sidebarItems.value.forEach((item) => {
       if (item.sub_items && hasAccessibleSubItems(item, userGID)) {
         expandedItems.value.add(item.id);
       }
@@ -55,19 +55,21 @@ onMounted(async () => {
 // Check if user has access to any sub-items
 const hasAccessibleSubItems = (item: SidebarItem, userGID: number): boolean => {
   if (!item.sub_items || item.sub_items.length === 0) return false;
-  return item.sub_items.some(subItem => subItem.roles.includes(userGID));
+  return item.sub_items.some((subItem) => subItem.roles.includes(userGID));
 };
 
 // Filter items based on user role
 const filteredSidebarItems = computed(() => {
   if (!user.value || !user.value.GID) return [];
   const userGID = user.value.GID.GID;
-  
+
   return sidebarItems.value
-    .filter(item => item.roles.includes(userGID))
-    .map(item => ({
+    .filter((item) => item.roles.includes(userGID))
+    .map((item) => ({
       ...item,
-      sub_items: item.sub_items?.filter(subItem => subItem.roles.includes(userGID)) || []
+      sub_items:
+        item.sub_items?.filter((subItem) => subItem.roles.includes(userGID)) ||
+        [],
     }));
 });
 
@@ -90,7 +92,7 @@ const isRouteActive = (item: SidebarItem) => {
   const currentPath = useRoute().path;
   if (currentPath === item.url) return true;
   if (item.sub_items) {
-    return item.sub_items.some(subItem => currentPath === subItem.url);
+    return item.sub_items.some((subItem) => currentPath === subItem.url);
   }
   return false;
 };
@@ -107,16 +109,14 @@ const isCurrentRoute = (url: string) => {
       <div class="profile-section">
         <!-- Profile content here -->
       </div>
-      
+
       <nav class="sidebar-nav">
         <template v-if="filteredSidebarItems.length > 0">
-          <div 
-            v-for="item in filteredSidebarItems" 
+          <div
+            v-for="item in filteredSidebarItems"
             :key="item.id"
             class="nav-group"
           >
-            
-            
             <template v-if="!item.sub_items || item.sub_items.length === 0">
               <!-- <NuxtLink
                 :to="item.url"
@@ -129,27 +129,26 @@ const isCurrentRoute = (url: string) => {
                 </div>
               </NuxtLink> -->
               <NuxtLink
-  :to="item.url"
-  replace
-  class="nav-item"
-  :class="{ 'nav-item-active': isCurrentRoute(item.url) }"
->
-  <div class="nav-item-content">
-    <v-icon :icon="item.icon" class="nav-icon"></v-icon>
-    <span class="nav-label">{{ $t(item.name) }}</span>
-  </div>
-</NuxtLink>
+                :to="item.url"
+                replace
+                class="nav-item"
+                :class="{ 'nav-item-active': isCurrentRoute(item.url) }"
+              >
+                <div class="nav-item-content">
+                  <v-icon :icon="item.icon" class="nav-icon"></v-icon>
+                  <span class="nav-label">{{ $t(item.name) }}</span>
+                </div>
+              </NuxtLink>
             </template>
 
-           
             <template v-else>
               <div class="nav-group-wrapper">
                 <!-- Parent Header -->
                 <div
                   class="nav-item nav-item-parent"
-                  :class="{ 
+                  :class="{
                     'nav-item-expanded': isExpanded(item.id),
-                    'nav-item-has-active': isRouteActive(item) 
+                    'nav-item-has-active': isRouteActive(item),
                   }"
                   @click="toggleExpand(item.id)"
                 >
@@ -157,8 +156,12 @@ const isCurrentRoute = (url: string) => {
                     <v-icon :icon="item.icon" class="nav-icon"></v-icon>
                     <span class="nav-label">{{ $t(item.name) }}</span>
                   </div>
-                  <v-icon 
-                    :icon="isExpanded(item.id) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+                  <v-icon
+                    :icon="
+                      isExpanded(item.id)
+                        ? 'mdi-chevron-down'
+                        : 'mdi-chevron-right'
+                    "
                     class="nav-expand-icon"
                   ></v-icon>
                 </div>
@@ -171,7 +174,9 @@ const isCurrentRoute = (url: string) => {
                       :key="subItem.id"
                       :to="subItem.url"
                       class="nav-subitem"
-                      :class="{ 'nav-subitem-active': isCurrentRoute(subItem.url) }"
+                      :class="{
+                        'nav-subitem-active': isCurrentRoute(subItem.url),
+                      }"
                     >
                       <div class="nav-subitem-content">
                         <div class="nav-subitem-indicator"></div>
@@ -182,7 +187,6 @@ const isCurrentRoute = (url: string) => {
                 </transition>
               </div>
             </template>
-
           </div>
         </template>
 
@@ -251,7 +255,7 @@ const isCurrentRoute = (url: string) => {
 }
 
 .nav-item::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 50%;
@@ -524,15 +528,15 @@ const isCurrentRoute = (url: string) => {
   .nav-sublabel {
     font-size: 13px; /* scaled down slightly for smaller screens */
   }
-  
+
   .nav-icon {
     font-size: 16px !important;
   }
-  
+
   .nav-item {
     padding: 8px 10px;
   }
-  
+
   .nav-subitem {
     padding: 6px 10px;
   }
@@ -555,10 +559,22 @@ const isCurrentRoute = (url: string) => {
   animation-fill-mode: both;
 }
 
-.nav-group:nth-child(1) { animation-delay: 0.05s; }
-.nav-group:nth-child(2) { animation-delay: 0.1s; }
-.nav-group:nth-child(3) { animation-delay: 0.15s; }
-.nav-group:nth-child(4) { animation-delay: 0.2s; }
-.nav-group:nth-child(5) { animation-delay: 0.25s; }
-.nav-group:nth-child(6) { animation-delay: 0.3s; }
+.nav-group:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.nav-group:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.nav-group:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.nav-group:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.nav-group:nth-child(5) {
+  animation-delay: 0.25s;
+}
+.nav-group:nth-child(6) {
+  animation-delay: 0.3s;
+}
 </style>
