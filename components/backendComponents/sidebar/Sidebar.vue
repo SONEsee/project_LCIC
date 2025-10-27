@@ -116,9 +116,9 @@ const isCurrentRoute = (url: string) => {
             class="nav-group"
           >
             
-            <!-- Parent Item WITHOUT Sub-items -->
+            
             <template v-if="!item.sub_items || item.sub_items.length === 0">
-              <NuxtLink
+              <!-- <NuxtLink
                 :to="item.url"
                 class="nav-item"
                 :class="{ 'nav-item-active': isCurrentRoute(item.url) }"
@@ -127,10 +127,21 @@ const isCurrentRoute = (url: string) => {
                   <v-icon :icon="item.icon" class="nav-icon"></v-icon>
                   <span class="nav-label">{{ $t(item.name) }}</span>
                 </div>
-              </NuxtLink>
+              </NuxtLink> -->
+              <NuxtLink
+  :to="item.url"
+  replace
+  class="nav-item"
+  :class="{ 'nav-item-active': isCurrentRoute(item.url) }"
+>
+  <div class="nav-item-content">
+    <v-icon :icon="item.icon" class="nav-icon"></v-icon>
+    <span class="nav-label">{{ $t(item.name) }}</span>
+  </div>
+</NuxtLink>
             </template>
 
-            <!-- Parent Item WITH Sub-items -->
+           
             <template v-else>
               <div class="nav-group-wrapper">
                 <!-- Parent Header -->

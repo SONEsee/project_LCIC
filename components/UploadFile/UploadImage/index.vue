@@ -672,7 +672,7 @@ const copyCode = async (text: string) => {
       >
         ບັນທຶກຂໍ້ມູນ
       </v-btn>
-      <v-chip color="info" v-if="user && user.MID.id === '01' && item.status === '0'">ອອກເລກວິສາຫະກິດສຳເລັດ</v-chip>
+      <v-chip color="info" v-if="user && user.MID.id === '01' && item.status === '0'">ສຳເລັດ</v-chip>
       
     </template>
     <template v-slot:item.status="{ item }">
