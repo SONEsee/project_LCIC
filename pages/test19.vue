@@ -291,6 +291,10 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 
+definePageMeta({
+  middleware: "auth",
+  layout: "backend",
+});
 interface Role {
   id: number;
   name: string;
