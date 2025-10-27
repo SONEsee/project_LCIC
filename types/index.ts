@@ -25,6 +25,7 @@ import * as UserListModel from './userlist'
 import * as DispustEditModel from './dispustedit'
 import * as DispustCallateralModel from './dispustcollateral'
 import * as AlertCallateralModel from './alertcollateral'
+import * as SearchIndividualModel from './individualsearch'
 export{
     DuplicatesFalse,
     DataModel,
@@ -51,5 +52,6 @@ export{
     DispustEditModel,
     DispustCallateralModel,
     AlertCallateralModel,
+    SearchIndividualModel
 
 }
