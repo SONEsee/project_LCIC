@@ -45,7 +45,14 @@ export const useDipustCallateralStore = defineStore("dispust", {
             page_size:20,
             confirm_dispust_id:"",
         }
-      }
+      },
+      from_confirm_dispust: {
+        is_disputed_list: [] as number[],
+      },
+       update_status: {
+        status: "APPROVED",
+        user_update: "",
+      },
     };
   },
   actions: {
@@ -190,7 +197,68 @@ export const useDipustCallateralStore = defineStore("dispust", {
         }finally{
             this.isLoading = false
         }
-    }
+    },
+       async confirmDitpust() {
+      this.isLoading = true;
+      try {
+        const req = await axios.post(
+          `/api/process-multiple-disputes-collateral/`,
+          this.from_confirm_dispust
+        );
+
+        if (req.status === 200 || req.status === 201) {
+          const data = req.data;
+
+          await Swal.fire({
+            icon: "success",
+            title: "ສຳເລັດ",
+            html: `
+          <p>ປະມວນຜົນສຳເລັດ ${data.summary.success}/${
+              data.summary.total
+            } ລາຍການ</p>
+          ${
+            data.summary.failed > 0
+              ? `<p style="color: red;">ຜິດພາດ: ${data.summary.failed} ລາຍການ</p>`
+              : ""
+          }
+        `,
+          });
+
+          this.isLoading = false;
+
+          await this.getDataDispust();
+        }
+      } catch (error: any) {
+        this.isLoading = false;
+
+        Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text:
+            error?.response?.data?.message || `ບໍ່ສາມາດປະມວນຜົນໄດ້: ${error}`,
+        });
+      }
+    },
+    async UpdateStatus(id: string) {
+      this.isLoading = true;
+      try {
+       const req = await axios.patch(
+        `/api/api/dispute-loan/${id}/status/`,
+        this.update_status
+      );if(req.status ===201 || req.status ===200 || req.status ===203) {
+         this.isLoading = false;
+      }
+      } catch (error) {
+        Swal.fire({
+          icon:"error",
+          title:"ຜິດພາດ",
+          text:"ບໍ່ສາມາດອັບເດດຂໍ້ມູນໄດ້"
+        })
+      }finally{
+         this.isLoading = false;
+      }
+      
+    },
   
 
   },
