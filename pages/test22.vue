@@ -1,6 +1,5 @@
 <template>
   <div class="water-supply-tracker">
-    <!-- Header -->
     <div class="header-section">
       <div class="container">
         <h1 class="page-title">
@@ -8,40 +7,30 @@
           ການຕິດຕາມການອັບໂຫຼດຂໍ້ມູນນ້ຳປະປາ
         </h1>
         
-        <!-- Controls Section -->
         <div class="controls-section">
           <v-row dense>
-            <v-col cols="12" md="4">
-              <v-text-field
-                v-model="username"
-                label="ຊື່ຜູ້ໃຊ້"
-                variant="outlined"
-                density="compact"
-                prepend-inner-icon="mdi-account"
-                required
-              />
-            </v-col>
-            
-            <v-col cols="12" md="4">
-              <v-text-field
+            <!-- Username - hidden, default 'system' -->
+            <v-col cols="12" md="5">
+              <!-- 2. ✅ Replace text input with select -->
+              <v-select
                 v-model="selectedMonth"
-                label="ເດືອນ (MMYYYY)"
+                :items="monthOptions"
+                item-title="label"
+                item-value="value"
+                label="ເລືອກເດືອນ"
                 variant="outlined"
                 density="compact"
                 prepend-inner-icon="mdi-calendar"
-                placeholder="102025"
-                :rules="monthRules"
-                required
               />
             </v-col>
             
-            <v-col cols="12" md="1">
+            <v-col cols="12" md="2">
               <v-btn
                 color="primary"
                 size="small"
                 block
                 :loading="initializing"
-                :disabled="!selectedMonth || !username"
+                :disabled="!selectedMonth"
                 @click="initializeTracking"
               >
                 <v-icon class="mr-1" size="16">mdi-plus</v-icon>
@@ -49,13 +38,13 @@
               </v-btn>
             </v-col>
             
-            <v-col cols="12" md="2">
+            <v-col cols="12" md="3">
               <v-btn
                 color="success"
                 size="small"
                 block
                 :loading="uploading"
-                :disabled="!selectedMonth || !username || !canUpload"
+                :disabled="!selectedMonth || !canUpload"
                 @click="uploadWaterData"
               >
                 <v-icon class="mr-1" size="16">mdi-upload</v-icon>
@@ -63,7 +52,7 @@
               </v-btn>
             </v-col>
             
-            <v-col cols="12" md="1">
+            <v-col cols="12" md="2">
               <v-btn
                 color="grey"
                 variant="outlined"
@@ -121,27 +110,27 @@
                   </div>
                 </v-col>
 
-                <!-- Total Bills (from District Stats if available) -->
+                <!-- Payment Records -->
                 <v-col cols="12" md="2">
                   <div class="stat-item">
-                    <div class="stat-label">ຈຳນວນບິນທັງໝົດ</div>
-                    <div class="stat-value text-primary">{{ formatNumber(districtStats?.total_bills || currentTracking.total_records) }}</div>
+                    <div class="stat-label">ຈຳນວນບິນ</div>
+                    <div class="stat-value text-primary">{{ formatNumber(currentTracking.payment_records) }}</div>
                   </div>
                 </v-col>
 
-                <!-- Customers -->
+                <!-- Customer Records -->
                 <v-col cols="12" md="2">
                   <div class="stat-item">
                     <div class="stat-label">ຈຳນວນລູກຄ້າ</div>
-                    <div class="stat-value text-success">{{ formatNumber(districtStats?.total_customers || 0) }}</div>
+                    <div class="stat-value text-success">{{ formatNumber(currentTracking.customer_records) }}</div>
                   </div>
                 </v-col>
 
-                <!-- Provinces -->
+                <!-- Total Records -->
                 <v-col cols="12" md="2">
                   <div class="stat-item">
-                    <div class="stat-label">ຈຳນວນແຂວງ</div>
-                    <div class="stat-value text-info">{{ districtStats?.provinces?.length || 0 }}</div>
+                    <div class="stat-label">ທັງໝົດ</div>
+                    <div class="stat-value text-info">{{ formatNumber(currentTracking.total_records) }}</div>
                   </div>
                 </v-col>
                 
@@ -149,17 +138,17 @@
                 <v-col cols="12" md="2">
                   <div class="stat-item">
                     <div class="stat-label">ອັດຕາສຳເລັດ</div>
-                    <div class="stat-value" :class="getSuccessRateClass(currentTracking.success_rate_formatted)">
-                      {{ currentTracking.success_rate_formatted || '0.0' }}%
+                    <div class="stat-value" :class="getSuccessRateClass(currentTracking.success_rates)">
+                      {{ formatSuccessRate(currentTracking.success_rates) }}%
                     </div>
                   </div>
                 </v-col>
                 
-                <!-- Data Size -->
+                <!-- Duration -->
                 <v-col cols="12" md="2">
                   <div class="stat-item">
-                    <div class="stat-label">ຂະໜາດຂໍ້ມູນ</div>
-                    <div class="stat-value">{{ currentTracking.formatted_size || 'N/A' }}</div>
+                    <div class="stat-label">ໄລຍະເວລາ</div>
+                    <div class="stat-value">{{ currentTracking.duration_formatted || 'N/A' }}</div>
                   </div>
                 </v-col>
               </v-row>
@@ -213,44 +202,73 @@
               />
 
               <!-- District Statistics Display - Minimal Style -->
-              <div v-if="districtStats && districtStats.provinces && districtStats.provinces.length > 0" class="district-section">
+              <div v-if="districtStats && districtStats.length > 0" class="district-section">
                 <v-divider class="my-4" />
                 
-                <h3 class="section-subtitle mb-3">ລາຍລະອຽດຕາມເຂດ</h3>
+                <div class="section-header">
+                  <h3 class="section-subtitle">ລາຍລະອຽດຕາມເຂດ</h3>
+                  <v-chip size="small" color="primary" variant="tonal">
+                    {{ groupedDistrictStats.length }} ແຂວງ
+                  </v-chip>
+                </div>
 
-                <v-expansion-panels variant="accordion" class="district-panels-minimal">
+                <v-expansion-panels variant="accordion" class="district-panels">
                   <v-expansion-panel
-                    v-for="province in districtStats.provinces"
+                    v-for="province in groupedDistrictStats"
                     :key="province.pro_id"
-                    class="province-panel-minimal"
+                    class="province-panel"
                   >
-                    <v-expansion-panel-title class="province-header-minimal">
-                      <div class="province-title-container">
-                        <span class="province-name">{{ province.pro_name }}</span>
-                        <span class="province-code">({{ province.pro_id }})</span>
+                    <v-expansion-panel-title class="province-header">
+                      <div class="province-info">
+                        <div class="province-title">
+                          <v-icon size="18" color="primary" class="mr-2">mdi-map-marker</v-icon>
+                          <span class="province-name">{{ province.pro_name }}</span>
+                          <span class="province-code">({{ province.pro_id }})</span>
+                        </div>
                         <v-spacer />
-                        <v-chip size="x-small" color="primary" variant="flat" class="bill-count-chip">
-                          {{ formatNumber(province.total_bills) }} ບິນ
-                        </v-chip>
+                        <div class="province-stats">
+                          <v-chip size="small" color="primary" variant="flat" class="mr-2">
+                            <v-icon size="14" class="mr-1">mdi-file-document</v-icon>
+                            {{ formatNumber(province.total_bills) }}
+                          </v-chip>
+                          <v-chip size="small" color="success" variant="flat">
+                            <v-icon size="14" class="mr-1">mdi-account-group</v-icon>
+                            {{ formatNumber(province.total_customers) }}
+                          </v-chip>
+                        </div>
                       </div>
                     </v-expansion-panel-title>
 
-                    <v-expansion-panel-text class="district-content-minimal">
-                      <div class="district-list-minimal">
-                        <div
+                    <v-expansion-panel-text class="district-content">
+                      <v-list density="compact" class="district-list">
+                        <v-list-item
                           v-for="district in province.districts"
                           :key="district.dis_id"
-                          class="district-item-minimal"
+                          class="district-item"
                         >
-                          <div class="district-info">
+                          <template v-slot:prepend>
+                            <v-icon size="16" color="grey">mdi-map-marker-outline</v-icon>
+                          </template>
+                          
+                          <v-list-item-title class="district-info">
                             <span class="district-name">{{ district.dis_name }}</span>
                             <span class="district-code">({{ district.dis_id }})</span>
-                          </div>
-                          <div class="district-count">
-                            {{ formatNumber(district.total_bills) }} ບິນ
-                          </div>
-                        </div>
-                      </div>
+                          </v-list-item-title>
+                          
+                          <template v-slot:append>
+                            <div class="district-numbers">
+                              <div class="stat-badge bills">
+                                <v-icon size="12">mdi-file-document</v-icon>
+                                <span>{{ formatNumber(district.total_bills) }}</span>
+                              </div>
+                              <div class="stat-badge customers">
+                                <v-icon size="12">mdi-account</v-icon>
+                                <span>{{ formatNumber(district.total_customers) }}</span>
+                              </div>
+                            </div>
+                          </template>
+                        </v-list-item>
+                      </v-list>
                     </v-expansion-panel-text>
                   </v-expansion-panel>
                 </v-expansion-panels>
@@ -336,6 +354,18 @@
                   <div class="detail-value">{{ trackingDetails.upload_completed ? formatDateTime(trackingDetails.upload_completed) : 'N/A' }}</div>
                 </div>
               </v-col>
+              <v-col cols="12" md="6">
+                <div class="detail-item">
+                  <div class="detail-label">ບິນທັງໝົດ</div>
+                  <div class="detail-value">{{ formatNumber(trackingDetails.payment_records) }}</div>
+                </div>
+              </v-col>
+              <v-col cols="12" md="6">
+                <div class="detail-item">
+                  <div class="detail-label">ລູກຄ້າທັງໝົດ</div>
+                  <div class="detail-value">{{ formatNumber(trackingDetails.customer_records) }}</div>
+                </div>
+              </v-col>
             </v-row>
 
             <v-divider class="my-4" />
@@ -343,7 +373,7 @@
             <!-- Activity Timeline -->
             <div class="activity-section">
               <h3 class="text-subtitle-1 font-weight-bold mb-3">ປະຫວັດການດຳເນີນການ</h3>
-              <div class="activity-timeline">
+              <div v-if="trackingDetails.logs && trackingDetails.logs.length > 0" class="activity-timeline">
                 <v-timeline side="end" density="compact" class="mt-2">
                   <v-timeline-item
                     v-for="(log, index) in trackingDetails.logs"
@@ -353,10 +383,13 @@
                   >
                     <div class="log-item">
                       <div class="log-message">{{ log.message }}</div>
-                      <div class="log-time text-caption">{{ formatDateTime(log.created_at) }}</div>
+                      <div class="log-time text-caption">{{ formatDateTime(log.timestamp) }}</div>
                     </div>
                   </v-timeline-item>
                 </v-timeline>
+              </div>
+              <div v-else class="text-center text-medium-emphasis py-4">
+                ບໍ່ມີປະຫວັດການດຳເນີນການ
               </div>
             </div>
           </div>
@@ -388,15 +421,19 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import axios from 'axios'
+
+definePageMeta({
+  middleware: "auth",
+  layout: "backend",
+})
 
 // Runtime Config
 const config = useRuntimeConfig()
 
 // API Base URL from runtime config
-const API_BASE = computed(() => `${config.public.strapi.url}api/water`)
+const API_BASE = computed(() => `${config.public.apiBase}/api/water-supply`)
 
-// Helper function to get auth headers
+// Helper function to get auth headers with Bearer token
 const getAuthHeaders = () => {
   const token = localStorage.getItem('access_token')
   return {
@@ -406,11 +443,12 @@ const getAuthHeaders = () => {
 }
 
 // State
-const username = ref('')
+const username = ref('system')
 const selectedMonth = ref('')
+
 const currentTracking = ref(null)
 const trackingDetails = ref(null)
-const districtStats = ref(null)
+const districtStats = ref([])
 
 // Loading States
 const loading = ref(false)
@@ -427,6 +465,30 @@ const notification = ref({
   show: false,
   message: '',
   color: 'success'
+})
+const monthOptions = computed(() => {
+  const options = []
+  const now = new Date()
+  
+  // Generate last 24 months
+  for (let i = 0; i < 24; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+    const value = `${month}${year}`
+    
+    const monthNames = [
+      'ມັງກອນ', 'ກຸມພາ', 'ມີນາ', 'ເມສາ', 'ພຶດສະພາ', 'ມິຖຸນາ',
+      'ກໍລະກົດ', 'ສິງຫາ', 'ກັນຍາ', 'ຕຸລາ', 'ພະຈິກ', 'ທັນວາ'
+    ]
+    
+    options.push({
+      value,
+      label: `${monthNames[date.getMonth()]} ${year}`
+    })
+  }
+  
+  return options
 })
 
 // Polling
@@ -446,6 +508,33 @@ const canUpload = computed(() => {
           currentTracking.value.status === 'completed')
 })
 
+// Group district statistics by province
+const groupedDistrictStats = computed(() => {
+  if (!districtStats.value || districtStats.value.length === 0) return []
+  
+  const grouped = {}
+  districtStats.value.forEach(stat => {
+    if (!grouped[stat.pro_id]) {
+      grouped[stat.pro_id] = {
+        pro_id: stat.pro_id,
+        pro_name: stat.pro_name,
+        total_bills: 0,
+        districts: []
+      }
+    }
+    
+    grouped[stat.pro_id].total_bills += stat.total_bills || 0
+    grouped[stat.pro_id].districts.push({
+      dis_id: stat.dis_id,
+      dis_name: stat.dis_name,
+      total_bills: stat.total_bills || 0,
+      total_customers: stat.total_customers || 0
+    })
+  })
+  
+  return Object.values(grouped)
+})
+
 // Initialize Default Month
 const initializeDefaultMonth = () => {
   const now = new Date()
@@ -454,7 +543,7 @@ const initializeDefaultMonth = () => {
   selectedMonth.value = `${month}${year}`
 }
 
-// API Functions with Axios
+// API Functions
 const initializeTracking = async () => {
   if (!selectedMonth.value || !username.value) {
     showNotification('ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ', 'error')
@@ -463,51 +552,70 @@ const initializeTracking = async () => {
 
   initializing.value = true
   try {
-    const response = await axios.post(`${API_BASE.value}/initialize/`, {
-      month: selectedMonth.value,
-      username: username.value
-    }, {
-      headers: getAuthHeaders()
+    const response = await $fetch(`${API_BASE.value}/initialize/`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: {
+        upload_month: selectedMonth.value,
+        user_upload: username.value
+      }
     })
 
-    if (response.data) {
-      showNotification(response.data.message, 'success')
-      await loadTrackingStatus()
-    }
+    showNotification(response.message || 'ເລີ່ມຕົ້ນສຳເລັດ', 'success')
+    await loadTrackingStatus()
   } catch (error) {
     console.error('Initialize error:', error)
-    const errorMessage = error.response?.data?.error || error.response?.data?.message || 'ການເລີ່ມຕົ້ນລົ້ມເຫຼວ'
+    const errorMessage = error.data?.error || error.data?.message || 'ການເລີ່ມຕົ້ນລົ້ມເຫຼວ'
     showNotification(errorMessage, 'error')
   } finally {
     initializing.value = false
   }
 }
 
-const uploadWaterData = async () => {
-  if (!selectedMonth.value || !username.value) {
-    showNotification('ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ', 'error')
-    return
-  }
+// const uploadWaterData = async (forceReupload = false) => {
+//   if (!selectedMonth.value || !username.value) {
+//     showNotification('ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ', 'error')
+//     return
+//   }
 
+//   uploading.value = true
+//   try {
+//     const response = await $fetch(`${API_BASE.value}/upload/`, {
+//       method: 'POST',
+//       headers: getAuthHeaders(),
+//       body: {
+//         upload_month: selectedMonth.value,
+//         user_upload: username.value,
+//         force_reupload: forceReupload
+//       }
+//     })
+const uploadWaterData = async (forceReupload = false) => {
   uploading.value = true
   try {
-    const response = await axios.post(`${API_BASE.value}/upload/`, {
-      month: selectedMonth.value,
-      username: username.value
-    }, {
-      headers: getAuthHeaders()
+    const body = {
+      upload_month: selectedMonth.value,
+      user_upload: username.value
+    }
+    
+    // Only add if true
+    if (forceReupload) {
+      body.force_reupload = true
+    }
+    
+    const response = await $fetch(`${API_BASE.value}/upload/`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body
     })
 
-    if (response.data) {
-      showNotification(response.data.message, 'success')
-      await loadTrackingStatus()
-      
-      // Start polling for status updates
-      startStatusPolling()
-    }
+    showNotification(response.message || 'ອັບໂຫຼດສຳເລັດ', 'success')
+    await loadTrackingStatus()
+    
+    // Start polling for status updates
+    startStatusPolling()
   } catch (error) {
     console.error('Upload error:', error)
-    const errorMessage = error.response?.data?.error || error.response?.data?.message || 'ການອັບໂຫຼດລົ້ມເຫຼວ'
+    const errorMessage = error.data?.error || error.data?.message || 'ການອັບໂຫຼດລົ້ມເຫຼວ'
     showNotification(errorMessage, 'error')
   } finally {
     uploading.value = false
@@ -519,13 +627,15 @@ const loadTrackingStatus = async () => {
 
   loading.value = true
   try {
-    const response = await axios.get(`${API_BASE.value}/tracking/`, {
-      params: { month: selectedMonth.value },
-      headers: getAuthHeaders()
+    const response = await $fetch(`${API_BASE.value}/tracking/`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      params: { upload_month: selectedMonth.value }
     })
 
-    if (response.data?.data && response.data.data.length > 0) {
-      currentTracking.value = response.data.data[0]
+    // Backend returns array directly
+    if (Array.isArray(response) && response.length > 0) {
+      currentTracking.value = response[0]
       
       // Auto-load district statistics if upload is completed
       if (currentTracking.value.status === 'completed') {
@@ -533,11 +643,11 @@ const loadTrackingStatus = async () => {
       }
     } else {
       currentTracking.value = null
-      districtStats.value = null
+      districtStats.value = []
     }
   } catch (error) {
     console.error('Load tracking error:', error)
-    if (error.response?.status === 401) {
+    if (error.status === 401) {
       showNotification('ກະລຸນາເຂົ້າສູ່ລະບົບກ່ອນ', 'error')
     }
   } finally {
@@ -550,20 +660,24 @@ const loadDistrictStatistics = async () => {
 
   loadingStats.value = true
   try {
-    const response = await axios.get(`${API_BASE.value}/statistics/districts/`, {
-      params: { month: selectedMonth.value },
-      headers: getAuthHeaders()
+    const response = await $fetch(`${API_BASE.value}/statistics/districts/`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      params: { upload_month: selectedMonth.value }
     })
 
-    if (response.data) {
-      districtStats.value = response.data
+    // Backend returns array directly
+    if (Array.isArray(response)) {
+      districtStats.value = response
+    } else {
+      districtStats.value = []
     }
   } catch (error) {
     console.error('Load district statistics error:', error)
-    if (error.response?.status !== 401) {
+    if (error.status !== 401) {
       showNotification('ບໍ່ສາມາດໂຫຼດສະຖິຕິໄດ້', 'warning')
     }
-    districtStats.value = null
+    districtStats.value = []
   } finally {
     loadingStats.value = false
   }
@@ -576,13 +690,12 @@ const showDetails = async () => {
   loadingDetails.value = true
 
   try {
-    const response = await axios.get(`${API_BASE.value}/tracking/${currentTracking.value.id}/`, {
+    const response = await $fetch(`${API_BASE.value}/tracking/${currentTracking.value.id}/`, {
+      method: 'GET',
       headers: getAuthHeaders()
     })
 
-    if (response.data) {
-      trackingDetails.value = response.data
-    }
+    trackingDetails.value = response
   } catch (error) {
     console.error('Load details error:', error)
     showNotification('ບໍ່ສາມາດໂຫຼດລາຍລະອຽດໄດ້', 'error')
@@ -592,14 +705,14 @@ const showDetails = async () => {
 }
 
 const reuploadData = async () => {
-  await uploadWaterData()
+  await uploadWaterData(true)  // ✅ This is correct
 }
 
 const resetForm = () => {
   username.value = ''
   initializeDefaultMonth()
   currentTracking.value = null
-  districtStats.value = null
+  districtStats.value = []
   if (statusPollingInterval) {
     clearInterval(statusPollingInterval)
     statusPollingInterval = null
@@ -634,19 +747,8 @@ const getStatusColor = (status) => {
   return colors[status] || 'grey'
 }
 
-const getStatusIcon = (status) => {
-  const icons = {
-    pending: 'mdi-clock-outline',
-    in_progress: 'mdi-loading',
-    completed: 'mdi-check-circle',
-    failed: 'mdi-alert-circle',
-    partial: 'mdi-alert'
-  }
-  return icons[status] || 'mdi-help-circle'
-}
-
 const getSuccessRateClass = (rate) => {
-  const numRate = parseFloat(rate)
+  const numRate = parseFloat(rate) || 0
   if (numRate >= 90) return 'text-success'
   if (numRate >= 70) return 'text-warning'
   return 'text-error'
@@ -678,7 +780,12 @@ const formatNumber = (num) => {
   return num?.toLocaleString() || '0'
 }
 
+const formatSuccessRate = (rate) => {
+  return rate ? rate.toFixed(2) : '0.00'
+}
+
 const formatDateTime = (date) => {
+  if (!date) return 'N/A'
   return new Date(date).toLocaleString('lo-LA', {
     year: 'numeric',
     month: '2-digit',
@@ -722,9 +829,15 @@ watch(selectedMonth, async (newMonth) => {
   }
 })
 
-// Lifecycle
+// // Lifecycle
+// onMounted(async () => {
+//   initializeDefaultMonth()
+// })
 onMounted(async () => {
-  initializeDefaultMonth()
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const year = now.getFullYear()
+  selectedMonth.value = `${month}${year}`
 })
 
 // Cleanup on unmount
@@ -736,6 +849,131 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.district-panels {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.province-panel {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.province-panel:last-child {
+  border-bottom: none;
+}
+
+.province-header {
+  padding: 1rem 1.25rem;
+  background: linear-gradient(to right, #f8f9fa, #ffffff);
+}
+
+.province-info {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+}
+
+.province-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.province-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #1565c0;
+}
+
+.province-code {
+  color: #666;
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.province-stats {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.district-content {
+  background: #fafafa;
+}
+
+.district-list {
+  background: transparent;
+  padding: 0;
+}
+
+.district-item {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0.75rem 1.25rem;
+  transition: background 0.2s;
+}
+
+.district-item:last-child {
+  border-bottom: none;
+}
+
+.district-item:hover {
+  background: #f5f5f5;
+}
+
+.district-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.district-name {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.district-code {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+.district-numbers {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.stat-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.stat-badge.bills {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.stat-badge.customers {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.stat-badge span {
+  font-family: 'Courier New', monospace;
+}
 .water-supply-tracker {
   min-height: 100vh;
   background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
@@ -927,8 +1165,18 @@ onUnmounted(() => {
   font-size: 0.8rem;
 }
 
+.district-stats {
+  display: flex;
+  gap: 1rem;
+}
+
 .district-count {
   color: #1976d2;
+  font-weight: 500;
+}
+
+.district-customers {
+  color: #4caf50;
   font-weight: 500;
 }
 

@@ -1,22 +1,37 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { useSidebar } from "./sidebarItems";
+import { useSidebar, refreshSidebar } from "./sidebarItems"; 
+
+interface Role {
+  id: number;
+  name: string;
+  description?: string;
+}
 
 interface SubItem {
   id: number;
-  name: string;
-  url: string;
-  roles: number[];
+  name?: string;
+  title?: string;
+  url?: string;
+  route?: string;
+  roles: Role[] | number[];
+  icon?: string;
+  order: number;
+  is_active: boolean;
 }
 
 interface SidebarItem {
   id: number;
-  name: string;
-  url: string;
+  name?: string;
+  title?: string;
+  url?: string;
+  route?: string;
   icon: string;
-  roles: number[];
+  roles: Role[] | number[];
+  order: number;
   sub_items?: SubItem[];
+  is_active: boolean;
 }
 
 interface User {
@@ -27,6 +42,7 @@ interface User {
 const user = ref<User | null>(null);
 const sidebarItems = ref<SidebarItem[]>([]);
 const expandedItems = ref<Set<number>>(new Set());
+const isLoading = ref(false);
 
 // Load user data
 onMounted(() => {
@@ -38,39 +54,94 @@ onMounted(() => {
 
 // Fetch sidebar items
 onMounted(async () => {
-  const fetchedItems = await useSidebar();
-  sidebarItems.value = fetchedItems.value || [];
-
-  // Auto-expand items that have accessible sub-items
-  if (user.value?.GID) {
-    const userGID = user.value.GID.GID;
-    sidebarItems.value.forEach((item) => {
-      if (item.sub_items && hasAccessibleSubItems(item, userGID)) {
-        expandedItems.value.add(item.id);
-      }
-    });
-  }
+  await loadSidebarItems();
 });
+
+// Function to load sidebar items
+const loadSidebarItems = async () => {
+  isLoading.value = true;
+  try {
+    const fetchedItems = await useSidebar(); 
+    sidebarItems.value = fetchedItems.value || [];
+    
+    // Auto-expand items that have accessible sub-items
+    if (user.value?.GID) {
+      const userGID = user.value.GID.GID;
+      sidebarItems.value.forEach(item => {
+        if (item.sub_items && hasAccessibleSubItems(item, userGID)) {
+          expandedItems.value.add(item.id);
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Failed to load sidebar:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// Function to manually refresh sidebar (call this after admin updates)
+const refreshSidebarItems = async () => {
+  isLoading.value = true;
+  try {
+    const freshItems = await refreshSidebar();
+    sidebarItems.value = freshItems || [];
+    console.log("Sidebar refreshed");
+  } catch (error) {
+    console.error("Failed to refresh sidebar:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 // Check if user has access to any sub-items
 const hasAccessibleSubItems = (item: SidebarItem, userGID: number): boolean => {
   if (!item.sub_items || item.sub_items.length === 0) return false;
-  return item.sub_items.some((subItem) => subItem.roles.includes(userGID));
+  return item.sub_items.some(subItem => {
+    if (!subItem.is_active) return false;
+    // Handle roles as array of objects
+    if (Array.isArray(subItem.roles) && subItem.roles.length > 0) {
+      if (typeof subItem.roles[0] === 'object') {
+        return subItem.roles.some((role: any) => role.id === userGID);
+      }
+      return subItem.roles.includes(userGID);
+    }
+    return false;
+  });
 };
 
-// Filter items based on user role
+// Filter items based on user role and active status
 const filteredSidebarItems = computed(() => {
   if (!user.value || !user.value.GID) return [];
   const userGID = user.value.GID.GID;
 
   return sidebarItems.value
-    .filter((item) => item.roles.includes(userGID))
-    .map((item) => ({
+    .filter(item => {
+      if (!item.is_active) return false;
+      // Handle roles as array of objects
+      if (Array.isArray(item.roles) && item.roles.length > 0) {
+        if (typeof item.roles[0] === 'object') {
+          return item.roles.some((role: any) => role.id === userGID);
+        }
+        return item.roles.includes(userGID);
+      }
+      return false;
+    })
+    .map(item => ({
       ...item,
-      sub_items:
-        item.sub_items?.filter((subItem) => subItem.roles.includes(userGID)) ||
-        [],
-    }));
+      sub_items: (item.sub_items || []).filter(subItem => {
+        if (!subItem.is_active) return false;
+        // Handle roles as array of objects
+        if (Array.isArray(subItem.roles) && subItem.roles.length > 0) {
+          if (typeof subItem.roles[0] === 'object') {
+            return subItem.roles.some((role: any) => role.id === userGID);
+          }
+          return subItem.roles.includes(userGID);
+        }
+        return false;
+      })
+    }))
+    .sort((a, b) => a.order - b.order); // Ensure ordering
 });
 
 // Toggle expand/collapse for items with sub-items
@@ -90,9 +161,10 @@ const isExpanded = (itemId: number) => {
 // Check if route is active (for parent or sub-items)
 const isRouteActive = (item: SidebarItem) => {
   const currentPath = useRoute().path;
-  if (currentPath === item.url) return true;
+  const itemUrl = item.route || item.url;
+  if (currentPath === itemUrl) return true;
   if (item.sub_items) {
-    return item.sub_items.some((subItem) => currentPath === subItem.url);
+    return item.sub_items.some(subItem => currentPath === (subItem.route || subItem.url));
   }
   return false;
 };
@@ -101,6 +173,26 @@ const isRouteActive = (item: SidebarItem) => {
 const isCurrentRoute = (url: string) => {
   return useRoute().path === url;
 };
+
+// Watch for route changes to auto-expand parent items
+watch(() => useRoute().path, (newPath) => {
+  if (user.value?.GID) {
+    const userGID = user.value.GID.GID;
+    filteredSidebarItems.value.forEach(item => {
+      if (item.sub_items) {
+        const hasActiveSubItem = item.sub_items.some(sub => (sub.route || sub.url) === newPath);
+        if (hasActiveSubItem) {
+          expandedItems.value.add(item.id);
+        }
+      }
+    });
+  }
+});
+
+// Expose refresh function to parent components if needed
+defineExpose({
+  refreshSidebarItems
+});
 </script>
 
 <template>
@@ -111,9 +203,16 @@ const isCurrentRoute = (url: string) => {
       </div>
 
       <nav class="sidebar-nav">
-        <template v-if="filteredSidebarItems.length > 0">
-          <div
-            v-for="item in filteredSidebarItems"
+        <!-- Loading State -->
+        <div v-if="isLoading" class="loading-state">
+          <div class="loading-spinner"></div>
+          <span>Loading menu...</span>
+        </div>
+
+        <!-- Sidebar Items -->
+        <template v-else-if="filteredSidebarItems.length > 0">
+          <div 
+            v-for="item in filteredSidebarItems" 
             :key="item.id"
             class="nav-group"
           >
@@ -129,14 +228,13 @@ const isCurrentRoute = (url: string) => {
                 </div>
               </NuxtLink> -->
               <NuxtLink
-                :to="item.url"
-                replace
+                :to="item.route || item.url"
                 class="nav-item"
-                :class="{ 'nav-item-active': isCurrentRoute(item.url) }"
+                :class="{ 'nav-item-active': isCurrentRoute(item.route || item.url) }"
               >
                 <div class="nav-item-content">
                   <v-icon :icon="item.icon" class="nav-icon"></v-icon>
-                  <span class="nav-label">{{ $t(item.name) }}</span>
+                  <span class="nav-label">{{ $t(item.title || item.name) }}</span>
                 </div>
               </NuxtLink>
             </template>
@@ -154,7 +252,7 @@ const isCurrentRoute = (url: string) => {
                 >
                   <div class="nav-item-content">
                     <v-icon :icon="item.icon" class="nav-icon"></v-icon>
-                    <span class="nav-label">{{ $t(item.name) }}</span>
+                    <span class="nav-label">{{ $t(item.title || item.name) }}</span>
                   </div>
                   <v-icon
                     :icon="
@@ -172,15 +270,13 @@ const isCurrentRoute = (url: string) => {
                     <NuxtLink
                       v-for="subItem in item.sub_items"
                       :key="subItem.id"
-                      :to="subItem.url"
+                      :to="subItem.route || subItem.url"
                       class="nav-subitem"
-                      :class="{
-                        'nav-subitem-active': isCurrentRoute(subItem.url),
-                      }"
+                      :class="{ 'nav-subitem-active': isCurrentRoute(subItem.route || subItem.url) }"
                     >
                       <div class="nav-subitem-content">
                         <div class="nav-subitem-indicator"></div>
-                        <span class="nav-sublabel">{{ $t(subItem.name) }}</span>
+                        <span class="nav-sublabel">{{ $t(subItem.title || subItem.name) }}</span>
                       </div>
                     </NuxtLink>
                   </div>
@@ -229,6 +325,30 @@ const isCurrentRoute = (url: string) => {
   padding: 12px 8px;
 }
 
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  color: #6b7280;
+  gap: 12px;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .nav-group {
   margin-bottom: 4px;
 }
@@ -250,7 +370,7 @@ const isCurrentRoute = (url: string) => {
   position: relative;
   text-decoration: none;
   color: #64748b;
-  font-size: 15px; /* increased from 13px */
+  font-size: 15px;
   font-weight: 500;
 }
 
@@ -347,7 +467,7 @@ const isCurrentRoute = (url: string) => {
 
 /* Labels */
 .nav-label {
-  font-size: 15px; /* increased from 13px */
+  font-size: 15px;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -361,7 +481,7 @@ const isCurrentRoute = (url: string) => {
 }
 
 .nav-sublabel {
-  font-size: 14px; /* increased from 12px */
+  font-size: 14px;
   font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
@@ -426,15 +546,6 @@ const isCurrentRoute = (url: string) => {
 .nav-subitem:hover .nav-subitem-indicator {
   background: #94a3b8;
   transform: scale(1.3);
-}
-
-.nav-sublabel {
-  font-size: 14px; /* increased from 12px */
-  font-weight: 400;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: all 0.25s ease;
 }
 
 .nav-subitem-active .nav-sublabel {
@@ -526,7 +637,7 @@ const isCurrentRoute = (url: string) => {
 @media (max-width: 768px) {
   .nav-label,
   .nav-sublabel {
-    font-size: 13px; /* scaled down slightly for smaller screens */
+    font-size: 13px;
   }
 
   .nav-icon {
