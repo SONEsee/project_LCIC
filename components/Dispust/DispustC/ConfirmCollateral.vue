@@ -9,7 +9,7 @@ import {useDipustCallateralStore} from "@/stores/colleteraluploaddata"
 import dayjs from "dayjs";
 import { useLoanStore } from "~/stores/loan";
 import Swal from "sweetalert2";
-const LoanStore = useLoanStore();
+const LoanStore = useDipustCallateralStore();
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 const selecData = ref<any>([]);
 
@@ -55,13 +55,29 @@ const getAPIHost = (): string => {
 
   return config.public.strapi.url;
 };
+
+// ✅ ແກ້ໄຂ: ຮອງຮັບທັງ array ໃຫຍ່ ແລະ nested disputes
 const dataDispust = computed(() => {
+  const data = DispustStore.respons_data_detail_confirm_dispust;
+  
+  // ກໍລະນີທີ່ 1: ຂໍ້ມູນເປັນ array ໃຫຍ່ໂດຍກົງ
+  if (Array.isArray(data) && data.length > 0) {
+    return data;
+  }
+  
+  // ກໍລະນີທີ່ 2: ຂໍ້ມູນຢູ່ພາຍໃນ disputes property
+  const dataDispust = computed(() => {
   const data = DispustStore.respons_data_detail_confirm_dispust;
   return Array.isArray(data) ? data : data ? [data] : [];
 });
+  if (data && typeof data === "object") {
+    return [data];
+  }
+  return [];
+});
 
 const dispustData = computed(() => {
-  const data = DispustStore.respons_data_detail_confirm_dispust;
+  const data = DispustStore.respons_data_dispust_allert;
   return Array.isArray(data) ? data : data ? [data] : [];
 });
 
@@ -125,37 +141,44 @@ const selectedCount = computed(() => selecData.value.length);
 
 const canSubmit = computed(() => selectedCount.value > 0);
 
-
+// ແກ້ໄຂ: ກັ່ນຕອງລາຍການທີ່ສາມາດເລືອກໄດ້
 const availableItems = computed(() => {
-  return (
-    dataDispust.value[0]?.disputes?.filter(
-      (item: any) => item.status !== "2"
-    ) || []
-  );
+  return dataDispust.value.filter(
+    (item: any) => item.status !== "2"
+  ) || [];
 });
-
 
 const canSelectAll = computed(() => {
   return availableItems.value.length > 0;
 });
 
+// ✅ ແກ້ໄຂຫຼັກ: ປ່ຽນເງື່ອນໄຂໃຫ້ຖືກຕ້ອງ
 const toggleSelectAll = () => {
-  if (selectAll.value) {
- 
-    const allAvailableIds =
-      availableItems.value.map((item: any) => item.id_dispust) || [];
-    selecData.value = [...allAvailableIds];
-  } else {
+  console.log('toggleSelectAll called, selectAll.value:', selectAll.value);
+  console.log('availableItems:', availableItems.value);
+  
+  if (!selectAll.value) {
+    // ຖ້າກຳລັງຈະຍົກເລີກ (selectAll ກາຍເປັນ false) -> ລຶບທັງໝົດ
     selecData.value = [];
+    console.log('Cleared all selections');
+  } else {
+    // ຖ້າກຳລັງຈະເລືອກທັງໝົດ (selectAll ກາຍເປັນ true) -> ເລືອກທັງໝົດ
+    // ✅ ແກ້: ໃຊ້ 'id' ແທນ 'id_dispust'
+    const allAvailableIds = availableItems.value.map((item: any) => item.id);
+    selecData.value = [...allAvailableIds];
+    console.log('Selected all:', allAvailableIds);
   }
 };
 
-
+// ✅ ແກ້ໄຂ: Watch ເພື່ອອັບເດດ selectAll ໃຫ້ຖືກຕ້ອງ
 watch(selecData, (newVal) => {
   const totalAvailableItems = availableItems.value.length;
-  selectAll.value =
-    newVal.length === totalAvailableItems && totalAvailableItems > 0;
-});
+  if (totalAvailableItems === 0) {
+    selectAll.value = false;
+  } else {
+    selectAll.value = newVal.length === totalAvailableItems;
+  }
+}, { deep: true });
 
 async function onSelectionChange(params: number) {
   requese.page_size = params;
@@ -197,13 +220,14 @@ const confirmupload = async () => {
   isUploading.value = true;
 
   try {
-    LoanStore.from_confirm_dispust.id_dispust_list = selecData.value;
+    LoanStore.from_confirm_dispust.is_disputed_list = selecData.value;
     LoanStore.update_status.user_update = userid.value
 
     await LoanStore.confirmDitpust();
     await LoanStore.UpdateStatus(id_dispust)
 
     selecData.value = [];
+    selectAll.value = false; // ✅ ເພີ່ມ: Reset selectAll ຫຼັງບັນທຶກສຳເລັດ
     goPreviousPath();
   } catch (error) {
     console.error("Error:", error);
@@ -252,7 +276,8 @@ watch(fileUrl, (newUrl) => {
 });
 
 onMounted(() => {
-  // LoanStore.UpdateStatus(id_dispust)
+  
+  
   memberinfoStore.getMemberInfo();
   imagepath.value = axios.defaults.baseURL || "";
 
@@ -267,6 +292,7 @@ onMounted(() => {
 
   isLoading.value = true;
   Promise.all([
+    DispustStore.getDataDispust(),
     DispustStore.getDataDispustEdit(),
     DispustStore.getDataDispust(),
   ]).finally(() => {
@@ -325,28 +351,25 @@ onMounted(() => {
                 {{
                   dispustData[0]?.image_url
                     ?.split("/")
-                    .pop()
-                    ?.replace(/%E0%B8%/g, "") || "ເອກະສານ PDF"
+                    .pop() || "Document.pdf"
                 }}
               </p>
               <div class="pdf-actions mt-6">
                 <v-btn
-                  variant="flat"
                   color="blue-darken-1"
-                  class="mr-3"
-                  @click="openPdfViewer"
+                  variant="flat"
                   prepend-icon="mdi-eye"
-                  size="large"
+                  @click="openPdfViewer"
                 >
-                  ເປີດໄຟລ໌
+                  ເປີດເອກະສານ
                 </v-btn>
                 <v-btn
+                  color="blue-grey"
                   variant="outlined"
-                  color="blue-darken-1"
+                  prepend-icon="mdi-download"
                   :href="fileUrl"
                   target="_blank"
-                  prepend-icon="mdi-download"
-                  size="large"
+                  download
                 >
                   ດາວໂຫຼດ
                 </v-btn>
@@ -356,19 +379,11 @@ onMounted(() => {
         </v-card-text>
       </v-card>
 
-      <!-- PDF Dialog -->
-      <v-dialog
-        v-model="showPdfViewer"
-        max-width="95vw"
-        max-height="95vh"
-        persistent
-      >
-        <v-card class="pdf-dialog">
+      <!-- PDF Viewer Dialog -->
+      <v-dialog v-model="showPdfViewer" fullscreen>
+        <v-card>
           <v-toolbar color="blue-darken-1" dark>
-            <v-toolbar-title>
-              <v-icon class="mr-2">mdi-file-pdf-box</v-icon>
-              ເບິ່ງ PDF
-            </v-toolbar-title>
+            <v-toolbar-title>ເອກະສານ PDF</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-btn icon @click="closePdfViewer">
               <v-icon>mdi-close</v-icon>
@@ -377,69 +392,58 @@ onMounted(() => {
 
           <div class="pdf-container">
             <div v-if="!pdfUrl" class="pdf-loading">
-              <v-progress-circular
-                indeterminate
-                color="blue-darken-1"
-                size="50"
-              />
-              <p>ກຳລັງໂຫຼດ PDF...</p>
+              <v-progress-circular indeterminate color="primary" size="50" />
+              <p>ກຳລັງໂຫຼດເອກະສານ...</p>
             </div>
 
             <iframe
-              v-if="pdfUrl && viewerType === 'iframe'"
+              v-else-if="!useEmbedViewer && !useObjectViewer"
               :src="pdfUrl"
-              width="100%"
-              height="100%"
-              style="border: none"
+              style="width: 100%; height: 100%; border: none"
             ></iframe>
 
             <embed
-              v-else-if="pdfUrl && useEmbedViewer"
+              v-else-if="useEmbedViewer"
               :src="pdfUrl"
               type="application/pdf"
-              width="100%"
-              height="100%"
+              style="width: 100%; height: 100%"
             />
 
             <object
-              v-else-if="pdfUrl && useObjectViewer"
+              v-else-if="useObjectViewer"
               :data="pdfUrl"
               type="application/pdf"
-              width="100%"
-              height="100%"
+              style="width: 100%; height: 100%"
             >
               <p>
                 ບໍ່ສາມາດສະແດງ PDF ໄດ້.
-                <a :href="pdfUrl" target="_blank"
-                  >ກົດທີ່ນີ້ເພື່ອເປີດໃນ tab ໃໝ່</a
-                >
+                <a :href="pdfUrl" target="_blank">ກົດທີ່ນີ້ເພື່ອດາວໂຫຼດ</a>
               </p>
             </object>
           </div>
         </v-card>
       </v-dialog>
 
+      <!-- Data Table Card -->
       <v-card class="data-table-card elevation-2">
         <div class="action-bar">
-          <div class="d-flex align-center justify-space-between">
+          <div class="d-flex align-center justify-space-between w-100">
             <div class="d-flex align-center gap-3">
+             
               <div>
-                <p class="text-caption text-grey-darken-1 mb-0">
+              
+                <p class="text-caption text-grey-darken-1 ma-0">
                   ເລືອກແລ້ວ: {{ selectedCount }} ລາຍການ
-                  <span v-if="!canSelectAll" class="text-warning ml-2">
-                    (ບາງລາຍການສຳເລັດແລ້ວ ບໍ່ສາມາດເລືອກໄດ້)
-                  </span>
                 </p>
               </div>
             </div>
 
-            <div class="d-flex align-center gap-3">
+            <div class="d-flex gap-2">
               <v-btn
+                color="success"
                 variant="flat"
-                color="blue-darken-1"
-                size="large"
                 prepend-icon="mdi-check-circle"
-                :disabled="!canSubmit || isUploading"
+                :disabled="!canSubmit"
                 :loading="isUploading"
                 @click="confirmupload"
               >
@@ -450,7 +454,7 @@ onMounted(() => {
         </div>
 
         <v-divider></v-divider>
-<pre>{{ dataDispust }}</pre>
+
         <v-data-table
           :headers="hearder"
           :items="dataDispust"
@@ -462,7 +466,7 @@ onMounted(() => {
           <template v-slot:header.checkbox>
             <v-checkbox
               v-model="selectAll"
-              @change="toggleSelectAll"
+              @update:model-value="toggleSelectAll"
               hide-details
               density="compact"
               color="blue-darken-1"
@@ -474,7 +478,7 @@ onMounted(() => {
             <v-checkbox
               v-if="(item as any).status === '1'"
               v-model="selecData"
-              :value="(item as any).id_dispust"
+              :value="(item as any).id"
               hide-details
               density="compact"
               color="blue-darken-1"
