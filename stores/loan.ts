@@ -49,7 +49,7 @@ export const useLoanStore = defineStore("loan", {
       this.isLoading = true;
       try {
        const req = await axios.patch(
-        `/api/api/dispute-loan/${id}/status/`,
+        `/api/api/dispute-collateral/${id}/status/`,
         this.update_status
       );if(req.status ===201 || req.status ===200 || req.status ===203) {
          this.isLoading = false;

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
+<<<<<<< HEAD
 import { useSidebar, refreshSidebar } from "./sidebarItems"; 
 
 interface Role {
@@ -8,6 +9,9 @@ interface Role {
   name: string;
   description?: string;
 }
+=======
+import { useSidebar } from "./sidebarItems";
+>>>>>>> 9c501846d4c7802998ce8c175f85f8c2fb5aadc6
 
 interface SubItem {
   id: number;
@@ -36,11 +40,11 @@ interface SidebarItem {
 
 interface User {
   username: string;
-  GID: { GID: number }; 
+  GID: { GID: number };
 }
 
 const user = ref<User | null>(null);
-const sidebarItems = ref<SidebarItem[]>([]); 
+const sidebarItems = ref<SidebarItem[]>([]);
 const expandedItems = ref<Set<number>>(new Set());
 const isLoading = ref(false);
 
@@ -54,7 +58,22 @@ onMounted(() => {
 
 // Fetch sidebar items
 onMounted(async () => {
+<<<<<<< HEAD
   await loadSidebarItems();
+=======
+  const fetchedItems = await useSidebar();
+  sidebarItems.value = fetchedItems.value || [];
+
+  // Auto-expand items that have accessible sub-items
+  if (user.value?.GID) {
+    const userGID = user.value.GID.GID;
+    sidebarItems.value.forEach((item) => {
+      if (item.sub_items && hasAccessibleSubItems(item, userGID)) {
+        expandedItems.value.add(item.id);
+      }
+    });
+  }
+>>>>>>> 9c501846d4c7802998ce8c175f85f8c2fb5aadc6
 });
 
 // Function to load sidebar items
@@ -97,6 +116,7 @@ const refreshSidebarItems = async () => {
 // Check if user has access to any sub-items
 const hasAccessibleSubItems = (item: SidebarItem, userGID: number): boolean => {
   if (!item.sub_items || item.sub_items.length === 0) return false;
+<<<<<<< HEAD
   return item.sub_items.some(subItem => {
     if (!subItem.is_active) return false;
     // Handle roles as array of objects
@@ -108,14 +128,18 @@ const hasAccessibleSubItems = (item: SidebarItem, userGID: number): boolean => {
     }
     return false;
   });
+=======
+  return item.sub_items.some((subItem) => subItem.roles.includes(userGID));
+>>>>>>> 9c501846d4c7802998ce8c175f85f8c2fb5aadc6
 };
 
 // Filter items based on user role and active status
 const filteredSidebarItems = computed(() => {
   if (!user.value || !user.value.GID) return [];
   const userGID = user.value.GID.GID;
-  
+
   return sidebarItems.value
+<<<<<<< HEAD
     .filter(item => {
       if (!item.is_active) return false;
       // Handle roles as array of objects
@@ -142,6 +166,15 @@ const filteredSidebarItems = computed(() => {
       })
     }))
     .sort((a, b) => a.order - b.order); // Ensure ordering
+=======
+    .filter((item) => item.roles.includes(userGID))
+    .map((item) => ({
+      ...item,
+      sub_items:
+        item.sub_items?.filter((subItem) => subItem.roles.includes(userGID)) ||
+        [],
+    }));
+>>>>>>> 9c501846d4c7802998ce8c175f85f8c2fb5aadc6
 });
 
 // Toggle expand/collapse for items with sub-items
@@ -164,7 +197,11 @@ const isRouteActive = (item: SidebarItem) => {
   const itemUrl = item.route || item.url;
   if (currentPath === itemUrl) return true;
   if (item.sub_items) {
+<<<<<<< HEAD
     return item.sub_items.some(subItem => currentPath === (subItem.route || subItem.url));
+=======
+    return item.sub_items.some((subItem) => currentPath === subItem.url);
+>>>>>>> 9c501846d4c7802998ce8c175f85f8c2fb5aadc6
   }
   return false;
 };
@@ -201,8 +238,9 @@ defineExpose({
       <div class="profile-section">
         <!-- Profile content here -->
       </div>
-      
+
       <nav class="sidebar-nav">
+<<<<<<< HEAD
         <!-- Loading State -->
         <div v-if="isLoading" class="loading-state">
           <div class="loading-spinner"></div>
@@ -213,14 +251,32 @@ defineExpose({
         <template v-else-if="filteredSidebarItems.length > 0">
           <div 
             v-for="item in filteredSidebarItems" 
+=======
+        <template v-if="filteredSidebarItems.length > 0">
+          <div
+            v-for="item in filteredSidebarItems"
+>>>>>>> 9c501846d4c7802998ce8c175f85f8c2fb5aadc6
             :key="item.id"
             class="nav-group"
           >
-            
-            <!-- Parent Item WITHOUT Sub-items -->
             <template v-if="!item.sub_items || item.sub_items.length === 0">
+              <!-- <NuxtLink
+                :to="item.url"
+                class="nav-item"
+                :class="{ 'nav-item-active': isCurrentRoute(item.url) }"
+              >
+                <div class="nav-item-content">
+                  <v-icon :icon="item.icon" class="nav-icon"></v-icon>
+                  <span class="nav-label">{{ $t(item.name) }}</span>
+                </div>
+              </NuxtLink> -->
               <NuxtLink
+<<<<<<< HEAD
                 :to="item.route || item.url"
+=======
+                :to="item.url"
+                replace
+>>>>>>> 9c501846d4c7802998ce8c175f85f8c2fb5aadc6
                 class="nav-item"
                 :class="{ 'nav-item-active': isCurrentRoute(item.route || item.url) }"
               >
@@ -231,15 +287,14 @@ defineExpose({
               </NuxtLink>
             </template>
 
-            <!-- Parent Item WITH Sub-items -->
             <template v-else>
               <div class="nav-group-wrapper">
                 <!-- Parent Header -->
                 <div
                   class="nav-item nav-item-parent"
-                  :class="{ 
+                  :class="{
                     'nav-item-expanded': isExpanded(item.id),
-                    'nav-item-has-active': isRouteActive(item) 
+                    'nav-item-has-active': isRouteActive(item),
                   }"
                   @click="toggleExpand(item.id)"
                 >
@@ -247,8 +302,12 @@ defineExpose({
                     <v-icon :icon="item.icon" class="nav-icon"></v-icon>
                     <span class="nav-label">{{ $t(item.title || item.name) }}</span>
                   </div>
-                  <v-icon 
-                    :icon="isExpanded(item.id) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+                  <v-icon
+                    :icon="
+                      isExpanded(item.id)
+                        ? 'mdi-chevron-down'
+                        : 'mdi-chevron-right'
+                    "
                     class="nav-expand-icon"
                   ></v-icon>
                 </div>
@@ -261,7 +320,13 @@ defineExpose({
                       :key="subItem.id"
                       :to="subItem.route || subItem.url"
                       class="nav-subitem"
+<<<<<<< HEAD
                       :class="{ 'nav-subitem-active': isCurrentRoute(subItem.route || subItem.url) }"
+=======
+                      :class="{
+                        'nav-subitem-active': isCurrentRoute(subItem.url),
+                      }"
+>>>>>>> 9c501846d4c7802998ce8c175f85f8c2fb5aadc6
                     >
                       <div class="nav-subitem-content">
                         <div class="nav-subitem-indicator"></div>
@@ -272,7 +337,6 @@ defineExpose({
                 </transition>
               </div>
             </template>
-
           </div>
         </template>
 
@@ -365,7 +429,7 @@ defineExpose({
 }
 
 .nav-item::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 50%;
@@ -629,15 +693,15 @@ defineExpose({
   .nav-sublabel {
     font-size: 13px;
   }
-  
+
   .nav-icon {
     font-size: 16px !important;
   }
-  
+
   .nav-item {
     padding: 8px 10px;
   }
-  
+
   .nav-subitem {
     padding: 6px 10px;
   }
@@ -660,10 +724,22 @@ defineExpose({
   animation-fill-mode: both;
 }
 
-.nav-group:nth-child(1) { animation-delay: 0.05s; }
-.nav-group:nth-child(2) { animation-delay: 0.1s; }
-.nav-group:nth-child(3) { animation-delay: 0.15s; }
-.nav-group:nth-child(4) { animation-delay: 0.2s; }
-.nav-group:nth-child(5) { animation-delay: 0.25s; }
-.nav-group:nth-child(6) { animation-delay: 0.3s; }
+.nav-group:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.nav-group:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.nav-group:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.nav-group:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.nav-group:nth-child(5) {
+  animation-delay: 0.25s;
+}
+.nav-group:nth-child(6) {
+  animation-delay: 0.3s;
+}
 </style>
