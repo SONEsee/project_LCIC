@@ -101,6 +101,8 @@ async function onSelect(value: number) {
   await LoanStore.getDataLoan();
 }
 
+
+
 const handleChange = (newFiles: File[]) => {
   console.log("Files changed:", newFiles);
 };
