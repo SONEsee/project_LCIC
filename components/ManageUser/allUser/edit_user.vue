@@ -309,7 +309,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
-import CryptoJS from 'crypto-js';
+// import CryptoJS from 'crypto-js';
 
 const props = defineProps({
   userData: {
