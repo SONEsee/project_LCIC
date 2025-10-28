@@ -7,12 +7,20 @@ export const IndividualStore = defineStore("individual", {
     return {
       isLoading: false,
       respons_data_reques: null as SearchIndividualModel.Result | null,
+      respons_data_reques_search:
+        null as SearchIndividualModel.ResultMapsearch | null,
       reques_query: {
         isLoading: false,
         query: {
           lcic_id: "",
           customerid: "",
           bnk_code: "",
+        },
+      },
+      reques_mapsearch: {
+        isLoading: false,
+        query: {
+          lcic_id: "",
         },
       },
     };
@@ -22,12 +30,43 @@ export const IndividualStore = defineStore("individual", {
       this.isLoading = true;
       this.reques_query.isLoading = true;
       try {
-        const res = await axios.get<SearchIndividualModel.SearchIndividualRespons>(`/api/api/searchcollateral/`,{
-            params:{
-                ...this.reques_query.query
+        const res =
+          await axios.get<SearchIndividualModel.SearchIndividualRespons>(
+            `/api/api/searchcollateral/`,
+            {
+              params: {
+                ...this.reques_query.query,
+              },
             }
-        });if(res.status ===200){
-            this.respons_data_reques = res.data.results
+          );
+        if (res.status === 200) {
+          this.respons_data_reques = res.data.results;
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text: "ບໍ່ສາມາດດືງຂໍ້ມູນໄດ້",
+        });
+      } finally {
+        this.isLoading = false;
+        this.reques_query.isLoading = false;
+      }
+    },
+    async saerchMapIndividual() {
+      this.isLoading = true;
+      this.reques_query.isLoading = true;
+      try {
+        const res = await axios.get<SearchIndividualModel.MapsearchRespons>(
+          `/api/api/searchcollateral-info/`,
+          {
+            params: {
+              ...this.reques_mapsearch.query,
+            },
+          }
+        );
+        if (res.status === 200) {
+          this.respons_data_reques_search = res.data.results;
         }
       } catch (error) {
         Swal.fire({

@@ -12,6 +12,9 @@ const lcicSearchInput = ref("");
 const customerSearchInput = ref("");
 const showDebug = ref(true);
 
+const bankDataMessage = ref("");
+const showBankMessage = ref(false);
+
 const debounceTimer = ref<NodeJS.Timeout | null>(null);
 
 const debounceSearch = (callback: () => void, delay: number = 300) => {
@@ -27,8 +30,32 @@ const onLcicSelect = (value: string) => {
     searchLcicID.value = value;
     lcicSearchInput.value = value;
 
-    saerchCustomerID.value = "";
-    customerSearchInput.value = "";
+    const selectedItem = filteredLcicSuggestions.value.find(
+      (item) => item.lcic_id === value
+    );
+
+    if (selectedItem) {
+      if (selectedItem.bnk_code === userId.value) {
+        saerchCustomerID.value = selectedItem.customerid;
+        customerSearchInput.value = selectedItem.customerid;
+
+        showBankMessage.value = false;
+        bankDataMessage.value = "";
+
+        console.log(
+          "Found bank data, setting customer ID:",
+          selectedItem.customerid
+        );
+      } else {
+        saerchCustomerID.value = "";
+        customerSearchInput.value = "";
+
+        showBankMessage.value = true;
+        bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
+
+        console.log("No bank data found for this LCIC ID");
+      }
+    }
 
     performSearchWithLcicId(value);
   }
@@ -46,6 +73,9 @@ const onCustomerSelect = (lcicId: string) => {
       saerchCustomerID.value = selectedItem.customerid;
       customerSearchInput.value = selectedItem.customerid;
     }
+
+    showBankMessage.value = false;
+    bankDataMessage.value = "";
 
     performSearchWithLcicId(lcicId);
   }
@@ -69,9 +99,13 @@ const performSearchWithLcicId = async (lcicId: string) => {
   }
 };
 
-// Search input handlers
 const onLcicSearchChange = (value: string) => {
   lcicSearchInput.value = value;
+  
+
+  showBankMessage.value = false;
+  bankDataMessage.value = "";
+
   if (value && value.length > 0) {
     debounceSearch(() => {
       performAPISearch();
@@ -81,8 +115,10 @@ const onLcicSearchChange = (value: string) => {
 
 const onCustomerSearchChange = (value: string) => {
   customerSearchInput.value = value;
-  // Keep the search term in the input field for Customer ID
   saerchCustomerID.value = value;
+
+  showBankMessage.value = false;
+  bankDataMessage.value = "";
 
   if (value && value.length > 0) {
     debounceSearch(() => {
@@ -91,15 +127,12 @@ const onCustomerSearchChange = (value: string) => {
   }
 };
 
-// API search function
 const performAPISearch = async () => {
   individualStore.reques_query.isLoading = true;
   try {
-    // Clear previous queries
     individualStore.reques_query.query.customerid = "";
     individualStore.reques_query.query.lcic_id = "";
 
-    // Set search parameters based on input
     if (lcicSearchInput.value) {
       individualStore.reques_query.query.lcic_id = lcicSearchInput.value;
     }
@@ -120,23 +153,37 @@ const performAPISearch = async () => {
   }
 };
 
-// Computed properties for filtered suggestions
 const filteredLcicSuggestions = computed(() => {
   if (!lcicSearchInput.value || lcicSearchInput.value.length < 1) return [];
 
-  return dataReques.value
-    .filter(
-      (item) =>
-        item.lcic_id?.toString().includes(lcicSearchInput.value) ||
-        item.ind_lao_name
-          ?.toLowerCase()
-          .includes(lcicSearchInput.value.toLowerCase())
-    )
-    .slice(0, 10) // Limit to 10 suggestions
-    .map((item) => ({
-      ...item,
-      display_text: `${item.ind_lao_name} (${item.lcic_id})`,
-    }));
+  const filtered = dataReques.value.filter(
+    (item) =>
+      item.lcic_id?.toString().includes(lcicSearchInput.value) ||
+      item.ind_lao_name
+        ?.toLowerCase()
+        .includes(lcicSearchInput.value.toLowerCase())
+  );
+
+  if (filtered.length === 0) return [];
+
+  const bankData = filtered.find((item) => item.bnk_code === userId.value);
+
+  if (bankData) {
+    return [
+      {
+        ...bankData,
+        display_text: `${bankData.ind_lao_name} (${bankData.lcic_id})`,
+      },
+    ];
+  } else {
+    const firstItem = filtered[0];
+    return [
+      {
+        ...firstItem,
+        display_text: `${firstItem.ind_lao_name} (${firstItem.lcic_id})`,
+      },
+    ];
+  }
 });
 
 const filteredCustomerSuggestions = computed(() => {
@@ -151,14 +198,13 @@ const filteredCustomerSuggestions = computed(() => {
           ?.toLowerCase()
           .includes(customerSearchInput.value.toLowerCase())
     )
-    .slice(0, 10) // Limit to 10 suggestions
+    .slice(0, 10)
     .map((item) => ({
       ...item,
       display_text: `${item.ind_lao_name} (${item.customerid})`,
     }));
 });
 
-// Data processing
 const dataReques = computed(() => {
   const data = individualStore.respons_data_reques;
   if (Array.isArray(data)) {
@@ -170,7 +216,6 @@ const dataReques = computed(() => {
   return [];
 });
 
-// Action functions
 const performSearch = async () => {
   if (!searchLcicID.value && !saerchCustomerID.value) {
     Swal.fire({
@@ -180,7 +225,7 @@ const performSearch = async () => {
     });
     return;
   }
-
+goPath(`/backend/individual/detailsearch/?customer_id=${saerchCustomerID.value}&&lcic_id=${searchLcicID.value}`)
   await performAPISearch();
 };
 
@@ -190,18 +235,17 @@ const clearSearch = () => {
   lcicSearchInput.value = "";
   customerSearchInput.value = "";
 
-  // Reset to initial state
+  showBankMessage.value = false;
+  bankDataMessage.value = "";
+
   individualStore.reques_query.query.customerid = "";
   individualStore.reques_query.query.lcic_id = "";
   individualStore.saerchListIndividual();
 };
 
-// Updated selectItem function for result list clicks (not autocomplete)
 const selectItem = (item: any) => {
   console.log("Selected item from result list:", item);
 
-  // This is for clicking on items in the search results list
-  // Different behavior than autocomplete selection
   Swal.fire({
     icon: "info",
     text: `ເລືອກຈາກລາຍການຜົນການຄົ້ນຫາ: ${
@@ -213,19 +257,17 @@ const selectItem = (item: any) => {
     cancelButtonText: "ປິດ",
   }).then((result) => {
     if (result.isConfirmed) {
-      // Add your logic for viewing details here
       console.log("View details for:", item);
     }
   });
 };
 
-// Watchers for selected values
 watch(searchLcicID, async (newValue) => {
   if (newValue && newValue !== lcicSearchInput.value) {
     individualStore.reques_query.isLoading = true;
     try {
       individualStore.reques_query.query.lcic_id = newValue;
-      individualStore.reques_query.query.customerid = ""; // Clear other search
+      individualStore.reques_query.query.customerid = "";
       await individualStore.saerchListIndividual();
     } catch (error) {
       console.error("LCIC search error:", error);
@@ -245,7 +287,7 @@ watch(saerchCustomerID, async (newValue) => {
     individualStore.reques_query.isLoading = true;
     try {
       individualStore.reques_query.query.customerid = newValue;
-      individualStore.reques_query.query.lcic_id = ""; // Clear other search
+      individualStore.reques_query.query.lcic_id = "";
       await individualStore.saerchListIndividual();
     } catch (error) {
       console.error("Customer search error:", error);
@@ -260,149 +302,397 @@ watch(saerchCustomerID, async (newValue) => {
   }
 });
 
+const displayCustomer = ((item:any)=>{
+    if(!item || !item.ind_surname || !item.ind_lao_name || item.ind_lao_surname) return "";
+    return `${item.customerid}-${item.ind_lao_name} ${item.ind_lao_surname}-${item.ind_name} ${item.ind_surname}`
+})
 
-onMounted(() => {
-  individualStore.reques_query.query.bnk_code = userId.value;
-  individualStore.saerchListIndividual();
+onMounted(async () => {
+  await individualStore.saerchListIndividual();
 });
 </script>
 
 <template>
-  <div class="d-flex justify-center align-center">
-    <v-sheet
-      class="pa-4"
-      :elevation="11"
-      :height="400"
-      :width="600"
-      border
-      rounded
-    >
-      <v-row>
-        <v-col cols="12">
-          <div class="pa-4">
-            <h3>ຄົນຫາເອົາບົດລາຍງານບຸກຄົນ</h3>
-          </div>
-        </v-col>
+  <div class="search-container">
+    <div class="header-section">
+      <div class="header-content">
+        <div class="icon-wrapper">
+          <v-icon color="white" size="32">mdi-account-search</v-icon>
+        </div>
+        
+        <div class="title-section">
+          <h1 class="page-title">ຄົ້ນຫາຂໍ້ມູນລູກຄ້າ</h1>
+          <p class="page-subtitle">ຄົ້ນຫາດ້ວຍລະຫັດ LCIC ຫຼື ລະຫັດລູກຄ້າ</p>
+        </div>
+      </div>
+    </div>
 
-        <v-col cols="12">
-          <v-autocomplete
-            v-model="searchLcicID"
-            :items="filteredLcicSuggestions"
-            :search="lcicSearchInput"
-            @update:search="onLcicSearchChange"
-            @update:model-value="onLcicSelect"
-            item-title="lcic_id"
-            item-value="lcic_id"
-            density="compact"
-            clearable
-            label="ລະຫັດ ຂສລ"
-            variant="outlined"
-            :loading="individualStore.reques_query.isLoading"
-            hide-no-data
-            placeholder="ພິມເພື່ອຄົ້ນຫາ..."
-            prepend-inner-icon="mdi-magnify"
-          >
-            <template v-slot:item="{ props, item }">
-              <v-list-item
-                v-bind="props"
-                :title="item.raw.ind_lao_name"
-                :subtitle="`LCIC ID: ${item.raw.lcic_id}`"
-              >
-                <template v-slot:prepend>
-                  <v-avatar color="primary" size="small">
-                    <v-icon>mdi-account</v-icon>
-                  </v-avatar>
-                </template>
-              </v-list-item>
-            </template>
-          </v-autocomplete>
-        </v-col>
+    <div class="search-form">
+      <v-card class="search-card" elevation="0">
+        <v-card-text>
+          <v-container>
+            <v-row>
+              
+              <v-col cols="12" md="12">
+                <div class="input-group">
+                  <label class="input-label">
+                    <v-icon size="18" class="mr-2">mdi-card-account-details</v-icon>
+                    ລະຫັດ LCIC
+                  </label>
+                  <v-autocomplete
+                    v-model="searchLcicID"
+                    :items="filteredLcicSuggestions"
+                    :search="lcicSearchInput"
+                    @update:search="onLcicSearchChange"
+                    @update:model-value="onLcicSelect"
+                    item-title="lcic_id"
+                    item-value="lcic_id"
+                    density="comfortable"
+                    clearable
+                    variant="outlined"
+                    :loading="individualStore.reques_query.isLoading"
+                    hide-no-data
+                    placeholder="ລະຫັດລູກຄ້າ"
+                    prepend-inner-icon="mdi-magnify"
+                    class="search-input"
+                    color="primary"
+                    rounded
+                  >
+                    <template v-slot:item="{ props, item }">
+                      <v-list-item
+                        v-bind="props"
+                        class="search-item"
+                        rounded
+                      >
+                        <template v-slot:prepend>
+                          <v-avatar color="primary" size="36" class="mr-3">
+                            <v-icon color="white" size="18">mdi-card-account-details</v-icon>
+                          </v-avatar>
+                        </template>
+                        
+                        <v-list-item-subtitle class="text-caption">
+                          {{ item.raw.ind_lao_name }} {{ item.raw.ind_lao_surname }} {{ item.raw.ind_name }} {{ item.raw.ind_surname }}
+                        </v-list-item-subtitle>
+                        
+                        <template v-slot:append v-if="item.raw.bnk_code === userId">
+                          <v-chip color="success" size="x-small" variant="flat">
+                            <v-icon size="12" start>mdi-check-circle</v-icon>
+                            ທະນາຄານຂອງທ່ານ
+                          </v-chip>
+                        </template>
+                      </v-list-item>
+                    </template>
+                  </v-autocomplete>
+                </div>
+              </v-col>
 
-        <v-col cols="12">
-          <v-autocomplete
-            v-model="saerchCustomerID"
-            :items="filteredCustomerSuggestions"
-            :search="customerSearchInput"
-            @update:search="onCustomerSearchChange"
-            @update:model-value="onCustomerSelect"
-            item-title="customerid"
-            item-value="lcic_id"
-            density="compact"
-            clearable
-            label="ລະຫັດລູກຄ້າ"
-            variant="outlined"
-            :loading="individualStore.reques_query.isLoading"
-            hide-no-data
-            placeholder="ພິມເພື່ອຄົ້ນຫາ..."
-            prepend-inner-icon="mdi-magnify"
-          >
-            <template v-slot:item="{ props, item }">
-              <v-list-item
-                v-bind="props"
-                :title="item.raw.ind_lao_name"
-                :subtitle="`Customer ID: ${item.raw.customerid}`"
-              >
-                <template v-slot:prepend>
-                  <v-avatar color="secondary" size="small">
-                    <v-icon>mdi-account-card-details</v-icon>
-                  </v-avatar>
-                </template>
-              </v-list-item>
-            </template>
-          </v-autocomplete>
-        </v-col>
+           
+              <v-col cols="12" md="12">
+                <div class="input-group">
+                  <label class="input-label">
+                    <v-icon size="18" class="mr-2">mdi-account-card-details</v-icon>
+                    ລະຫັດລູກຄ້າ
+                  </label>
+                  <v-autocomplete
+                    v-model="saerchCustomerID"
+                    :items="filteredCustomerSuggestions"
+                    :search="customerSearchInput"
+                    @update:search="onCustomerSearchChange"
+                    @update:model-value="onCustomerSelect"
+                    item-title="customerid"
+                    item-value="lcic_id"
+                    density="comfortable"
+                    clearable
+                    variant="outlined"
+                    :loading="individualStore.reques_query.isLoading"
+                    hide-no-data
+                    placeholder="ລະຫັດລູກຄ້າ"
+                    prepend-inner-icon="mdi-magnify"
+                    class="search-input"
+                    color="primary"
+                    rounded
+                  >
+                    <template v-slot:item="{ props, item }">
+                      <v-list-item
+                        v-bind="props"
+                        class="search-item"
+                        rounded
+                      >
+                        <template v-slot:prepend>
+                          <v-avatar color="secondary" size="36" class="mr-3">
+                            <v-icon color="white" size="18">mdi-account-card-details</v-icon>
+                          </v-avatar>
+                        </template>
+                        
+                        <v-list-item-subtitle class="text-caption">
+                          {{ item.raw.ind_lao_name }} {{ item.raw.ind_lao_surname }} {{ item.raw.ind_name }} {{ item.raw.ind_surname }}
+                        </v-list-item-subtitle>
+                      </v-list-item>
+                    </template>
+                  </v-autocomplete>
 
-        <v-col cols="12" class="text-center">
-          <v-btn
-            color="primary"
-            width="40%"
-            class="mr-2"
-            :loading="individualStore.reques_query.isLoading"
-            @click="performSearch"
-          >
-            <v-icon left>mdi-magnify</v-icon>
-            ຄົ້ນຫາ
-          </v-btn>
-          <v-btn color="error" width="40%" @click="clearSearch">
-            <v-icon left>mdi-close</v-icon>
-            ຍົກເລີກ
-          </v-btn>
-        </v-col>
-      </v-row>
-    </v-sheet>
+                
+                  <v-slide-y-transition>
+                    <v-alert
+                      v-if="showBankMessage"
+                      type="info"
+                      density="compact"
+                      variant="tonal"
+                      class="mt-3 info-alert"
+                      closable
+                      @click:close="showBankMessage = false"
+                      rounded
+                    >
+                      <template v-slot:prepend>
+                        <v-icon>mdi-information-outline</v-icon>
+                      </template>
+                      {{ bankDataMessage }}
+                    </v-alert>
+                  </v-slide-y-transition>
+                </div>
+              </v-col>
+
+              
+              <v-col cols="12">
+                <div class="button-group">
+                  <v-btn
+                    color="primary"
+                    size="large"
+                    :loading="individualStore.reques_query.isLoading"
+                    @click="performSearch"
+                    class="search-btn"
+                    
+                    elevation="2"
+                  >
+                    <v-icon left>mdi-magnify</v-icon>
+                    ຄົ້ນຫາ
+                  </v-btn>
+                  <v-btn
+                    color="grey-lighten-1"
+                    size="large"
+                    @click="clearSearch"
+                    class="clear-btn"
+                    
+                    variant="outlined"
+                  >
+                    <v-icon left>mdi-refresh</v-icon>
+                    ລ້າງຂໍ້ມູນ
+                  </v-btn>
+                </div>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+      </v-card>
+    </div>
   </div>
 </template>
 
-
-
 <style scoped>
-.v-list-item {
+.search-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.header-section {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon-wrapper {
+  background: linear-gradient(135deg, #07165a 0%, #281192 100%);
+  padding: 16px;
+  border-radius: 50%;
+  box-shadow: 0 8px 32px rgba(4, 19, 85, 0.3);
+}
+
+.title-section {
+  text-align: center;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0;
+  font-weight: 400;
+}
+
+.search-form {
+  margin-bottom: 24px;
+}
+
+.search-card {
+  border-radius: 20px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+}
+
+.input-group {
+  margin-bottom: 8px;
+}
+
+.input-label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 12px;
+  letter-spacing: 0.25px;
+}
+
+.search-input :deep(.v-field) {
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.search-input :deep(.v-field):hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.search-input :deep(.v-field--focused) {
+  box-shadow: 0 4px 20px rgba(9, 28, 116, 0.25) !important;
+}
+
+.search-item {
+  border-radius: 12px !important;
+  margin: 4px 8px;
   transition: all 0.2s ease;
 }
 
-.v-list-item:hover {
+.search-item:hover {
+  background-color: rgba(102, 126, 234, 0.08) !important;
   transform: translateX(4px);
 }
 
-.overflow-y-auto {
-  scrollbar-width: thin;
-  scrollbar-color: #e0e0e0 transparent;
+.button-group {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 16px;
 }
 
-.overflow-y-auto::-webkit-scrollbar {
+.search-btn {
+  min-width: 140px;
+  height: 48px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #667eea 0%, #0712a5 100%) !important;
+  color: white !important;
+  transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(52, 4, 187, 0.4) !important;
+}
+
+.clear-btn {
+  min-width: 140px;
+  height: 48px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.clear-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.info-alert {
+  border-radius: 12px !important;
+  border-left: 4px solid #2196f3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .search-container {
+    padding: 16px;
+  }
+  
+  .search-card {
+    margin: 0 -8px;
+  }
+  
+  .button-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .search-btn, .clear-btn {
+    width: 100%;
+  }
+  
+  .page-title {
+    font-size: 24px;
+  }
+  
+  .page-subtitle {
+    font-size: 14px;
+  }
+}
+
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.search-input :deep(.v-progress-linear) {
+  border-radius: 12px;
+}
+
+
+* {
+  transition: all 0.2s ease;
+}
+
+
+:deep(.v-list) {
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 transparent;
+}
+
+:deep(.v-list)::-webkit-scrollbar {
   width: 6px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-track {
+:deep(.v-list)::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background-color: #e0e0e0;
-  border-radius: 3px;
+:deep(.v-list)::-webkit-scrollbar-thumb {
+  background-color: #e2e8f0;
+  border-radius: 6px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background-color: #bdbdbd;
+:deep(.v-list)::-webkit-scrollbar-thumb:hover {
+  background-color: #cbd5e1;
 }
 </style>
