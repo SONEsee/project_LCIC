@@ -1,115 +1,41 @@
-// export const getSidebarItems = (t: (key: string) => string) => [
-//   {
-//     title: t("dashboard"),
-//     icon: "mdi-view-dashboard-outline",
-//     to: "/backend/dashboard",
-//   },
-//   {
-//     title: t("search"),
-//     icon: "mdi-magnify",
-//     to: "/backend/search",
-//   },
-//   // {
-//   //   title: t("searchreport"),
-//   //   icon: "mdi-note-search-outline",
-//   //   to: "/backend/order",
-//   // },
-//   // {
-//   //   title: t("reportfees"),
-//   //   icon: "mdi-cash-multiple",
-//   //   to: "/backend/charge",
-//   // },
-//   {
-//     title: t("report"),
-//     icon: "mdi-file-document-multiple-outline",
-//     to: "/backend/report",
-//   },
-//   {
-//     title: t("datdsubmition"),
-//     icon: "mdi-upload-box-outline",
-//     to: "/backend/upload",
-//   },
-//   {
-//     title: t("manageuser"),
-//     icon: "mdi-cog-outline",
-//     to: "/backend/manageuser/userlist",
-//   },
-//   {
-//     title: t("datavadlidate"),
-//     icon: "mdi-history",
-//     to: "/backend/upload/lcictest",
-//   },
-//   {
-//     title: t("uploadenterprise"),
-//     icon: "mdi-image-area",
-//     to: "/backend/upload/upload_image",
-//   },
-//   // {
-//   //   title: t("isuscodelcic"),
-//   //   icon: "mdi-form-select",
-//   //   to: "/insertcollaterals",
-//   // },
-// ];
-
-
-// // import { useFetch } from "#app";
-
-// // export const useSidebarItems = async () => {
-// //   const { data, error } = await useFetch("http://192.168.45.56:8000/api/sidebar-items/");
-
-// //   if (error.value) {
-// //     console.error("Failed to fetch sidebar items:", error.value);
-// //     return [];
-// //   }
-
-// //   return data.value || [];
-// // };
-
-
-// import { useState } from "#app";
-
-// export const useSidebar = async () => {
-//   const config = useRuntimeConfig();
-//   const sidebarItems = useState("sidebarItems", () => []);
-
-//   if (!sidebarItems.value.length) {
-
-//     try {
-//       const response = await fetch(`${config.public.strapi.url}api/sidebar-items/`);
-//       if (!response.ok) {
-//         throw new Error(`HTTP error! status: ${response.status}`);
-//       }
-//       const data = await response.json();
-//       sidebarItems.value = data || [];
-//       console.log("------> ",sidebarItems.value);
-
-
-//     } catch (error) {
-//       console.error("Failed to fetch sidebar items:", error);
-//     }
-//   }
-
-//   return sidebarItems;
-// };
 import { useState } from "#app";
+
+interface Role {
+  id: number;
+  name: string;
+  description?: string;
+}
 
 interface SubItem {
   id: number;
-  name: string;
-  url: string;
+  name?: string;
+  title?: string;
+  url?: string;
+  route?: string;
   parent: number;
-  roles: number[];
+  icon?: string;
+  order: number;
+  roles: Role[] | number[];
+  is_active: boolean;
 }
 
 interface SidebarItem {
   id: number;
-  name: string;
-  url: string;
+  name?: string;
+  title?: string;
+  url?: string;
+  route?: string;
   icon: string;
-  roles: number[];
+  order: number;
+  roles: Role[] | number[];
   sub_items: SubItem[];
+  is_active: boolean;
 }
 
+/**
+ * Main composable to fetch sidebar items
+ * Caches results in state to avoid unnecessary API calls
+ */
 export const useSidebar = async () => {
   const config = useRuntimeConfig();
   const sidebarItems = useState<SidebarItem[]>("sidebarItems", () => []);
@@ -130,19 +56,18 @@ export const useSidebar = async () => {
 
       const data = await response.json();
       
-      // Ensure data has proper structure with sub_items
+      // API already returns correct structure, just ensure sub_items exists
       sidebarItems.value = (data || []).map((item: any) => ({
         ...item,
         sub_items: item.sub_items || []
       }));
 
-      console.log("✅ Sidebar items loaded successfully:", sidebarItems.value);
-      console.log("📊 Total items:", sidebarItems.value.length);
+      console.log("✅ Sidebar items loaded:", sidebarItems.value.length, "items");
       
-      // Log structure for debugging
+      // Debug log structure
       sidebarItems.value.forEach(item => {
         if (item.sub_items && item.sub_items.length > 0) {
-          console.log(`📁 ${item.name} has ${item.sub_items.length} sub-items`);
+          console.log(`📁 ${item.title || item.name} → ${item.sub_items.length} sub-items`);
         }
       });
 
@@ -155,33 +80,102 @@ export const useSidebar = async () => {
   return sidebarItems;
 };
 
-// Optional: Function to refresh sidebar items
+/**
+ * Fetch sidebar items for a specific user role
+ * This queries the backend with the user's GID
+ */
+export const useSidebarForRole = async (userGID: number) => {
+  const config = useRuntimeConfig();
+  
+  try {
+    const response = await fetch(`${config.public.strapi.url}api/sidebar_items/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Roles': userGID.toString()
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // API already returns correct structure
+    return (data || []).map((item: any) => ({
+      ...item,
+      sub_items: item.sub_items || []
+    }));
+
+  } catch (error) {
+    console.error("❌ Failed to fetch sidebar for role:", error);
+    return [];
+  }
+};
+
+/**
+ * Refresh sidebar items - forces a new fetch from the API
+ * Call this after updating sidebar items in admin panel
+ */
 export const refreshSidebar = async () => {
   const config = useRuntimeConfig();
   const sidebarItems = useState<SidebarItem[]>("sidebarItems", () => []);
 
   try {
-    const response = await fetch(`${config.public.strapi.url}api/sidebar-items/`);
+    const response = await fetch(`${config.public.strapi.url}api/sidebar-items/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Add cache busting
+      cache: 'no-store'
+    });
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
+    
+    // API already returns correct structure
     sidebarItems.value = (data || []).map((item: any) => ({
       ...item,
       sub_items: item.sub_items || []
     }));
 
+    console.log("🔄 Sidebar refreshed:", sidebarItems.value.length, "items");
     return sidebarItems.value;
+    
   } catch (error) {
-    console.error("Failed to refresh sidebar items:", error);
+    console.error("❌ Failed to refresh sidebar items:", error);
     return [];
   }
 };
 
-// Optional: Clear sidebar cache
+/**
+ * Clear sidebar cache - removes all cached items
+ * Useful when logging out or switching users
+ */
 export const clearSidebarCache = () => {
   const sidebarItems = useState<SidebarItem[]>("sidebarItems", () => []);
   sidebarItems.value = [];
+  console.log("🗑️ Sidebar cache cleared");
+};
+
+/**
+ * Get a specific sidebar item by ID
+ */
+export const getSidebarItem = (id: number) => {
+  const sidebarItems = useState<SidebarItem[]>("sidebarItems", () => []);
+  return sidebarItems.value.find(item => item.id === id);
+};
+
+/**
+ * Get all sub-items for a specific parent
+ */
+export const getSubItems = (parentId: number) => {
+  const sidebarItems = useState<SidebarItem[]>("sidebarItems", () => []);
+  const parent = sidebarItems.value.find(item => item.id === parentId);
+  return parent?.sub_items || [];
 };

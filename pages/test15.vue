@@ -194,7 +194,7 @@
     <div v-if="uploadProgress.show" class="progress-modal-overlay">
       <div class="progress-modal">
         <div class="progress-modal-header">
-          <h3>ກຳລັງອັບໂຫຼດຂໍ້ມູນ</h3>
+          <h3>ກຳລັັງອັບໂຫຼດຂໍ້ມູນ</h3>
           <div class="progress-modal-subtitle">{{ uploadProgress.provinceName }} - {{ uploadProgress.districtName }}</div>
         </div>
         
@@ -366,7 +366,9 @@
                 </td>
                 <td class="text-center">
                   <div class="action-buttons">
+                    <!-- Hide "ດຶງຂໍ້ມູນ" button if status is completed -->
                     <button
+                      v-if="district.status !== 'completed'"
                       @click="syncDistrict(province, district)"
                       :disabled="!username || district.loading"
                       class="btn btn-xs btn-primary"
@@ -379,7 +381,9 @@
                       </svg>
                       ດຶງຂໍ້ມູນ
                     </button>
+                    <!-- Hide "ເບິ່ງ" button if status is completed -->
                     <button
+                      v-if="district.status !== 'completed'"
                       :disabled="!district.payment_count && !district.customer_count"
                       class="btn btn-xs btn-secondary"
                     >
@@ -891,7 +895,7 @@ const uploadAllDistricts = async (province) => {
   }
 
   if (province.districts.length === 0) {
-    showNotification('ກຳລັງເລີ່ມຕົ້ນເມືອງ...', 'info')
+    showNotification('ກຳລັັງເລີ່ມຕົ້ນເມືອງ...', 'info')
     await initializeProvince(province)
     await fetchData()
     province = provinces.value.find(p => p.pro_id === province.pro_id)

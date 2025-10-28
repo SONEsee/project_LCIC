@@ -420,6 +420,23 @@ const copyCode = async (text: string) => {
     });
   }
 };
+const page = ref(1)
+const itemsPerPage = ref(10)
+const itemsPerPageOptions = [5, 10, 15, 20, 25]
+
+
+
+
+const paginatedData = computed(() => {
+  const start = (page.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return collateralData.value.slice(start, end)
+})
+
+
+const totalPages = computed(() => {
+  return Math.ceil(collateralData.value.length / itemsPerPage.value)
+})
 </script>
 <template>
   <div class="pa-4">
@@ -593,7 +610,7 @@ const copyCode = async (text: string) => {
       </v-row>
     </v-col>
   </div>
-  <v-data-table :items="collateralData" :headers="header">
+  <!-- <v-data-table :items="collateralData" :headers="header">
      <template v-slot:header.id="{column}">
       <b style="color: blue;">{{ column.title }}</b>
     </template>
@@ -672,7 +689,7 @@ const copyCode = async (text: string) => {
       >
         ບັນທຶກຂໍ້ມູນ
       </v-btn>
-      <v-chip color="info" v-if="user && user.MID.id === '01' && item.status === '0'">ອອກເລກວິສາຫະກິດສຳເລັດ</v-chip>
+      <v-chip color="info" v-if="user && user.MID.id === '01' && item.status === '0'">ສຳເລັດ</v-chip>
       
     </template>
     <template v-slot:item.status="{ item }">
@@ -723,7 +740,269 @@ const copyCode = async (text: string) => {
     </v-chip>
   </div>
 </template>
-  </v-data-table>
+  </v-data-table> -->
+  
+  <div>
+    <!-- ສ່ວນທີ່ສະແດງຈຳນວນຂໍ້ມູນ -->
+    <div class="d-flex justify-space-between align-center mb-4">
+      <div class="text-body-2">
+        ສະແດງ {{ (page - 1) * itemsPerPage + 1 }} - 
+        {{ Math.min(page * itemsPerPage, collateralData.length) }} 
+        ຈາກທັງໝົດ {{ collateralData.length }} ລາຍການ
+      </div>
+      
+    
+    </div>
+
+    <!-- ຕະລາງ -->
+    <v-table class="text-center rounded-lg">
+      <thead class="compact-header">
+        <tr class="header-row-1">
+          <th rowspan="2" class="compact-cell">ລະຫັດ</th>
+          <th rowspan="2" class="compact-cell">ສະມາຊິກ</th>
+          <th rowspan="2" class="compact-cell">ວັນທີນຳສົ່ງ</th>
+          <th rowspan="2" class="compact-cell">ຮູບພາບ</th>
+          <th rowspan="2" class="compact-cell">ສະຖານະ</th>
+          <th colspan="3" class="compact-cell header-group">ຂໍ້ມູນໃນຖານຂໍ້ມູນ ຂສລ</th>
+        </tr>
+        <tr class="header-row-2">
+          <th class="compact-cell">ລະຫັດ ຂສລ</th>
+          <th class="compact-cell">ວັນທີອອກລະຫັດ</th>
+          <th class="compact-cell">ລາຍລະອຽດ</th>
+        </tr>
+      </thead>
+      <tbody>
+       
+        <tr v-for="(item, index) in paginatedData" :key="item.id">
+          <td>{{ item.id }}</td>
+          <td>{{ mapMemberInfo(item.user) }}</td>
+          <td>{{ dayjs(item.insertdate).format("DD/MM/YYYY") }}</td>
+          
+          <td>
+            <div class="text-center">
+              <div class="image-preview-container">
+                <v-avatar>
+                  <img
+                    :src="`${imagepath}/media/${item.pathfile}`"
+                    alt=""
+                    width="40"
+                    class="thumbnail"
+                  />
+                </v-avatar>
+                <div class="image-popup">
+                  <img :src="`${imagepath}/media/${item.pathfile}`" alt="" />
+                </div>
+              </div>
+              <p>
+                <v-chip variant="flat" size="small" color="green-lighten-4">
+                  {{ item.filename.slice(0, 10) }}{{ item.filename.length > 10 ? "..." : "" }}
+                </v-chip>
+              </p>
+            </div>
+          </td>
+          <td>
+            <div v-if="item.status === '1'">
+              <p class="text-warning">ອັບໂຫຼດສຳເລັດ</p>
+            </div>
+            <div v-else>
+              <span class="text-success">ຖືກກວດສອບແລ້ວ</span>
+            </div>
+          </td>
+          <td>
+            <div class="lcic-code-container">
+              <v-chip 
+                v-if="item.LCIC_reques" 
+                color="success" 
+                variant="elevated"
+                size="small"
+              >
+                <v-icon size="16" class="mr-1">mdi-shield-check</v-icon>
+                <strong>{{ item.LCIC_reques }}</strong>
+                <v-tooltip text="ກົດເພື່ອກ໊ອບປີ້" location="top">
+                  <template v-slot:activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      icon
+                      size="x-small"
+                      variant="text"
+                      class="ml-1"
+                      @click.stop="copyCode(item.LCIC_reques)"
+                    >
+                      <v-icon size="16">mdi-content-copy</v-icon>
+                    </v-btn>
+                  </template>
+                </v-tooltip>
+              </v-chip>
+              <v-chip 
+                v-else 
+                color="warning" 
+                variant="tonal"
+                size="small"
+                prepend-icon="mdi-clock-alert-outline"
+              >
+                ລໍຖ້າການອອກລະຫັດ ຂສລ
+              </v-chip>
+            </div>
+          </td>
+          <td>{{ item.updatedate ? dayjs(item.updatedate).format("DD/MM/YYYY") : "-" }}</td>
+          <td>
+            <v-btn
+              v-if="user && user.MID.id !== '01'"
+              small
+              @click="viewImage(item.pathfile)"
+              class="bg-indigo-darken-4"
+            >{{ $t("viewimage") }}</v-btn>
+            <v-btn
+              :disabled="item.LCIC_reques"
+              v-if="user && user.MID.id === '01' && item.status === '1'"
+              @click="goToTest1(item.pathfile, item.id, item.status)"
+              color="primary"
+              size="small"
+              prepend-icon="mdi-pencil"
+              variant="elevated"
+            >
+              ບັນທຶກຂໍ້ມູນ
+            </v-btn>
+            <v-chip color="info" v-if="user && user.MID.id === '01' && item.status === '0'">ສຳເລັດ</v-chip>
+          </td>
+        </tr>
+      </tbody>
+    </v-table>
+
+   
+    <div class="d-flex justify-end mt-4">
+      <v-pagination
+        v-model="page"
+        :length="totalPages"
+        :total-visible="7"
+        prev-icon="mdi-chevron-left"
+        next-icon="mdi-chevron-right"
+        circle
+      ></v-pagination>
+    </div>
+
+    
+  </div>
+  
+  <!-- <v-table class="text-center rounded-lg" >
+    <thead class="compact-header">
+      <tr class="header-row-1">
+        <th rowspan="2" class="compact-cell">ລະຫັດ</th>
+        <th rowspan="2" class="compact-cell">ສະມາຊິກ</th>
+        <th rowspan="2" class="compact-cell">ວັນທີນຳສົ່ງ</th>
+        <th rowspan="2" class="compact-cell">ຮູບພາບ</th>
+        <th rowspan="2" class="compact-cell">ສະຖານະ</th>
+        <th colspan="3" class="compact-cell header-group">ຂໍ້ມູນໃນຖານຂໍ້ມູນ ຂສລ</th>
+      </tr>
+      <tr class="header-row-2">
+        <th class="compact-cell">ລະຫັດ ຂສລ</th>
+        <th class="compact-cell">ວັນທີອອກລະຫັດ</th>
+        <th class="compact-cell">ລາຍລະອຽດ</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="(item, index) in collateralData">
+        <td>{{ item.id }}</td>
+        <td>{{ mapMemberInfo(item.user) }}</td>
+        <td>{{ dayjs(item.insertdate).format("DD/MM/YYYY") }}</td>
+        <td><div class="text-center">
+        <div class="image-preview-container">
+          <v-avatar>
+            <img
+              :src="`${imagepath}/media/${item.pathfile}`"
+              alt=""
+              width="40"
+              class="thumbnail"
+            />
+          </v-avatar>
+
+          <div class="image-popup">
+            <img :src="`${imagepath}/media/${item.pathfile}`" alt="" />
+          </div>
+        </div>
+
+        <p>
+          <v-chip variant="flat" size="small" color="green-lighten-4">
+            {{ item.filename.slice(0, 10)
+            }}{{ item.filename.length > 10 ? "..." : "" }}
+          </v-chip>
+        </p>
+      </div></td>
+      <td>
+        <div v-if="item.status === '1'">
+        <p class="text-warning">ອັບໂຫຼດສຳເລັດ</p>
+      </div>
+      <div v-else>
+        <span class="text-success">ຖືກກວດສອບແລ້ວ</span>
+      </div>
+      </td>
+      <td>
+         <div class="lcic-code-container">
+    <v-chip 
+      v-if="item.LCIC_reques" 
+      color="success" 
+      variant="elevated"
+      size="small"
+    >
+      <v-icon size="16" class="mr-1">mdi-shield-check</v-icon>
+      <strong>{{ item.LCIC_reques }}</strong>
+      
+     
+      <v-tooltip text="ກົດເພື່ອກ໊ອບປີ້" location="top">
+        <template v-slot:activator="{ props }">
+          <v-btn
+            v-bind="props"
+            icon
+            size="x-small"
+            variant="text"
+            class="ml-1"
+            @click.stop="copyCode(item.LCIC_reques)"
+          >
+            <v-icon size="16">mdi-content-copy</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+    </v-chip>
+    
+    <v-chip 
+      v-else 
+      color="warning" 
+      variant="tonal"
+      size="small"
+      prepend-icon="mdi-clock-alert-outline"
+    >
+      ລໍຖ້າການອອກລະຫັດ ຂສລ
+    </v-chip>
+  </div>
+      </td>
+      <td>{{ item.updatedate ? dayjs(item.updatedate).format("DD/MM/YYYY") : "-" }}</td>
+      <td>
+         <v-btn
+        v-if="user && user.MID.id !== '01'"
+        small
+        @click="viewImage(item.pathfile)"
+        class="bg-indigo-darken-4"
+        >{{ $t("viewimage") }}</v-btn
+      >
+      <v-btn
+      :disabled="item.LCIC_reques"
+        v-if="user && user.MID.id === '01' && item.status === '1'"
+        @click="goToTest1(item.pathfile, item.id, item.status)"
+        color="primary"
+        size="small"
+        prepend-icon="mdi-pencil"
+        variant="elevated"
+      >
+        ບັນທຶກຂໍ້ມູນ
+      </v-btn>
+      <v-chip color="info" v-if="user && user.MID.id === '01' && item.status === '0'">ສຳເລັດ</v-chip>
+      </td>
+      </tr>
+
+    </tbody>
+  </v-table> -->
+  
+  
   <!-- <v-data-table :items="filteredItems">
       <template v-slot:top></template>
       <thead>
@@ -795,7 +1074,43 @@ const copyCode = async (text: string) => {
   display: block;
   animation: fadeIn 0.2s ease-in-out;
 }
+.compact-table {
+  border-collapse: collapse;
+}
 
+.compact-header {
+  height: auto !important;
+}
+
+.header-row-1 {
+  background-color: #BBDEFB !important;
+  height: 40px !important; /* ກຳນົດຄວາມສູງ */
+}
+
+.header-row-2 {
+  background-color: #81C784 !important;
+  height: 40px !important; /* ກຳນົດຄວາມສູງ */
+}
+
+.compact-cell {
+  padding: 8px 12px !important; /* ຫຼຸດ padding */
+  vertical-align: middle !important;
+  line-height: 1.2 !important;
+  font-size: 14px !important;
+  height: 40px !important;
+  text-align: center !important;
+}
+
+.header-group {
+  border-bottom: 1px solid #ddd;
+}
+
+/* ສຳລັບ tbody */
+.compact-table tbody td {
+  padding: 6px 8px !important;
+  vertical-align: middle !important;
+  height: auto !important;
+}
 @keyframes fadeIn {
   from {
     opacity: 0;
