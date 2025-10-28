@@ -1,12 +1,12 @@
 import { defineStore } from "pinia";
 import Swal from "sweetalert2";
 import axios from "~/helpers/axios";
-import { InVestorInfoModels } from "~/types";
+import { SearchIndividualModel } from "~/types";
 export const IndividualStore = defineStore("individual", {
   state() {
     return {
       isLoading: false,
-      respons_data_reques: null as InVestorInfoModels.Datum | null,
+      respons_data_reques: null as SearchIndividualModel.Result | null,
       reques_query: {
         isLoading: false,
         query: {
@@ -22,12 +22,12 @@ export const IndividualStore = defineStore("individual", {
       this.isLoading = true;
       this.reques_query.isLoading = true;
       try {
-        const res = await axios.get(`/api/api/searchcollateral/`,{
+        const res = await axios.get<SearchIndividualModel.SearchIndividualRespons>(`/api/api/searchcollateral/`,{
             params:{
                 ...this.reques_query.query
             }
         });if(res.status ===200){
-            this.respons_data_reques = res.data
+            this.respons_data_reques = res.data.results
         }
       } catch (error) {
         Swal.fire({
