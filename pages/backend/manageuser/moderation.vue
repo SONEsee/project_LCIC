@@ -92,9 +92,9 @@ definePageMeta({
   layout: "backend",
 });
 // Define API endpoints
-const rolesApi = "http://192.168.45.56:8000/api/roles/";
-const sidebarItemsApi = "http://192.168.45.56:8000/api/sidebar-items/";
-const updateSidebarApi = "http://192.168.45.56:8000/api/create_sidebar/"; // Use item ID for updates
+const rolesApi = "http://192.168.45.55:8000/api/roles/";
+const sidebarItemsApi = "http://192.168.45.55:8000/api/sidebar-items/";
+const updateSidebarApi = "http://192.168.45.55:8000/api/create_sidebar/"; // Use item ID for updates
 
 // State variables
 const roles = ref([]); // Headers
@@ -274,7 +274,7 @@ const addSidebarItem = async () => {
     };
 
     try {
-      const response = await axios.post("http://192.168.45.56:8000/api/create_sidebar/", payload);
+      const response = await axios.post("http://192.168.45.55:8000/api/create_sidebar/", payload);
       console.log("Created Successfully:", response.data);
 
       // Add the new item to the sidebarItems array

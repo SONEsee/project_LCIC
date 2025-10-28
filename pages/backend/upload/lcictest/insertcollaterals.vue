@@ -51,7 +51,7 @@ export default defineComponent({
     const fetchCollaterals = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.45.56:8000/api/api/get_collaterals/"
+          "http://192.168.45.55:8000/api/api/get_collaterals/"
         );
         collaterals.value = response.data;
       } catch (error) {
@@ -70,12 +70,12 @@ export default defineComponent({
     const confirmImage = async (id: number) => {
   try {
     // Fetch CSRF token
-    const csrfResponse = await axios.get('http://192.168.45.56:8000/api/api/get_csrf_token/');
+    const csrfResponse = await axios.get('http://192.168.45.55:8000/api/api/get_csrf_token/');
     const csrfToken = csrfResponse.data.csrfToken;
 
     // Send POST request with CSRF token
     await axios.post(
-      `http://192.168.45.56:8000/api/api/confirm_image/${id}/`,
+      `http://192.168.45.55:8000/api/api/confirm_image/${id}/`,
       {},
       {
         headers: {
