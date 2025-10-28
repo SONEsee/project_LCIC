@@ -5,6 +5,7 @@ import { SearchIndividualModel } from "~/types";
 export const IndividualStore = defineStore("individual", {
   state() {
     return {
+       token : localStorage.getItem("access_token"),
       isLoading: false,
       respons_data_reques: null as SearchIndividualModel.Result | null,
       respons_data_reques_search:
@@ -68,6 +69,10 @@ export const IndividualStore = defineStore("individual", {
             params: {
               ...this.reques_mapsearch.query,
             },
+            headers:{
+              "Content-Type": "application/json",
+              
+            }
           }
         );
         if (res.status === 200) {
@@ -87,9 +92,14 @@ export const IndividualStore = defineStore("individual", {
     async CreatInsertLog(){
         this.isLoading=true
         try {
-           const req = await axios.post(`/api/api/search-individual/`, this.from_insert_logserch);
+           const req = await axios.post(`/api/api/search-individual/`, this.from_insert_logserch,{
+            headers: {
+              Authorization: `Bearer ${this.token}`,
+            "Content-Type": "application/json",
+            },
+           });
            if(req.status===200){
-            this.from_insert_logserch.lcic_id = ""
+            this.isLoading= false
            }
             
         } catch (error) {

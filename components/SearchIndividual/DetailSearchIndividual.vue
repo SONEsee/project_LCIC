@@ -47,7 +47,7 @@ const confirmInsert = async ()=>{
             });if(noticonfirm.isConfirmed){
                 
                 await individualStore.CreatInsertLog();
-                // goPath(`/test1`)
+                goPath(`/backend/reports/individuals`)
             }
     } catch (error) {
         
@@ -131,64 +131,7 @@ onMounted(() => {
         </v-col>
       </v-row>
     </v-sheet>
-    <!-- <v-card class="confirmation-card" elevation="2">
-        <v-card-text class="pa-6">
-          <v-row align="center">
-            <v-col cols="12" md="1" class="text-center">
-              <v-checkbox 
-                color="primary" 
-                size="large"
-                class="confirmation-checkbox"
-              ></v-checkbox>
-            </v-col>
-            <v-col cols="12" md="11">
-              <div class="confirmation-content">
-                <h3 class="confirmation-title">
-                  <v-icon class="mr-2" color="primary">mdi-shield-check</v-icon>
-                  ຢືນຢັນການໄດ້ຮັບອານຸຍາດແລະຢີນຍອມຈາກເຈົ້າຂອງຂໍ້ມູນ
-                </h3>
-                <p class="confirmation-text">
-                  ຂ້າພະເຈົ້າຢືນຢັນວ່າໄດ້ຮັບການຍິນຍອມເປີດເຜີຍຂໍ້ມູນຈາກເຈົ້າຂອງຂໍ້ມູນແລ້ວ
-                  ແລະ ຮັບຮູ້ວ່າການນໍາໃຊ້ຂໍ້ມູນນີ້ຈະເປັນໄປຕາມກົດໝາຍທີ່ກ່ຽວຂ້ອງ
-                </p>
-                
-                <v-alert 
-                  type="warning" 
-                  variant="tonal" 
-                  class="fee-alert mt-4"
-                  prepend-icon="mdi-currency-usd"
-                >
-                  <div class="fee-content">
-                    <span class="fee-label">ຄ່າທຳນຽມສຳຫລັບບົດລາຍງານນີ້:</span>
-                    <span class="fee-amount">{{ dataFee[0]?.chg_amount || 0 }} ກີບ</span>
-                  </div>
-                </v-alert>
-              </div>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card> -->
-
-    <!-- <div class="action-buttons mt-6">
-        <v-btn 
-          color="primary" 
-          size="large" 
-          variant="elevated"
-          prepend-icon="mdi-check"
-          class="mr-4"
-        >
-          ຢືນຢັນ
-        </v-btn>
-        <v-btn 
-          color="grey" 
-          size="large" 
-          variant="outlined"
-          prepend-icon="mdi-arrow-left"
-        >
-          ກັບຄືນ
-        </v-btn>
-      </div>
-    -->
+   
   </div>
 </template>
 
