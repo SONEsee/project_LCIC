@@ -7,8 +7,8 @@ import { useMemberInfo } from "@/composables/memberInfo";
 import dayjs from "dayjs";
 import { useUserData } from "~/composables/useUserData";
 import { useUserInfo } from "@/composables/useUserInfo";
-import { useRequesDispustStore } from "~/stores/requesdispust";
-const DispustStore = useRequesDispustStore();
+import { useDipustCallateralStore } from "~/stores/colleteraluploaddata";
+const DispustStore = useDipustCallateralStore();
 const {
   userData,
   mapUserInfo,
@@ -28,32 +28,39 @@ const header = [
   { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
   { title: "ລະຫັດ ວິສາຫະກິດ", value: "com_enterprise_code" },
   { title: "ສະມາຊິກ", value: "bnk_code" },
-  { title: "ສາຂາ", value: "branch_id" },
+  { title: "ສາຂາ", value: "branch_id_code" },
   { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
-  { title: "ລະຫັດສະມາຊິກ", value: "customer_id" },
+  { title: "ລະຫັດລູຄ້າ", value: "bank_customer_ID" },
   // { title: "Actions", value: "actions", sortable: false },
 ] as any;
 
-const LoanStore = useLoanStore();
+// const LoanStore = useLoanStore();
 const memberinfoStore = MemberStore();
 const { mapMemberInfo } = useMemberInfo();
 const route = useRoute();
 const selecData = ref<any>([]);
-const reques = LoanStore.data_fiter.query;
+const reques = DispustStore.data_fiter.query;
 const dispustId = (route.query.id_dispust as string) || "";
 
 const file = ref<File | null>(null);
 const isUploading = ref(false);
 
+
 const disputese = computed(() => {
-  const data = LoanStore.respons_data_loan_list?.disputes.items;
-  if (Array.isArray(data)) return data;
-  if (data && typeof data === "object") return [data];
+  const data = DispustStore.respons_data_dispust?.all_disputes?.items;
+
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (data && typeof data === "object") {
+    return [data];
+  }
+
   return [];
 });
-
 const dispushMate = computed(() => {
-  const data = DispustStore.response_dispust_data_edit;
+  const data = DispustStore.respons_data_dispust;
   if (Array.isArray(data)) {
     return data;
   }
@@ -65,7 +72,7 @@ const dispushMate = computed(() => {
 
 
 const selectableItems = computed(() => {
-  return disputese.value.filter((item) => item.status === "1");
+  return disputese.value.filter((item) => item.status === "disputed");
 });
 
 const isAllSelected = computed({
@@ -93,15 +100,13 @@ const isReadyToSubmit = computed(() => {
 
 async function onChang(value: number) {
   reques.page = value;
-  await LoanStore.getDataLoan();
+  await DispustStore.getDataDispush();
 }
 
 async function onSelect(value: number) {
   reques.page_size = value;
-  await LoanStore.getDataLoan();
+  await DispustStore.getDataDispush();
 }
-
-
 
 const handleChange = (newFiles: File[]) => {
   console.log("Files changed:", newFiles);
@@ -125,13 +130,13 @@ const confirmUpload = async () => {
   isUploading.value = true;
 
   try {
-    LoanStore.form_create_dispust.file = file.value;
-    LoanStore.form_create_dispust.dispute_ids = selecData.value;
-    LoanStore.form_create_dispust.id_dispust = dispustId;
-    LoanStore.form_create_dispust.user_id = userId.value;
-    LoanStore.form_create_dispust.user_insert = String(userid.value);
+    DispustStore.form_create_dispust.file = file.value;
+    DispustStore.form_create_dispust.dispute_ids = selecData.value;
+    DispustStore.form_create_dispust.id_dispust = dispustId;
+    DispustStore.form_create_dispust.user_id = userId.value;
+    DispustStore.form_create_dispust.user_insert = String(userid.value);
 
-    await LoanStore.createDispust();
+    await DispustStore.createDispust();
 
     file.value = null;
     selecData.value = [];
@@ -143,8 +148,8 @@ const confirmUpload = async () => {
 };
 
 onMounted(() => {
-  LoanStore.data_fiter.query.id_file = dispustId;
-  LoanStore.getDataLoan();
+  DispustStore.data_fiter.query.id_file = dispustId;
+  DispustStore.getDataDispush()
   memberinfoStore.getMemberInfo();
   loadUsers();
 });
@@ -227,13 +232,12 @@ onMounted(() => {
         </v-btn>
       </div>
     </v-col>
-  <!-- <pre>{{ disputese }}</pre> -->
     <v-data-table
       density="compact"
       :items="disputese"
       :headers="header"
       :items-per-page="reques.page_size"
-      :loading="LoanStore.isLoading"
+      :loading="DispustStore.isLoading"
       class="elevation-1"
     >
       <template v-slot:header.id="{ column }" class="">
@@ -248,18 +252,18 @@ onMounted(() => {
       <template v-slot:header.bnk_code="{ column }" class="">
         <b style="color: blue"> {{ column.title }}</b>
       </template>
-      <template v-slot:header.branch_id="{ column }" class="">
+      <template v-slot:header.branch_id_code="{ column }" class="">
         <b style="color: blue"> {{ column.title }}</b>
       </template>
       <template v-slot:header.loan_id="{ column }" class="">
         <b style="color: blue"> {{ column.title }}</b>
       </template>
-      <template v-slot:header.customer_id="{ column }" class="">
+      <template v-slot:header.bank_customer_ID="{ column }" class="">
         <b style="color: blue"> {{ column.title }}</b>
       </template>
       <template v-slot:item.checkbox="{ item }">
         <v-checkbox
-          v-if="item.status === '1'"
+          v-if="item.status === 'disputed'"
           class="compact-checkbox d-flex justify-center align-center"
           size="x-small"
           v-model="selecData"
@@ -331,11 +335,11 @@ onMounted(() => {
 
       <template v-slot:bottom>
         <GloBalTablePaginations
-          :page="LoanStore.data_fiter.query.page"
+          :page="DispustStore.data_fiter.query.page"
           :totalpage="
-            LoanStore.respons_data_loan_list?.disputes.total_pages || 0
+            DispustStore.respons_data_dispust?.all_disputes.total_pages || 0
           "
-          :limit="LoanStore.data_fiter.query.page_size"
+          :limit="DispustStore.data_fiter.query.page_size"
           @onSelectionChange="onSelect"
           @onPagechange="onChang"
         />
@@ -350,7 +354,7 @@ onMounted(() => {
     </v-data-table>
   </v-row>
 
-  <!-- <pre>{{ selecData }}</pre> -->
+
 </template>
 
 <style scoped>

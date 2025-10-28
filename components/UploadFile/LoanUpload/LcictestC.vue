@@ -397,7 +397,7 @@ const validateUserStorage = () => {
     if (currentUserData !== lastUserData) {
       console.log("User changed, clearing old credit filters storage...");
 
-      // ລືຂໍ້ມູນ filters ທີ່ກ່ຽວຂ້ອງກັບ users ອື່ນ
+     
       Object.keys(localStorage).forEach((key) => {
         if (key.includes("credit_filters_data_user_")) {
           const currentUserKey = getUserStorageKey("credit_filters_data");
@@ -416,7 +416,7 @@ const validateUserStorage = () => {
         }
       });
 
-      // ເກັບຂໍ້ມູນ user ປັດຈຸບັນ
+  
       if (currentUserData) {
         localStorage.setItem("last_logged_user_credit", currentUserData);
       }
@@ -721,6 +721,8 @@ const latestPeriodByUser = computed(() => {
     }
   });
   
+
+  
   return userPeriods;
 });
 const hasLatestPeriod = (item: FileItem): boolean => {
@@ -791,7 +793,7 @@ onMounted(async () => {
 watch(
   () => filters.value,
   (newFilters) => {
-    // ເກັບຟິວເຕີ້ທຸກຄັ້ງທີ່ມີການປ່ຽນແປງ
+ 
     saveFiltersToStorage();
   },
   { deep: true }
@@ -800,7 +802,7 @@ watch(
 
 <template>
   <v-col cols="12">
-    <!-- Filters Section -->
+   
     <v-row class="mb-4">
       <v-col cols="12" md="3">
         <v-autocomplete
@@ -890,7 +892,7 @@ watch(
       </v-col>
     </v-row>
 
-    <!-- Statistics Section -->
+   
     <v-row class="mb-4">
       <v-col cols="12" md="2">
         <v-card color="primary" variant="tonal">
@@ -943,7 +945,7 @@ watch(
     </v-row>
   </v-col>
 
-  <!-- Data Table Section -->
+
   <v-data-table
     item-value="CID"
     :headers="headers"
