@@ -459,7 +459,7 @@ const displayCustomer = ((item:any)=>{
   margin: 0 auto;
   padding: 24px;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  min-height: 100vh;
+  min-height: 80vh;
 }
 
 .header-section {
