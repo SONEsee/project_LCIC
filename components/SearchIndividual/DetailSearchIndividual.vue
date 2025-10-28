@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { IndividualStore } from "~/stores/searchindividual";
 import { useFeesStore } from "~/stores/fee";
+import Swal from "sweetalert2";
 const selecCheckbox = ref("")
 const feestore = useFeesStore();
 const rout = useRoute();
@@ -32,9 +33,29 @@ const dataIndividual = computed(() => {
   }
   return [];
 });
-
+const confirmInsert = async ()=>{
+    try {
+         const noticonfirm = await Swal.fire({
+                icon:"warning",
+                title:"ຄຳເຕື່ອນ",
+                text:"ທ່ານຕອ້ງການ ຄົ້ນຫາບົດລາຍງານນີ້ແທ້ຫຼືບໍ",
+                showConfirmButton:true,
+                confirmButtonText:"ຕົກລົງ",
+                showCancelButton:true,
+                cancelButtonText:"ຍົກເລີກ"
+                
+            });if(noticonfirm.isConfirmed){
+                
+                await individualStore.CreatInsertLog();
+                // goPath(`/test1`)
+            }
+    } catch (error) {
+        
+    }
+}
 onMounted(() => {
   individualStore.reques_mapsearch.query.lcic_id = lcicID;
+  individualStore.from_insert_logserch.lcic_id = lcicID
   individualStore.saerchMapIndividual();
   feestore.Getdata();
 });
@@ -85,7 +106,7 @@ onMounted(() => {
               <td class="table-cell">{{ item.ind_national_id }}</td>
               <td class="table-cell">{{ item.ind_familybook }}</td>
               <td class="table-cell">{{ item.ind_passport }}</td>
-              <td class="table-cell"><v-btn color="primary" :disabled="selecCheckbox !=='1'">ເລືອກ</v-btn></td>
+              <td class="table-cell"><v-btn color="primary" :disabled="selecCheckbox !=='1'" @click="confirmInsert">ເລືອກ</v-btn></td>
             </tr>
           </tbody>
         </v-table>

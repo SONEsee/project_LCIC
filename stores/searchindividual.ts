@@ -23,9 +23,14 @@ export const IndividualStore = defineStore("individual", {
           lcic_id: "",
         },
       },
+      from_insert_logserch:{
+        lcic_id:"",
+        CatalogID:"LOAN_PURPOSE_01"
+      }
     };
   },
   actions: {
+  
     async saerchListIndividual() {
       this.isLoading = true;
       this.reques_query.isLoading = true;
@@ -78,6 +83,24 @@ export const IndividualStore = defineStore("individual", {
         this.isLoading = false;
         this.reques_query.isLoading = false;
       }
+    },  
+    async CreatInsertLog(){
+        this.isLoading=true
+        try {
+           const req = await axios.post(`/api/api/search-individual/`, this.from_insert_logserch);
+           if(req.status===200){
+            this.from_insert_logserch.lcic_id = ""
+           }
+            
+        } catch (error) {
+            Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text: "ບໍ່ສາມາດຄົ້ນຫາເອົາບົດລາຍງານໄດ້ ",
+        });
+        }finally{
+            this.isLoading= false
+        }
     },
   },
 });
