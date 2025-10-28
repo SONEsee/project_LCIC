@@ -1,6 +1,6 @@
 export interface SearchIndividualRespons {
     count:   number;
-    results: Result[];
+    results: Result;
 }
 
 export interface Result {

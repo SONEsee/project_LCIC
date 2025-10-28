@@ -155,7 +155,7 @@
             if (!token) {
             throw new Error('No access token found')
         }
-        const response = await axios.get('http://192.168.45.56:8000/api/utility-report/?water=10120842', {
+        const response = await axios.get('http://192.168.45.55:8000/api/utility-report/?water=10120842', {
             headers: {
                 Authorization: `Bearer ${token}` 
             }
