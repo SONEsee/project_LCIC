@@ -7,7 +7,7 @@ export const useUserProfile = () => {
   onMounted(async () => {
     try {
       const response = await axios.get(
-        "http://192.168.45.55:8000/api/api/get_login3/"
+        "http://192.168.45.56:8000/api/api/get_login3/"
       );
       userProfiles.value = response.data;
       console.log("User profiles:", userProfiles.value)

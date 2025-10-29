@@ -47,7 +47,7 @@
         <!-- Month Filter -->
         <div class="filter-group">
           <label class="filter-label">ເດືອນ</label>
-          <select v-model="filters.month" class="filter-select">
+          <select v-model="filters.month" class="filter-select" @change="handleMonthYearChange">
             <option value="">ທັງໝົດ</option>
             <option value="1">ມັງກອນ</option>
             <option value="2">ກຸມພາ</option>
@@ -457,8 +457,10 @@ const now = new Date()
 const todayISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 // Filters with default values
 const filters = ref({
-  month: String(currentDate.month),
-  year: String(currentDate.year),
+//   month: String(currentDate.month),
+//   year: String(currentDate.year),
+  month: '',
+  year: '',
   fromDate: todayISO,
   toDate: todayISO,
   status: '',
@@ -472,8 +474,31 @@ onMounted(async () => {
   const roleInfo = getUserRole()
   isAdmin.value = roleInfo.isAdmin
   userBankId.value = roleInfo.bankId
+
+// Read date filters from URL query parameters
+  const monthFromUrl = route.query.month as string
+  const yearFromUrl = route.query.year as string
+  const fromDateFromUrl = route.query.fromDate as string
+  const toDateFromUrl = route.query.toDate as string
+
+// Set date filters from URL if provided, otherwise use defaults
+  if (monthFromUrl) {
+    filters.value.month = monthFromUrl
+    filters.value.fromDate = '' // Clear date range when month is set
+    filters.value.toDate = ''
+  }
   
-  // For admin, load bank list
+  if (yearFromUrl) {
+    filters.value.year = yearFromUrl
+  }
+  
+  if (fromDateFromUrl && toDateFromUrl) {
+    filters.value.fromDate = fromDateFromUrl
+    filters.value.toDate = toDateFromUrl
+    filters.value.month = '' // Clear month when date range is set
+    filters.value.year = ''
+  }
+// For admin, load bank list
   if (isAdmin.value) {
     await fetchBankList()
     bankList.value = apiBankList.value
@@ -604,7 +629,13 @@ const onBankChange = () => {
 const applyFilters = () => {
   loadData()
 }
-
+// Handle month/year change (clear date range when month/year is selected)
+const handleMonthYearChange = () => {
+  if (filters.value.month || filters.value.year) {
+    filters.value.fromDate = ''
+    filters.value.toDate = ''
+  }
+}
 const resetFilters = () => {
   const currentDate = getCurrentDate()
   filters.value = {
