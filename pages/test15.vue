@@ -63,6 +63,9 @@
           <button @click="showSummary = !showSummary" class="btn btn-secondary">
             {{ showSummary ? 'ເຊື່ອງ' : 'ສະຫຼຸບ' }}
           </button>
+          <button @click="downloadutility"  class="btn btn-secondary">
+            ດາວໂຫຼດ Manual
+          </button>
         </div>
       </div>
 
@@ -1022,6 +1025,10 @@ const getStatusIcon = (status) => {
     not_started: AlertIcon
   }
   return icons[status] || AlertIcon
+}
+
+const downloadutility = () => {
+   window.location.href = '/test10'
 }
 
 const getNotificationIcon = (color) => {
