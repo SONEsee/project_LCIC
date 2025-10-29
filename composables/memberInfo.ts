@@ -44,6 +44,14 @@ export function useMemberInfo() {
     const foundItem = dataMemberInfo.value.find((item) => item.bnk_code === membercode);
     return foundItem ? foundItem.nameL : membercode;
   };
+  const getMemberCode = (membercode: string): string => {
+    if (!membercode || !Array.isArray(dataMemberInfo.value)) {
+      return "-";
+    }
+    
+    const foundItem = dataMemberInfo.value.find((item) => item.bnk_code === membercode);
+    return foundItem ? `${foundItem.bnk_code}-${foundItem.code}` : membercode;
+  };
 
   const getMemberDetails = (membercode: string): MemberInfo | null => {
     if (!membercode || !Array.isArray(dataMemberInfo.value)) {
@@ -57,7 +65,8 @@ export function useMemberInfo() {
     dataMemberInfo,
     mapMemberInfo,
     getMemberName,
-    getMemberDetails
+    getMemberDetails,
+    getMemberCode
   };
 }
 
