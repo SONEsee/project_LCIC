@@ -2,10 +2,12 @@
 import { IndividualStore } from "~/stores/searchindividual";
 import { useUserData } from "~/composables/useUserData";
 import Swal from "sweetalert2";
-
+import { MemberStore } from "@/stores/memberinfo";
+import { useMemberInfo } from "@/composables/memberInfo";
+const { mapMemberInfo, getMemberName, getMemberDetails,getMemberCode } = useMemberInfo();
 const individualStore = IndividualStore();
 const { user, userId, isAdmin, isLoggedIn, userid } = useUserData();
-
+const memberStore = MemberStore();
 const saerchCustomerID = ref("");
 const searchLcicID = ref("");
 const lcicSearchInput = ref("");
@@ -67,72 +69,6 @@ const performSearchWithLcicId = async (lcicId: string) => {
     });
   } finally {
     individualStore.reques_query.isLoading = false;
-  }
-};
-
-// ຟັງຊັ່ນໃໝ່ສຳລັບ text-field ຂອງ LCIC ID
-const onLcicInputChange = (value: string) => {
-  lcicSearchInput.value = value;
-  searchLcicID.value = value;
-  
-  showBankMessage.value = false;
-  bankDataMessage.value = "";
-  showLcicName.value = false;
-  displayedLcicName.value = "";
-
-  if (value && value.length > 0) {
-    debounceSearch(() => {
-      performAPISearch();
-      
-      // ຫຼັງຈາກຄົ້ນຫາແລ້ວ ກວດສອບແລະເຕີມ customerid ອັດຕະໂນມັດ
-      const matchedItem = dataReques.value.find(
-        (item) =>
-          (item.lcic_id?.toString() === value || 
-           item.lcic_id?.toString().includes(value)) &&
-          item.bnk_code === userId.value
-      );
-
-      if (matchedItem) {
-        // ສະແດງຊື່ລູກຄ້າ
-        displayedLcicName.value = `${matchedItem.ind_lao_name || ''} ${matchedItem.ind_lao_surname || ''} ${matchedItem.ind_name || ''} ${matchedItem.ind_surname || ''}`.trim();
-        showLcicName.value = true;
-        
-        // ເຕີມ customerid ອັດຕະໂນມັດ
-        if (matchedItem.customerid) {
-          saerchCustomerID.value = matchedItem.customerid;
-          customerSearchInput.value = matchedItem.customerid;
-          showBankMessage.value = false;
-          bankDataMessage.value = "";
-          console.log("Auto-filled customer ID:", matchedItem.customerid);
-        }
-      } else {
-        // ຖ້າບໍ່ພົບຂໍ້ມູນທີ່ມີ bnk_code ກົງກັນ
-        const anyMatch = dataReques.value.find(
-          (item) =>
-            item.lcic_id?.toString() === value ||
-            item.lcic_id?.toString().includes(value)
-        );
-        
-        if (anyMatch) {
-          // ສະແດງຊື່ລູກຄ້າຖ້າເຈົ້າຂໍ້ມູນຈາກທະນາຄານອື່ນ
-          displayedLcicName.value = `${anyMatch.ind_lao_name || ''} ${anyMatch.ind_lao_surname || ''} ${anyMatch.ind_name || ''} ${anyMatch.ind_surname || ''}`.trim();
-          showLcicName.value = true;
-          
-          if (anyMatch.bnk_code !== userId.value) {
-            saerchCustomerID.value = "";
-            customerSearchInput.value = "";
-            showBankMessage.value = true;
-            bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
-          }
-        }
-      }
-    }, 500); // ເພີ່ມເວລາ delay ເປັນ 500ms ເພື່ອລໍຖ້າຂໍ້ມູນຈາກ API
-  } else {
-    // ຖ້າລຶບຂໍ້ມູນໃນຊ່ອງ LCIC ກໍໃຫ້ລຶບທຸກຢ່າງ
-    saerchCustomerID.value = "";
-    customerSearchInput.value = "";
-    displayedLcicName.value = "";
-    showLcicName.value = false;
   }
 };
 
@@ -255,25 +191,128 @@ const selectItem = (item: any) => {
   });
 };
 
-watch(searchLcicID, async (newValue) => {
-  if (newValue && newValue !== lcicSearchInput.value) {
-    individualStore.reques_query.isLoading = true;
-    try {
-      individualStore.reques_query.query.lcic_id = newValue;
-      individualStore.reques_query.query.customerid = "";
-      await individualStore.saerchListIndividual();
-    } catch (error) {
-      console.error("LCIC search error:", error);
-      Swal.fire({
-        icon: "error",
-        text: "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້",
-        title: "ຜິດພາດ",
-      });
-    } finally {
-      individualStore.reques_query.isLoading = false;
-    }
+// ============================================
+// ແກ້ໄຂບັນຫາ PASTE: ໃຊ້ watch ແທນ @input
+// ============================================
+// watch(lcicSearchInput, (newValue) => {
+//   searchLcicID.value = newValue;
+  
+//   showBankMessage.value = false;
+//   bankDataMessage.value = "";
+//   showLcicName.value = false;
+//   displayedLcicName.value = "";
+
+//   if (newValue && newValue.length > 0) {
+//     debounceSearch(async () => {
+//       await performAPISearch();
+      
+//       // ຫຼັງຈາກຄົ້ນຫາແລ້ວ ກວດສອບແລະເຕີມ customerid ອັດຕະໂນມັດ
+//       const matchedItem = dataReques.value.find(
+//         (item) =>
+//           (item.lcic_id?.toString() === newValue || 
+//            item.lcic_id?.toString().includes(newValue)) &&
+//           item.bnk_code === userId.value
+//       );
+
+//       if (matchedItem) {
+//         // ສະແດງຊື່ລູກຄ້າ
+//         displayedLcicName.value = `${matchedItem.ind_lao_name || ''} ${matchedItem.ind_lao_surname || ''} ${matchedItem.ind_name || ''} ${matchedItem.ind_surname || ''}`.trim();
+//         showLcicName.value = true;
+        
+//         // ເຕີມ customerid ອັດຕະໂນມັດ
+//         if (matchedItem.customerid) {
+//           saerchCustomerID.value = matchedItem.customerid;
+//           customerSearchInput.value = matchedItem.customerid;
+//           showBankMessage.value = false;
+//           bankDataMessage.value = "";
+//           console.log("Auto-filled customer ID:", matchedItem.customerid);
+//         }
+//       } else {
+//         // ຖ້າບໍ່ພົບຂໍ້ມູນທີ່ມີ bnk_code ກົງກັນ
+//         const anyMatch = dataReques.value.find(
+//           (item) =>
+//             item.lcic_id?.toString() === newValue ||
+//             item.lcic_id?.toString().includes(newValue)
+//         );
+        
+//         if (anyMatch) {
+//           // ສະແດງຊື່ລູກຄ້າຖ້າເຈົ້າຂໍ້ມູນຈາກທະນາຄານອື່ນ
+//           displayedLcicName.value = `${anyMatch.ind_lao_name || ''} ${anyMatch.ind_lao_surname || ''} ${anyMatch.ind_name || ''} ${anyMatch.ind_surname || ''}`.trim();
+//           showLcicName.value = true;
+          
+//           if (anyMatch.bnk_code !== userId.value) {
+//             saerchCustomerID.value = "";
+//             customerSearchInput.value = "";
+//             showBankMessage.value = true;
+//             bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
+//           }
+//         }
+//       }
+//     }, 500);
+//   } else {
+//     // ຖ້າລຶບຂໍ້ມູນໃນຊ່ອງ LCIC ກໍໃຫ້ລຶບທຸກຢ່າງ
+//     saerchCustomerID.value = "";
+//     customerSearchInput.value = "";
+//     displayedLcicName.value = "";
+//     showLcicName.value = false;
+//   }
+// });
+watch(lcicSearchInput, (newValue) => {
+  searchLcicID.value = newValue;
+  
+  showBankMessage.value = false;
+  bankDataMessage.value = "";
+  showLcicName.value = false;
+  displayedLcicName.value = "";
+
+  if (newValue && newValue.length > 0) {
+    debounceSearch(async () => {
+      await performAPISearch();
+      
+      // ✅ ແກ້ໄຂ: ໃຊ້ startsWith ແທນ ===
+      const matchedItem = dataReques.value.find(
+        (item) =>
+          item.lcic_id?.toString().startsWith(newValue) &&
+          item.bnk_code === userId.value
+      );
+
+      if (matchedItem) {
+        displayedLcicName.value = `${matchedItem.ind_lao_name || ''} ${matchedItem.ind_lao_surname || ''} ${matchedItem.ind_name || ''} ${matchedItem.ind_surname || ''}`.trim();
+        showLcicName.value = true;
+        
+        if (matchedItem.customerid) {
+          saerchCustomerID.value = matchedItem.customerid;
+          customerSearchInput.value = matchedItem.customerid;
+          showBankMessage.value = false;
+          bankDataMessage.value = "";
+          console.log("Auto-filled customer ID:", matchedItem.customerid);
+        }
+      } else {
+        const anyMatch = dataReques.value.find(
+          (item) => item.lcic_id?.toString().startsWith(newValue)
+        );
+        
+        if (anyMatch) {
+          displayedLcicName.value = `${anyMatch.ind_lao_name || ''} ${anyMatch.ind_lao_surname || ''} ${anyMatch.ind_name || ''} ${anyMatch.ind_surname || ''}`.trim();
+          showLcicName.value = true;
+          
+          if (anyMatch.bnk_code !== userId.value) {
+            saerchCustomerID.value = "";
+            customerSearchInput.value = "";
+            showBankMessage.value = true;
+            // bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
+          }
+        }
+      }
+    }, 500);
+  } else {
+    saerchCustomerID.value = "";
+    customerSearchInput.value = "";
+    displayedLcicName.value = "";
+    showLcicName.value = false;
   }
 });
+
 
 watch(saerchCustomerID, async (newValue) => {
   if (newValue && newValue !== customerSearchInput.value) {
@@ -298,6 +337,10 @@ watch(saerchCustomerID, async (newValue) => {
 const displayCustomer = ((item:any)=>{
     if(!item || !item.ind_surname || !item.ind_lao_name || item.ind_lao_surname) return "";
     return `${item.ind_lao_name} ${item.ind_lao_surname} ${item.ind_name} ${item.ind_surname}`
+})
+onMounted(()=>{
+  memberStore.getMemberInfo();
+  individualStore.reques_query.query.bnk_code = userId.value
 })
 </script>
 
@@ -327,9 +370,9 @@ const displayCustomer = ((item:any)=>{
                     <v-icon size="18" class="mr-2">mdi-card-account-details</v-icon>
                     ລະຫັດ LCIC
                   </label>
+                  <!-- ແກ້ໄຂ: ລຶບ @input ອອກ ໃຊ້ watch ແທນ -->
                   <v-text-field
                     v-model="lcicSearchInput"
-                    @input="onLcicInputChange(lcicSearchInput)"
                     density="comfortable"
                     clearable
                     variant="outlined"
@@ -380,6 +423,7 @@ const displayCustomer = ((item:any)=>{
                     <template v-slot:item="{ props, item }">
                       <v-list-item
                         v-bind="props"
+                        :title="`ລະຫັດ ຂສລ:${item.raw.lcic_id},ສະມາຊິກ${getMemberCode(item.raw.bnk_code)} ສາຂາ ${item.raw.branchcode}`"
                         class="search-item"
                         rounded
                       >
@@ -389,15 +433,13 @@ const displayCustomer = ((item:any)=>{
                           </v-avatar>
                         </template>
                         
-                        <v-list-item-subtitle class="text-caption">
-                          {{ item.raw.ind_lao_name }} {{ item.raw.ind_lao_surname }} {{ item.raw.ind_name }} {{ item.raw.ind_surname }}
-                        </v-list-item-subtitle>
+                        
                       </v-list-item>
                     </template>
                   </v-autocomplete>
 
                 
-                  <v-slide-y-transition>
+                  <!-- <v-slide-y-transition>
                     <v-alert
                       v-if="showBankMessage"
                       type="info"
@@ -413,7 +455,7 @@ const displayCustomer = ((item:any)=>{
                       </template>
                       {{ bankDataMessage }}
                     </v-alert>
-                  </v-slide-y-transition>
+                  </v-slide-y-transition> -->
                 </div>
               </v-col>
 

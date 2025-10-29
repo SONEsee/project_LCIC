@@ -385,10 +385,22 @@ const resetFilters = () => {
   applyFilters()
 }
 
-// View details
+// View details - FIXED: Pass date filters to detail page
 const viewDetails = (bankCode: string) => {
-  // Navigate to detail page or open modal
-  navigateTo(`/test25?bank=${bankCode}`)
+  // Build query params with current filters
+  const queryParams: any = { bank: bankCode }
+  
+  // Add date filters if they exist
+  if (filters.value.month) queryParams.month = filters.value.month
+  if (filters.value.year) queryParams.year = filters.value.year
+  if (filters.value.fromDate) queryParams.fromDate = filters.value.fromDate
+  if (filters.value.toDate) queryParams.toDate = filters.value.toDate
+  
+  // Navigate with all filters
+  navigateTo({
+    path: '/test25',
+    query: queryParams
+  })
 }
 
 // Export data
