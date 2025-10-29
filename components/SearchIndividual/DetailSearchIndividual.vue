@@ -75,6 +75,8 @@ onMounted(() => {
         ຂໍ້ມູນບຸກຄົນ
       </v-card-title>
 
+
+      
       <v-card-text class="pa-0">
         <v-table class="modern-table">
           <thead style="color: blue;">

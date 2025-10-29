@@ -2,10 +2,12 @@
 import { IndividualStore } from "~/stores/searchindividual";
 import { useUserData } from "~/composables/useUserData";
 import Swal from "sweetalert2";
-
+import { MemberStore } from "@/stores/memberinfo";
+import { useMemberInfo } from "@/composables/memberInfo";
+const { mapMemberInfo, getMemberName, getMemberDetails,getMemberCode } = useMemberInfo();
 const individualStore = IndividualStore();
 const { user, userId, isAdmin, isLoggedIn, userid } = useUserData();
-
+const memberStore = MemberStore();
 const saerchCustomerID = ref("");
 const searchLcicID = ref("");
 const lcicSearchInput = ref("");
@@ -337,6 +339,7 @@ const displayCustomer = ((item:any)=>{
     return `${item.ind_lao_name} ${item.ind_lao_surname} ${item.ind_name} ${item.ind_surname}`
 })
 onMounted(()=>{
+  memberStore.getMemberInfo();
   individualStore.reques_query.query.bnk_code = userId.value
 })
 </script>
@@ -420,6 +423,7 @@ onMounted(()=>{
                     <template v-slot:item="{ props, item }">
                       <v-list-item
                         v-bind="props"
+                        :title="`ລະຫັດ ຂສລ:${item.raw.lcic_id},ສະມາຊິກ${getMemberCode(item.raw.bnk_code)} ສາຂາ ${item.raw.branchcode}`"
                         class="search-item"
                         rounded
                       >
@@ -429,9 +433,7 @@ onMounted(()=>{
                           </v-avatar>
                         </template>
                         
-                        <v-list-item-subtitle class="text-caption">
-                          {{ item.raw.ind_lao_name }} {{ item.raw.ind_lao_surname }} {{ item.raw.ind_name }} {{ item.raw.ind_surname }}
-                        </v-list-item-subtitle>
+                        
                       </v-list-item>
                     </template>
                   </v-autocomplete>
