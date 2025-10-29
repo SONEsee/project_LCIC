@@ -301,7 +301,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-import CryptoJS from 'crypto-js';
+// import CryptoJS from 'crypto-js';
 
 const emit = defineEmits(['saved', 'close']);
 const formRef = ref(null);
