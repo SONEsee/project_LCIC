@@ -336,6 +336,9 @@ const displayCustomer = ((item:any)=>{
     if(!item || !item.ind_surname || !item.ind_lao_name || item.ind_lao_surname) return "";
     return `${item.ind_lao_name} ${item.ind_lao_surname} ${item.ind_name} ${item.ind_surname}`
 })
+onMounted(()=>{
+  individualStore.reques_query.query.bnk_code = userId.value
+})
 </script>
 
 <template>
