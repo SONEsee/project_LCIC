@@ -70,72 +70,6 @@ const performSearchWithLcicId = async (lcicId: string) => {
   }
 };
 
-// ຟັງຊັ່ນໃໝ່ສຳລັບ text-field ຂອງ LCIC ID
-const onLcicInputChange = (value: string) => {
-  lcicSearchInput.value = value;
-  searchLcicID.value = value;
-  
-  showBankMessage.value = false;
-  bankDataMessage.value = "";
-  showLcicName.value = false;
-  displayedLcicName.value = "";
-
-  if (value && value.length > 0) {
-    debounceSearch(() => {
-      performAPISearch();
-      
-      // ຫຼັງຈາກຄົ້ນຫາແລ້ວ ກວດສອບແລະເຕີມ customerid ອັດຕະໂນມັດ
-      const matchedItem = dataReques.value.find(
-        (item) =>
-          (item.lcic_id?.toString() === value || 
-           item.lcic_id?.toString().includes(value)) &&
-          item.bnk_code === userId.value
-      );
-
-      if (matchedItem) {
-        // ສະແດງຊື່ລູກຄ້າ
-        displayedLcicName.value = `${matchedItem.ind_lao_name || ''} ${matchedItem.ind_lao_surname || ''} ${matchedItem.ind_name || ''} ${matchedItem.ind_surname || ''}`.trim();
-        showLcicName.value = true;
-        
-        // ເຕີມ customerid ອັດຕະໂນມັດ
-        if (matchedItem.customerid) {
-          saerchCustomerID.value = matchedItem.customerid;
-          customerSearchInput.value = matchedItem.customerid;
-          showBankMessage.value = false;
-          bankDataMessage.value = "";
-          console.log("Auto-filled customer ID:", matchedItem.customerid);
-        }
-      } else {
-        // ຖ້າບໍ່ພົບຂໍ້ມູນທີ່ມີ bnk_code ກົງກັນ
-        const anyMatch = dataReques.value.find(
-          (item) =>
-            item.lcic_id?.toString() === value ||
-            item.lcic_id?.toString().includes(value)
-        );
-        
-        if (anyMatch) {
-          // ສະແດງຊື່ລູກຄ້າຖ້າເຈົ້າຂໍ້ມູນຈາກທະນາຄານອື່ນ
-          displayedLcicName.value = `${anyMatch.ind_lao_name || ''} ${anyMatch.ind_lao_surname || ''} ${anyMatch.ind_name || ''} ${anyMatch.ind_surname || ''}`.trim();
-          showLcicName.value = true;
-          
-          if (anyMatch.bnk_code !== userId.value) {
-            saerchCustomerID.value = "";
-            customerSearchInput.value = "";
-            showBankMessage.value = true;
-            bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
-          }
-        }
-      }
-    }, 500); // ເພີ່ມເວລາ delay ເປັນ 500ms ເພື່ອລໍຖ້າຂໍ້ມູນຈາກ API
-  } else {
-    // ຖ້າລຶບຂໍ້ມູນໃນຊ່ອງ LCIC ກໍໃຫ້ລຶບທຸກຢ່າງ
-    saerchCustomerID.value = "";
-    customerSearchInput.value = "";
-    displayedLcicName.value = "";
-    showLcicName.value = false;
-  }
-};
-
 const onCustomerSearchChange = (value: string) => {
   customerSearchInput.value = value;
   saerchCustomerID.value = value;
@@ -255,25 +189,128 @@ const selectItem = (item: any) => {
   });
 };
 
-watch(searchLcicID, async (newValue) => {
-  if (newValue && newValue !== lcicSearchInput.value) {
-    individualStore.reques_query.isLoading = true;
-    try {
-      individualStore.reques_query.query.lcic_id = newValue;
-      individualStore.reques_query.query.customerid = "";
-      await individualStore.saerchListIndividual();
-    } catch (error) {
-      console.error("LCIC search error:", error);
-      Swal.fire({
-        icon: "error",
-        text: "ບໍ່ສາມາດດຶງຂໍ້ມູນໄດ້",
-        title: "ຜິດພາດ",
-      });
-    } finally {
-      individualStore.reques_query.isLoading = false;
-    }
+// ============================================
+// ແກ້ໄຂບັນຫາ PASTE: ໃຊ້ watch ແທນ @input
+// ============================================
+// watch(lcicSearchInput, (newValue) => {
+//   searchLcicID.value = newValue;
+  
+//   showBankMessage.value = false;
+//   bankDataMessage.value = "";
+//   showLcicName.value = false;
+//   displayedLcicName.value = "";
+
+//   if (newValue && newValue.length > 0) {
+//     debounceSearch(async () => {
+//       await performAPISearch();
+      
+//       // ຫຼັງຈາກຄົ້ນຫາແລ້ວ ກວດສອບແລະເຕີມ customerid ອັດຕະໂນມັດ
+//       const matchedItem = dataReques.value.find(
+//         (item) =>
+//           (item.lcic_id?.toString() === newValue || 
+//            item.lcic_id?.toString().includes(newValue)) &&
+//           item.bnk_code === userId.value
+//       );
+
+//       if (matchedItem) {
+//         // ສະແດງຊື່ລູກຄ້າ
+//         displayedLcicName.value = `${matchedItem.ind_lao_name || ''} ${matchedItem.ind_lao_surname || ''} ${matchedItem.ind_name || ''} ${matchedItem.ind_surname || ''}`.trim();
+//         showLcicName.value = true;
+        
+//         // ເຕີມ customerid ອັດຕະໂນມັດ
+//         if (matchedItem.customerid) {
+//           saerchCustomerID.value = matchedItem.customerid;
+//           customerSearchInput.value = matchedItem.customerid;
+//           showBankMessage.value = false;
+//           bankDataMessage.value = "";
+//           console.log("Auto-filled customer ID:", matchedItem.customerid);
+//         }
+//       } else {
+//         // ຖ້າບໍ່ພົບຂໍ້ມູນທີ່ມີ bnk_code ກົງກັນ
+//         const anyMatch = dataReques.value.find(
+//           (item) =>
+//             item.lcic_id?.toString() === newValue ||
+//             item.lcic_id?.toString().includes(newValue)
+//         );
+        
+//         if (anyMatch) {
+//           // ສະແດງຊື່ລູກຄ້າຖ້າເຈົ້າຂໍ້ມູນຈາກທະນາຄານອື່ນ
+//           displayedLcicName.value = `${anyMatch.ind_lao_name || ''} ${anyMatch.ind_lao_surname || ''} ${anyMatch.ind_name || ''} ${anyMatch.ind_surname || ''}`.trim();
+//           showLcicName.value = true;
+          
+//           if (anyMatch.bnk_code !== userId.value) {
+//             saerchCustomerID.value = "";
+//             customerSearchInput.value = "";
+//             showBankMessage.value = true;
+//             bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
+//           }
+//         }
+//       }
+//     }, 500);
+//   } else {
+//     // ຖ້າລຶບຂໍ້ມູນໃນຊ່ອງ LCIC ກໍໃຫ້ລຶບທຸກຢ່າງ
+//     saerchCustomerID.value = "";
+//     customerSearchInput.value = "";
+//     displayedLcicName.value = "";
+//     showLcicName.value = false;
+//   }
+// });
+watch(lcicSearchInput, (newValue) => {
+  searchLcicID.value = newValue;
+  
+  showBankMessage.value = false;
+  bankDataMessage.value = "";
+  showLcicName.value = false;
+  displayedLcicName.value = "";
+
+  if (newValue && newValue.length > 0) {
+    debounceSearch(async () => {
+      await performAPISearch();
+      
+      // ✅ ແກ້ໄຂ: ໃຊ້ startsWith ແທນ ===
+      const matchedItem = dataReques.value.find(
+        (item) =>
+          item.lcic_id?.toString().startsWith(newValue) &&
+          item.bnk_code === userId.value
+      );
+
+      if (matchedItem) {
+        displayedLcicName.value = `${matchedItem.ind_lao_name || ''} ${matchedItem.ind_lao_surname || ''} ${matchedItem.ind_name || ''} ${matchedItem.ind_surname || ''}`.trim();
+        showLcicName.value = true;
+        
+        if (matchedItem.customerid) {
+          saerchCustomerID.value = matchedItem.customerid;
+          customerSearchInput.value = matchedItem.customerid;
+          showBankMessage.value = false;
+          bankDataMessage.value = "";
+          console.log("Auto-filled customer ID:", matchedItem.customerid);
+        }
+      } else {
+        const anyMatch = dataReques.value.find(
+          (item) => item.lcic_id?.toString().startsWith(newValue)
+        );
+        
+        if (anyMatch) {
+          displayedLcicName.value = `${anyMatch.ind_lao_name || ''} ${anyMatch.ind_lao_surname || ''} ${anyMatch.ind_name || ''} ${anyMatch.ind_surname || ''}`.trim();
+          showLcicName.value = true;
+          
+          if (anyMatch.bnk_code !== userId.value) {
+            saerchCustomerID.value = "";
+            customerSearchInput.value = "";
+            showBankMessage.value = true;
+            bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
+          }
+        }
+      }
+    }, 500);
+  } else {
+    saerchCustomerID.value = "";
+    customerSearchInput.value = "";
+    displayedLcicName.value = "";
+    showLcicName.value = false;
   }
 });
+// ລຶບ watch ເດີມຂອງ searchLcicID ອອກເພາະໃຊ້ watch lcicSearchInput ແທນແລ້ວ
 
 watch(saerchCustomerID, async (newValue) => {
   if (newValue && newValue !== customerSearchInput.value) {
@@ -327,9 +364,9 @@ const displayCustomer = ((item:any)=>{
                     <v-icon size="18" class="mr-2">mdi-card-account-details</v-icon>
                     ລະຫັດ LCIC
                   </label>
+                  <!-- ແກ້ໄຂ: ລຶບ @input ອອກ ໃຊ້ watch ແທນ -->
                   <v-text-field
                     v-model="lcicSearchInput"
-                    @input="onLcicInputChange(lcicSearchInput)"
                     density="comfortable"
                     clearable
                     variant="outlined"
