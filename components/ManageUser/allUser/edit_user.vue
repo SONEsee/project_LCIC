@@ -310,6 +310,8 @@
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 // import CryptoJS from 'crypto-js';
+import { useUserUID } from '~/composables/useUserUID';
+
 
 const props = defineProps({
   userData: {
@@ -326,6 +328,7 @@ const showPassword = ref(false);
 const showConfirmDialog = ref(false);
 const updating = ref(false);
 const originalImageUrl = ref('');
+const { UID: currentUID } = useUserUID();
 
 const form = ref({
   UID: null,
@@ -420,63 +423,78 @@ const updateMID = (selectedCode) => {
   console.log('Selected bank code:', selectedCode, '→ MID (memberInfo id):', form.value.MID);
 };
 
-// Confirm and update user
 const confirmUpdateUser = async () => {
-  if (!formValid.value) {
-    return;
-  }
+  if (!formValid.value) return;
 
   updating.value = true;
-
   const formData = new FormData();
+
+  // ตรวจสอบเฉพาะ is_active เปลี่ยนจาก False → True
+  const statusChanged = props.userData.is_active === false && form.value.is_active === true;
   
-  // Append all form data except UID
+  // 🔍 Debug log
+  console.log('📊 Status check:', {
+    oldStatus: props.userData.is_active,
+    newStatus: form.value.is_active,
+    statusChanged: statusChanged,
+    currentUID: currentUID.value
+  });
+
+  // Append fields
   for (const key in form.value) {
     if (key === 'UID') continue;
-    
     const value = form.value[key];
-    
-    // Handle image file
-    if (key === 'profile_image') {
-      if (value) {
-        formData.append('profile_image', value);
-      }
-    }
-    // Handle password - only if changed
-    else if (key === 'password') {
-      if (value && value.trim() !== '') {
-        const hashedPassword = CryptoJS.MD5(value).toString();
-        formData.append('password', hashedPassword);
-      }
-    }
-    // Handle all other fields
+
+    if (key === 'profile_image' && value) {
+      formData.append('profile_image', value);
+    } 
+    else if (key === 'is_active') {
+      // ✅ แปลง boolean เป็น string ชัดเจน
+      formData.append('is_active', value ? 'true' : 'false');
+    } 
     else if (value !== null && value !== '') {
       formData.append(key, value);
     }
   }
 
-  // Debug: Log what we're sending
+  // ✅ ส่ง creator_UID และ branch_id เฉพาะกรณี status เปลี่ยน
+  if (statusChanged) {
+    // ตรวจสอบว่ามี currentUID หรือไม่
+    if (!currentUID.value) {
+      console.error('❌ currentUID is not available');
+      alert('ไม่สามารถดำเนินการได้ เนื่องจากไม่พบข้อมูลผู้ใช้งานปัจจุบัน');
+      updating.value = false;
+      return;
+    }
+    
+    formData.append('creator_UID', currentUID.value);
+    formData.append('branch_id', form.value.branch_id || '');
+    
+    console.log('✅ Appending creator info:', {
+      creator_UID: currentUID.value,
+      branch_id: form.value.branch_id
+    });
+  }
+
   console.log('📤 Updating user with data:');
   for (let pair of formData.entries()) {
     console.log(pair[0] + ': ' + pair[1]);
   }
 
   try {
-    await axios.put(`${apiUserURL}${form.value.UID}/`, formData, {
-      headers: { 
-        'Content-Type': 'multipart/form-data',
-      },
+    const response = await axios.put(`${apiUserURL}${form.value.UID}/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     
-    // Close dialog and emit events immediately
+    console.log('✅ Update successful:', response.data);
+
     showConfirmDialog.value = false;
     emit('updated');
     emit('close');
   } catch (err) {
     console.error('❌ Error updating user:', err);
     console.error('Error response:', err.response?.data);
-    
-    // Still close the dialog on error
+    alert('เกิดข้อผิดพลาด: ' + (err.response?.data?.message || err.message));
     showConfirmDialog.value = false;
   } finally {
     updating.value = false;
