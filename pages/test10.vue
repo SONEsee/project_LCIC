@@ -260,13 +260,12 @@ const cus_provinces = ref([]); // Store list of provinces
 const cus_districts = ref([]); // Store list of districts
 const cus_selectedProvince = ref(""); // Selected province
 const cus_selectedDistrict = ref(""); // Selected district
-
+const config = useRuntimeConfig()
 // Fetch all provinces on component mount
 const fetchProvinces = async () => {
   try {
-    console.log("Fetching provinces..."); // Log before fetch
     const { data } = await useFetch(
-      "http://192.168.45.56:8000/api/province-edl/"
+      `${config.public.apiBase}/api/province-edl/`
     );
     provinces.value = data.value || [];
     console.log("Provinces fetched:", provinces.value); // Log after fetch
@@ -288,7 +287,7 @@ const fetchDistricts = async (pro_id) => {
       return;
     }
     const { data } = await useFetch(
-      `http://192.168.45.56:8000/api/province-district/${pro_id}/`
+      `${config.public.apiBase}/api/province-district/${pro_id}/`
     );
     districts.value = data.value?.districts || [];
     console.log("Districts fetched:", districts.value); // Log after fetch
@@ -304,7 +303,7 @@ const fetchCusProvinces = async () => {
   try {
     console.log("Fetching Cus provinces..."); // Log before fetch
     const { data } = await useFetch(
-      "http://192.168.45.56:8000/api/province-edl/"
+      `${config.public.apiBase}/api/province-edl/`
     );
     cus_provinces.value = data.value || [];
     console.log("Cus Provinces fetched:", cus_provinces.value); // Log after fetch
@@ -325,7 +324,7 @@ const fetchCusDistricts = async (pro_id) => {
       return;
     }
     const { data } = await useFetch(
-      `http://192.168.45.56:8000/api/province-district/${pro_id}/`
+      `${config.public.apiBase}/api/province-district/${pro_id}/`
     );
     cus_districts.value = data.value?.districts || [];
     console.log("Cus Districts fetched:", cus_districts.value); // Log after fetch

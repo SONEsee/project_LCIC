@@ -22,7 +22,7 @@
               variant="outlined"
               density="compact"
               hide-details
-              style="min-width: 200px;"
+              style="min-width: 150px;"
             />
 
             <v-btn
