@@ -298,7 +298,7 @@ watch(lcicSearchInput, (newValue) => {
             saerchCustomerID.value = "";
             customerSearchInput.value = "";
             showBankMessage.value = true;
-            bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
+            // bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
           }
         }
       }
@@ -310,7 +310,7 @@ watch(lcicSearchInput, (newValue) => {
     showLcicName.value = false;
   }
 });
-// ລຶບ watch ເດີມຂອງ searchLcicID ອອກເພາະໃຊ້ watch lcicSearchInput ແທນແລ້ວ
+
 
 watch(saerchCustomerID, async (newValue) => {
   if (newValue && newValue !== customerSearchInput.value) {
@@ -434,7 +434,7 @@ const displayCustomer = ((item:any)=>{
                   </v-autocomplete>
 
                 
-                  <v-slide-y-transition>
+                  <!-- <v-slide-y-transition>
                     <v-alert
                       v-if="showBankMessage"
                       type="info"
@@ -450,7 +450,7 @@ const displayCustomer = ((item:any)=>{
                       </template>
                       {{ bankDataMessage }}
                     </v-alert>
-                  </v-slide-y-transition>
+                  </v-slide-y-transition> -->
                 </div>
               </v-col>
 
