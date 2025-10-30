@@ -328,7 +328,7 @@ const showPassword = ref(false);
 const showConfirmDialog = ref(false);
 const updating = ref(false);
 const originalImageUrl = ref('');
-const { UID: currentUID } = useUserUID();
+const { userData, UID: currentUID, userBnkCode } = useUserUID();
 
 const form = ref({
   UID: null,
@@ -420,7 +420,6 @@ const getGroupDisplay = (gid) => {
 const updateMID = (selectedCode) => {
   const selected = members.value.find(m => m.bnk_code === selectedCode);
   form.value.MID = selected ? selected.id : null;
-  console.log('Selected bank code:', selectedCode, '→ MID (memberInfo id):', form.value.MID);
 };
 
 const confirmUpdateUser = async () => {
@@ -431,14 +430,6 @@ const confirmUpdateUser = async () => {
 
   // ตรวจสอบเฉพาะ is_active เปลี่ยนจาก False → True
   const statusChanged = props.userData.is_active === false && form.value.is_active === true;
-  
-  // 🔍 Debug log
-  console.log('📊 Status check:', {
-    oldStatus: props.userData.is_active,
-    newStatus: form.value.is_active,
-    statusChanged: statusChanged,
-    currentUID: currentUID.value
-  });
 
   // Append fields
   for (const key in form.value) {
@@ -449,7 +440,6 @@ const confirmUpdateUser = async () => {
       formData.append('profile_image', value);
     } 
     else if (key === 'is_active') {
-      // ✅ แปลง boolean เป็น string ชัดเจน
       formData.append('is_active', value ? 'true' : 'false');
     } 
     else if (value !== null && value !== '') {
@@ -457,43 +447,22 @@ const confirmUpdateUser = async () => {
     }
   }
 
-  // ✅ ส่ง creator_UID และ branch_id เฉพาะกรณี status เปลี่ยน
+  // ส่ง creator_UID และ user_bnk_code เฉพาะกรณี status เปลี่ยน
   if (statusChanged) {
-    // ตรวจสอบว่ามี currentUID หรือไม่
-    if (!currentUID.value) {
-      console.error('❌ currentUID is not available');
-      alert('ไม่สามารถดำเนินการได้ เนื่องจากไม่พบข้อมูลผู้ใช้งานปัจจุบัน');
-      updating.value = false;
-      return;
-    }
-    
     formData.append('creator_UID', currentUID.value);
-    formData.append('branch_id', form.value.branch_id || '');
-    
-    console.log('✅ Appending creator info:', {
-      creator_UID: currentUID.value,
-      branch_id: form.value.branch_id
-    });
-  }
-
-  console.log('📤 Updating user with data:');
-  for (let pair of formData.entries()) {
-    console.log(pair[0] + ': ' + pair[1]);
+    formData.append('user_bnk_code', userBnkCode.value);
   }
 
   try {
     const response = await axios.put(`${apiUserURL}${form.value.UID}/`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    
-    console.log('✅ Update successful:', response.data);
 
     showConfirmDialog.value = false;
     emit('updated');
     emit('close');
   } catch (err) {
     console.error('❌ Error updating user:', err);
-    console.error('Error response:', err.response?.data);
     alert('เกิดข้อผิดพลาด: ' + (err.response?.data?.message || err.message));
     showConfirmDialog.value = false;
   } finally {

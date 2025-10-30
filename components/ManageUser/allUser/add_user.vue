@@ -312,7 +312,7 @@ const imagePreview = ref('');
 const showPassword = ref(false);
 const showConfirmDialog = ref(false);
 const saving = ref(false);
-const { UID: currentUID } = useUserUID(); // เอา UID ของผู้ล็อกอิน
+const { userData, UID: currentUID, userBnkCode } = useUserUID();
 
 const form = ref({
   username: '',
@@ -328,7 +328,6 @@ const form = ref({
   profile_image: null,
   is_active: true,
   is_staff: false,
-  creator_UID: currentUID.value,
 });
 
 const members = ref([]);
@@ -438,10 +437,14 @@ const saveUser = async () => {
     }
   }
 
-  // ส่ง UID ของผู้ล็อกอินไป backend
   if (currentUID.value) {
-    formData.append('creator_UID', currentUID.value.toString());
-  }
+    formData.append('creator_UID', currentUID.value);
+  } 
+  
+  // สมมติว่า branch_id อยู่ใน MID.id หรือ field อื่น
+  if (userData.value?.MID?.id) {
+    formData.append('user_bnk_code', userData.value.MID.id);
+  } 
 
   try {
     const response = await axios.post(apiUserURL, formData, {
