@@ -40,7 +40,7 @@ export const IndividualStore = defineStore("individual", {
           statussubmit:"",
           FileType:"",
           page:1,
-          limit:2,
+          limit:20,
           
         }
       }

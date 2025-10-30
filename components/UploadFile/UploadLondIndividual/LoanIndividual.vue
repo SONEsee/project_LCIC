@@ -75,43 +75,43 @@ const statistics = computed(() => {
       value: total.toLocaleString(),
       color: "#E3F2FD",
       icon: "mdi-file-document-multiple",
-      iconColor: "#1976D2"
+      iconColor: "#1976D2",
     },
     {
       label: "ສຳເລັດ",
       value: "0",
       color: "#E8F5E9",
       icon: "mdi-check-circle",
-      iconColor: "#388E3C"
+      iconColor: "#388E3C",
     },
     {
       label: "ກຳລັງດຳເນີນການ",
       value: "0",
       color: "#FFF3E0",
       icon: "mdi-clock-outline",
-      iconColor: "#F57C00"
+      iconColor: "#F57C00",
     },
     {
       label: "ປະຕິເສດ",
       value: "0",
       color: "#FFEBEE",
       icon: "mdi-close-circle",
-      iconColor: "#D32F2F"
+      iconColor: "#D32F2F",
     },
     {
       label: "ອັດຕາສຳເລັດ",
       value: "0%",
       color: "#F3E5F5",
       icon: "mdi-chart-line",
-      iconColor: "#7B1FA2"
+      iconColor: "#7B1FA2",
     },
     {
       label: "JSON/XML",
       value: "0/0",
       color: "#E0F2F1",
       icon: "mdi-code-json",
-      iconColor: "#00796B"
-    }
+      iconColor: "#00796B",
+    },
   ];
 });
 
@@ -144,11 +144,21 @@ onMounted(() => {
     </v-card>
 
     <!-- Filter Section -->
-    <v-card class="mb-4" elevation="1">
+    <v-card class="mb-4" elevation="1" v-if="userId !=='01'">
       <v-card-text>
         <v-row dense>
-          <v-col cols="12" md="3">
+          <v-col cols="12" md="5">
+            <v-file-input
+              clearable
+              label="ອັບໂຫຼດຟາຍ JSON/XML"
+              variant="outlined"
+              density="compact"
+              hide-details
+              prepend-icon=""
+              prepend-inner-icon="mdi-paperclip"
+            ></v-file-input>
             <v-autocomplete
+              v-if="userId === '01'"
               :items="memberData"
               :item-title="displayMember"
               item-value="bnk_code"
@@ -167,6 +177,68 @@ onMounted(() => {
               </template>
             </v-autocomplete>
           </v-col>
+          <v-col cols="12" md="1">
+            <v-btn color="primary" block>ອັບໂຫຼດ</v-btn>
+          </v-col>
+          <v-col cols="12" md="2">
+            <v-autocomplete
+              label="ງວດທີ່ສົ່ງ"
+              density="comfortable"
+              variant="outlined"
+              prepend-inner-icon="mdi-calendar"
+              clearable
+              hide-details
+            ></v-autocomplete>
+          </v-col>
+          <v-col cols="12" md="2">
+            <v-autocomplete
+              label="ປະເພດໄຟລ"
+              density="comfortable"
+              variant="outlined"
+              prepend-inner-icon="mdi-file-outline"
+              clearable
+              hide-details
+            ></v-autocomplete>
+          </v-col>
+          <v-col cols="12" md="2">
+            <v-autocomplete
+              label="ສະຖານະ"
+              density="comfortable"
+              variant="outlined"
+              prepend-inner-icon="mdi-check-circle-outline"
+              clearable
+              hide-details
+            ></v-autocomplete>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+    <v-card class="mb-4" elevation="1" v-if="userId ==='01'">
+      <v-card-text>
+        <v-row dense>
+          <v-col cols="12" md="3">
+            
+            <v-autocomplete
+              v-if="userId === '01'"
+              :items="memberData"
+              :item-title="displayMember"
+              item-value="bnk_code"
+              label="ເລືອກສະມາຊິກ"
+              density="comfortable"
+              variant="outlined"
+              prepend-inner-icon="mdi-bank"
+              clearable
+              hide-details
+            >
+              <template v-slot:item="{ item, props }">
+                <v-list-item
+                  v-bind="props"
+                  :title="`${item.raw.bnk_code}-${item.raw.code}-${item.raw.nameL}`"
+                ></v-list-item>
+              </template>
+            </v-autocomplete>
+          </v-col>
+          
           <v-col cols="12" md="3">
             <v-autocomplete
               label="ງວດທີ່ສົ່ງ"
@@ -211,19 +283,17 @@ onMounted(() => {
         md="4"
         lg="2"
       >
-        <v-card
-          :color="stat.color"
-          elevation="2"
-          hover
-          class="stat-card"
-        >
+        <v-card :color="stat.color" elevation="2" hover class="stat-card">
           <v-card-text class="pa-4">
             <div class="d-flex align-center justify-space-between mb-2">
               <v-icon :color="stat.iconColor" size="28">
                 {{ stat.icon }}
               </v-icon>
             </div>
-            <h3 class="text-h5 font-weight-bold mb-1" :style="{ color: stat.iconColor }">
+            <h3
+              class="text-h5 font-weight-bold mb-1"
+              :style="{ color: stat.iconColor }"
+            >
               {{ stat.value }}
             </h3>
             <p class="text-caption text-medium-emphasis mb-0">
@@ -236,7 +306,9 @@ onMounted(() => {
 
     <!-- Data Table Section -->
     <v-card elevation="2">
-      <v-card-title class="d-flex align-center justify-space-between pa-4 bg-grey-lighten-4">
+      <v-card-title
+        class="d-flex align-center justify-space-between pa-4 bg-grey-lighten-4"
+      >
         <div class="d-flex align-center">
           <v-icon class="mr-2" color="primary">mdi-table</v-icon>
           <span class="text-h6">ລາຍການຟາຍທີ່ອັບໂຫຼດ</span>
@@ -259,7 +331,7 @@ onMounted(() => {
         :items="indData"
         :items-per-page="reques.limit"
         :headers="headers"
-        class="elevation-0"
+        class="elevation-0 text-no-wrap"
         hover
       >
         <template v-slot:item.user_id="{ item }">
@@ -330,10 +402,10 @@ onMounted(() => {
 }
 
 :deep(.v-data-table-header) {
-  background-color: #FAFAFA;
+  background-color: #fafafa;
 }
 
 :deep(.v-data-table tbody tr:hover) {
-  background-color: #F5F5F5 !important;
+  background-color: #f5f5f5 !important;
 }
 </style>
