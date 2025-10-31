@@ -56,8 +56,6 @@ const dataedit = computed(() => {
   return [];
 });
 
-
-
 const disputese = computed(() => {
   const data = LoanStore.respons_data_loan_list?.disputes.items;
   if (Array.isArray(data)) return data;
@@ -199,8 +197,6 @@ const exportToJson = () => {
   URL.revokeObjectURL(url);
 };
 
-
-
 onMounted(() => {
   memberinfoStore.getMemberInfo();
   LoanStore.data_fiter.query.id_file = code;
@@ -252,13 +248,16 @@ onMounted(() => {
                 style="font-size: 16px; font-weight: 600; border-radius: 12px"
               >
                 {{
-                  Number(
-                    LoanStore.respons_data_loan_list?.data_edit.total_items
-                  ) +
+                  (
+                    Number(
+                      LoanStore.respons_data_loan_list?.data_edit.total_items ||
+                        0
+                    ) +
                     Number(
                       LoanStore.respons_data_loan_list?.b_data_damaged
-                        .total_items
-                    ) || 0
+                        .total_items || 0
+                    )
+                  ).toLocaleString("en-US")
                 }}
               </v-chip>
               <span class="ml-3" style="color: #64748b; font-size: 15px"
@@ -345,7 +344,6 @@ onMounted(() => {
 
       <v-card-text class="pa-6">
         <v-window v-model="tab">
-          <!-- Tab 1: All Data -->
           <v-window-item value="one">
             <div class="mb-4">
               <h3 style="color: #1e293b; font-weight: 600; font-size: 18px">
@@ -358,7 +356,6 @@ onMounted(() => {
               :headers="headers"
               density="comfortable"
               :items-per-page="reques.page_size"
-        
               class="elevation-0"
               style="
                 border: 1px solid #e3e8ef;
@@ -373,8 +370,19 @@ onMounted(() => {
               <template v-slot:header.LCIC_code="{ column }">
                 <th style="color: #0d47a1">{{ column.title }}</th>
               </template>
-              <template v-slot:header.com_enterprise_code="{ column }">
-                <th style="color: #0d47a1">{{ column.title }}</th>
+              <template v-slot:header.com_enterprise_code>
+                <th
+                  style="color: #0d47a1"
+                  v-if="dataedit[0]?.segmentType === 'A1'"
+                >
+                  ລະຫັດລູກຄ້າ
+                </th>
+                <th
+                  style="color: #0d47a1"
+                  v-if="dataedit[0]?.segmentType === 'A2'"
+                >
+                  ລະຫັດວິສາກະກິດ
+                </th>
               </template>
               <template v-slot:header.bnk_code="{ column }">
                 <th style="color: #0d47a1">{{ column.title }}</th>
@@ -417,6 +425,7 @@ onMounted(() => {
               </template>
               <template v-slot:item.com_enterprise_code="{ item }">
                 <v-chip
+                  v-if="item.segmentType === 'A2'"
                   variant="flat"
                   size="small"
                   style="
@@ -427,6 +436,19 @@ onMounted(() => {
                   "
                 >
                   {{ item.com_enterprise_code }}
+                </v-chip>
+                <v-chip
+                  v-if="item.segmentType === 'A1'"
+                  variant="flat"
+                  size="small"
+                  style="
+                    background: #ddd6fe;
+                    color: #6d28d9;
+                    border-radius: 8px;
+                    font-weight: 500;
+                  "
+                >
+                  {{ item.customer_id }}
                 </v-chip>
               </template>
               <template v-slot:bottom>
@@ -579,8 +601,7 @@ onMounted(() => {
                   :items="filteredBDataIsDamaged"
                   :headers="headers2"
                   density="comfortable"
-                 
-                 :items-per-page="reques.page_size"
+                  :items-per-page="reques.page_size"
                   class="elevation-0"
                   style="
                     border: 1px solid #e3e8ef;
@@ -598,10 +619,19 @@ onMounted(() => {
                       column.title
                     }}</span>
                   </template>
-                  <template v-slot:header.com_enterprise_code="{ column }">
-                    <span style="color: #0d47a1; font-weight: bold">{{
-                      column.title
-                    }}</span>
+                  <template v-slot:header.com_enterprise_code>
+                    <th
+                      style="color: #0d47a1"
+                      v-if="dataedit[0]?.segmentType === 'A1'"
+                    >
+                      ລະຫັດລູກຄ້າ
+                    </th>
+                    <th
+                      style="color: #0d47a1"
+                      v-if="dataedit[0]?.segmentType === 'A2'"
+                    >
+                      ລະຫັດວິສາກະກິດ
+                    </th>
                   </template>
                   <template v-slot:header.bnk_code="{ column }">
                     <span style="color: #0d47a1; font-weight: bold">{{
@@ -634,9 +664,9 @@ onMounted(() => {
                     }}</span>
                   </template>
                   <template v-slot:item.id="{ index }">
-                   <span style="color: #64748b">{{
-                  (reques.page - 1) * reques.page_size + index + 1
-                }}</span>
+                    <span style="color: #64748b">{{
+                      (reques.page - 1) * reques.page_size + index + 1
+                    }}</span>
                   </template>
                   <template v-slot:item.LCIC_code="{ item }">
                     <v-chip
@@ -730,16 +760,17 @@ onMounted(() => {
                     </v-chip>
                   </template>
                   <template v-slot:bottom>
-                <GloBalTablePaginations
-                  :page="reques.page"
-                  :limit="reques.page_size"
-                  :totalpage="
-                    LoanStore.respons_data_loan_list?.b_data_damaged.total_pages || 1
-                  "
-                  @onSelectionChange="onSelectonChange"
-                  @onPagechange="onPagechange"
-                />
-              </template>
+                    <GloBalTablePaginations
+                      :page="reques.page"
+                      :limit="reques.page_size"
+                      :totalpage="
+                        LoanStore.respons_data_loan_list?.b_data_damaged
+                          .total_pages || 1
+                      "
+                      @onSelectionChange="onSelectonChange"
+                      @onPagechange="onPagechange"
+                    />
+                  </template>
                 </v-data-table>
               </v-window-item>
 
@@ -810,7 +841,6 @@ onMounted(() => {
                   :items="filteredBDataIsDamagedLcicIDError01"
                   :headers="headers3"
                   density="comfortable"
-                  
                   :items-per-page="reques.page_size"
                   class="elevation-0"
                   style="
@@ -847,9 +877,9 @@ onMounted(() => {
                     <th style="color: #0d47a1">{{ column.title }}</th>
                   </template>
                   <template v-slot:item.id="{ index }">
-                  <span style="color: #64748b">{{
-                  (reques.page - 1) * reques.page_size + index + 1
-                }}</span>
+                    <span style="color: #64748b">{{
+                      (reques.page - 1) * reques.page_size + index + 1
+                    }}</span>
                   </template>
                   <template v-slot:item.LCIC_code="{ item }">
                     <v-chip
@@ -930,16 +960,17 @@ onMounted(() => {
                     </v-chip>
                   </template>
                   <template v-slot:bottom>
-                <GloBalTablePaginations
-                  :page="reques.page"
-                  :limit="reques.page_size"
-                  :totalpage="
-                    LoanStore.respons_data_loan_list?.b_data_damaged.total_pages || 1
-                  "
-                  @onSelectionChange="onSelectonChange"
-                  @onPagechange="onPagechange"
-                />
-              </template>
+                    <GloBalTablePaginations
+                      :page="reques.page"
+                      :limit="reques.page_size"
+                      :totalpage="
+                        LoanStore.respons_data_loan_list?.b_data_damaged
+                          .total_pages || 1
+                      "
+                      @onSelectionChange="onSelectonChange"
+                      @onPagechange="onPagechange"
+                    />
+                  </template>
                 </v-data-table>
               </v-window-item>
 
@@ -955,7 +986,6 @@ onMounted(() => {
                   :items="filteredBDataIsDamagedLcicIDError33"
                   :headers="headers4"
                   density="comfortable"
-                
                   :items-per-page="reques.page_size"
                   class="elevation-0"
                   style="
@@ -991,8 +1021,8 @@ onMounted(() => {
                   </template>
                   <template v-slot:item.id="{ index }">
                     <span style="color: #64748b">{{
-                  (reques.page - 1) * reques.page_size + index + 1
-                }}</span>
+                      (reques.page - 1) * reques.page_size + index + 1
+                    }}</span>
                   </template>
                   <template v-slot:item.LCIC_code="{ item }">
                     <v-chip
@@ -1073,16 +1103,17 @@ onMounted(() => {
                     </v-chip>
                   </template>
                   <template v-slot:bottom>
-                <GloBalTablePaginations
-                  :page="reques.page"
-                  :limit="reques.page_size"
-                  :totalpage="
-                    LoanStore.respons_data_loan_list?.b_data_damaged.total_pages || 1
-                  "
-                  @onSelectionChange="onSelectonChange"
-                  @onPagechange="onPagechange"
-                />
-              </template>
+                    <GloBalTablePaginations
+                      :page="reques.page"
+                      :limit="reques.page_size"
+                      :totalpage="
+                        LoanStore.respons_data_loan_list?.b_data_damaged
+                          .total_pages || 1
+                      "
+                      @onSelectionChange="onSelectonChange"
+                      @onPagechange="onPagechange"
+                    />
+                  </template>
                 </v-data-table>
               </v-window-item>
 
@@ -1101,7 +1132,6 @@ onMounted(() => {
                   :items="disputese"
                   :headers="headers5"
                   density="comfortable"
-                 
                   :items-per-page="reques.page_size"
                   class="elevation-0"
                   style="
@@ -1133,8 +1163,8 @@ onMounted(() => {
                   </template>
                   <template v-slot:item.id="{ index }">
                     <span style="color: #64748b">{{
-                  (reques.page - 1) * reques.page_size + index + 1
-                }}</span>
+                      (reques.page - 1) * reques.page_size + index + 1
+                    }}</span>
                   </template>
                   <template v-slot:item.bnk_code="{ item }">
                     <v-chip
@@ -1150,16 +1180,17 @@ onMounted(() => {
                     </v-chip>
                   </template>
                   <template v-slot:bottom>
-                <GloBalTablePaginations
-                  :page="reques.page"
-                  :limit="reques.page_size"
-                  :totalpage="
-                    LoanStore.respons_data_loan_list?.disputes.total_pages || 1
-                  "
-                  @onSelectionChange="onSelectonChange"
-                  @onPagechange="onPagechange"
-                />
-              </template>
+                    <GloBalTablePaginations
+                      :page="reques.page"
+                      :limit="reques.page_size"
+                      :totalpage="
+                        LoanStore.respons_data_loan_list?.disputes
+                          .total_pages || 1
+                      "
+                      @onSelectionChange="onSelectonChange"
+                      @onPagechange="onPagechange"
+                    />
+                  </template>
                 </v-data-table>
               </v-window-item>
             </v-window>
@@ -1184,7 +1215,6 @@ onMounted(() => {
               :items="b1Monthly"
               :headers="headers5"
               density="comfortable"
-              
               :items-per-page="reques.page_size"
               class="elevation-0"
               style="
@@ -1238,7 +1268,8 @@ onMounted(() => {
                   :page="reques.page"
                   :limit="reques.page_size"
                   :totalpage="
-                    LoanStore.respons_data_loan_list?.b1_monthly.total_pages || 1
+                    LoanStore.respons_data_loan_list?.b1_monthly.total_pages ||
+                    1
                   "
                   @onSelectionChange="onSelectonChange"
                   @onPagechange="onPagechange"
