@@ -9,14 +9,10 @@
           <p class="text-body-2 mb-0 mt-1">Report Search LCIC</p>
         </div>
       </div>
-      <!-- <div class="text-right">
-        <div class="text-caption">Selected Bank Code</div>
-        <div class="text-h6 font-weight-bold">{{ selectedBank }}</div>
-      </div> -->
     </div>
   </v-card>
 
-  <!-- Filter Section - อยู่ใน 1 บรรทัด -->
+  <!-- Filter Section -->
   <v-card class="filter-card mb-6" elevation="3">
     <!-- Filter Header -->
     <div class="filter-header mb-3">
@@ -26,7 +22,7 @@
             <v-icon size="28" color="primary">mdi-filter-variant</v-icon>
           </div>
           <div>
-            <h2 class="text-h6 font-weight-bold ">ຕົວກອງຂໍ້ມູນ</h2>
+            <h2 class="text-h6 font-weight-bold">ຕົວກອງຂໍ້ມູນ</h2>
             <p class="text-caption mb-0">Filter & Search Options</p>
           </div>
         </div>
@@ -43,33 +39,30 @@
       </div>
     </div>
 
-    <!-- Filter Controls - 1 บรรทัด -->
+    <!-- Filter Controls -->
     <div class="d-flex align-start flex-wrap gap-4 pa-2">
       
-      <!-- Bank Selection -->
+      <!-- Bank Information Display -->
       <div style="min-width: 500px;">
         <label class="filter-label d-block mb-1">
-          <v-icon size="18" class="ml-2 mr-2">mdi-bank</v-icon>
-          ເລືອກທະນາຄານ (Bank)
+          <v-icon size="18" class="ml-2 mr-2">mdi-account-circle</v-icon>
+          ຜູ້ໃຊ້ງານ / ທະນາຄານ (User / Bank)
         </label>
-        <v-select
-          v-model="selectedBank"
-          :items="bankList"
-          item-title="display_name"
-          item-value="bnk_code"
-          variant="outlined"
-          density="compact"
-          hide-details
-          @update:model-value="fetchSummary"
-          class="mb-2"
-        >
-          <template v-slot:prepend-inner>
-            <v-icon color="primary" size="20">mdi-bank-outline</v-icon>
-          </template>
-        </v-select>
+        <v-card variant="outlined" class="pa-3 user-bank-display">
+          <div class="d-flex align-center">
+            <v-icon color="primary" size="24" class="mr-3">mdi-account</v-icon>
+            <div>
+              <div class="text-subtitle-1 font-weight-bold">{{ currentUsername }}</div>
+              <div class="text-caption text-medium-emphasis">
+                {{ bankDisplayName }} <span v-if="currentBnkCode">({{ currentBnkCode }})</span>
+              </div>
+            </div>
+          </div>
+        </v-card>
       </div>
       
-        <div style="min-width: 200px;"></div>
+      <div style="min-width: 150px;"></div>
+      
       <!-- Date Filter Type -->
       <div style="min-width: 250px;">
         <label class="filter-label d-block mb-1">
@@ -85,8 +78,8 @@
           class="date-type-toggle mb-2"
           @update:model-value="onDateTypeChange"
         >
-          <v-btn value="year" size="small" >
-            <v-icon class="mr-1" size="18" >mdi-calendar</v-icon>ປີ
+          <v-btn value="year" size="small">
+            <v-icon class="mr-1" size="18">mdi-calendar</v-icon>ປີ
           </v-btn>
           <v-btn value="month" size="small">
             <v-icon class="mr-1" size="18">mdi-calendar-month</v-icon>ເດືອນ
@@ -97,7 +90,7 @@
         </v-btn-toggle>
       </div>
 
-      <!-- Date Value Input - อยู่ใน 1 บรรทัด -->
+      <!-- Date Value Input -->
       <div style="min-width: 150px;">
         <label class="filter-label d-block mb-1">
           <v-icon size="18" class="mr-2">mdi-calendar-search</v-icon>
@@ -161,16 +154,19 @@
     </div>
 
     <!-- Active Filters -->
-    <!-- <v-divider class="my-4"></v-divider> -->
-    <div class="active-filters ">
+    <div class="active-filters">
       <p class="text-caption text-medium-emphasis mb-2">
         <v-icon size="14" class="ml-2 mr-1">mdi-filter-check</v-icon>
         ຕົວກອງທີ່ເລືອກ (Active Filters)
       </p>
       <div class="d-flex flex-wrap gap-2 ml-2">
         <v-chip color="#2233a1" size="small" variant="flat">
+          <v-icon start size="20">mdi-account</v-icon>
+          {{ currentUsername }}
+        </v-chip>
+        <v-chip color="#2233a1" size="small" variant="flat">
           <v-icon start size="20">mdi-bank</v-icon>
-          {{ selectedBank }}
+          {{ currentBnkCode || 'N/A' }}
         </v-chip>
         <v-chip color="#2233a1" size="small" variant="flat">
           <v-icon start size="20">mdi-calendar</v-icon>
@@ -218,20 +214,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import axios from "axios";
-import { useRuntimeConfig, navigateTo } from "#imports";
-import { useRouter } from '#imports';
+import { useRuntimeConfig, useRouter, useRoute } from "#imports";
+import { useUserUID } from '~/composables/useUserUID';
 
 const router = useRouter();
-
+const route = useRoute();
 const config = useRuntimeConfig();
 const apiChargeURL = `${config.public.strapi.url}api/request-charge-summary/`;
 const apiMemberURL = `${config.public.strapi.url}api/memberinfo/`;
 
-// State
-const selectedBank = ref("01");
-const bankList = ref([]);
+// ✅ ใช้ composable ดึงข้อมูล user
+const { userData, UID } = useUserUID();
+
+// ✅ ดึงข้อมูลจาก composable
+const currentUsername = computed(() => userData.value.username || 'N/A');
+const currentBnkCode = computed(() => userData.value.MID?.id || '');
+const currentUID = computed(() => UID.value || null);
+const isAdmin = computed(() => currentBnkCode.value === "01");
+
+// ✅ ชื่อธนาคาร (ดึงจาก API)
+const bankDisplayName = ref('Loading...');
+
 const summary = ref({ group1: 0, group2: 0, group3: 0 });
 
 // Date Filter
@@ -240,6 +245,7 @@ const filterYear = ref("");
 const filterYearMonth = ref("");
 const filterDate = ref("");
 
+// --- Helper Functions ---
 const getTodayDate = () => {
   const today = new Date();
   const year = today.getFullYear();
@@ -275,56 +281,79 @@ const getCurrentFilterDisplay = () => {
 };
 
 const onDateTypeChange = () => fetchSummary();
+
 const clearFilters = () => {
-  selectedBank.value = "01";
   dateFilterType.value = "day";
   initializeDefaultDate();
   fetchSummary();
 };
 
-const fetchBanks = async () => {
+// ✅ ดึงชื่อธนาคารจาก API memberinfo
+const fetchBankName = async () => {
   try {
-    const { data } = await axios.get(apiMemberURL);
-    const banks = data.data || data;
-    bankList.value = banks.map(m => ({
-      display_name: `${m.nameL} (${m.bnk_code})`,
-      bnk_code: m.bnk_code,
-    }));
+    if (!currentBnkCode.value) {
+      bankDisplayName.value = 'ທະນາຄານບໍ່ລະບຸ';
+      return;
+    }
+
+    const response = await axios.get(apiMemberURL);
+    const banks = response.data?.data || response.data?.results || response.data || [];
+    
+    const currentBank = banks.find(b => 
+      String(b.bnk_code).trim() === String(currentBnkCode.value).trim()
+    );
+    
+    if (currentBank) {
+      bankDisplayName.value = currentBank.nameL || currentBank.name || 'ທະນາຄານບໍ່ລະບຸ';
+    } else {
+      bankDisplayName.value = `ທະນາຄານລະຫັດ ${currentBnkCode.value}`;
+    }
+    
   } catch (error) {
-    console.error("Error fetching banks:", error);
+    console.error("❌ Error fetching bank name:", error);
+    bankDisplayName.value = 'ທະນາຄານບໍ່ລະບຸ';
   }
 };
 
+// ✅ Fetch Summary
 const fetchSummary = async () => {
   try {
     const params = {
-      bnk_code: selectedBank.value,
+      bnk_code: currentBnkCode.value,
       date_filter_type: dateFilterType.value,
       date_filter_value: getDateFilterValue()
     };
     const { data } = await axios.get(apiChargeURL, { params });
-    summary.value = { group1: data.group1 || 0, group2: data.group2 || 0, group3: data.group3 || 0 };
+    summary.value = {
+      group1: data.group1 || 0,
+      group2: data.group2 || 0,
+      group3: data.group3 || 0
+    };
   } catch (error) {
     console.error("Error fetching summary:", error);
   }
 };
 
-// เปลี่ยนจาก navigateTo เป็น router.push
+// ✅ Go to detail - เปลี่ยนเป็นการเพิ่ม query params เท่านั้น (ไม่ push route)
 const goToDetail = (groupType) => {
+
+  // ✅ ใช้ router.push แต่ไปที่ path เดิม (/report_search) แค่เปลี่ยน query
   router.push({
-    path: '/report_search',  // ใช้ path เดิม
+    path: route.path,  // ✅ ใช้ path เดิม
     query: {
       group: groupType,
-      bnk_code: selectedBank.value,
+      bnk_code: currentBnkCode.value,
       date_filter_type: dateFilterType.value,
       date_filter_value: getDateFilterValue()
+      // ✅ ไม่ส่ง detail_bnk_code ตอนนี้
+      // Admin จะได้ detail_bnk_code จากหน้า ReportAll
     }
   });
 };
 
 onMounted(async () => {
   initializeDefaultDate();
-  await fetchBanks();
+  await fetchBankName();
   await fetchSummary();
 });
 </script>
@@ -345,6 +374,11 @@ onMounted(async () => {
 .filter-card {
   border-radius: 12px;
   padding: 16px !important;
+}
+
+.user-bank-display {
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+  border: 2px solid #e3f2fd;
 }
 
 .box-card {
@@ -373,7 +407,6 @@ h3 { font-size: 1.25rem !important; }
   color: rgba(0, 0, 0, 0.78);
 }
 
-/* เพิ่ม space หลังไอคอน */
 .date-field :deep(.v-field__prepend-inner) {
   padding-right: 8px !important;
 }
@@ -382,7 +415,6 @@ h3 { font-size: 1.25rem !important; }
   padding-left: 4px !important;
 }
 
-/* Responsive */
 @media (max-width: 960px) {
   .d-flex.gap-4 {
     flex-direction: column;

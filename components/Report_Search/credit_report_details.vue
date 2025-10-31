@@ -1,146 +1,129 @@
 <template>
-  <!-- <div class="credit-report-detail-container pa-6"> -->
-    <!-- Header with Back Button -->
-    <v-card class="header-card mb-2" elevation="0">
-      <div class="d-flex align-center justify-space-between">
+  <!-- Header with Back Button -->
+  <v-card class="header-card mb-2" elevation="0">
+    <div class="d-flex align-center justify-space-between">
+      <div class="d-flex align-center">
+        <v-btn 
+          icon 
+          variant="flat" 
+          @click="goBack" 
+          class="back-btn mr-4"
+          color="rgba(255,255,255,0.2)"
+        >
+          <v-icon size="24">mdi-arrow-left</v-icon>
+        </v-btn>
+        <div>
+          <h1 class="text-h5 font-weight-bold mb-1">{{ getGroupTitle() }}</h1>
+          <p class="text-body-2 mb-0 opacity-90">Credit Report Detail</p>
+        </div>
+      </div>
+    </div>
+  </v-card>
+
+  <!-- Filter Summary Card -->
+  <v-card class="filter-card mb-2" elevation="0">
+    <div class="pa-5">
+      <div class="d-flex align-center mb-2">
+        <v-icon class="filter-icon mr-2" size="24">mdi-filter-variant</v-icon>
+        <h3 class="text-h6 font-weight-bold mb-0">ຕົວກອງທີ່ເລືອກ</h3>
+      </div>
+      <div class="d-flex flex-wrap gap-3">
+        <!-- <v-chip class="filter-chip" size="default" variant="flat">
+          <v-icon start size="18">mdi-shape</v-icon>
+          <span class="font-weight-medium">Group: {{ filterParams.group }}</span>
+        </v-chip> -->
+        <v-chip class="filter-chip" size="default" variant="flat">
+          <v-icon start size="18">mdi-bank</v-icon>
+          <span class="font-weight-medium">Bank: {{ displayBnkCode }}</span>
+        </v-chip>
+        <v-chip class="filter-chip" size="default" variant="flat">
+          <v-icon start size="18">mdi-calendar</v-icon>
+          <span class="font-weight-medium">{{ getFilterDateDisplay() }}</span>
+        </v-chip>
+      </div>
+    </div>
+  </v-card>
+
+  <!-- Loading State -->
+  <v-card v-if="loading" class="loading-card pa-12 text-center" elevation="0">
+    <v-progress-circular 
+      indeterminate 
+      color="primary" 
+      size="80" 
+      width="6"
+      class="mb-6"
+    ></v-progress-circular>
+    <p class="text-h6 font-weight-medium">ກຳລັງໂຫຼດຂໍ້ມູນ...</p>
+    <p class="text-body-1 text-medium-emphasis mt-2">Please wait</p>
+  </v-card>
+
+  <!-- Data Table -->
+  <v-card v-else class="data-table-card" elevation="0">
+    <v-card-title class="table-header pa-2">
+      <div class="d-flex align-center justify-space-between w-100">
         <div class="d-flex align-center">
-          <v-btn 
-            icon 
-            variant="flat" 
-            @click="goBack" 
-            class="back-btn mr-4"
-            color="rgba(255,255,255,0.2)"
-          >
-            <v-icon size="24">mdi-arrow-left</v-icon>
-          </v-btn>
-          <div>
-            <h1 class="text-h5 font-weight-bold mb-1">{{ getGroupTitle() }}</h1>
-            <p class="text-body-2 mb-0 opacity-90">Credit Report Detail</p>
-          </div>
+          <v-icon class="mr-3" size="28" color="#2233a1">mdi-table-large</v-icon>
+          <span class="text-h6 font-weight-bold">ລາຍລະອຽດບົດລາຍງານ</span>
         </div>
+        <v-chip class="count-chip" size="large" variant="flat">
+          <v-icon start size="20">mdi-file-document-multiple</v-icon>
+          <span class="font-weight-bold">{{ reportData.length }} ລາຍການ</span>
+        </v-chip>
       </div>
-    </v-card>
+    </v-card-title>
 
-    <!-- Filter Summary Card -->
-    <v-card class="filter-card mb-2" elevation="0">
-      <div class="pa-5">
-        <div class="d-flex align-center mb-2">
-          <v-icon class="filter-icon mr-2" size="24">mdi-filter-variant</v-icon>
-          <h3 class="text-h6 font-weight-bold mb-0">ຕົວກອງທີ່ເລືອກ</h3>
+    <v-divider class="divider-line"></v-divider>
+
+    <v-data-table
+      :headers="dynamicHeaders"
+      :items="reportData"
+      :items-per-page="10"
+      class="custom-table elevation-0"
+      hover
+    >
+      <template v-slot:item.no="{ index }">
+        <span class="index-number">{{ index + 1 }}</span>
+      </template>
+
+      <template v-for="field in visibleFields" v-slot:[`item.${field}`]="{ item }">
+        <span :style="getFieldStyle(field, item[field])" class="table-cell-content">
+          <template v-if="field === 'chg_code'">
+            <v-chip size="small" class="chg-chip" variant="flat">
+              {{ item.chg_lao_type || item.chg_code }}
+            </v-chip>
+          </template>
+          <template v-else-if="field === 'user_sys_id'">
+            <div class="d-flex align-center">
+              <v-icon size="16" class="mr-1">mdi-account</v-icon>
+              {{ item.username || item.user_sys_id }}
+            </div>
+          </template>
+          <template v-else-if="field === 'rec_insert_date'">
+            <div class="date-cell">
+              <v-icon size="16" class="mr-1">mdi-clock-outline</v-icon>
+              {{ formatRecInsertDate(item[field]) }}
+            </div>
+          </template>
+          <template v-else>{{ item[field] }}</template>
+        </span>
+      </template>
+
+      <template v-slot:no-data>
+        <div class="no-data-container text-center pa-12">
+          <v-icon size="80" color="grey-lighten-1">mdi-database-off-outline</v-icon>
+          <p class="text-h5 font-weight-medium mt-6 mb-2">ບໍ່ມີຂໍ້ມູນ</p>
+          <p class="text-body-1 text-medium-emphasis">No data available for the selected filters</p>
         </div>
-        <div class="d-flex flex-wrap gap-3">
-          <v-chip 
-            class="filter-chip" 
-            size="default"
-            variant="flat"
-          >
-            <v-icon start size="18">mdi-shape</v-icon>
-            <span class="font-weight-medium">Group: {{ filterParams.group }}</span>
-          </v-chip>
-          <v-chip 
-            class="filter-chip"
-            size="default"
-            variant="flat"
-          >
-            <v-icon start size="18">mdi-bank</v-icon>
-            <span class="font-weight-medium">Bank: {{ filterParams.bnk_code }}</span>
-          </v-chip>
-          <v-chip 
-            class="filter-chip"
-            size="default"
-            variant="flat"
-          >
-            <v-icon start size="18">mdi-calendar</v-icon>
-            <span class="font-weight-medium">{{ getFilterDateDisplay() }}</span>
-          </v-chip>
-        </div>
-      </div>
-    </v-card>
-
-    <!-- Loading State -->
-    <v-card v-if="loading" class="loading-card pa-12 text-center" elevation="0">
-      <v-progress-circular 
-        indeterminate 
-        color="primary" 
-        size="80" 
-        width="6"
-        class="mb-6"
-      ></v-progress-circular>
-      <p class="text-h6 font-weight-medium">ກຳລັງໂຫຼດຂໍ້ມູນ...</p>
-      <p class="text-body-1 text-medium-emphasis mt-2">Please wait</p>
-    </v-card>
-
-    <!-- Data Table -->
-    <v-card v-else class="data-table-card" elevation="0">
-      <v-card-title class="table-header pa-2">
-        <div class="d-flex align-center justify-space-between w-100">
-          <div class="d-flex align-center">
-            <v-icon class="mr-3" size="28" color="primary">mdi-table-large</v-icon>
-            <span class="text-h6 font-weight-bold">ລາຍລະອຽດບົດລາຍງານ</span>
-          </div>
-          <v-chip 
-            class="count-chip"
-            size="large"
-            variant="flat"
-          >
-            <v-icon start size="20">mdi-file-document-multiple</v-icon>
-            <span class="font-weight-bold">{{ reportData.length }} ລາຍການ</span>
-          </v-chip>
-        </div>
-      </v-card-title>
-
-      <v-divider class="divider-line"></v-divider>
-
-      <v-data-table
-        :headers="dynamicHeaders"
-        :items="reportData"
-        :items-per-page="10"
-        class="custom-table elevation-0"
-        hover
-      >
-        <template v-slot:item.no="{ index }">
-          <span class="index-number">{{ index + 1 }}</span>
-        </template>
-
-        <template v-for="field in visibleFields" v-slot:[`item.${field}`]="{ item }">
-          <span :style="getFieldStyle(field, item[field])" class="table-cell-content">
-            <template v-if="field === 'chg_code'">
-              <v-chip size="small" class="chg-chip" variant="flat">
-                {{ item.chg_lao_type || item.chg_code }}
-              </v-chip>
-            </template>
-            <template v-else-if="field === 'user_sys_id'">
-              <div class="d-flex align-center">
-                <v-icon size="16" class="mr-1">mdi-account</v-icon>
-                {{ item.username || item.user_sys_id }}
-              </div>
-            </template>
-            <template v-else-if="field === 'rec_insert_date'">
-              <div class="date-cell">
-                <v-icon size="16" class="mr-1">mdi-clock-outline</v-icon>
-                {{ formatRecInsertDate(item[field]) }}
-              </div>
-            </template>
-            <template v-else>{{ item[field] }}</template>
-          </span>
-        </template>
-
-        <template v-slot:no-data>
-          <div class="no-data-container text-center pa-12">
-            <v-icon size="80" color="grey-lighten-1">mdi-database-off-outline</v-icon>
-            <p class="text-h5 font-weight-medium mt-6 mb-2">ບໍ່ມີຂໍ້ມູນ</p>
-            <p class="text-body-1 text-medium-emphasis">No data available for the selected filters</p>
-          </div>
-        </template>
-      </v-data-table>
-    </v-card>
-  <!-- </div> -->
+      </template>
+    </v-data-table>
+  </v-card>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import axios from "axios";
 import { useRoute, useRouter, useRuntimeConfig } from "#imports";
+import { useUserUID } from '~/composables/useUserUID';
 
 const route = useRoute();
 const router = useRouter();
@@ -150,14 +133,25 @@ const apiDetailURL = `${config.public.strapi.url}api/request-charge-detail/`;
 const apiChargeMatrixURL = `${config.public.strapi.url}api/charge-matrix/`;
 const apiUserURL = `${config.public.strapi.url}api/user/`;
 
+// ✅ ใช้ composable ดึงข้อมูล user
+const { userData, UID } = useUserUID();
+const currentBnkCode = computed(() => userData.value.MID?.id || '');
+const currentUID = computed(() => UID.value || null);
+
 const loading = ref(false);
 const reportData = ref([]);
 const dynamicHeaders = ref([]);
 const filterParams = ref({
   group: '',
   bnk_code: '',
+  detail_bnk_code: '',
   date_filter_type: '',
   date_filter_value: ''
+});
+
+// ✅ แสดง bnk_code ที่กำลังดูอยู่
+const displayBnkCode = computed(() => {
+  return filterParams.value.detail_bnk_code || currentBnkCode.value;
 });
 
 const visibleFields = [
@@ -174,10 +168,12 @@ const visibleFields = [
 const getFilterParams = () => {
   filterParams.value = {
     group: route.query.group || '',
-    bnk_code: route.query.bnk_code || '',
+    bnk_code: currentBnkCode.value,
+    detail_bnk_code: route.query.detail_bnk_code || '',
     date_filter_type: route.query.date_filter_type || '',
     date_filter_value: route.query.date_filter_value || ''
   };
+  
 };
 
 const getGroupTitle = () => {
@@ -216,7 +212,14 @@ const getFieldStyle = (field, value) => {
 const fetchDetailData = async () => {
   loading.value = true;
   try {
-    const params = { ...filterParams.value };
+    const params = {
+      bnk_code: filterParams.value.bnk_code,
+      detail_bnk_code: filterParams.value.detail_bnk_code,
+      group: filterParams.value.group,
+      date_filter_type: filterParams.value.date_filter_type,
+      date_filter_value: filterParams.value.date_filter_value
+    };
+    
     const { data } = await axios.get(apiDetailURL, { params });
     let results = data.results || [];
 
@@ -238,24 +241,47 @@ const fetchDetailData = async () => {
       username: userMap[r.user_sys_id.split('-')[0]] || r.user_sys_id
     }));
 
-    // Add "No" column at the beginning
+    // หัวตารางภาษาลาวที่ถูกต้อง
     dynamicHeaders.value = [
       { title: 'NO', key: 'no', align: 'center', sortable: false },
-      ...visibleFields.map(k => ({
-        title: k.replace(/_/g, ' ').toUpperCase(),
-        key: k,
-        align: ['chg_amount'].includes(k) ? 'end' : 'start'
-      }))
+      { title: 'ລະຫັດທະນາຄານ', key: 'bnk_code', align: 'center' },
+      { title: 'ລະຫັດລູກຄ້າ', key: 'LCIC_code', align: 'start' },
+      { title: 'ປະເພດຄ່າທຳນຽມ', key: 'chg_code', align: 'start' },
+      { title: 'ປະເພດລູກຄ້າ', key: 'cusType', align: 'center' },
+      { title: 'ເລກທີ່ອ້າງອີງ', key: 'rec_reference_code', align: 'start' },
+      { title: 'ຈຸດປະສົງສິນເຊື່ອ', key: 'lon_purpose', align: 'start' },
+      { title: 'ຜູ້ບັນທຶກ', key: 'user_sys_id', align: 'start' },
+      { title: 'ວັນທີ່ບັນທຶກ', key: 'rec_insert_date', align: 'center' }
     ];
   } catch (err) {
-    console.error(err);
+    console.error('❌ Error fetching detail data:', err);
+    if (err.response?.status === 400) {
+      alert(err.response.data.error || 'Error: Missing detail_bnk_code');
+      goBack();
+    }
     reportData.value = [];
   } finally {
     loading.value = false;
   }
 };
 
-const goBack = () => router.push({ path: '/report_search' });
+// ✅ กลับไปหน้าก่อนหน้า
+const goBack = () => {
+  if (filterParams.value.detail_bnk_code) {
+    // ✅ มี detail_bnk_code = มาจาก ReportAll → ลบ detail_bnk_code
+    const { detail_bnk_code, ...restQuery } = route.query;
+    router.push({
+      path: route.path,
+      query: restQuery
+    });
+  } else {
+    // ✅ ไม่มี detail_bnk_code = มาจากหน้าแรก → ลบ query ทั้งหมด
+    router.push({
+      path: route.path,
+      query: {}
+    });
+  }
+};
 
 watch(() => route.query, () => {
   getFilterParams();
@@ -263,20 +289,13 @@ watch(() => route.query, () => {
 }, { immediate: true });
 
 onMounted(() => {
+  
   getFilterParams();
   fetchDetailData();
 });
 </script>
 
 <style scoped>
-.credit-report-detail-container {
-  max-width: 1600px;
-  margin: 0 auto;
-  background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
-  min-height: 100vh;
-}
-
-/* Header Card */
 .header-card {
   border-radius: 16px;
   background: linear-gradient(135deg, #2931a5 0%, #2233a1 100%);
@@ -294,7 +313,6 @@ onMounted(() => {
   transform: translateX(-4px);
 }
 
-/* Filter Card */
 .filter-card {
   border-radius: 16px;
   background: white;
@@ -325,7 +343,6 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(41, 49, 165, 0.25);
 }
 
-/* Loading Card */
 .loading-card {
   border-radius: 16px;
   background: white;
@@ -333,7 +350,6 @@ onMounted(() => {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06) !important;
 }
 
-/* Data Table Card */
 .data-table-card {
   border-radius: 16px;
   background: white;
@@ -352,14 +368,13 @@ onMounted(() => {
 }
 
 .count-chip {
-  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%) !important;
+  background: linear-gradient(135deg, #225f97 0%, #2326b9 100%) !important;
   color: white !important;
   padding: 8px 20px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
-/* Table Styling */
 .custom-table {
   font-size: 0.95rem;
 }
@@ -367,16 +382,16 @@ onMounted(() => {
 .custom-table :deep(th) {
   background: #2931a5 !important;
   color: white !important;
-  font-weight: 700 !important;
-  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  font-size: 0.800rem !important;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 12px 16px !important;
+  padding: 10px 14px !important;
   border-bottom: 2px solid #2233a1 !important;
 }
 
 .custom-table :deep(td) {
-  padding: 16px !important;
+  padding: 14px !important;
   border-bottom: 1px solid #F5F5F5 !important;
 }
 
@@ -414,19 +429,13 @@ onMounted(() => {
   font-weight: 500;
 }
 
-/* No Data State */
 .no-data-container {
   background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
   border-radius: 12px;
   margin: 24px;
 }
 
-/* Responsive Design */
 @media (max-width: 960px) {
-  .credit-report-detail-container {
-    padding: 16px !important;
-  }
-
   .header-card {
     padding: 16px 20px !important;
   }
