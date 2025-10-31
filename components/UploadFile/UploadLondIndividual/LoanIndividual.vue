@@ -6,6 +6,8 @@ import { useMemberInfo } from "@/composables/memberInfo";
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 import { useUserData } from "~/composables/useUserData";
 import TablePaginations from "~/components/GloBal/TablePaginations.vue";
+import Swal from "sweetalert2";
+import dayjs from "dayjs";
 const { user, userId, isAdmin, isLoggedIn } = useUserData();
 const reques = inDividualStore.loan_query.query;
 
@@ -18,7 +20,7 @@ const headers = computed(() => {
   const baseHeaders = [
     { title: "ໄອດີ", value: "FID" },
     { title: "ຊື່ໄຟລ໌", value: "fileName" },
-    { title: "ຂະໜາດຟາຍ", value: "fileSize" },
+    { title: "ຂະໜາດຟາຍ", value: "file_size" },
     { title: "ໄລຍະເວລາ", value: "period" },
     { title: "ຂໍ້ມູນ dispute", value: "dispuste" },
     { title: "ສະຖານະ", value: "statussubmit" },
@@ -66,7 +68,21 @@ const displayMember = (item: any) => {
   return `${item.bnk_code}-${item.code}-${item.nameL}`;
 };
 
-// ສ້າງ computed ສຳລັບສະຖິຕິ
+const UploadFile = async ()=>{
+  const notification = await Swal.fire({
+    icon:"question",
+    title:"ຄຳເຕືອນ",
+    text:"ທ່ານຕອ້ງການອັບໂຫຼດຂໍ້ມູນນີ້ແທ້ບໍ...?",
+    showCancelButton:true,
+    confirmButtonText:"ຕົກລົງ",
+    cancelButtonText:"ຍົກເລີກ",
+    confirmButtonColor:"#0D47A1",
+    cancelButtonColor:"#D50000"
+  });if(notification.isConfirmed){
+    inDividualStore.from_upload_file.user_id = userId.value
+    await inDividualStore.UploadFile();
+  }
+}
 const statistics = computed(() => {
   const total = inDividualStore.respons_list_file_insdividual_loan?.count || 0;
   return [
@@ -143,12 +159,13 @@ onMounted(() => {
       </v-card-text>
     </v-card>
 
-    <!-- Filter Section -->
+    
     <v-card class="mb-4" elevation="1" v-if="userId !=='01'">
       <v-card-text>
         <v-row dense>
           <v-col cols="12" md="5">
             <v-file-input
+            v-model="inDividualStore.from_upload_file.file"
               clearable
               label="ອັບໂຫຼດຟາຍ JSON/XML"
               variant="outlined"
@@ -178,7 +195,7 @@ onMounted(() => {
             </v-autocomplete>
           </v-col>
           <v-col cols="12" md="1">
-            <v-btn color="primary" block>ອັບໂຫຼດ</v-btn>
+            <v-btn color="primary" block @click="UploadFile">ອັບໂຫຼດ</v-btn>
           </v-col>
           <v-col cols="12" md="2">
             <v-autocomplete
@@ -273,7 +290,7 @@ onMounted(() => {
       </v-card-text>
     </v-card>
 
-    <!-- Statistics Cards -->
+   
     <v-row class="mb-4">
       <v-col
         v-for="(stat, index) in statistics"
@@ -304,7 +321,7 @@ onMounted(() => {
       </v-col>
     </v-row>
 
-    <!-- Data Table Section -->
+  
     <v-card elevation="2">
       <v-card-title
         class="d-flex align-center justify-space-between pa-4 bg-grey-lighten-4"
@@ -354,6 +371,12 @@ onMounted(() => {
           >
             {{ item.statussubmit }}
           </v-chip>
+        </template>
+        <template v-slot:item.file_size="{item}">
+          {{ (item.file_size) }}
+        </template>
+        <template v-slot:item.period="{item}">
+          {{ dayjs(item.period).format('MM-YYYY') }}
         </template>
 
         <template v-slot:item.percentage="{ item }">
