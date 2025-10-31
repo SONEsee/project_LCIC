@@ -581,7 +581,7 @@ onMounted(() => {
           </div>
         </template>
         <template v-slot:item.actions="{item}">
-          <v-btn color="primary" prepend-icon="mdi-eye" flat>ລາຍລະອຽດ</v-btn>
+          <v-btn color="primary" prepend-icon="mdi-eye" flat @click="goPath(`/detailupload?code=n-${item.FID}`)">ລາຍລະອຽດ</v-btn>
         </template>
 
         <template v-slot:bottom>
