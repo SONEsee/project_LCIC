@@ -260,8 +260,8 @@ import { useRoute, useRouter } from "vue-router";
 // });
 
 
-const WATER_API_URL = 'http://192.168.45.56:8000/api/water-api/upload-json/';
-const ELECTRIC_API_URL = 'http://192.168.45.56:8000/api/electric-api/upload-json/';
+const WATER_API_URL = 'http://192.168.45.55:8000/api/water-api/upload-json/';
+const ELECTRIC_API_URL = 'http://192.168.45.55:8000/api/electric-api/upload-json/';
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 const waterUploadedFiles = ref(null);

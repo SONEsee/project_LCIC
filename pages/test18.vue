@@ -586,7 +586,7 @@ useHead({
 // ✅ Fixed API URL configuration - Use the correct backend URL
 const apiBaseUrl = computed(() => {
   // Replace with your actual Django backend URL
-  return config.public.apiUrl || 'http://192.168.45.56:8000'
+  return config.public.apiUrl || 'http://192.168.45.55:8000'
 })
 
 // Reactive state
