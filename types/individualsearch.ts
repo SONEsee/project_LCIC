@@ -68,3 +68,10 @@ export interface ResultIndividualFile {
     insertDate:          string;
     updateDate:          string;
 }
+export interface PerliodIndividualFileListRespons {
+    status:   string;
+    user_id:  string;
+    is_admin: boolean;
+    count:    number;
+    periods:  string[];
+}

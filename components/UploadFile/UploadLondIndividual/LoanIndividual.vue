@@ -8,8 +8,29 @@ import { useUserData } from "~/composables/useUserData";
 import TablePaginations from "~/components/GloBal/TablePaginations.vue";
 import Swal from "sweetalert2";
 import dayjs from "dayjs";
+import { color } from "chart.js/helpers";
+const SelectBank = ref("");
+const SelectPeroid = ref("");
+const SelectSatus = ref("");
+const SelectFile = ref("");
 const { user, userId, isAdmin, isLoggedIn } = useUserData();
 const reques = inDividualStore.loan_query.query;
+const period = computed(() => {
+  const data = inDividualStore.respons_data_reques_period?.periods;
+  if (Array.isArray(data)) {
+    return data;
+  }
+  if (data && typeof data === "object") {
+    return [data];
+  }
+  return [];
+});
+const periodItems = computed(() => {
+  return period.value.map((p) => ({
+    title: dayjs(p, "YYYYMM").format("MM-YYYY"),
+    value: p,
+  }));
+});
 
 async function onChangPage(value: number) {
   reques.page = value;
@@ -67,24 +88,127 @@ const displayMember = (item: any) => {
   if (!item || !item.bnk_code || !item.code || !item.nameL) return "ທັງໝົດ";
   return `${item.bnk_code}-${item.code}-${item.nameL}`;
 };
+const DateName = (item: any) => {
+  if (!item || !item || !item.value || !item.title) return "ທັງໝົດ";
+  return `${item.title}`;
+};
+const FileName = (item: any) => {
+  if (!item || !item || !item.value || !item.title) return "ທັງໝົດ";
+  return `${item.title}`;
+};
+const StatuName = (item: any) => {
+  if (!item || !item || !item.value || !item.title) return "ທັງໝົດ";
+  return `${item.title}`;
+};
 
-const UploadFile = async ()=>{
+const UploadFile = async () => {
   const notification = await Swal.fire({
-    icon:"question",
-    title:"ຄຳເຕືອນ",
-    text:"ທ່ານຕອ້ງການອັບໂຫຼດຂໍ້ມູນນີ້ແທ້ບໍ...?",
-    showCancelButton:true,
-    confirmButtonText:"ຕົກລົງ",
-    cancelButtonText:"ຍົກເລີກ",
-    confirmButtonColor:"#0D47A1",
-    cancelButtonColor:"#D50000"
-  });if(notification.isConfirmed){
-    inDividualStore.from_upload_file.user_id = userId.value
+    icon: "question",
+    title: "ຄຳເຕືອນ",
+    text: "ທ່ານຕອ້ງການອັບໂຫຼດຂໍ້ມູນນີ້ແທ້ບໍ...?",
+    showCancelButton: true,
+    confirmButtonText: "ຕົກລົງ",
+    cancelButtonText: "ຍົກເລີກ",
+    confirmButtonColor: "#0D47A1",
+    cancelButtonColor: "#D50000",
+  });
+  if (notification.isConfirmed) {
+    inDividualStore.from_upload_file.user_id = userId.value;
     await inDividualStore.UploadFile();
   }
-}
+};
+const FileType = [
+  { title: "ຟາຍ Json", value: "json", icon: "mdi-code-json", color: "error" },
+  { title: "ຟາຍ Xml", value: "xml", icon: "mdi-cloud-tags", color: "success" },
+];
+const Status = [
+  {
+    title: "ສຳເລັດ",
+    value: "1",
+    icon: "mdi-check-circle-outline",
+    color: "success",
+  },
+  {
+    title: "ກຳລັງໂຫຼດ",
+    value: "pending",
+    icon: "mdi-compost",
+    color: "warning",
+  },
+  {
+    title: "ປະຕິເສດ",
+    value: "2",
+    icon: "mdi-comment-remove-outline",
+    color: "error",
+  },
+];
+watch(SelectBank, async (newvalue) => {
+  try {
+    inDividualStore.loan_query.query.user_id_filter = newvalue;
+    await inDividualStore.getListIndividualLoan();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: "ບໍ່ສາມາດດືງຂໍ້ມູນຕາມສະມາຊິກໄດ້",
+    });
+  }
+});
+watch(SelectSatus, async (newvalue) => {
+  try {
+    inDividualStore.loan_query.query.statussubmit = newvalue;
+    await inDividualStore.getListIndividualLoan();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: "ບໍ່ສາມາດດືງຂໍ້ມູນຕາມສະມາຊິກໄດ້",
+    });
+  }
+});
+watch(SelectPeroid, async (newvalue) => {
+  try {
+    inDividualStore.loan_query.query.period = newvalue;
+    await inDividualStore.getListIndividualLoan();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: "ບໍ່ສາມາດດືງຂໍ້ມູນຕາມສະມາຊິກໄດ້",
+    });
+  }
+});
+watch(SelectFile, async (newvalue) => {
+  try {
+    inDividualStore.loan_query.query.FileType = newvalue;
+    await inDividualStore.getListIndividualLoan();
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: "ບໍ່ສາມາດດືງຂໍ້ມູນຕາມສະມາຊິກໄດ້",
+    });
+  }
+});
 const statistics = computed(() => {
-  const total = inDividualStore.respons_list_file_insdividual_loan?.count || 0;
+  const data = inDividualStore.respons_list_file_insdividual_loan;
+  const results = Array.isArray(data?.results) ? data.results : [];
+  const total = data?.count || 0;
+
+  const success = results.filter(
+    (item) => item.status === "0" && item.statussubmit === "0"
+  ).length;
+  const processing = results.filter(
+    (item) => item.status === "1" || item.statussubmit === "1"
+  ).length;
+  const rejected = results.filter(
+    (item) => item.status === "2" || item.statussubmit === "2"
+  ).length;
+
+  const jsonFiles = results.filter((item) => item.FileType === "json").length;
+  const xmlFiles = results.filter((item) => item.FileType === "xml").length;
+
+  const successRate = total > 0 ? ((success / total) * 100).toFixed(1) : "0.0";
+
   return [
     {
       label: "ທັງໝົດ",
@@ -94,53 +218,53 @@ const statistics = computed(() => {
       iconColor: "#1976D2",
     },
     {
-      label: "ສຳເລັດ",
-      value: "0",
+      label: "ນຳສົ່ງສຳເລັດ",
+      value: success.toLocaleString(),
       color: "#E8F5E9",
       icon: "mdi-check-circle",
       iconColor: "#388E3C",
     },
     {
-      label: "ກຳລັງດຳເນີນການ",
-      value: "0",
+      label: "ອັບໂຫຼດສຳເລັດ",
+      value: processing.toLocaleString(),
       color: "#FFF3E0",
       icon: "mdi-clock-outline",
       iconColor: "#F57C00",
     },
     {
       label: "ປະຕິເສດ",
-      value: "0",
+      value: rejected.toLocaleString(),
       color: "#FFEBEE",
       icon: "mdi-close-circle",
       iconColor: "#D32F2F",
     },
     {
       label: "ອັດຕາສຳເລັດ",
-      value: "0%",
+      value: `${successRate}%`,
       color: "#F3E5F5",
       icon: "mdi-chart-line",
       iconColor: "#7B1FA2",
     },
     {
       label: "JSON/XML",
-      value: "0/0",
+      value: `${jsonFiles}/${xmlFiles}`,
       color: "#E0F2F1",
       icon: "mdi-code-json",
       iconColor: "#00796B",
     },
   ];
 });
-
 onMounted(() => {
   inDividualStore.loan_query.query.user_id = userId.value;
+  inDividualStore.period.query.user_id = userId.value;
   inDividualStore.getListIndividualLoan();
   memberStore.getMemberInfo();
+  inDividualStore.getPeriod();
 });
 </script>
 
 <template>
   <v-container fluid class="pa-4">
-    
     <v-card class="mb-4" elevation="0" color="#FAFAFA">
       <v-card-text>
         <div class="d-flex align-center">
@@ -159,13 +283,12 @@ onMounted(() => {
       </v-card-text>
     </v-card>
 
-    
-    <v-card class="mb-4" elevation="1" v-if="userId !=='01'">
+    <v-card class="mb-4" elevation="1" v-if="userId !== '01'">
       <v-card-text>
         <v-row dense>
           <v-col cols="12" md="5">
             <v-file-input
-            v-model="inDividualStore.from_upload_file.file"
+              v-model="inDividualStore.from_upload_file.file"
               clearable
               label="ອັບໂຫຼດຟາຍ JSON/XML"
               variant="outlined"
@@ -173,33 +296,19 @@ onMounted(() => {
               hide-details
               prepend-icon=""
               prepend-inner-icon="mdi-paperclip"
+              class="custom-file-input"
             ></v-file-input>
-            <v-autocomplete
-              v-if="userId === '01'"
-              :items="memberData"
-              :item-title="displayMember"
-              item-value="bnk_code"
-              label="ເລືອກສະມາຊິກ"
-              density="comfortable"
-              variant="outlined"
-              prepend-inner-icon="mdi-bank"
-              clearable
-              hide-details
-            >
-              <template v-slot:item="{ item, props }">
-                <v-list-item
-                  v-bind="props"
-                  :title="`${item.raw.bnk_code}-${item.raw.code}-${item.raw.nameL}`"
-                ></v-list-item>
-              </template>
-            </v-autocomplete>
           </v-col>
           <v-col cols="12" md="1">
             <v-btn color="primary" block @click="UploadFile">ອັບໂຫຼດ</v-btn>
           </v-col>
           <v-col cols="12" md="2">
             <v-autocomplete
+              class="custom-file-input"
               label="ງວດທີ່ສົ່ງ"
+              :items="periodItems"
+              :item-title="DateName"
+              v-model="SelectPeroid"
               density="comfortable"
               variant="outlined"
               prepend-inner-icon="mdi-calendar"
@@ -209,34 +318,69 @@ onMounted(() => {
           </v-col>
           <v-col cols="12" md="2">
             <v-autocomplete
+              class="custom-file-input"
+              :items="FileType"
+              :item-title="FileName"
+              item-value="value"
+              v-model="SelectFile"
               label="ປະເພດໄຟລ"
               density="comfortable"
               variant="outlined"
               prepend-inner-icon="mdi-file-outline"
               clearable
               hide-details
-            ></v-autocomplete>
+            >
+              <template v-slot:item="{ item, props }">
+                <v-list-item v-bind="props" :title="item.raw?.title">
+                  <template v-slot:prepend>
+                    <v-avatar size="small" variant="flat">
+                      <v-icon size="small" :color="item.raw.color">{{
+                        item.raw.icon
+                      }}</v-icon>
+                    </v-avatar>
+                  </template>
+                </v-list-item>
+              </template>
+            </v-autocomplete>
           </v-col>
           <v-col cols="12" md="2">
             <v-autocomplete
+              class="custom-file-input"
+              :items="Status"
+              v-model="SelectSatus"
               label="ສະຖານະ"
+              :item-title="StatuName"
+              item-value="value"
               density="comfortable"
               variant="outlined"
               prepend-inner-icon="mdi-check-circle-outline"
               clearable
               hide-details
-            ></v-autocomplete>
+            >
+              <template v-slot:item="{ item, props }">
+                <v-list-item v-bind="props" :title="item.raw?.title">
+                  <template v-slot:prepend>
+                    <v-avatar size="small" variant="flat">
+                      <v-icon size="small" :color="item.raw.color">{{
+                        item.raw.icon
+                      }}</v-icon>
+                    </v-avatar>
+                  </template>
+                </v-list-item>
+              </template>
+            </v-autocomplete>
           </v-col>
         </v-row>
       </v-card-text>
     </v-card>
-    <v-card class="mb-4" elevation="1" v-if="userId ==='01'">
+    <v-card class="mb-4" elevation="1" v-if="userId === '01'">
       <v-card-text>
         <v-row dense>
           <v-col cols="12" md="3">
-            
             <v-autocomplete
+              class="custom-file-input"
               v-if="userId === '01'"
+              v-model="SelectBank"
               :items="memberData"
               :item-title="displayMember"
               item-value="bnk_code"
@@ -255,10 +399,14 @@ onMounted(() => {
               </template>
             </v-autocomplete>
           </v-col>
-          
+
           <v-col cols="12" md="3">
             <v-autocomplete
+              class="custom-file-input"
               label="ງວດທີ່ສົ່ງ"
+              :items="periodItems"
+              :item-title="DateName"
+              v-model="SelectPeroid"
               density="comfortable"
               variant="outlined"
               prepend-inner-icon="mdi-calendar"
@@ -268,29 +416,62 @@ onMounted(() => {
           </v-col>
           <v-col cols="12" md="3">
             <v-autocomplete
+              class="custom-file-input"
+              :items="FileType"
+              :item-title="FileName"
+              item-value="value"
+              v-model="SelectFile"
               label="ປະເພດໄຟລ"
               density="comfortable"
               variant="outlined"
               prepend-inner-icon="mdi-file-outline"
               clearable
               hide-details
-            ></v-autocomplete>
+            >
+              <template v-slot:item="{ item, props }">
+                <v-list-item v-bind="props" :title="item.raw?.title">
+                  <template v-slot:prepend>
+                    <v-avatar size="small" variant="flat">
+                      <v-icon size="small" :color="item.raw.color">{{
+                        item.raw.icon
+                      }}</v-icon>
+                    </v-avatar>
+                  </template>
+                </v-list-item>
+              </template>
+            </v-autocomplete>
           </v-col>
           <v-col cols="12" md="3">
             <v-autocomplete
+              class="custom-file-input"
+              :items="Status"
+              v-model="SelectSatus"
               label="ສະຖານະ"
+              :item-title="StatuName"
+              item-value="value"
               density="comfortable"
               variant="outlined"
               prepend-inner-icon="mdi-check-circle-outline"
               clearable
               hide-details
-            ></v-autocomplete>
+            >
+              <template v-slot:item="{ item, props }">
+                <v-list-item v-bind="props" :title="item.raw?.title">
+                  <template v-slot:prepend>
+                    <v-avatar size="small" variant="flat">
+                      <v-icon size="small" :color="item.raw.color">{{
+                        item.raw.icon
+                      }}</v-icon>
+                    </v-avatar>
+                  </template>
+                </v-list-item>
+              </template>
+            </v-autocomplete>
           </v-col>
         </v-row>
       </v-card-text>
     </v-card>
 
-   
     <v-row class="mb-4">
       <v-col
         v-for="(stat, index) in statistics"
@@ -321,7 +502,6 @@ onMounted(() => {
       </v-col>
     </v-row>
 
-  
     <v-card elevation="2">
       <v-card-title
         class="d-flex align-center justify-space-between pa-4 bg-grey-lighten-4"
@@ -358,26 +538,34 @@ onMounted(() => {
         </template>
 
         <template v-slot:item.statussubmit="{ item }">
-          <v-chip
-            size="small"
-            :color="
-              item.statussubmit === 'ສຳເລັດ'
-                ? 'success'
-                : item.statussubmit === 'ກຳລັງດຳເນີນການ'
-                ? 'warning'
-                : 'error'
-            "
-            variant="tonal"
-          >
-            {{ item.statussubmit }}
+          <v-chip color="success" v-if="item.statussubmit === '1'">
+            <strong>ສຳເລັດ</strong>
+          </v-chip>
+          <v-chip color="error" v-if="item.statussubmit === '2'">
+            <strong>ສຳເລັດ</strong>
+          </v-chip>
+          <v-chip color="warning" v-if="item.statussubmit === 'pending'">
+            <v-progress-circular
+              color="blue-lighten-3"
+              indeterminate
+            ></v-progress-circular>
           </v-chip>
         </template>
-        <template v-slot:item.file_size="{item}">
-          {{ (item.file_size) }}
+        <template v-slot:item.file_size="{ item }">
+          {{ item.file_size }}
         </template>
-        <template v-slot:item.period="{item}">
-          {{ dayjs(item.period).format('MM-YYYY') }}
+        <template v-slot:item.period="{ item }">
+          <v-chip color="primary" >{{ dayjs(item.period).format("MM-YYYY") }}</v-chip>
         </template>
+        <template v-slot:item.dispuste="{ item }">
+          <v-chip color="info" v-if="item.dispuste ==='0'">
+            ບໍ່ມີ
+          </v-chip>
+          <v-chip color="info" v-else  @click="" density="compact" variant="flat">
+            {{ item.dispuste }}
+          </v-chip>
+        </template>
+        
 
         <template v-slot:item.percentage="{ item }">
           <div class="d-flex align-center">
@@ -391,6 +579,9 @@ onMounted(() => {
             ></v-progress-linear>
             <span class="text-caption">{{ item.percentage || 0 }}%</span>
           </div>
+        </template>
+        <template v-slot:item.actions="{item}">
+          <v-btn color="primary" prepend-icon="mdi-eye" flat>ລາຍລະອຽດ</v-btn>
         </template>
 
         <template v-slot:bottom>
@@ -414,7 +605,9 @@ onMounted(() => {
   transition: all 0.3s ease;
   border-radius: 12px !important;
 }
-
+.custom-file-input :deep(.v-icon) {
+  font-size: 20px;
+}
 .stat-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
