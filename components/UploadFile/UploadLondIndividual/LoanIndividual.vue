@@ -561,7 +561,7 @@ onMounted(() => {
           <v-chip color="info" v-if="item.dispuste ==='0'">
             ບໍ່ມີ
           </v-chip>
-          <v-chip color="info" v-else  @click="" density="compact" variant="flat">
+          <v-chip color="info" v-else  @click="goPath(`/disuste/?id_dispust=n-${item.FID}`)" density="compact" variant="flat">
             {{ item.dispuste }}
           </v-chip>
         </template>
