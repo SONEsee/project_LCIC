@@ -360,15 +360,15 @@ export const IndividualStore = defineStore("individual", {
         this.isLoading = false;
       }
     },
-    // ໃນ Store
+    
 async confirmUploadLoan(fid: string) {
   this.isLoading = true;
   try {
-    // ສ້າງ FormData (ບໍ່ແມ່ນ JSON!)
-    const formData = new FormData();
-    formData.append('FID', fid); // key ຕ້ອງເປັນ 'FID' (ຕົວໃຫຍ່)
     
-    console.log('Sending FID:', fid); // Debug
+    const formData = new FormData();
+    formData.append('FID', fid);
+    
+    console.log('Sending FID:', fid); 
     
     const res = await axios.post(
       `/api/confirm_upload_individual/`,
@@ -400,7 +400,45 @@ async confirmUploadLoan(fid: string) {
   } finally {
     this.isLoading = false;
   }
-}
+},
+async RejectUploadLoan(id:string) {
+  this.isLoading = true;
+  try {
+    
+    
+  
+    
+    const res = await axios.post(
+      `/api/api/reject_individual_loan/${id}/`,
+      
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    );
+    
+    if (res.status === 200) {
+      await Swal.fire({
+        icon: "success",
+        title: "ສຳເລັດ",
+        text: "ທ່ານສຳເລັດການ Reject ແລ້ວ",
+        timer: 1000,
+        showConfirmButton: false
+      });
+    }
+  } catch (error: any) {
+    console.error('Error:', error.response?.data);
+    
+    await Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: error.response?.data?.message || "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ ກະລຸນາລອງໃໝ່"
+    });
+  } finally {
+    this.isLoading = false;
+  }
+},
   },
   // async UploadFile() {
   //   this.isLoading = true;
