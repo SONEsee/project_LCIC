@@ -74,6 +74,17 @@
             </select>
           </div>
           
+          <!-- Charge Code Filter -->
+          <div class="filter-group">
+            <label class="filter-label">ປະເພດຄ່າທຳນຽມ</label>
+            <select v-model="filters.chg_code" class="filter-select">
+              <option value="all">ທັງໝົດ</option>
+              <option v-for="code in chargeCodeList" :key="code.code" :value="code.code">
+                {{ code.display }}
+              </option>
+            </select>
+          </div>
+          
           <!-- Action Buttons -->
           <div class="filter-actions">
             <button 
@@ -95,7 +106,6 @@
     
     <!-- Summary Cards -->
     <div class="summary-cards">
-      <!-- Card 1: Monthly Transactions -->
       <div class="summary-card">
         <div class="card-header">
           <Icon name="mdi:receipt-text-outline" class="card-icon" />
@@ -113,7 +123,6 @@
         </div>
       </div>
       
-      <!-- Card 2: Monthly Amount -->
       <div class="summary-card">
         <div class="card-header">
           <Icon name="mdi:cash-multiple" class="card-icon amount-icon" />
@@ -131,7 +140,6 @@
         </div>
       </div>
       
-      <!-- Card 3: Top Bank by Amount (Admin Only) -->
       <div class="summary-card top-bank-card" v-if="isAdmin && topBankByAmount">
         <div class="card-header">
           <Icon name="mdi:bank" class="card-icon bank-icon" />
@@ -152,7 +160,6 @@
         </div>
       </div>
       
-      <!-- Card 4: Top Bank by Transactions (Admin Only) -->
       <div class="summary-card top-bank-card" v-if="isAdmin && topBankByTransactions">
         <div class="card-header">
           <Icon name="mdi:bank-transfer" class="card-icon transaction-icon" />
@@ -246,7 +253,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useChargeReportApi } from '~/composables/useChargeReportApi'
 
 definePageMeta({
@@ -254,11 +261,11 @@ definePageMeta({
   layout: 'backend'
 })
 
-// Composable
 const {
   summaryData,
   mainReportData,
   bankList,
+  chargeCodeList,
   userInfo,
   loadingSummary,
   loadingMain,
@@ -266,28 +273,26 @@ const {
   fetchSummaryStats,
   fetchMainReport,
   fetchBankList,
+  fetchChargeCodeList,
   formatNumber,
   formatCurrency
 } = useChargeReportApi()
 
-// compute today's date in YYYY-MM-DD
 const pad = (n: number) => String(n).padStart(2, '0')
 const now = new Date()
 const todayISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 
-// Filters
 const filters = ref({
-  fromDate: todayISO,   // default to today
-  toDate: todayISO,     // default to today
+  fromDate: todayISO,
+  toDate: todayISO,
   month: '',
   year: new Date().getFullYear().toString(),
-  bank: 'all'
+  bank: 'all',
+  chg_code: 'all'
 })
 
-// Loading state
 const loading = computed(() => loadingSummary.value || loadingMain.value)
 
-// Year options (last 5 years)
 const yearOptions = computed(() => {
   const currentYear = new Date().getFullYear()
   const years = []
@@ -297,7 +302,6 @@ const yearOptions = computed(() => {
   return years
 })
 
-// Current month label
 const currentMonthLabel = computed(() => {
   if (summaryData.value?.current_month_stats?.month_label) {
     return summaryData.value.current_month_stats.month_label
@@ -306,7 +310,6 @@ const currentMonthLabel = computed(() => {
   return `${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`
 })
 
-// Summary computed values
 const monthlyTransactions = computed(() => {
   return summaryData.value?.current_month_stats?.total_transactions || 0
 })
@@ -339,7 +342,6 @@ const totalAmount = computed(() => {
   return mainReportData.value.reduce((sum, bank) => sum + bank.total_charge_amount, 0)
 })
 
-// Handle date change (clear month/year when date range is selected)
 const handleDateChange = () => {
   if (filters.value.fromDate || filters.value.toDate) {
     filters.value.month = ''
@@ -347,7 +349,6 @@ const handleDateChange = () => {
   }
 }
 
-// Handle month/year change (clear date range when month/year is selected)
 const handleMonthYearChange = () => {
   if (filters.value.month || filters.value.year) {
     filters.value.fromDate = ''
@@ -355,7 +356,6 @@ const handleMonthYearChange = () => {
   }
 }
 
-// Apply filters
 const applyFilters = async () => {
   const filterParams: any = {}
   
@@ -364,15 +364,14 @@ const applyFilters = async () => {
   if (filters.value.month) filterParams.month = filters.value.month
   if (filters.value.year) filterParams.year = filters.value.year
   if (filters.value.bank && filters.value.bank !== 'all') filterParams.bank = filters.value.bank
+  if (filters.value.chg_code && filters.value.chg_code !== 'all') filterParams.chg_code = filters.value.chg_code
   
-  // Fetch data with filters
   await Promise.all([
     fetchSummaryStats(filterParams),
     fetchMainReport(filterParams)
   ])
 }
 
-// Reset filters
 const resetFilters = () => {
   const now = new Date()
   filters.value = {
@@ -380,47 +379,41 @@ const resetFilters = () => {
     toDate: '',
     month: '',
     year: now.getFullYear().toString(),
-    bank: 'all'
+    bank: 'all',
+    chg_code: 'all'
   }
   applyFilters()
 }
 
-// View details - FIXED: Pass date filters to detail page
 const viewDetails = (bankCode: string) => {
-  // Build query params with current filters
   const queryParams: any = { bank: bankCode }
   
-  // Add date filters if they exist
   if (filters.value.month) queryParams.month = filters.value.month
   if (filters.value.year) queryParams.year = filters.value.year
   if (filters.value.fromDate) queryParams.fromDate = filters.value.fromDate
   if (filters.value.toDate) queryParams.toDate = filters.value.toDate
+  if (filters.value.chg_code && filters.value.chg_code !== 'all') queryParams.chg_code = filters.value.chg_code
   
-  // Navigate with all filters
   navigateTo({
     path: '/test25',
     query: queryParams
   })
 }
 
-// Export data
 const exportData = () => {
-  // Implement export functionality
   console.log('Export data')
 }
 
-// Initialize data on mount
 onMounted(async () => {
-  // Load initial data
   await Promise.all([
     fetchBankList(),
+    fetchChargeCodeList(),
     applyFilters()
   ])
 })
 </script>
 
 <style scoped>
-/* Global Dashboard Styles */
 .charge-report-dashboard {
   padding: 24px;
   background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
@@ -428,7 +421,6 @@ onMounted(async () => {
   font-family: 'Phetsarath OT', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Dashboard Header */
 .dashboard-header {
   margin-bottom: 24px;
   animation: slideDown 0.3s ease-out;
@@ -449,7 +441,6 @@ onMounted(async () => {
   color: #3b82f6;
 }
 
-/* Filter Section */
 .filter-section {
   background: #ffffff;
   border-radius: 12px;
@@ -522,7 +513,6 @@ onMounted(async () => {
   flex: 0 0 auto;
 }
 
-/* Button Styles */
 .btn {
   display: flex;
   align-items: center;
@@ -578,7 +568,6 @@ onMounted(async () => {
   box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
 }
 
-/* Summary Cards */
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -699,7 +688,6 @@ onMounted(async () => {
   color: #9ca3af;
 }
 
-/* Data Section */
 .data-section {
   background: #ffffff;
   border-radius: 12px;
@@ -724,7 +712,6 @@ onMounted(async () => {
   color: #1f2937;
 }
 
-/* Loading State */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -744,7 +731,6 @@ onMounted(async () => {
   margin-bottom: 16px;
 }
 
-/* Table Styles */
 .table-container {
   overflow-x: auto;
 }
@@ -831,7 +817,6 @@ onMounted(async () => {
   font-size: 18px;
 }
 
-/* Empty State */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -859,7 +844,6 @@ onMounted(async () => {
   color: #9ca3af;
 }
 
-/* Animations */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -891,7 +875,6 @@ onMounted(async () => {
   }
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .charge-report-dashboard {
     padding: 16px;
@@ -947,22 +930,6 @@ onMounted(async () => {
   }
 }
 
-@media (max-width: 480px) {
-  .dashboard-title {
-    font-size: 20px;
-  }
-
-  .section-header {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .btn-export {
-    width: 100%;
-  }
-}
-
-/* Print Styles */
 @media print {
   .filter-section,
   .filter-actions,

@@ -1,7 +1,7 @@
 <template>
   <div class="charge-details-page">
     <!-- Page Header -->
-    <div class="page-header">
+    <div class="page-header no-print">
       <div class="header-content">
         <button @click="goBack" class="btn-back">
           <Icon name="mdi:arrow-left" />
@@ -13,7 +13,6 @@
         </h1>
       </div>
       
-      <!-- Bank Info -->
       <div class="bank-info-header" v-if="selectedBankInfo">
         <div class="bank-badge">
           <Icon name="mdi:bank" />
@@ -28,9 +27,8 @@
     </div>
 
     <!-- Filters Section -->
-    <div class="filters-section">
+    <div class="filters-section no-print">
       <div class="filter-row">
-        <!-- Bank Selection (Admin Only) -->
         <div v-if="isAdmin" class="filter-group">
           <label class="filter-label">
             <Icon name="mdi:bank" class="label-icon" />
@@ -44,7 +42,6 @@
           </select>
         </div>
 
-        <!-- Month Filter -->
         <div class="filter-group">
           <label class="filter-label">ເດືອນ</label>
           <select v-model="filters.month" class="filter-select" @change="handleMonthYearChange">
@@ -64,7 +61,6 @@
           </select>
         </div>
 
-        <!-- Year Filter -->
         <div class="filter-group">
           <label class="filter-label">ປີ</label>
           <select v-model="filters.year" class="filter-select">
@@ -75,7 +71,6 @@
           </select>
         </div>
 
-        <!-- Date Range -->
         <div class="filter-group">
           <label class="filter-label">ຊ່ວງວັນທີ</label>
           <div class="date-range">
@@ -95,7 +90,16 @@
           </div>
         </div>
 
-        <!-- Status Filter -->
+        <div class="filter-group">
+          <label class="filter-label">ປະເພດຄ່າທຳນຽມ</label>
+          <select v-model="filters.chg_code" class="filter-select">
+            <option value="">ທັງໝົດ</option>
+            <option v-for="chg_code in chargeCodeList" :key="chg_code.chg_code" :value="chg_code.chg_code">
+              {{ chg_code.display }}
+            </option>
+          </select>
+        </div>
+
         <div class="filter-group">
           <label class="filter-label">ສະຖານະ</label>
           <select v-model="filters.status" class="filter-select">
@@ -109,7 +113,6 @@
           </select>
         </div>
 
-        <!-- Limit Filter -->
         <div class="filter-group">
           <label class="filter-label">ຈຳນວນແຖວ</label>
           <select v-model="filters.limit" class="filter-select">
@@ -120,7 +123,6 @@
           </select>
         </div>
 
-        <!-- Search Box -->
         <div class="filter-group flex-2">
           <label class="filter-label">ຄົ້ນຫາ</label>
           <input 
@@ -132,7 +134,6 @@
           />
         </div>
 
-        <!-- Action Buttons -->
         <div class="filter-actions">
           <button @click="applyFilters" class="btn btn-primary" :disabled="loading">
             <Icon name="mdi:magnify" />
@@ -147,7 +148,7 @@
     </div>
 
     <!-- Summary Stats -->
-    <div class="summary-stats">
+    <div class="summary-stats no-print">
       <div class="stat-card">
         <div class="stat-icon">
           <Icon name="mdi:file-document-multiple" />
@@ -189,9 +190,34 @@
       </div>
     </div>
 
+    <!-- Print Header (Only visible when printing) -->
+    <div class="print-header">
+      <div class="report-title">
+        <h1>ລາຍງານຄ່າທຳນຽມລາຍລະອຽດ</h1>
+        <div class="report-info">
+          <div class="info-row">
+            <span class="label">ທະນາຄານ:</span>
+            <span class="value">{{ selectedBankInfo?.name || 'ທັງໝົດ' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">ວັນທີອອກລາຍງານ:</span>
+            <span class="value">{{ formatDate(new Date()) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">ຈຳນວນທຸລະກຳທັງໝົດ:</span>
+            <span class="value">{{ totalRecords }} ລາຍການ</span>
+          </div>
+          <div class="info-row">
+            <span class="label">ຍອດເງິນລວມ:</span>
+            <span class="value">{{ formatCurrency(totalAmount) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Data Table -->
     <div class="table-section">
-      <div class="table-header">
+      <div class="table-header no-print">
         <h2 class="section-title">ລາຍການທຸລະກຳ</h2>
         <div class="table-actions">
           <button @click="exportToExcel" class="btn btn-export">
@@ -202,7 +228,7 @@
             <Icon name="mdi:file-pdf-box" />
             <span>PDF</span>
           </button>
-          <button @click="printTable" class="btn btn-export print">
+          <button @click="printReport" class="btn btn-export print">
             <Icon name="mdi:printer" />
             <span>ພິມ</span>
           </button>
@@ -220,27 +246,34 @@
         <table class="detail-table">
           <thead>
             <tr>
-              <th class="text-center">#</th>
-              <th>ລະຫັດທຸລະກຳ</th>
-              <th>ວັນທີ</th>
+              <th class="text-center">ລຳດັບ</th>
+              <th>ທະນາຄານ</th>
+              <th>ລະຫັດຄ່າທຳນຽມ</th>
               <th>ລະຫັດວິສາຫະກິດ</th>
-              <th>ຊື່ວິສາຫະກິດ</th>
-              <th>ຈຸດປະສົງ</th>
+              <th>ຜູ້ໃຊ້ລະບົບ</th>
+              <th>ວັນທີບັນທຶກ</th>
               <th class="text-right">ຈຳນວນເງິນ</th>
               <th class="text-center">ສະຖານະ</th>
-              <th class="text-center">ການດຳເນີນການ</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(item, index) in filteredData" :key="item.rec_charge_ID">
               <td class="text-center">{{ index + 1 }}</td>
-              <td class="charge-id">
-                <span class="id-badge">{{ item.rec_charge_ID }}</span>
+              <td>
+                <div class="bank-cell">
+                  <span class="bank-code">{{ item.bnk_code }}</span>
+                  <span class="bank-name">{{ item.bank_name }}</span>
+                </div>
               </td>
-              <td>{{ formatDate(item.insert_date) }}</td>
-              <td class="text-center">{{ item.LCIC_code }}</td>
-              <td>{{ item.enterprise_name || '-' }}</td>
-              <td>{{ item.lon_purpose || '-' }}</td>
+              <td>
+                <div class="charge-code-cell">
+                  <span class="code">{{ item.chg_code }}</span>
+                  <span class="desc">{{ item.chg_lao_desc }}</span>
+                </div>
+              </td>
+              <td class="text-center">{{ item.LCIC_code || '-' }}</td>
+              <td>{{ item.user_sys_id || '-' }}</td>
+              <td>{{ formatDate(item.rec_insert_date) }}</td>
               <td class="text-right amount-cell">
                 {{ formatCurrency(item.chg_amount) }}
               </td>
@@ -252,26 +285,15 @@
                   {{ item.status_lao || item.status }}
                 </span>
               </td>
-              <td class="text-center">
-                <div class="action-buttons">
-                  <button 
-                    @click="viewTransaction(item)" 
-                    class="btn-action view"
-                    title="ເບິ່ງລາຍລະອຽດ"
-                  >
-                    <Icon name="mdi:eye" />
-                  </button>
-                  <button 
-                    @click="printTransaction(item)" 
-                    class="btn-action print"
-                    title="ພິມ"
-                  >
-                    <Icon name="mdi:printer" />
-                  </button>
-                </div>
-              </td>
             </tr>
           </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="6" class="text-right">ລວມທັງໝົດ:</td>
+              <td class="text-right">{{ formatCurrency(totalAmount) }}</td>
+              <td></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
@@ -283,90 +305,29 @@
       </div>
     </div>
 
-    <!-- Transaction Detail Modal -->
-    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>ລາຍລະອຽດທຸລະກຳ #{{ selectedTransaction.rec_charge_ID }}</h3>
-          <button @click="closeModal" class="btn-close">
-            <Icon name="mdi:close" />
-          </button>
+    <!-- Print Footer (Only visible when printing) -->
+    <div class="print-footer">
+      <div class="footer-content">
+        <div class="footer-row">
+          <span>ພິມວັນທີ: {{ formatDate(new Date()) }}</span>
+          <span>ໜ້າທີ່: 1</span>
         </div>
-        <div class="modal-body">
-          <div class="detail-grid">
-            <div class="detail-item">
-              <label>ລະຫັດທຸລະກຳ:</label>
-              <span>{{ selectedTransaction.rec_charge_ID }}</span>
-            </div>
-            <div class="detail-item">
-              <label>ທະນາຄານ:</label>
-              <span>{{ selectedTransaction.bank_display }}</span>
-            </div>
-            <div class="detail-item">
-              <label>ວັນທີທຸລະກຳ:</label>
-              <span>{{ formatDate(selectedTransaction.insert_date) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>ວັນທີອັບເດດ:</label>
-              <span>{{ formatDate(selectedTransaction.update_date) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>ລະຫັດວິສາຫະກິດ:</label>
-              <span>{{ selectedTransaction.LCIC_code }}</span>
-            </div>
-            <div class="detail-item">
-              <label>ຊື່ວິສາຫະກິດ:</label>
-              <span>{{ selectedTransaction.enterprise_name || '-' }}</span>
-            </div>
-            <div class="detail-item">
-              <label>ຈຸດປະສົງສິນເຊື່ອ:</label>
-              <span>{{ selectedTransaction.lon_purpose || '-' }}</span>
-            </div>
-            <div class="detail-item">
-              <label>ປະເພດລູກຄ້າ:</label>
-              <span>{{ selectedTransaction.cusType || '-' }}</span>
-            </div>
-            <div class="detail-item full-width">
-              <label>ຈຳນວນເງິນ:</label>
-              <span class="amount-large">{{ formatCurrency(selectedTransaction.chg_amount) }}</span>
-            </div>
-            <div class="detail-item">
-              <label>ສະກຸນເງິນ:</label>
-              <span>{{ selectedTransaction.chg_unit }}</span>
-            </div>
-            <div class="detail-item">
-              <label>ສະຖານະ:</label>
-              <span class="status-badge" :class="getStatusClass(selectedTransaction.status)">
-                {{ selectedTransaction.status_lao }}
-              </span>
-            </div>
-            <div class="detail-item">
-              <label>ລະຫັດອ້າງອີງ:</label>
-              <span>{{ selectedTransaction.rec_reference_code || '-' }}</span>
-            </div>
-            <div class="detail-item">
-              <label>RTP Code:</label>
-              <span>{{ selectedTransaction.rtp_code || '-' }}</span>
-            </div>
-            <div class="detail-item">
-              <label>User ID:</label>
-              <span>{{ selectedTransaction.user_sys_id || '-' }}</span>
-            </div>
-            <div class="detail-item">
-              <label>Session ID:</label>
-              <span>{{ selectedTransaction.user_session_id || '-' }}</span>
-            </div>
+        <div class="footer-signature">
+          <div class="signature-box">
+            <p>ຜູ້ກະກຽມ</p>
+            <p class="signature-line">______________________</p>
+            <p class="signature-date">ວັນທີ: ____/____/____</p>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button @click="printTransaction(selectedTransaction)" class="btn btn-primary">
-            <Icon name="mdi:printer" />
-            <span>ພິມ</span>
-          </button>
-          <button @click="closeModal" class="btn btn-secondary">
-            <Icon name="mdi:close" />
-            <span>ປິດ</span>
-          </button>
+          <div class="signature-box">
+            <p>ຜູ້ກວດສອບ</p>
+            <p class="signature-line">______________________</p>
+            <p class="signature-date">ວັນທີ: ____/____/____</p>
+          </div>
+          <div class="signature-box">
+            <p>ຜູ້ອະນຸມັດ</p>
+            <p class="signature-line">______________________</p>
+            <p class="signature-date">ວັນທີ: ____/____/____</p>
+          </div>
         </div>
       </div>
     </div>
@@ -397,40 +358,38 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useChargeReportApi } from '~/composables/useChargeReportApi'
 
 definePageMeta({
   middleware: "auth",
   layout: "backend",
-});
+})
 
 const router = useRouter()
 const route = useRoute()
 const { 
   fetchDetailReport, 
   fetchBankList,
+  fetchChargeCodeList,
   formatCurrency: formatCurrencyUtil, 
   detailData, 
   loadingDetail,
   bankList: apiBankList,
+  chargeCodeList,
   checkUserAccess,
   getUserRole
 } = useChargeReportApi()
 
-// State
 const loading = ref(false)
-const showModal = ref(false)
 const showAccessDenied = ref(false)
-const selectedTransaction = ref<any>({})
 const searchQuery = ref('')
 const selectedBankInfo = ref<any>(null)
 const bankList = ref<any[]>([])
 const isAdmin = ref(false)
 const userBankId = ref('')
 
-// Get current date for default filters
 const getCurrentDate = () => {
   const now = new Date()
   return {
@@ -440,7 +399,6 @@ const getCurrentDate = () => {
   }
 }
 
-// Generate available years
 const availableYears = computed(() => {
   const currentYear = new Date().getFullYear()
   const years = []
@@ -451,40 +409,35 @@ const availableYears = computed(() => {
 })
 
 const currentDate = getCurrentDate()
-// compute today's date in YYYY-MM-DD
 const pad = (n: number) => String(n).padStart(2, '0')
 const now = new Date()
 const todayISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
-// Filters with default values
+
 const filters = ref({
-//   month: String(currentDate.month),
-//   year: String(currentDate.year),
   month: '',
   year: '',
   fromDate: todayISO,
   toDate: todayISO,
   status: '',
   limit: '100',
-  bank: ''
+  bank: '',
+  chg_code: ''
 })
 
-// Initialize on mount
 onMounted(async () => {
-  // Get user role and bank info
   const roleInfo = getUserRole()
   isAdmin.value = roleInfo.isAdmin
   userBankId.value = roleInfo.bankId
 
-// Read date filters from URL query parameters
   const monthFromUrl = route.query.month as string
   const yearFromUrl = route.query.year as string
   const fromDateFromUrl = route.query.fromDate as string
   const toDateFromUrl = route.query.toDate as string
+  const chgCodeFromUrl = route.query.chg_code as string
 
-// Set date filters from URL if provided, otherwise use defaults
   if (monthFromUrl) {
     filters.value.month = monthFromUrl
-    filters.value.fromDate = '' // Clear date range when month is set
+    filters.value.fromDate = ''
     filters.value.toDate = ''
   }
   
@@ -495,26 +448,26 @@ onMounted(async () => {
   if (fromDateFromUrl && toDateFromUrl) {
     filters.value.fromDate = fromDateFromUrl
     filters.value.toDate = toDateFromUrl
-    filters.value.month = '' // Clear month when date range is set
+    filters.value.month = ''
     filters.value.year = ''
   }
-// For admin, load bank list
+
+  if (chgCodeFromUrl) {
+    filters.value.chg_code = chgCodeFromUrl
+  }
+
   if (isAdmin.value) {
     await fetchBankList()
     bankList.value = apiBankList.value
     
-    // Check if bank parameter in URL
     const bankFromUrl = route.query.bank as string
     if (bankFromUrl) {
-      // Admin can access any bank via URL
       filters.value.bank = bankFromUrl
     }
   } else {
-    // For members, check access permission
     const bankFromUrl = route.query.bank as string
     
     if (bankFromUrl) {
-      // Member trying to access via URL - check if it's their bank
       const hasAccess = checkUserAccess(bankFromUrl)
       if (!hasAccess) {
         showAccessDenied.value = true
@@ -522,19 +475,15 @@ onMounted(async () => {
       }
       filters.value.bank = bankFromUrl
     } else {
-      // No bank in URL, use their own bank
       filters.value.bank = userBankId.value
     }
   }
   
-  // Set bank info for display
+  await fetchChargeCodeList()
   setBankInfo()
-  
-  // Load initial data
   await loadData()
 })
 
-// Set bank info based on current bank filter
 const setBankInfo = () => {
   try {
     const userDataStr = localStorage.getItem('user_data')
@@ -542,7 +491,6 @@ const setBankInfo = () => {
       const userData = JSON.parse(userDataStr)
       
       if (isAdmin.value && filters.value.bank) {
-        // Admin viewing specific bank
         const selectedBank = bankList.value.find(b => b.id === filters.value.bank)
         if (selectedBank) {
           selectedBankInfo.value = {
@@ -552,7 +500,6 @@ const setBankInfo = () => {
           }
         }
       } else {
-        // Member or admin without specific bank
         selectedBankInfo.value = {
           id: userData?.MID?.id,
           code: userData?.MID?.code,
@@ -565,7 +512,6 @@ const setBankInfo = () => {
   }
 }
 
-// Computed properties
 const filteredData = computed(() => {
   if (!searchQuery.value) return detailData.value
   
@@ -575,7 +521,8 @@ const filteredData = computed(() => {
       item.rec_charge_ID?.toString().toLowerCase().includes(query) ||
       item.LCIC_code?.toLowerCase().includes(query) ||
       item.enterprise_name?.toLowerCase().includes(query) ||
-      item.lon_purpose?.toLowerCase().includes(query)
+      item.chg_code?.toLowerCase().includes(query) ||
+      item.user_sys_id?.toLowerCase().includes(query)
     )
   })
 })
@@ -599,7 +546,6 @@ const pendingCount = computed(() => {
   ).length
 })
 
-// Methods
 const loadData = async () => {
   loading.value = true
   try {
@@ -609,6 +555,7 @@ const loadData = async () => {
       fromDate: filters.value.fromDate || undefined,
       toDate: filters.value.toDate || undefined,
       status: filters.value.status || undefined,
+      chg_code: filters.value.chg_code || undefined,
       limit: parseInt(filters.value.limit),
       bank: filters.value.bank || undefined
     })
@@ -620,22 +567,21 @@ const loadData = async () => {
 }
 
 const onBankChange = () => {
-  // Update bank info when admin changes bank selection
   setBankInfo()
-  // Reload data with new bank
   loadData()
 }
 
 const applyFilters = () => {
   loadData()
 }
-// Handle month/year change (clear date range when month/year is selected)
+
 const handleMonthYearChange = () => {
   if (filters.value.month || filters.value.year) {
     filters.value.fromDate = ''
     filters.value.toDate = ''
   }
 }
+
 const resetFilters = () => {
   const currentDate = getCurrentDate()
   filters.value = {
@@ -644,6 +590,7 @@ const resetFilters = () => {
     fromDate: '',
     toDate: '',
     status: '',
+    chg_code: '',
     limit: '100',
     bank: isAdmin.value ? '' : userBankId.value
   }
@@ -660,7 +607,7 @@ const handleAccessDenied = () => {
   router.push('/')
 }
 
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string | Date) => {
   if (!dateString) return '-'
   const date = new Date(dateString)
   return date.toLocaleDateString('lo-LA', {
@@ -689,45 +636,26 @@ const getStatusClass = (status: string) => {
   return statusMap[status] || 'default'
 }
 
-const viewTransaction = (transaction: any) => {
-  selectedTransaction.value = transaction
-  showModal.value = true
-}
-
-const closeModal = () => {
-  showModal.value = false
-  selectedTransaction.value = {}
-}
-
-const printTransaction = (transaction: any) => {
-  console.log('Print transaction:', transaction)
-  // Implement print functionality
+const printReport = () => {
+  window.print()
 }
 
 const exportToExcel = () => {
   console.log('Export to Excel')
-  // Implement Excel export
 }
 
 const exportToPDF = () => {
   console.log('Export to PDF')
-  // Implement PDF export
-}
-
-const printTable = () => {
-  window.print()
 }
 </script>
 
 <style scoped>
-/* Base Styles */
 .charge-details-page {
   min-height: 100vh;
   background: #f8f9fa;
   padding: 20px;
 }
 
-/* Page Header */
 .page-header {
   background: white;
   border-radius: 12px;
@@ -826,7 +754,6 @@ const printTable = () => {
   font-size: 16px;
 }
 
-/* Filters Section */
 .filters-section {
   background: white;
   border-radius: 12px;
@@ -944,7 +871,6 @@ const printTable = () => {
   background: #e5e7eb;
 }
 
-/* Summary Stats */
 .summary-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -1016,7 +942,11 @@ const printTable = () => {
   font-weight: 500;
 }
 
-/* Table Section */
+/* Print Header (Hidden by default) */
+.print-header {
+  display: none;
+}
+
 .table-section {
   background: white;
   border-radius: 12px;
@@ -1083,7 +1013,6 @@ const printTable = () => {
   font-size: 16px;
 }
 
-/* Loading */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -1107,7 +1036,6 @@ const printTable = () => {
   font-size: 14px;
 }
 
-/* Table */
 .table-container {
   overflow-x: auto;
 }
@@ -1149,17 +1077,24 @@ const printTable = () => {
   text-align: right !important;
 }
 
-.charge-id {
-  font-weight: 600;
+.bank-cell,
+.charge-code-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.id-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  background: #eff6ff;
-  color: #3b82f6;
-  border-radius: 4px;
+.bank-code,
+.code {
+  font-weight: 600;
+  color: #1f2937;
   font-size: 13px;
+}
+
+.bank-name,
+.desc {
+  font-size: 12px;
+  color: #6b7280;
 }
 
 .amount-cell {
@@ -1167,7 +1102,6 @@ const printTable = () => {
   color: #059669;
 }
 
-/* Status Badge */
 .status-badge {
   display: inline-block;
   padding: 4px 10px;
@@ -1201,34 +1135,18 @@ const printTable = () => {
   color: #4b5563;
 }
 
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
+.total-row {
+  background: linear-gradient(to right, #f3f4f6, #e5e7eb);
+  font-weight: 700;
 }
 
-.btn-action {
-  padding: 6px;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #6b7280;
+.total-row td {
+  padding: 16px 12px;
+  font-size: 15px;
+  color: #1f2937;
+  border-bottom: none;
 }
 
-.btn-action:hover {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
-
-.btn-action svg {
-  font-size: 16px;
-}
-
-/* Empty State */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -1256,7 +1174,11 @@ const printTable = () => {
   margin: 0;
 }
 
-/* Modal */
+/* Print Footer (Hidden by default) */
+.print-footer {
+  display: none;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1299,32 +1221,11 @@ const printTable = () => {
   gap: 10px;
   font-size: 18px;
   font-weight: 700;
-  color: #1f2937;
+  color: #dc2626;
   margin: 0;
 }
 
-.access-denied .modal-header h3 {
-  color: #dc2626;
-}
-
 .access-denied .modal-header svg {
-  font-size: 24px;
-}
-
-.btn-close {
-  padding: 8px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #6b7280;
-  transition: color 0.2s;
-}
-
-.btn-close:hover {
-  color: #1f2937;
-}
-
-.btn-close svg {
   font-size: 24px;
 }
 
@@ -1340,56 +1241,15 @@ const printTable = () => {
   margin: 0;
 }
 
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-}
-
-.detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.detail-item.full-width {
-  grid-column: 1 / -1;
-}
-
-.detail-item label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.detail-item span {
-  font-size: 14px;
-  color: #1f2937;
-  font-weight: 500;
-}
-
-.amount-large {
-  font-size: 24px;
-  font-weight: 700;
-  color: #059669;
-}
-
 .modal-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 10px;
   padding: 20px;
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
 }
 
-.access-denied .modal-footer {
-  justify-content: center;
-}
-
-/* Animations */
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -1411,7 +1271,150 @@ const printTable = () => {
   }
 }
 
-/* Responsive */
+/* Print Styles */
+@media print {
+  @page {
+    margin: 1.5cm;
+    size: A4 landscape;
+  }
+
+  .charge-details-page {
+    background: white;
+    padding: 0;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-header {
+    display: block;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #000;
+  }
+
+  .report-title h1 {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0 0 20px 0;
+    color: #000;
+  }
+
+  .report-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .info-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .info-row .label {
+    font-weight: 600;
+    color: #000;
+  }
+
+  .info-row .value {
+    color: #000;
+  }
+
+  .table-section {
+    box-shadow: none;
+    border: none;
+    padding: 0;
+  }
+
+  .detail-table {
+    font-size: 10px;
+    page-break-inside: auto;
+  }
+
+  .detail-table tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  .detail-table thead {
+    display: table-header-group;
+    background: #f0f0f0 !important;
+  }
+
+  .detail-table th,
+  .detail-table td {
+    padding: 6px 4px;
+    border: 1px solid #000;
+  }
+
+  .bank-cell,
+  .charge-code-cell {
+    gap: 1px;
+  }
+
+  .bank-code,
+  .code {
+    font-size: 10px;
+  }
+
+  .bank-name,
+  .desc {
+    font-size: 8px;
+  }
+
+  .status-badge {
+    border: 1px solid #000;
+    background: none !important;
+    color: #000 !important;
+  }
+
+  .print-footer {
+    display: block;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #000;
+  }
+
+  .footer-content {
+    page-break-inside: avoid;
+  }
+
+  .footer-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    font-size: 11px;
+  }
+
+  .footer-signature {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 40px;
+  }
+
+  .signature-box {
+    text-align: center;
+  }
+
+  .signature-box p {
+    margin: 5px 0;
+    font-size: 11px;
+  }
+
+  .signature-line {
+    margin-top: 40px;
+    font-weight: normal;
+  }
+
+  .signature-date {
+    margin-top: 5px;
+    font-size: 10px;
+  }
+}
+
 @media (max-width: 768px) {
   .charge-details-page {
     padding: 12px;
@@ -1451,41 +1454,6 @@ const printTable = () => {
   .modal-content {
     width: 95%;
     margin: 10px;
-  }
-  
-  .detail-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Print Styles */
-@media print {
-  .btn-back,
-  .filters-section,
-  .table-actions,
-  .action-buttons,
-  .modal-overlay {
-    display: none !important;
-  }
-  
-  .charge-details-page {
-    background: white;
-    padding: 0;
-  }
-  
-  .page-header,
-  .table-section {
-    box-shadow: none;
-    border: 1px solid #e5e7eb;
-  }
-  
-  .detail-table {
-    font-size: 10px;
-  }
-  
-  .detail-table th,
-  .detail-table td {
-    padding: 6px;
   }
 }
 </style>

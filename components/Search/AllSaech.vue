@@ -15,7 +15,7 @@
         </v-window-item>
 
         <v-window-item value="two">
-          <Consumption />
+          <Consumption /> 
         </v-window-item>
 
         <v-window-item value="three">
