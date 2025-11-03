@@ -592,8 +592,7 @@ onMounted(() => {
       ຢືນຢັນ
     </v-btn>
   </template>
-        
-
+      
         <template v-slot:item.percentage="{ item }">
           <div class="d-flex align-center">
             <v-progress-linear
