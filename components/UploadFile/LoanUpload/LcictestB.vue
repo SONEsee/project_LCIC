@@ -926,12 +926,12 @@ const confirmAction = async (item: FileItem) => {
   }
 
   try {
-    // ດຶງ JWT token ຈາກ localStorage
+    
     const userData = localStorage.getItem("user_data");
     let accessToken = "";
     if (userData) {
       const parsedUserData = JSON.parse(userData);
-      accessToken = parsedUserData.access; // ດຶງ access token
+      accessToken = parsedUserData.access; 
     } else {
       throw new Error("ບໍ່ພົບ user data ໃນ localStorage");
     }
@@ -945,15 +945,15 @@ const confirmAction = async (item: FileItem) => {
       {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Bearer ${accessToken}`, // ເພີ່ມ JWT token
-          'X-CSRFToken': getCookie('csrftoken'), // ຖ້າຕ້ອງການ CSRF
+          'Authorization': `Bearer ${accessToken}`,
+          'X-CSRFToken': getCookie('csrftoken'), 
           'X-Requested-With': 'XMLHttpRequest',
         },
         withCredentials: true,
       }
     );
 
-    // ກວດສອບ response status
+    
     if (confirmResponse.status !== 200 && confirmResponse.status !== 201) {
       item.statussubmit = "2";
       return Swal.fire("ລົ້ມເຫຼວ!", confirmResponse.data.message || "ການຢືນຢັນລົ້ມເຫຼວ.", "error");

@@ -52,6 +52,9 @@ const headers = computed(() => {
   if (user.value && user.value.MID.id === "01") {
     baseHeaders.splice(1, 0, { title: "ລະຫັດທະນາຄານ", value: "user_id" });
   }
+  if (user.value && user.value.MID.id === "01") {
+    baseHeaders.splice(9, 0, { title: "ກວດສອບ", value: "editor" });
+  }
 
   return baseHeaders;
 });
@@ -254,6 +257,22 @@ const statistics = computed(() => {
     },
   ];
 });
+const confirmInsertData = async (fid: string) => {
+  const notification = await Swal.fire({
+    icon: "warning",
+    title: "ຄຳເຕືອນ",
+    text: "ທ່ານຕ້ອງການຢືນຢັນເພື່ອດຳເນີນການຕໍ່ບໍ?",
+    confirmButtonText: "ຕົກລົງ",
+    showCancelButton: true,
+    cancelButtonText: "ຍົກເລີກ"
+  });
+
+  if (notification.isConfirmed) {
+  
+    await inDividualStore.confirmUploadLoan(fid);
+    await inDividualStore.getListIndividualLoan();
+  }
+}
 onMounted(() => {
   inDividualStore.loan_query.query.user_id = userId.value;
   inDividualStore.period.query.user_id = userId.value;
@@ -544,7 +563,7 @@ onMounted(() => {
           <v-chip color="error" v-if="item.statussubmit === '2'">
             <strong>ສຳເລັດ</strong>
           </v-chip>
-          <v-chip color="warning" v-if="item.statussubmit === 'pending'">
+          <v-chip color="warning" v-if="item.statussubmit === '3'">
             <v-progress-circular
               color="blue-lighten-3"
               indeterminate
@@ -553,6 +572,9 @@ onMounted(() => {
         </template>
         <template v-slot:item.file_size="{ item }">
           {{ item.file_size }}
+        </template>
+        <template v-slot:item.fileName="{ item }">
+          {{ item.fileName.slice(0, 20) }}{{ item.fileName.length > 20 ? '...' : '' }}
         </template>
         <template v-slot:item.period="{ item }">
           <v-chip color="primary" >{{ dayjs(item.period).format("MM-YYYY") }}</v-chip>
@@ -565,6 +587,11 @@ onMounted(() => {
             {{ item.dispuste }}
           </v-chip>
         </template>
+         <template v-slot:item.editor="{ item }">
+    <v-btn color="success" flat @click="confirmInsertData(`n-${item.FID}`)" v-if="item.statussubmit==='1'">
+      ຢືນຢັນ
+    </v-btn>
+  </template>
         
 
         <template v-slot:item.percentage="{ item }">
