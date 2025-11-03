@@ -2,7 +2,7 @@
   <div class="sidebar-manager">
     <!-- Header -->
     <div class="header">
-      <h2>ຈັດການເມນູໄຊດ໌ບາ</h2>
+      <h2>ຈັດການສິດເຂົ້ານໍາໃຊ້</h2>
       <div class="header-actions">
         <button @click="openCreateModal('sidebar_item')" class="btn-primary">
           <span class="icon">+</span> ເພີ່ມເມນູຫຼັກ

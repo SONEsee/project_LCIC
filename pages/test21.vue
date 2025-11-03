@@ -197,13 +197,13 @@
                 </div>
               </div>
 
-              <!-- Chart Section - Optimized for Print -->
+              <!-- Chart Section - Screen Display -->
               <div class="chart-section d-screen-block d-none" v-if="waterReport.bill && waterReport.bill.length > 0">
-                <h4 class="chart-title">ກາຟິກສະແດງຂໍ້ມູນ</h4>
+                <h4 class="chart-title">ກາຟິກສະແດງຂໍ້ມູນການໃຊ້ນໍ້າປະປາ</h4>
                 <div class="chart-container">
                   <VueApexCharts
                     type="bar"
-                    height="280"
+                    height="320"
                     :options="waterChartOptions"
                     :series="waterChartSeries"
                   />
@@ -211,12 +211,12 @@
               </div>
 
               <!-- Print Chart Section -->
-              <div class="print-chart-section " v-if="waterReport.bill && waterReport.bill.length > 0">
-                <h4 class="print-chart-title">ກາຟິກການໃຊ້ນໍ້າປະປາ</h4>
+              <div class="print-chart-section" v-if="waterReport.bill && waterReport.bill.length > 0">
+                <h4 class="print-chart-title">ກາຟິກການໃຊ້ນໍ້າປະປາ - 12 ເດືອນຫຼ້າສຸດ</h4>
                 <div class="print-chart-container">
                   <VueApexCharts
                     type="bar"
-                    height="200"
+                    height="220"
                     :options="printWaterChartOptions"
                     :series="waterChartSeries"
                   />
@@ -316,26 +316,26 @@
                 </div>
               </div>
 
-              <!-- Chart Section - Optimized for Print -->
+              <!-- Chart Section - Screen Display -->
               <div class="chart-section d-screen-block d-none" v-if="electricReport.bill && electricReport.bill.length > 0">
-                <h4 class="chart-title">ກາຟິກສະແດງຂໍ້ມູນ</h4>
+                <h4 class="chart-title">ກາຟິກສະແດງຂໍ້ມູນການໃຊ້ໄຟຟ້າ</h4>
                 <div class="chart-container">
                   <VueApexCharts
                     type="bar"
-                    height="280"
+                    height="320"
                     :options="electricChartOptions"
                     :series="electricChartSeries"
                   />
                 </div>
               </div>
 
-              <!-- Display Chart Section -->
+              <!-- Print Chart Section -->
               <div class="print-chart-section" v-if="electricReport.bill && electricReport.bill.length > 0">
-                <h4 class="print-chart-title">ກາຟິກການໃຊ້ໄຟຟ້າ</h4>
+                <h4 class="print-chart-title">ກາຟິກການໃຊ້ໄຟຟ້າ - 12 ເດືອນຫຼ້າສຸດ</h4>
                 <div class="print-chart-container">
                   <VueApexCharts
                     type="bar"
-                    height="200"
+                    height="220"
                     :options="printElectricChartOptions"
                     :series="electricChartSeries"
                   />
@@ -417,7 +417,6 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick } from 'vue'
-import axios from 'axios'
 import { useRouter } from 'vue-router'
 import VueApexCharts from 'vue3-apexcharts'
 
@@ -519,7 +518,7 @@ const getProcessedBills = (bills: any[]) => {
     return {
       ...bill,
       totalAmount: (outstanding + parseFloat(bill.Basic_Tax || '0')).toString(),
-      status: outstanding > 0 ? 'ບໍ່ທັນຊໍາລະ' : 'ຊໍາລະເເລ້ວ' // Explicitly check for outstanding > 0
+      status: outstanding > 0 ? 'ບໍ່ທັນຊໍາລະ' : 'ຊໍາລະເເລ້ວ'
     }
   }).sort((a, b) => {
     const dateA = new Date(a.InvoiceMonth.split('-').reverse().join('-'))
@@ -531,13 +530,12 @@ const getProcessedBills = (bills: any[]) => {
 const printReport = () => {
   isPrinting.value = true
   nextTick(() => {
-    // Force ApexCharts to redraw before printing
     setTimeout(() => {
       window.print()
       setTimeout(() => {
         isPrinting.value = false
       }, 1000)
-    }, 500) // Add a short delay to ensure charts are rendered
+    }, 500)
   })
 }
 
@@ -549,7 +547,7 @@ const refreshSpecificReport = async (type: string) => {
   console.log(`Refreshing ${type} report...`)
 }
 
-// Chart preparation
+// Chart preparation - Enhanced for 12 months display
 const prepareApexChartData = (bills: any[]) => {
   if (!bills || bills.length === 0) return { categories: [], series: [] }
   
@@ -557,6 +555,7 @@ const prepareApexChartData = (bills: any[]) => {
   const categories = processedBills.map(bill => bill.InvoiceMonth)
   const outstandingData = processedBills.map(bill => parseFloat(bill.Outstanding || '0'))
   const basicTaxData = processedBills.map(bill => parseFloat(bill.Basic_Tax || '0'))
+  const totalData = processedBills.map(bill => parseFloat(bill.totalAmount || '0'))
   
   return {
     categories,
@@ -570,6 +569,11 @@ const prepareApexChartData = (bills: any[]) => {
         name: 'ພາສີພື້ນຖານ',
         data: basicTaxData,
         color: '#3b82f6'
+      },
+      {
+        name: 'ລວມທັງໝົດ',
+        data: totalData,
+        color: '#10b981'
       }
     ]
   }
@@ -578,59 +582,167 @@ const prepareApexChartData = (bills: any[]) => {
 const createChartOptions = (title: string, isPrint = false) => ({
   chart: {
     type: 'bar',
-    height: isPrint ? 180 : 280,
-    toolbar: { show: !isPrint },
+    height: isPrint ? 220 : 320,
+    toolbar: { 
+      show: !isPrint,
+      tools: {
+        download: true,
+        zoom: false,
+        zoomin: false,
+        zoomout: false,
+        pan: false,
+        reset: false
+      }
+    },
     background: '#ffffff',
-    fontFamily: 'Noto Sans Lao, Arial, sans-serif'
+    fontFamily: 'Noto Sans Lao, Arial, sans-serif',
+    animations: {
+      enabled: !isPrint,
+      speed: 800
+    }
   },
   title: {
     text: title,
     align: 'center',
     style: {
-      fontSize: isPrint ? '12px' : '16px',
-      fontWeight: 'bold',
-      color: '#1e40af'
+      fontSize: isPrint ? '11px' : '15px',
+      fontWeight: '600',
+      color: '#1e40af',
+      fontFamily: 'Noto Sans Lao, Arial, sans-serif'
     }
+  },
+  plotOptions: {
+    bar: {
+      horizontal: false,
+      columnWidth: isPrint ? '75%' : '70%',
+      borderRadius: 3,
+      borderRadiusApplication: 'end',
+      dataLabels: {
+        position: 'top'
+      }
+    }
+  },
+  dataLabels: { 
+    enabled: false
+  },
+  stroke: {
+    show: true,
+    width: 2,
+    colors: ['transparent']
   },
   xaxis: {
     categories: [],
     title: {
-      text: 'ເດືອນ',
-      style: { fontSize: isPrint ? '10px' : '14px', fontWeight: 600 }
+      text: 'ເດືອນ / Month',
+      offsetY: 0,
+      style: { 
+        fontSize: isPrint ? '10px' : '12px', 
+        fontWeight: '500',
+        color: '#6b7280'
+      }
     },
     labels: {
-      style: { fontSize: isPrint ? '9px' : '12px' }
+      rotate: -45,
+      rotateAlways: true,
+      style: { 
+        fontSize: isPrint ? '8px' : '10px',
+        colors: '#374151'
+      },
+      trim: false
+    },
+    axisBorder: {
+      show: true,
+      color: '#d1d5db'
+    },
+    axisTicks: {
+      show: true,
+      color: '#d1d5db'
     }
   },
   yaxis: {
     title: {
-      text: 'ຈໍານວນເງິນ (ກີບ)',
-      style: { fontSize: isPrint ? '10px' : '14px', fontWeight: 600 }
+      text: 'ຈໍານວນເງິນ (ກີບ) / Amount (LAK)',
+      style: { 
+        fontSize: isPrint ? '10px' : '12px', 
+        fontWeight: '500',
+        color: '#6b7280'
+      }
     },
     labels: {
-      style: { fontSize: isPrint ? '9px' : '12px' },
-      formatter: (val) => new Intl.NumberFormat('lo-LA').format(val)
+      style: { 
+        fontSize: isPrint ? '8px' : '10px',
+        colors: '#374151'
+      },
+      formatter: (val) => {
+        if (val >= 1000000) {
+          return (val / 1000000).toFixed(1) + 'M'
+        } else if (val >= 1000) {
+          return (val / 1000).toFixed(0) + 'K'
+        }
+        return val.toFixed(0)
+      }
     }
   },
   tooltip: {
     enabled: !isPrint,
+    theme: 'light',
     y: {
       formatter: (val) => formatCurrency(val.toString())
+    },
+    style: {
+      fontSize: '12px',
+      fontFamily: 'Noto Sans Lao, Arial, sans-serif'
     }
   },
   legend: { 
     position: 'top',
-    fontSize: isPrint ? '10px' : '14px'
+    horizontalAlign: 'center',
+    fontSize: isPrint ? '9px' : '12px',
+    fontWeight: 500,
+    labels: {
+      colors: '#374151'
+    },
+    markers: {
+      width: 10,
+      height: 10,
+      radius: 2
+    },
+    itemMargin: {
+      horizontal: 10,
+      vertical: 5
+    }
   },
-  dataLabels: { enabled: false },
   grid: { 
+    show: true,
     borderColor: '#e5e7eb',
-    strokeDashArray: isPrint ? 5 : 0
+    strokeDashArray: 3,
+    position: 'back',
+    xaxis: {
+      lines: { show: false }
+    },
+    yaxis: {
+      lines: { show: true }
+    },
+    padding: {
+      top: 0,
+      right: 10,
+      bottom: 0,
+      left: 10
+    }
   },
-  plotOptions: {
-    bar: {
-      columnWidth: '60%',
-      borderRadius: isPrint ? 2 : 4
+  colors: ['#ef4444', '#3b82f6', '#10b981'],
+  states: {
+    hover: {
+      filter: {
+        type: 'lighten',
+        value: 0.15
+      }
+    },
+    active: {
+      filter: {
+        type: 'darken',
+        value: 0.15
+      }
     }
   }
 })
@@ -925,54 +1037,112 @@ onMounted(() => {
   font-weight: 600;
 }
 
-/* Chart Section */
+/* Chart Section - Screen Display */
 .chart-section {
-  background: #f9fafb;
-  border-radius: 6px;
-  padding: 1rem;
-  margin-top: 1rem;
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  border-radius: 8px;
+  padding: 1.2rem;
+  margin-top: 1.5rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .chart-title {
   color: #1e40af;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 0.8rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.chart-title::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(to bottom, #1e40af, #3b82f6);
+  border-radius: 2px;
 }
 
 .chart-container {
   background: white;
-  border-radius: 6px;
-  padding: 0.8rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
 }
 
+/* Print Chart Section */
+.print-chart-section {
+  margin-top: 12px;
+  background: white;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  page-break-inside: avoid;
+}
+
+.print-chart-title {
+  color: #1e40af;
+  font-size: 11pt;
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-align: center;
+  padding-bottom: 4px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.print-chart-container {
+  background: white;
+  padding: 6px;
+  height: 240px;
+  overflow: hidden;
+}
+
+/* ApexCharts Custom Styling */
+.apexcharts-canvas {
+  margin: 0 auto;
+}
+
+.apexcharts-legend {
+  padding: 8px 0 !important;
+}
+
+.apexcharts-legend-series {
+  margin: 0 8px !important;
+}
+
+.apexcharts-tooltip {
+  border-radius: 6px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.apexcharts-tooltip-title {
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  font-weight: 600 !important;
+}
+
+.apexcharts-xaxis-label,
+.apexcharts-yaxis-label {
+  fill: #374151 !important;
+  font-family: 'Noto Sans Lao', Arial, sans-serif !important;
+}
+
+.apexcharts-gridline {
+  stroke: #e5e7eb !important;
+}
+
+/* Display Control */
 .d-screen-block {
   display: block;
 }
 
 .d-print-block {
   display: none;
-}
-
-.print-chart-section {
-  margin-top: 1rem;
-  background: white;
-}
-
-.print-chart-title {
-  color: #1e40af;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  text-align: center;
-}
-
-.print-chart-container {
-  background: white;
-  padding: 0.5rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
 }
 
 /* Footer Section */
@@ -1110,6 +1280,14 @@ onMounted(() => {
   .footer-grid {
     grid-template-columns: 1fr;
   }
+
+  .chart-section {
+    padding: 1rem;
+  }
+  
+  .chart-container {
+    padding: 0.8rem;
+  }
 }
 
 @media (max-width: 600px) {
@@ -1124,6 +1302,19 @@ onMounted(() => {
   .header-cell,
   .data-cell {
     padding: 0.4rem;
+  }
+
+  .chart-section {
+    padding: 0.8rem;
+    margin-top: 1rem;
+  }
+  
+  .chart-title {
+    font-size: 0.9rem;
+  }
+  
+  .chart-container {
+    padding: 0.6rem;
   }
 }
 
@@ -1166,7 +1357,6 @@ onMounted(() => {
     display: block;
     margin-bottom: 12px;
   }
-  
   
   /* Reduce spacing throughout */
   .report-section {
@@ -1255,42 +1445,74 @@ onMounted(() => {
 
   /* Print Chart Section */
   .print-chart-section {
-    margin-top: 8px !important;
+    margin-top: 10px !important;
     background: white !important;
-    page-break-inside: avoid;
+    padding: 6px !important;
+    border: 1px solid #d1d5db !important;
+    page-break-inside: avoid !important;
   }
 
   .print-chart-title {
-    font-size: 9pt !important;
-    margin-bottom: 4px !important;
+    font-size: 10pt !important;
+    margin-bottom: 6px !important;
     color: #1e40af !important;
+    padding-bottom: 3px !important;
+    border-bottom: 1.5px solid #d1d5db !important;
   }
 
   .print-chart-container {
     padding: 4px !important;
-    border: 1px solid #e5e7eb !important;
-    height: 240px !important; /* Increased height for 12 months */
-    overflow: hidden;
-    position: relative;
+    border: none !important;
+    height: 240px !important;
+    overflow: visible !important;
   }
 
-  /* Chart specific adjustments */
+  /* ApexCharts Print Adjustments */
   .apexcharts-svg {
-    max-height: 230px !important; /* Adjust to fit container */
+    max-height: 230px !important;
     width: 100% !important;
   }
 
+  .apexcharts-canvas {
+    background: white !important;
+  }
+
   .apexcharts-title-text {
-    font-size: 10px !important;
+    font-size: 9px !important;
+    fill: #1e40af !important;
+  }
+
+  .apexcharts-legend {
+    padding: 4px 0 !important;
   }
 
   .apexcharts-legend-text {
-    font-size: 9px !important;
+    font-size: 8px !important;
+    fill: #374151 !important;
   }
 
   .apexcharts-xaxis-label,
   .apexcharts-yaxis-label {
+    font-size: 7px !important;
+    fill: #374151 !important;
+  }
+
+  .apexcharts-xaxis-title-text,
+  .apexcharts-yaxis-title-text {
     font-size: 8px !important;
+    fill: #6b7280 !important;
+  }
+
+  .apexcharts-gridline {
+    stroke: #e5e7eb !important;
+    stroke-dasharray: 3 !important;
+  }
+
+  /* Ensure colors print correctly */
+  .apexcharts-bar-area,
+  .apexcharts-series path {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
   /* Status Badges */
@@ -1348,11 +1570,6 @@ onMounted(() => {
   .signature-text {
     color: #6b7280 !important;
     font-size: 7pt !important;
-  }
-  
-  /* Page Break Management */
-  .page-break-before {
-    page-break-before: always;
   }
   
   /* Remove card shadows and unnecessary styling */
