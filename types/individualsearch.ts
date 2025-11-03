@@ -33,3 +33,45 @@ export interface ResultMapsearch {
     ind_familybook_date:      string;
     mm_ind_sys_id:            string;
 }
+
+export interface IndividualFileListRespons {
+    count:           number;
+    page:            number;
+    limit:           number;
+    total_pages:     number;
+    results:         ResultIndividualFile;
+    filters_applied: FiltersApplied;
+}
+
+export interface FiltersApplied {
+    user_id:        string;
+    user_id_filter: string;
+    period:         null;
+    statussubmit:   null;
+    FileType:       null;
+}
+
+export interface ResultIndividualFile {
+    FID:                 number;
+    user_id:             string;
+    file_id:             string;
+    fileName:            string;
+    file_url:            string;
+    file_size:           string;
+    period:              string;
+    status:              string;
+    statussubmit:        string;
+    status_upload:       string;
+    FileType:            string;
+    percentage:          number;
+    progress_percentage: number;
+    insertDate:          string;
+    updateDate:          string;
+}
+export interface PerliodIndividualFileListRespons {
+    status:   string;
+    user_id:  string;
+    is_admin: boolean;
+    count:    number;
+    periods:  string[];
+}

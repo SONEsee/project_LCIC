@@ -227,7 +227,7 @@ const confirmupload = async () => {
     await LoanStore.UpdateStatus(id_dispust)
 
     selecData.value = [];
-    selectAll.value = false; // ✅ ເພີ່ມ: Reset selectAll ຫຼັງບັນທຶກສຳເລັດ
+    selectAll.value = false; 
     goPreviousPath();
   } catch (error) {
     console.error("Error:", error);

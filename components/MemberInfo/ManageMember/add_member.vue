@@ -370,6 +370,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useUserUID } from '~/composables/useUserUID';
 
 const emit = defineEmits(['close', 'added']);
 const formRef = ref(null);
@@ -377,6 +378,9 @@ const formValid = ref(false);
 const imagePreview = ref('');
 const showConfirmDialog = ref(false);
 const saving = ref(false);
+
+// ✅ ดึงข้อมูล User ที่ล็อกอิน
+const { userData, UID: currentUID } = useUserUID();
 
 const form = ref({
   code: '',
@@ -422,23 +426,18 @@ const apiDistrictURL = `${config.public.strapi.url}api/districtinfos/`;
 const apiVillageURL = `${config.public.strapi.url}api/villageinfos/`;
 
 // Handle image change and preview
+// Handle image change and preview
 const onImageChange = () => {
   const file = form.value.mImage;
-  
-  console.log('📸 Image changed:', file);
-  console.log('📸 File type:', typeof file);
-  console.log('📸 Is File?', file instanceof File);
   
   if (file && file instanceof File) {
     const reader = new FileReader();
     reader.onload = (e) => {
       imagePreview.value = e.target.result;
-      console.log('✅ Image preview set');
     };
     reader.readAsDataURL(file);
   } else {
     imagePreview.value = '';
-    console.log('⚠️ No valid file selected');
   }
 };
 
@@ -447,7 +446,6 @@ const fetchMemberTypes = async () => {
   try {
     const res = await axios.get(apiMemberTypeURL);
     memberTypes.value = res.data.results || res.data;
-    console.log('✅ Member types loaded:', memberTypes.value.length);
   } catch (err) {
     console.error('❌ Error fetching member types:', err);
   }
@@ -458,7 +456,6 @@ const fetchProvinces = async () => {
   try {
     const res = await axios.get(apiProvinceURL);
     provinces.value = res.data.results || res.data;
-    console.log('✅ Provinces loaded:', provinces.value.length);
   } catch (err) {
     console.error('❌ Error fetching provinces:', err);
   }
@@ -482,7 +479,6 @@ const onDistrictSearch = (searchValue) => {
       const url = `${apiDistrictURL}?search=${encodeURIComponent(searchValue.trim())}`;
       const res = await axios.get(url);
       districts.value = res.data.results || res.data;
-      console.log('✅ Districts found:', districts.value.length);
     } catch (err) {
       console.error('❌ Error searching districts:', err);
       districts.value = [];
@@ -510,7 +506,6 @@ const onVillageSearch = (searchValue) => {
       const url = `${apiVillageURL}?search=${encodeURIComponent(searchValue.trim())}`;
       const res = await axios.get(url);
       villages.value = res.data.results || res.data;
-      console.log('✅ Villages found:', villages.value.length);
     } catch (err) {
       console.error('❌ Error searching villages:', err);
       villages.value = [];
@@ -528,7 +523,6 @@ const onProvinceChange = () => {
   villages.value = [];
   districtSearch.value = '';
   villageSearch.value = '';
-  console.log('🔄 Province changed, cleared district & village');
 };
 
 // Handle district change
@@ -536,7 +530,6 @@ const onDistrictChange = () => {
   form.value.villageInfo = null;
   villages.value = [];
   villageSearch.value = '';
-  console.log('🔄 District changed, cleared village');
 };
 
 // Generate slug from text
@@ -557,7 +550,6 @@ const generateSlug = (text) => {
 const autoGenerateSlug = () => {
   if (form.value.code) {
     form.value.slug = form.value.code;
-    console.log('🔄 Auto-generated slug:', form.value.slug);
   }
 };
 
@@ -587,8 +579,6 @@ const addMember = async () => {
     form.value.slug = `member-${Date.now()}`;
   }
   
-  console.log('📦 Preparing form data...');
-  
   // Append all form fields
   for (const key in form.value) {
     const value = form.value[key];
@@ -596,7 +586,6 @@ const addMember = async () => {
     // Skip null/empty values except for published and slug
     if (value === null || value === '') {
       if (key !== 'published' && key !== 'slug') {
-        console.log(`⏭️ Skipping ${key}: empty value`);
         continue;
       }
     }
@@ -605,43 +594,33 @@ const addMember = async () => {
     if (key === 'mImage') {
       if (value && value instanceof File) {
         formData.append('mImage', value);
-        console.log('✅ mImage added:', value.name, value.type, value.size, 'bytes');
-      } else {
-        console.log('⚠️ mImage skipped: not a valid File object');
       }
     } else {
       formData.append(key, value);
-      console.log(`✅ ${key}:`, value);
     }
   }
   
-  console.log('\n📤 FormData contents:');
-  for (let pair of formData.entries()) {
-    if (pair[0] === 'mImage') {
-      console.log(`${pair[0]}: [File] ${pair[1].name} (${pair[1].size} bytes)`);
-    } else {
-      console.log(`${pair[0]}: ${pair[1]}`);
-    }
+  // เพิ่มข้อมูล User ที่ล็อกอิน
+  if (currentUID.value) {
+    formData.append('creator_UID', currentUID.value);
+  }
+  
+  if (userData.value?.MID?.id) {
+    formData.append('user_bnk_code', userData.value.MID.id);
   }
 
   try {
-    console.log('\n🚀 Sending request to:', apiMemberURL);
-    
     const response = await axios.post(apiMemberURL, formData, {
       headers: { 
         'Content-Type': 'multipart/form-data',
       },
     });
     
-    console.log('✅ Response:', response.data);
     showConfirmDialog.value = false;
     emit('added');
     emit('close');
   } catch (err) {
     console.error('❌ Error adding member:', err);
-    console.error('❌ Error response:', err.response?.data);
-    console.error('❌ Error status:', err.response?.status);
-    console.error('❌ Error headers:', err.response?.headers);
     
     let errorMsg = 'ເກີດຂໍ້ຜິດພາດໃນການເພີ່ມສະມາຊິກ!';
     if (err.response?.data) {
@@ -685,7 +664,6 @@ const clearForm = () => {
   villageSearch.value = '';
   imagePreview.value = '';
   formRef.value?.resetValidation();
-  console.log('🧹 Form cleared');
 };
 
 // Handle member type change - auto set bnk_type
@@ -697,17 +675,14 @@ const onMemberTypeChange = (memberTypeId) => {
   } else {
     form.value.bnk_type = null;
   }
-  console.log('🔄 Member Type changed:', memberTypeId, '→ bnk_type:', form.value.bnk_type);
 };
 
 // Load initial data
 onMounted(async () => {
-  console.log('🚀 Component mounted, loading initial data...');
   await Promise.all([
     fetchMemberTypes(),
     fetchProvinces(),
   ]);
-  console.log('✅ Initial data loaded');
 });
 </script>
 

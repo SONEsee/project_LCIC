@@ -368,7 +368,7 @@ fetchCusProvinces();
 // // Fetch all provinces on component mount
 // const fetchProvinces = async () => {
 //   try {
-//     const { data } = await useFetch('http://192.168.45.56:8000/api/province-edl/')
+//     const { data } = await useFetch('http://192.168.45.55:8000/api/province-edl/')
 //     provinces.value = data.value || []
 //   } catch (error) {
 //     console.error('Error fetching provinces:', error)
@@ -382,7 +382,7 @@ fetchCusProvinces();
 //       districts.value = []
 //       return
 //     }
-//     const { data } = await useFetch(`http://192.168.45.56:8000/api/province-district/${pro_id}/`)
+//     const { data } = await useFetch(`http://192.168.45.55:8000/api/province-district/${pro_id}/`)
 //     districts.value = data.value?.districts || []
 //   } catch (error) {
 //     console.error('Error fetching districts:', error)

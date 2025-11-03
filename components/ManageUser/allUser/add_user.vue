@@ -302,6 +302,8 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 // import CryptoJS from 'crypto-js';
+import { useUserUID } from '~/composables/useUserUID'; // import composable
+
 
 const emit = defineEmits(['saved', 'close']);
 const formRef = ref(null);
@@ -310,6 +312,7 @@ const imagePreview = ref('');
 const showPassword = ref(false);
 const showConfirmDialog = ref(false);
 const saving = ref(false);
+const { userData, UID: currentUID, userBnkCode } = useUserUID();
 
 const form = ref({
   username: '',
@@ -406,77 +409,60 @@ const confirmSaveUser = async () => {
 // Save user
 const saveUser = async () => {
   if (!formValid.value) {
-    alert('⚠️ ກະລຸນາກອກຂໍ້ມູນໃຫ້ຄົບຖ້ວນ!');
+    alert('⚠️ ກະລຸນາກອກຂໍ້ມູນໃຫ້ຄົບ!');
     showConfirmDialog.value = false;
     return;
   }
 
   saving.value = true;
-
   const formData = new FormData();
-  
-  const hashedPassword = CryptoJS.MD5(form.value.password).toString();
-  
+
   for (const key in form.value) {
-    const value = form.value[key];
-    
-    // Skip null or empty values except for switches
+    let value = form.value[key];
+
     if (value === null || value === '') {
       if (key !== 'is_active' && key !== 'is_staff') continue;
     }
-    
-    // Handle image file - only add if exists
-    if (key === 'profile_image') {
-      if (value) {
-        formData.append('profile_image', value);
-      }
+
+    if (key === 'is_active' || key === 'is_staff') {
+      value = !!value;
     }
-    // Handle password
-    else if (key === 'password') {
-      formData.append('password', hashedPassword);
-    }
-    // Handle all other fields
-    else {
+
+    if (key === 'profile_image' && value) {
+      formData.append('profile_image', value);
+    } else if (key === 'password' && value) {
+      formData.append('password', value);
+    } else {
       formData.append(key, value);
     }
   }
 
-  console.log('📤 Sending user data:');
-  for (let pair of formData.entries()) {
-    console.log(pair[0] + ': ' + pair[1]);
-  }
+  if (currentUID.value) {
+    formData.append('creator_UID', currentUID.value);
+  } 
+  
+  // สมมติว่า branch_id อยู่ใน MID.id หรือ field อื่น
+  if (userData.value?.MID?.id) {
+    formData.append('user_bnk_code', userData.value.MID.id);
+  } 
 
   try {
     const response = await axios.post(apiUserURL, formData, {
-      headers: { 
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
-    
     console.log('✅ Response:', response.data);
     showConfirmDialog.value = false;
     emit('saved', response.data);
     emit('close');
   } catch (err) {
-    console.error('❌ Error adding user:', err);
-    console.error('Error response:', err.response?.data);
-    
-    let errorMsg = 'ເກີດຂໍ້ຜິດພາດໃນການເພີ່ມຜູ້ໃຊ້!';
-    if (err.response?.data) {
-      if (err.response.data.errors) {
-        errorMsg = JSON.stringify(err.response.data.errors, null, 2);
-      } else if (typeof err.response.data === 'object') {
-        errorMsg = JSON.stringify(err.response.data, null, 2);
-      } else {
-        errorMsg = err.response.data;
-      }
-    }
-    alert('❌ ' + errorMsg);
+    console.error('❌ Error adding user:', err.response?.data || err);
+    alert('❌ Error adding user: ' + JSON.stringify(err.response?.data || err, null, 2));
     showConfirmDialog.value = false;
   } finally {
     saving.value = false;
   }
 };
+
 
 // Clear form
 const clearForm = () => {

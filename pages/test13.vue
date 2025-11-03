@@ -227,7 +227,7 @@ const createFormRef = ref(null)
 const editFormRef = ref(null)
 
 // Base URL for images
-const BASE_URL = 'http://192.168.45.56:8000'
+const BASE_URL = 'http://192.168.45.55:8000'
 const snackbar = ref({
   show: false,
   message: '',
@@ -244,7 +244,7 @@ const createObjectURL = (file) => {
 
 const fetchBanks = async () => {
   try {
-    const response = await fetch('http://192.168.45.56:8000/api/banks/', {
+    const response = await fetch('http://192.168.45.55:8000/api/banks/', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
@@ -283,7 +283,7 @@ const createBank = async () => {
   }
 
   try {
-    const response = await fetch('http://192.168.45.56:8000/api/banks/', {
+    const response = await fetch('http://192.168.45.55:8000/api/banks/', {
       method: 'POST',
       body: formData,
       headers: {
@@ -410,7 +410,7 @@ const updateBank = async () => {
   }
 
   try {
-    const response = await fetch(`http://192.168.45.56:8000/api/banks/${editingBankId.value}/`, {
+    const response = await fetch(`http://192.168.45.55:8000/api/banks/${editingBankId.value}/`, {
       method: 'PUT',
       body: formData,
       headers: {
@@ -435,7 +435,7 @@ const updateBank = async () => {
 
 const deleteBank = async (id) => {
   try {
-    const response = await fetch(`http://192.168.45.56:8000/api/banks/${id}/`, {
+    const response = await fetch(`http://192.168.45.55:8000/api/banks/${id}/`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`

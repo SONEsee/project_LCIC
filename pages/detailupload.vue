@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<!-- <script lang="ts" setup>
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useLoanStore } from "~/stores/loan";
@@ -56,8 +56,6 @@ const dataedit = computed(() => {
   return [];
 });
 
-
-
 const disputese = computed(() => {
   const data = LoanStore.respons_data_loan_list?.disputes.items;
   if (Array.isArray(data)) return data;
@@ -72,6 +70,14 @@ const b1Monthly = computed(() => {
   return [];
 });
 
+
+const currentSegmentType = computed(() => {
+  if (combinedData.value.length > 0) {
+    return combinedData.value[0]?.segmentType;
+  }
+  return null;
+});
+
 const headers = [
   { title: "ລຳດັບ", value: "id" },
   { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
@@ -82,29 +88,50 @@ const headers = [
   { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
 ];
 
-const headers2 = [
-  { title: "ລຳດັບ", value: "id" },
-  { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
-  { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
-  { title: "ທະນາຄານ", value: "bnk_code" },
-  { title: "ລະຫັດສາຂາ", value: "branch_id" },
-  { title: "ລະຫັດລູກຄ່າ", value: "customer_id" },
-  { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
-  { title: "ລະຫັດວິສາຫະກິດ(ໃນຖານຂໍ້ມູນ ຂສລ)", value: "lcicID_get" },
-  { title: "ສະຖານະ", value: "lcicID_error" },
-];
 
-const headers3 = [
-  { title: "ລຳດັບ", value: "id" },
-  { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
-  { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
-  { title: "ທະນາຄານ", value: "bnk_code" },
-  { title: "ລະຫັດສາຂາ", value: "branch_id" },
-  { title: "ລະຫັດລູກຄ່າ", value: "customer_id" },
-  { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
-  { title: "ລະຫັດ ຂສລ(ໃນຖານຂໍ້ມູນ ຂສລ)", value: "lcicID_get" },
-  { title: "ສະຖານະ", value: "lcicID_error" },
-];
+const headers2 = computed(() => {
+  const baseHeaders = [
+    { title: "ລຳດັບ", value: "id" },
+    { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+    { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+    { title: "ທະນາຄານ", value: "bnk_code" },
+    // { title: "ລະຫັດສາຂາ", value: "branch_id" },
+    { title: "ລະຫັດລູກຄ່າ", value: "customer_id" },
+    { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
+  ];
+  
+  
+  if (currentSegmentType.value === 'A2') {
+    baseHeaders.push({ title: "ລະຫັດວິສາຫະກິດ(ໃນຖານຂໍ້ມູນ ຂສລ)", value: "lcicID_get" });
+  }
+  if (currentSegmentType.value === 'A2') {
+    baseHeaders.push({ title: "ລະຫັດລູກຄ້າ", value: "customer_id" });
+  }
+  
+  baseHeaders.push({ title: "ສະຖານະ", value: "lcicID_error" });
+  return baseHeaders;
+});
+
+
+const headers3 = computed(() => {
+  const baseHeaders = [
+    { title: "ລຳດັບ", value: "id" },
+    { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+    { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+    { title: "ທະນາຄານ", value: "bnk_code" },
+    { title: "ລະຫັດສາຂາ", value: "branch_id" },
+    { title: "ລະຫັດລູກຄ່າ", value: "customer_id" },
+    { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
+  ];
+  
+  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນນີ້
+  if (currentSegmentType.value === 'A2') {
+    baseHeaders.push({ title: "ລະຫັດ ຂສລ(ໃນຖານຂໍ້ມູນ ຂສລ)", value: "lcicID_get" });
+  }
+  
+  baseHeaders.push({ title: "ສະຖານະ", value: "lcicID_error" });
+  return baseHeaders;
+});
 
 const headers4 = [
   { title: "ລຳດັບ", value: "id" },
@@ -199,7 +226,280 @@ const exportToJson = () => {
   URL.revokeObjectURL(url);
 };
 
+onMounted(() => {
+  memberinfoStore.getMemberInfo();
+  LoanStore.data_fiter.query.id_file = code;
+  LoanStore.getDataLoan();
+  const queryData = route.query.data as string;
+  if (queryData) {
+    const parsedData = JSON.parse(queryData);
+    bDataIsDamaged.value = parsedData.B_Data_is_damaged || [];
+    b1.value = parsedData.B1 || [];
+    uploadfile.value = parsedData.uploadfile || [];
+  }
+});
+</script> -->
+<script lang="ts" setup>
+import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
+import { useLoanStore } from "~/stores/loan";
+import { MemberStore } from "@/stores/memberinfo";
+import { useMemberInfo } from "@/composables/memberInfo";
 
+const memberinfoStore = MemberStore();
+const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
+
+definePageMeta({
+  layout: "backend",
+});
+
+useHead({
+  title: "Upload File",
+  meta: [
+    { name: "keywords", content: "Report, Nuxt 3, Backend" },
+    {
+      name: "Description",
+      content: "Report Nuxt 3, IT Genius Engineering",
+    },
+  ],
+});
+
+const LoanStore = useLoanStore();
+const reques = LoanStore.data_fiter.query;
+async function onSelectonChange(value: number) {
+  reques.page_size = value;
+  await LoanStore.getDataLoan();
+}
+async function onPagechange(value: number) {
+  reques.page = value;
+  await LoanStore.getDataLoan();
+}
+const tab = ref("one");
+const subTab = ref("two-one");
+
+const bDataIsDamaged = ref<any[]>([]);
+const b1 = ref<any[]>([]);
+const uploadfile = ref<any[]>([]);
+const route = useRoute();
+
+const combinedData = computed(() => {
+  const data = LoanStore.respons_data_loan_list?.b_data_damaged.items;
+  const mapdata = LoanStore.respons_data_loan_list?.data_edit.items;
+  const dataArray = Array.isArray(data) ? data : [];
+  const mapdataArray = Array.isArray(mapdata) ? mapdata : [];
+  return [...dataArray, ...mapdataArray];
+});
+
+const dataedit = computed(() => {
+  const data = LoanStore.respons_data_loan_list?.data_edit.items;
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === "object") return [data];
+  return [];
+});
+
+const disputese = computed(() => {
+  const data = LoanStore.respons_data_loan_list?.disputes.items;
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === "object") return [data];
+  return [];
+});
+
+const b1Monthly = computed(() => {
+  const data = LoanStore.respons_data_loan_list?.b1_monthly.items;
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === "object") return [data];
+  return [];
+});
+
+// ກຳນົດ segmentType ຈາກຂໍ້ມູນທີ່ມີ
+const currentSegmentType = computed(() => {
+  if (combinedData.value.length > 0) {
+    return combinedData.value[0]?.segmentType;
+  }
+  return null;
+});
+
+// Headers ຫຼັກ - Tab "ຂໍ້ມູນທັງໝົດ"
+const headers = computed(() => {
+  const baseHeaders = [
+    { title: "ລຳດັບ", value: "id" },
+    { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+    { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+    { title: "ທະນາຄານ", value: "bnk_code" },
+    { title: "ລະຫັດສາຂາ", value: "branch_id" },
+  ];
+  
+  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນ "ລະຫັດລູກຄ່າ"
+  if (currentSegmentType.value === 'A2') {
+    baseHeaders.push({ title: "ລະຫັດລູກຄ່າ", value: "customer_id" });
+  }
+  
+  baseHeaders.push({ title: "ລະຫັດເງິນກູ້", value: "loan_id" });
+  return baseHeaders;
+});
+
+// Headers2 - Sub-Tab "ວິສາຫະກິດບໍ່ຖືກ"
+const headers2 = computed(() => {
+  const baseHeaders = [
+    { title: "ລຳດັບ", value: "id" },
+    { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+    { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+    { title: "ທະນາຄານ", value: "bnk_code" },
+    { title: "ລະຫັດສາຂາ", value: "branch_id" },
+  ];
+  
+  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນ "ລະຫັດລູກຄ່າ"
+  if (currentSegmentType.value === 'A2') {
+    baseHeaders.push({ title: "ລະຫັດລູກຄ່າ", value: "customer_id" });
+  }
+  
+  baseHeaders.push({ title: "ລະຫັດເງິນກູ້", value: "loan_id" });
+  
+  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນນີ້
+  if (currentSegmentType.value === 'A2') {
+    baseHeaders.push({ title: "ລະຫັດວິສາຫະກິດ(ໃນຖານຂໍ້ມູນ ຂສລ)", value: "lcicID_get" });
+  }
+  
+  baseHeaders.push({ title: "ສະຖານະ", value: "lcicID_error" });
+  return baseHeaders;
+});
+
+// Headers3 - Sub-Tab "ຂສລບໍ່ຖືກ"
+const headers3 = computed(() => {
+  const baseHeaders = [
+    { title: "ລຳດັບ", value: "id" },
+    { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+    { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+    { title: "ທະນາຄານ", value: "bnk_code" },
+    { title: "ລະຫັດສາຂາ", value: "branch_id" },
+  ];
+  
+  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນ "ລະຫັດລູກຄ່າ"
+  if (currentSegmentType.value === 'A2') {
+    baseHeaders.push({ title: "ລະຫັດລູກຄ່າ", value: "customer_id" });
+  }
+  
+  baseHeaders.push({ title: "ລະຫັດເງິນກູ້", value: "loan_id" });
+  
+  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນນີ້
+  if (currentSegmentType.value === 'A2') {
+    baseHeaders.push({ title: "ລະຫັດ ຂສລ(ໃນຖານຂໍ້ມູນ ຂສລ)", value: "lcicID_get" });
+  }
+  
+  baseHeaders.push({ title: "ສະຖານະ", value: "lcicID_error" });
+  return baseHeaders;
+});
+
+// Headers4 - Sub-Tab "ທັງສອງບໍ່ຖືກ"
+const headers4 = computed(() => {
+  const baseHeaders = [
+    { title: "ລຳດັບ", value: "id" },
+    { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+    { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+    { title: "ທະນາຄານ", value: "bnk_code" },
+    { title: "ລະຫັດສາຂາ", value: "branch_id" },
+  ];
+  
+  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນ "ລະຫັດລູກຄ່າ"
+  if (currentSegmentType.value === 'A2') {
+    baseHeaders.push({ title: "ລະຫັດລູກຄ່າ", value: "customer_id" });
+  }
+  
+  baseHeaders.push({ title: "ລະຫັດເງິນກູ້", value: "loan_id" });
+  baseHeaders.push({ title: "ສະຖານະ", value: "lcicID_error" });
+  return baseHeaders;
+});
+
+// Headers5 - Sub-Tab "Disputes" & Tab "ອັບໂຫຼດສຳເລັດ"
+const headers5 = computed(() => {
+  const baseHeaders = [
+    { title: "ລຳດັບ", value: "id" },
+    { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
+    { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+    { title: "ທະນາຄານ", value: "bnk_code" },
+    { title: "ລະຫັດສາຂາ", value: "branch_id" },
+  ];
+  
+  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນ "ລະຫັດລູກຄ່າ"
+  if (currentSegmentType.value === 'A2') {
+    baseHeaders.push({ title: "ລະຫັດລູກຄ່າ", value: "customer_id" });
+  }
+  
+  baseHeaders.push({ title: "ລະຫັດເງິນກູ້", value: "loan_id" });
+  return baseHeaders;
+});
+
+const code = route.query.code as string;
+
+const filteredBDataIsDamaged = computed(() => {
+  const data = LoanStore.respons_data_loan_list?.b_data_damaged.items;
+  let DataMap = [] as any;
+  if (Array.isArray(data)) {
+    DataMap = data;
+  } else if (data && typeof data === "object") {
+    DataMap = [data];
+  }
+  return DataMap.filter(
+    (item: any) => item.lcicID_error === "10" || item.lcicID_error === "13"
+  );
+});
+
+const filteredBDataIsDamagedLcicIDError01 = computed(() => {
+  const data = LoanStore.respons_data_loan_list?.b_data_damaged.items;
+  let DataMap = [] as any;
+  if (Array.isArray(data)) {
+    DataMap = data;
+  } else if (data && typeof data === "object") {
+    DataMap = [data];
+  }
+  return DataMap.filter(
+    (item: any) => item.lcicID_error === "01" || item.lcicID_error === "31"
+  );
+});
+
+const filteredBDataIsDamagedLcicIDError33 = computed(() => {
+  const data = LoanStore.respons_data_loan_list?.b_data_damaged.items;
+  let DataMap = [] as any;
+  if (Array.isArray(data)) {
+    DataMap = data;
+  } else if (data && typeof data === "object") {
+    DataMap = [data];
+  }
+  return DataMap.filter(
+    (item: any) => item.lcicID_error === "33" || item.lcicID_error === "11"
+  );
+});
+
+const exportToJson = () => {
+  const dataToExport = filteredBDataIsDamagedLcicIDError01.value.map(
+    (item: any) => {
+      const {
+        lcicID_get,
+        com_enterprise_code_get,
+        id_file,
+        id,
+        period,
+        com_enterprise_code_error,
+        lcicID_error,
+        filteredBDataIsDamagedLcicIDError01,
+        ...rest
+      } = item;
+      return {
+        ...rest,
+        lcicID: lcicID_get,
+      };
+    }
+  );
+
+  const jsonStr = JSON.stringify(dataToExport, null, 2);
+  const blob = new Blob([jsonStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "LCIC request.json";
+  link.click();
+  URL.revokeObjectURL(url);
+};
 
 onMounted(() => {
   memberinfoStore.getMemberInfo();
@@ -214,7 +514,6 @@ onMounted(() => {
   }
 });
 </script>
-
 <template>
   <div
     class="pa-6"
@@ -252,13 +551,16 @@ onMounted(() => {
                 style="font-size: 16px; font-weight: 600; border-radius: 12px"
               >
                 {{
-                  Number(
-                    LoanStore.respons_data_loan_list?.data_edit.total_items
-                  ) +
+                  (
+                    Number(
+                      LoanStore.respons_data_loan_list?.data_edit.total_items ||
+                        0
+                    ) +
                     Number(
                       LoanStore.respons_data_loan_list?.b_data_damaged
-                        .total_items
-                    ) || 0
+                        .total_items || 0
+                    )
+                  ).toLocaleString("en-US")
                 }}
               </v-chip>
               <span class="ml-3" style="color: #64748b; font-size: 15px"
@@ -345,7 +647,7 @@ onMounted(() => {
 
       <v-card-text class="pa-6">
         <v-window v-model="tab">
-          <!-- Tab 1: All Data -->
+          <!-- TAB 1: ຂໍ້ມູນທັງໝົດ -->
           <v-window-item value="one">
             <div class="mb-4">
               <h3 style="color: #1e293b; font-weight: 600; font-size: 18px">
@@ -358,7 +660,6 @@ onMounted(() => {
               :headers="headers"
               density="comfortable"
               :items-per-page="reques.page_size"
-        
               class="elevation-0"
               style="
                 border: 1px solid #e3e8ef;
@@ -366,15 +667,25 @@ onMounted(() => {
                 overflow: hidden;
               "
             >
-              <template v-slot:top> </template>
               <template v-slot:header.id="{ column }">
                 <th style="color: #0d47a1">{{ column.title }}</th>
               </template>
               <template v-slot:header.LCIC_code="{ column }">
                 <th style="color: #0d47a1">{{ column.title }}</th>
               </template>
-              <template v-slot:header.com_enterprise_code="{ column }">
-                <th style="color: #0d47a1">{{ column.title }}</th>
+              <template v-slot:header.com_enterprise_code>
+                <th
+                  style="color: #0d47a1"
+                  v-if="currentSegmentType === 'A1'"
+                >
+                  ລະຫັດລູກຄ້າ
+                </th>
+                <th
+                  style="color: #0d47a1"
+                  v-if="currentSegmentType === 'A2'"
+                >
+                  ລະຫັດວິສາກະກິດ
+                </th>
               </template>
               <template v-slot:header.bnk_code="{ column }">
                 <th style="color: #0d47a1">{{ column.title }}</th>
@@ -386,9 +697,6 @@ onMounted(() => {
                 <th style="color: #0d47a1">{{ column.title }}</th>
               </template>
               <template v-slot:header.loan_id="{ column }">
-                <th style="color: #0d47a1">{{ column.title }}</th>
-              </template>
-              <template v-slot:header.col_id="{ column }">
                 <th style="color: #0d47a1">{{ column.title }}</th>
               </template>
               <template v-slot:item.id="{ index }">
@@ -417,6 +725,7 @@ onMounted(() => {
               </template>
               <template v-slot:item.com_enterprise_code="{ item }">
                 <v-chip
+                  v-if="item.segmentType === 'A2'"
                   variant="flat"
                   size="small"
                   style="
@@ -427,6 +736,19 @@ onMounted(() => {
                   "
                 >
                   {{ item.com_enterprise_code }}
+                </v-chip>
+                <v-chip
+                  v-if="item.segmentType === 'A1'"
+                  variant="flat"
+                  size="small"
+                  style="
+                    background: #ddd6fe;
+                    color: #6d28d9;
+                    border-radius: 8px;
+                    font-weight: 500;
+                  "
+                >
+                  {{ item.customer_id }}
                 </v-chip>
               </template>
               <template v-slot:bottom>
@@ -443,6 +765,7 @@ onMounted(() => {
             </v-data-table>
           </v-window-item>
 
+          <!-- TAB 2: ຂໍ້ມູນບໍ່ຖືກຕ້ອງ -->
           <v-window-item value="two">
             <v-tabs
               align-tabs="center"
@@ -461,7 +784,8 @@ onMounted(() => {
                 "
               >
                 <v-icon size="18" class="mr-2">mdi-alert</v-icon>
-                ວິສາຫະກິດບໍ່ຖືກ
+                <span v-if="currentSegmentType === 'A1'">ລູກຄ້າບໍ່ຖືກ</span>
+                <span v-else>ວິສາຫະກິດບໍ່ຖືກ</span>
                 <v-chip
                   class="ml-2"
                   size="x-small"
@@ -527,10 +851,12 @@ onMounted(() => {
             </v-tabs>
 
             <v-window v-model="subTab">
+             
               <v-window-item value="two-one">
                 <div class="mb-4">
                   <h4 style="color: #1e293b; font-weight: 600">
-                    ລະຫັດວິສາຫະກິດບໍ່ຖືກຕ້ອງ ຫຼື ບໍ່ມີ
+                    <span v-if="currentSegmentType === 'A1'">ລະຫັດລູກຄ້າບໍ່ຖືກຕ້ອງ ຫຼື ບໍ່ມີ</span>
+                    <span v-else>ລະຫັດວິສາຫະກິດບໍ່ຖືກຕ້ອງ ຫຼື ບໍ່ມີ</span>
                   </h4>
                 </div>
 
@@ -579,8 +905,7 @@ onMounted(() => {
                   :items="filteredBDataIsDamaged"
                   :headers="headers2"
                   density="comfortable"
-                 
-                 :items-per-page="reques.page_size"
+                  :items-per-page="reques.page_size"
                   class="elevation-0"
                   style="
                     border: 1px solid #e3e8ef;
@@ -598,10 +923,19 @@ onMounted(() => {
                       column.title
                     }}</span>
                   </template>
-                  <template v-slot:header.com_enterprise_code="{ column }">
-                    <span style="color: #0d47a1; font-weight: bold">{{
-                      column.title
-                    }}</span>
+                  <template v-slot:header.com_enterprise_code>
+                    <th
+                      style="color: #0d47a1"
+                      v-if="currentSegmentType === 'A1'"
+                    >
+                      ລະຫັດລູກຄ້າ
+                    </th>
+                    <th
+                      style="color: #0d47a1"
+                      v-if="currentSegmentType === 'A2'"
+                    >
+                      ລະຫັດວິສາກະກິດ
+                    </th>
                   </template>
                   <template v-slot:header.bnk_code="{ column }">
                     <span style="color: #0d47a1; font-weight: bold">{{
@@ -634,9 +968,9 @@ onMounted(() => {
                     }}</span>
                   </template>
                   <template v-slot:item.id="{ index }">
-                   <span style="color: #64748b">{{
-                  (reques.page - 1) * reques.page_size + index + 1
-                }}</span>
+                    <span style="color: #64748b">{{
+                      (reques.page - 1) * reques.page_size + index + 1
+                    }}</span>
                   </template>
                   <template v-slot:item.LCIC_code="{ item }">
                     <v-chip
@@ -653,28 +987,24 @@ onMounted(() => {
                   </template>
                   <template v-slot:item.com_enterprise_code="{ item }">
                     <v-chip
+                      v-if="(item as any).segmentType === 'A2'"
                       variant="flat"
                       size="small"
-                      v-if="(item as any).com_enterprise_code === ''"
-                      style="
-                        background: #fee2e2;
-                        color: #991b1b;
-                        border-radius: 8px;
-                      "
+                      :style="(item as any).com_enterprise_code === '' ? 
+                        'background: #fee2e2; color: #991b1b; border-radius: 8px;' : 
+                        'background: #fed7aa; color: #9a3412; border-radius: 8px;'"
                     >
-                      ບໍ່ມີ
+                      {{ (item as any).com_enterprise_code === '' ? 'ບໍ່ມີ' : 'ບໍ່ຖືກ' }}
                     </v-chip>
                     <v-chip
+                      v-if="(item as any).segmentType === 'A1'"
                       variant="flat"
                       size="small"
-                      v-else
-                      style="
-                        background: #fed7aa;
-                        color: #9a3412;
-                        border-radius: 8px;
-                      "
+                      :style="(item as any).customer_id === '' ? 
+                        'background: #fee2e2; color: #991b1b; border-radius: 8px;' : 
+                        'background: #fed7aa; color: #9a3412; border-radius: 8px;'"
                     >
-                      ບໍ່ຖືກ
+                      {{ (item as any).customer_id === '' ? 'ບໍ່ມີ' : 'ບໍ່ຖືກ' }}
                     </v-chip>
                   </template>
                   <template v-slot:item.lcicID_error="{ item }">
@@ -688,7 +1018,8 @@ onMounted(() => {
                         border-radius: 8px;
                       "
                     >
-                      ບໍ່ມີລະຫັດວິສາຫະກິດ
+                      <span v-if="currentSegmentType === 'A1'">ບໍ່ມີລະຫັດລູກຄ້າ</span>
+                      <span v-else>ບໍ່ມີລະຫັດວິສາຫະກິດ</span>
                     </v-chip>
                     <v-chip
                       variant="flat"
@@ -716,7 +1047,7 @@ onMounted(() => {
                       {{ mapMemberInfo((item as any).bnk_code) }}
                     </v-chip>
                   </template>
-                  <template v-slot:item.lcicID_get="{ item }">
+                  <template v-slot:item.lcicID_get="{ item }" v-if="currentSegmentType === 'A2'">
                     <v-chip
                       variant="flat"
                       size="small"
@@ -730,20 +1061,21 @@ onMounted(() => {
                     </v-chip>
                   </template>
                   <template v-slot:bottom>
-                <GloBalTablePaginations
-                  :page="reques.page"
-                  :limit="reques.page_size"
-                  :totalpage="
-                    LoanStore.respons_data_loan_list?.b_data_damaged.total_pages || 1
-                  "
-                  @onSelectionChange="onSelectonChange"
-                  @onPagechange="onPagechange"
-                />
-              </template>
+                    <GloBalTablePaginations
+                      :page="reques.page"
+                      :limit="reques.page_size"
+                      :totalpage="
+                        LoanStore.respons_data_loan_list?.b_data_damaged
+                          .total_pages || 1
+                      "
+                      @onSelectionChange="onSelectonChange"
+                      @onPagechange="onPagechange"
+                    />
+                  </template>
                 </v-data-table>
               </v-window-item>
 
-              <!-- Sub Tab 2: LCIC ID Error -->
+              
               <v-window-item value="two-two">
                 <div class="d-flex justify-space-between align-center mb-4">
                   <h4 style="color: #1e293b; font-weight: 600">
@@ -764,7 +1096,6 @@ onMounted(() => {
                   </v-btn>
                 </div>
 
-                <!-- Source Labels -->
                 <v-row class="mb-3">
                   <v-col cols="8">
                     <div
@@ -810,7 +1141,6 @@ onMounted(() => {
                   :items="filteredBDataIsDamagedLcicIDError01"
                   :headers="headers3"
                   density="comfortable"
-                  
                   :items-per-page="reques.page_size"
                   class="elevation-0"
                   style="
@@ -825,8 +1155,19 @@ onMounted(() => {
                   <template v-slot:header.LCIC_code="{ column }">
                     <th style="color: #0d47a1">{{ column.title }}</th>
                   </template>
-                  <template v-slot:header.com_enterprise_code="{ column }">
-                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  <template v-slot:header.com_enterprise_code>
+                    <th
+                      style="color: #0d47a1"
+                      v-if="currentSegmentType === 'A1'"
+                    >
+                      ລະຫັດລູກຄ້າ
+                    </th>
+                    <th
+                      style="color: #0d47a1"
+                      v-if="currentSegmentType === 'A2'"
+                    >
+                      ລະຫັດວິສາກະກິດ
+                    </th>
                   </template>
                   <template v-slot:header.bnk_code="{ column }">
                     <th style="color: #0d47a1">{{ column.title }}</th>
@@ -847,9 +1188,9 @@ onMounted(() => {
                     <th style="color: #0d47a1">{{ column.title }}</th>
                   </template>
                   <template v-slot:item.id="{ index }">
-                  <span style="color: #64748b">{{
-                  (reques.page - 1) * reques.page_size + index + 1
-                }}</span>
+                    <span style="color: #64748b">{{
+                      (reques.page - 1) * reques.page_size + index + 1
+                    }}</span>
                   </template>
                   <template v-slot:item.LCIC_code="{ item }">
                     <v-chip
@@ -879,6 +1220,7 @@ onMounted(() => {
                   </template>
                   <template v-slot:item.com_enterprise_code="{ item }">
                     <v-chip
+                      v-if="(item as any).segmentType === 'A2'"
                       variant="flat"
                       size="small"
                       style="
@@ -888,6 +1230,18 @@ onMounted(() => {
                       "
                     >
                       {{ (item as any).com_enterprise_code }}
+                    </v-chip>
+                    <v-chip
+                      v-if="(item as any).segmentType === 'A1'"
+                      variant="flat"
+                      size="small"
+                      style="
+                        background: #ddd6fe;
+                        color: #6d28d9;
+                        border-radius: 8px;
+                      "
+                    >
+                      {{ (item as any).customer_id }}
                     </v-chip>
                   </template>
                   <template v-slot:item.bnk_code="{ item }">
@@ -929,25 +1283,39 @@ onMounted(() => {
                       ບໍ່ມີ
                     </v-chip>
                   </template>
+                  <template v-slot:item.lcicID_get="{ item }" v-if="currentSegmentType === 'A2'">
+                    <v-chip
+                      variant="flat"
+                      size="small"
+                      style="
+                        background: #d1fae5;
+                        color: #065f46;
+                        border-radius: 8px;
+                      "
+                    >
+                      {{ (item as any).lcicID_get }}
+                    </v-chip>
+                  </template>
                   <template v-slot:bottom>
-                <GloBalTablePaginations
-                  :page="reques.page"
-                  :limit="reques.page_size"
-                  :totalpage="
-                    LoanStore.respons_data_loan_list?.b_data_damaged.total_pages || 1
-                  "
-                  @onSelectionChange="onSelectonChange"
-                  @onPagechange="onPagechange"
-                />
-              </template>
+                    <GloBalTablePaginations
+                      :page="reques.page"
+                      :limit="reques.page_size"
+                      :totalpage="
+                        LoanStore.respons_data_loan_list?.b_data_damaged
+                          .total_pages || 1
+                      "
+                      @onSelectionChange="onSelectonChange"
+                      @onPagechange="onPagechange"
+                    />
+                  </template>
                 </v-data-table>
               </v-window-item>
 
-              <!-- Sub Tab 3: Both Error -->
               <v-window-item value="two-three">
                 <div class="mb-4">
                   <h4 style="color: #1e293b; font-weight: 600">
-                    ລະຫັດວິສາຫະກິດ ແລະ ຂສລ ທັງສອງບໍ່ຖືກຕ້ອງ
+                    <span v-if="currentSegmentType === 'A1'">ລະຫັດລູກຄ້າ ແລະ ຂສລ ທັງສອງບໍ່ຖືກຕ້ອງ</span>
+                    <span v-else>ລະຫັດວິສາຫະກິດ ແລະ ຂສລ ທັງສອງບໍ່ຖືກຕ້ອງ</span>
                   </h4>
                 </div>
 
@@ -955,7 +1323,6 @@ onMounted(() => {
                   :items="filteredBDataIsDamagedLcicIDError33"
                   :headers="headers4"
                   density="comfortable"
-                
                   :items-per-page="reques.page_size"
                   class="elevation-0"
                   style="
@@ -970,8 +1337,19 @@ onMounted(() => {
                   <template v-slot:header.LCIC_code="{ column }">
                     <th style="color: #0d47a1">{{ column.title }}</th>
                   </template>
-                  <template v-slot:header.com_enterprise_code="{ column }">
-                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  <template v-slot:header.com_enterprise_code>
+                    <th
+                      style="color: #0d47a1"
+                      v-if="currentSegmentType === 'A1'"
+                    >
+                      ລະຫັດລູກຄ້າ
+                    </th>
+                    <th
+                      style="color: #0d47a1"
+                      v-if="currentSegmentType === 'A2'"
+                    >
+                      ລະຫັດວິສາກະກິດ
+                    </th>
                   </template>
                   <template v-slot:header.bnk_code="{ column }">
                     <th style="color: #0d47a1">{{ column.title }}</th>
@@ -985,14 +1363,13 @@ onMounted(() => {
                   <template v-slot:header.loan_id="{ column }">
                     <th style="color: #0d47a1">{{ column.title }}</th>
                   </template>
-
                   <template v-slot:header.lcicID_error="{ column }">
                     <th style="color: #0d47a1">{{ column.title }}</th>
                   </template>
                   <template v-slot:item.id="{ index }">
                     <span style="color: #64748b">{{
-                  (reques.page - 1) * reques.page_size + index + 1
-                }}</span>
+                      (reques.page - 1) * reques.page_size + index + 1
+                    }}</span>
                   </template>
                   <template v-slot:item.LCIC_code="{ item }">
                     <v-chip
@@ -1022,28 +1399,26 @@ onMounted(() => {
                   </template>
                   <template v-slot:item.com_enterprise_code="{ item }">
                     <v-chip
-                      v-if="(item as any).com_enterprise_code===''"
+                      v-if="(item as any).segmentType === 'A2'"
                       size="small"
                       variant="flat"
-                      style="
-                        background: #fee2e2;
-                        color: #991b1b;
-                        border-radius: 8px;
-                      "
+                      :style="(item as any).com_enterprise_code === '' ? 
+                        'background: #fee2e2; color: #991b1b; border-radius: 8px;' : 
+                        'background: #fed7aa; color: #9a3412; border-radius: 8px;'"
                     >
-                      ບໍ່ມີ
+                      <span v-if="(item as any).com_enterprise_code === ''">ບໍ່ມີ</span>
+                      <span v-else>ບໍ່ຖືກ ({{ (item as any).com_enterprise_code }})</span>
                     </v-chip>
                     <v-chip
-                      v-else
+                      v-if="(item as any).segmentType === 'A1'"
                       size="small"
                       variant="flat"
-                      style="
-                        background: #fed7aa;
-                        color: #9a3412;
-                        border-radius: 8px;
-                      "
+                      :style="(item as any).customer_id === '' ? 
+                        'background: #fee2e2; color: #991b1b; border-radius: 8px;' : 
+                        'background: #fed7aa; color: #9a3412; border-radius: 8px;'"
                     >
-                      ບໍ່ຖືກ ({{ (item as any).com_enterprise_code }})
+                      <span v-if="(item as any).customer_id === ''">ບໍ່ມີ</span>
+                      <span v-else>ບໍ່ຖືກ ({{ (item as any).customer_id }})</span>
                     </v-chip>
                   </template>
                   <template v-slot:item.bnk_code="{ item }">
@@ -1073,16 +1448,17 @@ onMounted(() => {
                     </v-chip>
                   </template>
                   <template v-slot:bottom>
-                <GloBalTablePaginations
-                  :page="reques.page"
-                  :limit="reques.page_size"
-                  :totalpage="
-                    LoanStore.respons_data_loan_list?.b_data_damaged.total_pages || 1
-                  "
-                  @onSelectionChange="onSelectonChange"
-                  @onPagechange="onPagechange"
-                />
-              </template>
+                    <GloBalTablePaginations
+                      :page="reques.page"
+                      :limit="reques.page_size"
+                      :totalpage="
+                        LoanStore.respons_data_loan_list?.b_data_damaged
+                          .total_pages || 1
+                      "
+                      @onSelectionChange="onSelectonChange"
+                      @onPagechange="onPagechange"
+                    />
+                  </template>
                 </v-data-table>
               </v-window-item>
 
@@ -1101,7 +1477,6 @@ onMounted(() => {
                   :items="disputese"
                   :headers="headers5"
                   density="comfortable"
-                 
                   :items-per-page="reques.page_size"
                   class="elevation-0"
                   style="
@@ -1116,8 +1491,19 @@ onMounted(() => {
                   <template v-slot:header.LCIC_code="{ column }">
                     <th style="color: #0d47a1">{{ column.title }}</th>
                   </template>
-                  <template v-slot:header.com_enterprise_code="{ column }">
-                    <th style="color: #0d47a1">{{ column.title }}</th>
+                  <template v-slot:header.com_enterprise_code>
+                    <th
+                      style="color: #0d47a1"
+                      v-if="currentSegmentType === 'A1'"
+                    >
+                      ລະຫັດລູກຄ້າ
+                    </th>
+                    <th
+                      style="color: #0d47a1"
+                      v-if="currentSegmentType === 'A2'"
+                    >
+                      ລະຫັດວິສາກະກິດ
+                    </th>
                   </template>
                   <template v-slot:header.bnk_code="{ column }">
                     <th style="color: #0d47a1">{{ column.title }}</th>
@@ -1133,8 +1519,34 @@ onMounted(() => {
                   </template>
                   <template v-slot:item.id="{ index }">
                     <span style="color: #64748b">{{
-                  (reques.page - 1) * reques.page_size + index + 1
-                }}</span>
+                      (reques.page - 1) * reques.page_size + index + 1
+                    }}</span>
+                  </template>
+                  <template v-slot:item.com_enterprise_code="{ item }">
+                    <v-chip
+                      v-if="(item as any).segmentType === 'A2'"
+                      variant="flat"
+                      size="small"
+                      style="
+                        background: #ddd6fe;
+                        color: #6d28d9;
+                        border-radius: 8px;
+                      "
+                    >
+                      {{ (item as any).com_enterprise_code }}
+                    </v-chip>
+                    <v-chip
+                      v-if="(item as any).segmentType === 'A1'"
+                      variant="flat"
+                      size="small"
+                      style="
+                        background: #ddd6fe;
+                        color: #6d28d9;
+                        border-radius: 8px;
+                      "
+                    >
+                      {{ (item as any).customer_id }}
+                    </v-chip>
                   </template>
                   <template v-slot:item.bnk_code="{ item }">
                     <v-chip
@@ -1150,21 +1562,23 @@ onMounted(() => {
                     </v-chip>
                   </template>
                   <template v-slot:bottom>
-                <GloBalTablePaginations
-                  :page="reques.page"
-                  :limit="reques.page_size"
-                  :totalpage="
-                    LoanStore.respons_data_loan_list?.disputes.total_pages || 1
-                  "
-                  @onSelectionChange="onSelectonChange"
-                  @onPagechange="onPagechange"
-                />
-              </template>
+                    <GloBalTablePaginations
+                      :page="reques.page"
+                      :limit="reques.page_size"
+                      :totalpage="
+                        LoanStore.respons_data_loan_list?.disputes
+                          .total_pages || 1
+                      "
+                      @onSelectionChange="onSelectonChange"
+                      @onPagechange="onPagechange"
+                    />
+                  </template>
                 </v-data-table>
               </v-window-item>
             </v-window>
           </v-window-item>
 
+          <!-- TAB 3: ອັບໂຫຼດສຳເລັດ -->
           <v-window-item value="three">
             <div class="mb-4">
               <div class="d-flex align-center">
@@ -1184,7 +1598,6 @@ onMounted(() => {
               :items="b1Monthly"
               :headers="headers5"
               density="comfortable"
-              
               :items-per-page="reques.page_size"
               class="elevation-0"
               style="
@@ -1199,8 +1612,19 @@ onMounted(() => {
               <template v-slot:header.LCIC_code="{ column }">
                 <th style="color: #0d47a1">{{ column.title }}</th>
               </template>
-              <template v-slot:header.com_enterprise_code="{ column }">
-                <th style="color: #0d47a1">{{ column.title }}</th>
+              <template v-slot:header.com_enterprise_code>
+                <th
+                  style="color: #0d47a1"
+                  v-if="currentSegmentType === 'A1'"
+                >
+                  ລະຫັດລູກຄ້າ
+                </th>
+                <th
+                  style="color: #0d47a1"
+                  v-if="currentSegmentType === 'A2'"
+                >
+                  ລະຫັດວິສາກະກິດ
+                </th>
               </template>
               <template v-slot:header.bnk_code="{ column }">
                 <th style="color: #0d47a1">{{ column.title }}</th>
@@ -1218,6 +1642,32 @@ onMounted(() => {
                 <span style="color: #64748b">{{
                   (reques.page - 1) * reques.page_size + index + 1
                 }}</span>
+              </template>
+              <template v-slot:item.com_enterprise_code="{ item }">
+                <v-chip
+                  v-if="item.segmentType === 'A2'"
+                  variant="flat"
+                  size="small"
+                  style="
+                    background: #ddd6fe;
+                    color: #6d28d9;
+                    border-radius: 8px;
+                  "
+                >
+                  {{ item.com_enterprise_code }}
+                </v-chip>
+                <v-chip
+                  v-if="item.segmentType === 'A1'"
+                  variant="flat"
+                  size="small"
+                  style="
+                    background: #ddd6fe;
+                    color: #6d28d9;
+                    border-radius: 8px;
+                  "
+                >
+                  {{ item.customer_id }}
+                </v-chip>
               </template>
               <template v-slot:item.bnk_code="{ item }">
                 <v-chip
@@ -1238,7 +1688,8 @@ onMounted(() => {
                   :page="reques.page"
                   :limit="reques.page_size"
                   :totalpage="
-                    LoanStore.respons_data_loan_list?.b1_monthly.total_pages || 1
+                    LoanStore.respons_data_loan_list?.b1_monthly.total_pages ||
+                    1
                   "
                   @onSelectionChange="onSelectonChange"
                   @onPagechange="onPagechange"
