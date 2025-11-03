@@ -45,12 +45,15 @@ const headers = computed(() => {
     { title: "ໄລຍະເວລາ", value: "period" },
     { title: "ຂໍ້ມູນ dispute", value: "dispuste" },
     { title: "ສະຖານະ", value: "statussubmit" },
-    { title: "ອັດຕາສ່ວນ", value: "percentage" },
+    { title: "ອັດຕາສ່ວນ(ຜິດພາດ)", value: "percentage" },
     { title: "ການດຳເນີນການ", value: "actions", sortable: false },
   ];
 
   if (user.value && user.value.MID.id === "01") {
     baseHeaders.splice(1, 0, { title: "ລະຫັດທະນາຄານ", value: "user_id" });
+  }
+  if (user.value && user.value.MID.id === "01") {
+    baseHeaders.splice(9, 0, { title: "ກວດສອບ", value: "editor" });
   }
 
   return baseHeaders;
@@ -189,17 +192,64 @@ watch(SelectFile, async (newvalue) => {
     });
   }
 });
+const hasProcessingStatus = computed(() => {
+  const data = inDividualStore.respons_list_file_insdividual_loan?.results;
+  if (!Array.isArray(data)) return {};
+
+  const statusMap: Record<string, boolean> = {};
+
+  data.forEach((item) => {
+    if (item.statussubmit === "3" || item.statussubmit === "5") {
+      statusMap[item.user_id] = true;
+    }
+  });
+
+  return statusMap;
+});
+const latestPeriodByUser = computed(() => {
+  const data = inDividualStore.respons_list_file_insdividual_loan?.results;
+  if (!Array.isArray(data)) return {};
+
+  const periodMap: Record<string, { period: string; fid: string }> = {};
+
+  data.forEach((item) => {
+    const currentPeriod = item.period;
+    const userId = item.user_id;
+
+    if (!periodMap[userId] || currentPeriod > periodMap[userId].period) {
+      periodMap[userId] = {
+        period: currentPeriod,
+        fid: item.FID,
+      };
+    }
+  });
+
+  return periodMap;
+});
+const shouldShowUploadButton = (item: any) => {
+  if (item.statussubmit !== "0") return false;
+
+  if (hasProcessingStatus.value[item.user_id]) return false;
+
+  const latestForUser = latestPeriodByUser.value[item.user_id];
+  if (!latestForUser || latestForUser.fid !== item.FID) return false;
+
+  return true;
+};
+const isConfirmButtonDisabled = (item: any) => {
+  if (item.statussubmit !== "1") return true;
+
+  if (hasProcessingStatus.value[item.user_id]) return true;
+
+  return false;
+};
 const statistics = computed(() => {
   const data = inDividualStore.respons_list_file_insdividual_loan;
   const results = Array.isArray(data?.results) ? data.results : [];
   const total = data?.count || 0;
 
-  const success = results.filter(
-    (item) => item.status === "0" && item.statussubmit === "0"
-  ).length;
-  const processing = results.filter(
-    (item) => item.status === "1" || item.statussubmit === "1"
-  ).length;
+  const success = results.filter((item) => item.statussubmit === "0").length;
+  const processing = results.filter((item) => item.statussubmit === "1").length;
   const rejected = results.filter(
     (item) => item.status === "2" || item.statussubmit === "2"
   ).length;
@@ -254,6 +304,21 @@ const statistics = computed(() => {
     },
   ];
 });
+const confirmInsertData = async (fid: string) => {
+  const notification = await Swal.fire({
+    icon: "warning",
+    title: "ຄຳເຕືອນ",
+    text: "ທ່ານຕ້ອງການຢືນຢັນເພື່ອດຳເນີນການຕໍ່ບໍ?",
+    confirmButtonText: "ຕົກລົງ",
+    showCancelButton: true,
+    cancelButtonText: "ຍົກເລີກ",
+  });
+
+  if (notification.isConfirmed) {
+    await inDividualStore.confirmUploadLoan(fid);
+    await inDividualStore.getListIndividualLoan();
+  }
+};
 onMounted(() => {
   inDividualStore.loan_query.query.user_id = userId.value;
   inDividualStore.period.query.user_id = userId.value;
@@ -525,6 +590,7 @@ onMounted(() => {
       <v-divider></v-divider>
 
       <v-data-table
+      style="font-size: 80%;"
         :items="indData"
         :items-per-page="reques.limit"
         :headers="headers"
@@ -532,40 +598,78 @@ onMounted(() => {
         hover
       >
         <template v-slot:item.user_id="{ item }">
-          <v-chip size="small" color="primary" variant="tonal">
+          <v-chip size="small" color="primary" variant="tonal" style="font-size: x-small;">
             {{ mapMemberInfo(item.user_id) }}
           </v-chip>
         </template>
 
         <template v-slot:item.statussubmit="{ item }">
-          <v-chip color="success" v-if="item.statussubmit === '1'">
+          <v-chip color="success" v-if="item.statussubmit === '0'" style="font-size: x-small;">
             <strong>ສຳເລັດ</strong>
           </v-chip>
-          <v-chip color="error" v-if="item.statussubmit === '2'">
-            <strong>ສຳເລັດ</strong>
+          <v-chip color="error" v-if="item.statussubmit === '2'" style="font-size: x-small;">
+            <strong>ປະຕິເສດ</strong>
           </v-chip>
-          <v-chip color="warning" v-if="item.statussubmit === 'pending'">
-            <v-progress-circular
+          <v-chip color="warning" v-if="item.statussubmit === '3'" style="font-size: x-small;">
+            <v-progress-circular style="font-size: x-small;"
               color="blue-lighten-3"
               indeterminate
             ></v-progress-circular>
           </v-chip>
+
+          <v-chip color="primary" v-if="item.statussubmit === '1'" style="font-size: x-small;"
+            ><strong>ສຳເລັດການໂຫຼດ</strong></v-chip
+          >
         </template>
         <template v-slot:item.file_size="{ item }">
           {{ item.file_size }}
         </template>
+        <template v-slot:item.fileName="{ item }">
+          {{ item.fileName.slice(0, 20)
+          }}{{ item.fileName.length > 20 ? "..." : "" }}
+        </template>
         <template v-slot:item.period="{ item }">
-          <v-chip color="primary" >{{ dayjs(item.period).format("MM-YYYY") }}</v-chip>
+          <v-chip color="primary" style="font-size: x-small;" size="small">{{
+            dayjs(item.period).format("MM-YYYY")
+          }}</v-chip>
         </template>
         <template v-slot:item.dispuste="{ item }">
-          <v-chip color="info" v-if="item.dispuste ==='0'">
-            ບໍ່ມີ
-          </v-chip>
-          <v-chip color="info" v-else  @click="goPath(`/disuste/?id_dispust=n-${item.FID}`)" density="compact" variant="flat">
+          <v-chip color="info" v-if="item.dispuste === '0'" style="font-size: x-small;" size="small"> ບໍ່ມີ </v-chip>
+          <v-chip style="font-size: x-small;"
+            color="info"
+            v-else
+            @click="goPath(`/disuste/?id_dispust=n-${item.FID}`)"
+            density="compact"
+            variant="flat"
+          >
             {{ item.dispuste }}
           </v-chip>
         </template>
-        
+        <template v-slot:item.editor="{ item }">
+          <v-btn
+            color="success"
+            flat
+            @click="confirmInsertData(`n-${item.FID}`)"
+            v-if="item.statussubmit === '1'"
+            :disabled="isConfirmButtonDisabled(item)"
+          >
+            ຢືນຢັນ
+          </v-btn>
+          <v-btn
+            color="success"
+            flat
+            @click="confirmInsertData(`n-${item.FID}`)"
+            v-if="item.statussubmit === '1'"
+            :disabled="isConfirmButtonDisabled(item)"
+          >
+            ຢືນຢັນ
+          </v-btn>
+
+          <v-btn color="warning" v-if="shouldShowUploadButton(item)" flat>
+            ອັນໂຫຼດ
+          </v-btn>
+
+        </template>
 
         <template v-slot:item.percentage="{ item }">
           <div class="d-flex align-center">
@@ -580,8 +684,14 @@ onMounted(() => {
             <span class="text-caption">{{ item.percentage || 0 }}%</span>
           </div>
         </template>
-        <template v-slot:item.actions="{item}">
-          <v-btn color="primary" prepend-icon="mdi-eye" flat @click="goPath(`/detailupload?code=n-${item.FID}`)">ລາຍລະອຽດ</v-btn>
+        <template v-slot:item.actions="{ item }">
+          <v-btn
+            color="primary"
+            prepend-icon="mdi-eye"
+            flat
+            @click="goPath(`/detailupload?code=n-${item.FID}`)"
+            >ລາຍລະອຽດ</v-btn
+          >
         </template>
 
         <template v-slot:bottom>
