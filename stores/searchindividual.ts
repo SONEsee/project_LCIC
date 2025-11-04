@@ -401,6 +401,48 @@ async confirmUploadLoan(fid: string) {
     this.isLoading = false;
   }
 },
+async UnloadLoan(fid: string) {
+  this.isLoading = true;
+  try {
+    
+    const formData = new FormData();
+    formData.append('FID', fid);
+    
+    console.log('Sending FID:', fid); 
+    
+    const res = await axios.post(
+      `/api/api/rollback_reconfirm/`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }
+    );
+    
+    if (res.status === 200) {
+      await Swal.fire({
+        icon: "success",
+        title: "ສຳເລັດ",
+        text: "ທ່ານສຳເລັດການຢືນຢັນແລ້ວ",
+        timer: 1000,
+        showConfirmButton: false
+      });
+    }
+  } catch (error: any) {
+    console.error('Error:', error.response?.data);
+    
+    await Swal.fire({
+      icon: "error",
+      title: "ຜິດພາດ",
+      text: error.response?.data?.message || "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ ກະລຸນາລອງໃໝ່"
+    });
+  } finally {
+    this.isLoading = false;
+  }
+},
+
+
 async RejectUploadLoan(id:string) {
   this.isLoading = true;
   try {

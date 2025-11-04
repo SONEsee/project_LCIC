@@ -199,7 +199,7 @@ const hasProcessingStatus = computed(() => {
   const statusMap: Record<string, boolean> = {};
 
   data.forEach((item) => {
-    if (item.statussubmit === "3" || item.statussubmit === "5") {
+    if (item.statussubmit === "3" || item.statussubmit === "4" ) {
       statusMap[item.user_id] = true;
     }
   });
@@ -252,14 +252,14 @@ const latestPeriodWithStatus0ByUser = computed(() => {
   return periodMap;
 });
 const shouldShowUploadButton = (item: any) => {
-  // 1. ກວດສອບວ່າ statussubmit = 0 ບໍ່
+
   if (item.statussubmit !== "0") return false;
 
-  // 2. ກວດສອບວ່າເປັນ period ຫຼ້າສຸດທີ່ມີ status=0 ຂອງ user_id ນີ້ບໍ່
+ 
   const latestForUser = latestPeriodWithStatus0ByUser.value[item.user_id];
   if (!latestForUser) return false;
 
-  // 3. ກວດສອບວ່າ FID ນີ້ຕົງກັບ FID ຂອງ period ຫຼ້າສຸດບໍ່
+
   if (item.FID !== latestForUser.fid) return false;
 
   return true;
@@ -344,6 +344,21 @@ const confirmInsertData = async (fid: string) => {
 
   if (notification.isConfirmed) {
     await inDividualStore.confirmUploadLoan(fid);
+    await inDividualStore.getListIndividualLoan();
+  }
+};
+const UnloadData = async (fid: string) => {
+  const notification = await Swal.fire({
+    icon: "warning",
+    title: "ຄຳເຕືອນ",
+    text: "ທ່ານຕ້ອງການຢືນຢັນເພື່ອດຳເນີນການຕໍ່ບໍ?",
+    confirmButtonText: "ຕົກລົງ",
+    showCancelButton: true,
+    cancelButtonText: "ຍົກເລີກ",
+  });
+
+  if (notification.isConfirmed) {
+    await inDividualStore.UnloadLoan(fid);
     await inDividualStore.getListIndividualLoan();
   }
 };
@@ -671,9 +686,12 @@ onMounted(() => {
           <v-chip color="error" size="small" v-if="item.statussubmit === '7'"
             ><strong>ຖືກ Reject</strong></v-chip
           >
+          <v-chip color="orange-darken-4" size="small" v-if="item.statussubmit === '5'"
+            ><strong>ຖືກ Unload</strong></v-chip
+          >
           <v-chip
             color="warning"
-            v-if="item.statussubmit === '3'"
+            v-if="item.statussubmit === '3' || item.statussubmit === '4' "
             style="font-size: small"
             size="small"
           >
@@ -746,7 +764,7 @@ onMounted(() => {
             reject
           </v-btn>
 
-          <v-btn color="warning" v-if="shouldShowUploadButton(item)" flat>
+          <v-btn color="warning" v-if="shouldShowUploadButton(item)" flat @click="UnloadData(`n-${item.FID}`)">
             ອັນໂຫຼດ
           </v-btn>
           <v-chip color="error" size="small" v-if="item.statussubmit === '7'"
