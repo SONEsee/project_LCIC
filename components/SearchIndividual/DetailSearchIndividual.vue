@@ -2,10 +2,11 @@
 import { IndividualStore } from "~/stores/searchindividual";
 import { useFeesStore } from "~/stores/fee";
 import Swal from "sweetalert2";
-const selecCheckbox = ref("")
+const selecCheckbox = ref("");
 const feestore = useFeesStore();
 const rout = useRoute();
 const lcicID = rout.query.lcic_id as string;
+const TypeID = rout.query.typesearch as string;
 
 const dataFee = computed(() => {
   const data = feestore.response_data_fee;
@@ -33,29 +34,27 @@ const dataIndividual = computed(() => {
   }
   return [];
 });
-const confirmInsert = async ()=>{
-    try {
-         const noticonfirm = await Swal.fire({
-                icon:"warning",
-                title:"ຄຳເຕື່ອນ",
-                text:"ທ່ານຕອ້ງການ ຄົ້ນຫາບົດລາຍງານນີ້ແທ້ຫຼືບໍ",
-                showConfirmButton:true,
-                confirmButtonText:"ຕົກລົງ",
-                showCancelButton:true,
-                cancelButtonText:"ຍົກເລີກ"
-                
-            });if(noticonfirm.isConfirmed){
-                
-                await individualStore.CreatInsertLog();
-                goPath(`/backend/reports/individuals`)
-            }
-    } catch (error) {
-        
+const confirmInsert = async () => {
+  try {
+    const noticonfirm = await Swal.fire({
+      icon: "warning",
+      title: "ຄຳເຕື່ອນ",
+      text: "ທ່ານຕອ້ງການ ຄົ້ນຫາບົດລາຍງານນີ້ແທ້ຫຼືບໍ",
+      showConfirmButton: true,
+      confirmButtonText: "ຕົກລົງ",
+      showCancelButton: true,
+      cancelButtonText: "ຍົກເລີກ",
+    });
+    if (noticonfirm.isConfirmed) {
+      await individualStore.CreatInsertLog();
+      goPath(`/backend/reports/individuals`);
     }
-}
+  } catch (error) {}
+};
 onMounted(() => {
   individualStore.reques_mapsearch.query.lcic_id = lcicID;
-  individualStore.from_insert_logserch.lcic_id = lcicID
+  individualStore.from_insert_logserch.lcic_id = lcicID;
+  individualStore.from_insert_logserch.CatalogID = TypeID;
   individualStore.saerchMapIndividual();
   feestore.Getdata();
 });
@@ -64,7 +63,9 @@ onMounted(() => {
 <template>
   <div class="search-details-container">
     <div class="header-section">
-      <v-icon size="32" color="primary" class="mb-2 mt-4">mdi-account-search</v-icon>
+      <v-icon size="32" color="primary" class="mb-2 mt-4"
+        >mdi-account-search</v-icon
+      >
       <h1 class="page-title">ລາຍລະອຽດຂໍ້ມູນຄົ້ນຫາ</h1>
       <p class="page-subtitle">ຜົນການຄົ້ນຫາຂໍ້ມູນບຸກຄົນ</p>
     </div>
@@ -75,12 +76,10 @@ onMounted(() => {
         ຂໍ້ມູນບຸກຄົນ
       </v-card-title>
 
-
-      
       <v-card-text class="pa-0">
         <v-table class="modern-table">
-          <thead style="color: blue;">
-            <tr class="table-header" >
+          <thead style="color: blue">
+            <tr class="table-header">
               <th class="table-header-cell">ລະຫັດ ຂສລ</th>
               <th class="table-header-cell">ຊື່ພາສາລາວ</th>
               <th class="table-header-cell">ນາມສະກຸນພາສາລາວ</th>
@@ -108,7 +107,14 @@ onMounted(() => {
               <td class="table-cell">{{ item.ind_national_id }}</td>
               <td class="table-cell">{{ item.ind_familybook }}</td>
               <td class="table-cell">{{ item.ind_passport }}</td>
-              <td class="table-cell"><v-btn color="primary" :disabled="selecCheckbox !=='1'" @click="confirmInsert">ເລືອກ</v-btn></td>
+              <td class="table-cell">
+                <v-btn
+                  color="primary"
+                  :disabled="selecCheckbox !== '1'"
+                  @click="confirmInsert"
+                  >ເລືອກ</v-btn
+                >
+              </td>
             </tr>
           </tbody>
         </v-table>
@@ -118,7 +124,8 @@ onMounted(() => {
     <v-sheet :elevation="10" :height="100" color="orange-lighten-4" rounded>
       <v-row>
         <v-col cols="12" md="1">
-          <v-checkbox class="pa-2" value="1" v-model="selecCheckbox"> </v-checkbox>
+          <v-checkbox class="pa-2" value="1" v-model="selecCheckbox">
+          </v-checkbox>
         </v-col>
         <v-col cols="12" md="11">
           <h4><b>ຢືນຢັນການໄດ້ຮັບອານຸຍາດແລະຢີນຍອມຈາກເຈົ້າຂອງຂໍ້ມູນ</b></h4>
@@ -133,7 +140,6 @@ onMounted(() => {
         </v-col>
       </v-row>
     </v-sheet>
-   
   </div>
 </template>
 
