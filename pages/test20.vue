@@ -63,7 +63,7 @@
             </select>
           </div>
           
-          <!-- Bank Filter (Admin Only) -->
+          <!-- ✅ Bank Filter (Always visible for Admin) -->
           <div class="filter-group" v-if="isAdmin">
             <label class="filter-label">ທະນາຄານ</label>
             <select v-model="filters.bank" class="filter-select">
@@ -79,9 +79,13 @@
             <label class="filter-label">ປະເພດຄ່າທຳນຽມ</label>
             <select v-model="filters.chg_code" class="filter-select">
               <option value="all">ທັງໝົດ</option>
-              <option v-for="code in chargeCodeList" :key="code.code" :value="code.code">
-                {{ code.display }}
-              </option>
+            <option
+              v-for="item in chargeCodeList"
+              :key="item.chg_sys_id"
+              :value="item.chg_code"
+            >
+              {{ item.chg_code }} - {{ item.chg_lao_type }}
+            </option>
             </select>
           </div>
           
@@ -197,7 +201,42 @@
         <p>ກຳລັງໂຫຼດຂໍ້ມູນ...</p>
       </div>
       
-      <!-- Data Table -->
+      <!-- Grouped Data (Year/Month) -->
+      <div v-else-if="isGroupedData" class="table-container">
+        <div v-for="group in mainReportData" :key="group.period" class="group-section">
+          <h3 class="group-header">{{ group.period }}</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ລະຫັດທະນາຄານ</th>
+                <th>ຊື່ທະນາຄານ</th>
+                <th class="text-right">ຈຳນວນທຸລະກຳ</th>
+                <th class="text-right">ຍອດເງິນລວມ</th>
+                <th class="text-right">ຄ່າສະເລ່ຍ</th>
+                <th class="text-center">ການດຳເນີນການ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="bank in group.banks" :key="bank.bank_code">
+                <td class="text-center">{{ bank.bank_code }}</td>
+                <td>{{ bank.bank_name }}</td>
+                <td class="text-right">{{ formatNumber(bank.transaction_count) }}</td>
+                <td class="text-right">{{ formatCurrency(bank.total_charge_amount) }}</td>
+                <td class="text-right">
+                  {{ formatCurrency(bank.total_charge_amount / (bank.transaction_count || 1)) }}
+                </td>
+                <td class="text-center">
+                  <button @click="viewDetails(bank.bank_code)" class="btn-view-details" title="ເບິ່ງລາຍລະອຽດ">
+                    <Icon name="mdi:eye" />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Normal Bank Data -->
       <div v-else-if="mainReportData.length > 0" class="table-container">
         <table class="data-table">
           <thead>
@@ -220,11 +259,7 @@
                 {{ formatCurrency(bank.total_charge_amount / (bank.transaction_count || 1)) }}
               </td>
               <td class="text-center">
-                <button 
-                  @click="viewDetails(bank.bank_code)" 
-                  class="btn-view-details"
-                  title="ເບິ່ງລາຍລະອຽດ"
-                >
+                <button @click="viewDetails(bank.bank_code)" class="btn-view-details" title="ເບິ່ງລາຍລະອຽດ">
                   <Icon name="mdi:eye" />
                 </button>
               </td>
@@ -278,13 +313,9 @@ const {
   formatCurrency
 } = useChargeReportApi()
 
-const pad = (n: number) => String(n).padStart(2, '0')
-const now = new Date()
-const todayISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
-
 const filters = ref({
-  fromDate: todayISO,
-  toDate: todayISO,
+  fromDate: '',
+  toDate: '',
   month: '',
   year: new Date().getFullYear().toString(),
   bank: 'all',
@@ -334,11 +365,29 @@ const topBankByTransactions = computed(() => {
   return summaryData.value?.top_banks?.by_transactions || null
 })
 
+// ✅ Detect grouped data
+const isGroupedData = computed(() => {
+  return mainReportData.value.length > 0 && 
+         mainReportData.value[0].hasOwnProperty('period') &&
+         mainReportData.value[0].hasOwnProperty('banks')
+})
+
+// ✅ Calculate totals for both normal and grouped data
 const totalTransactions = computed(() => {
+  if (isGroupedData.value) {
+    return mainReportData.value.reduce((sum, group) => {
+      return sum + group.banks.reduce((bankSum: number, bank: any) => bankSum + bank.transaction_count, 0)
+    }, 0)
+  }
   return mainReportData.value.reduce((sum, bank) => sum + bank.transaction_count, 0)
 })
 
 const totalAmount = computed(() => {
+  if (isGroupedData.value) {
+    return mainReportData.value.reduce((sum, group) => {
+      return sum + group.banks.reduce((bankSum: number, bank: any) => bankSum + bank.total_charge_amount, 0)
+    }, 0)
+  }
   return mainReportData.value.reduce((sum, bank) => sum + bank.total_charge_amount, 0)
 })
 
@@ -366,6 +415,7 @@ const applyFilters = async () => {
   if (filters.value.bank && filters.value.bank !== 'all') filterParams.bank = filters.value.bank
   if (filters.value.chg_code && filters.value.chg_code !== 'all') filterParams.chg_code = filters.value.chg_code
   
+  // ✅ Apply same filters to both summary and main report
   await Promise.all([
     fetchSummaryStats(filterParams),
     fetchMainReport(filterParams)
@@ -412,8 +462,29 @@ onMounted(async () => {
   ])
 })
 </script>
-
 <style scoped>
+.group-section {
+  margin-bottom: 32px;
+}
+
+.group-header {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  padding: 12px 20px;
+  background: linear-gradient(to right, #3b82f6, #2563eb);
+  border-radius: 8px 8px 0 0;
+  margin: 0;
+}
+
+.group-section .data-table {
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+}
+
+.group-section:last-child {
+  margin-bottom: 0;
+}
 .charge-report-dashboard {
   padding: 24px;
   background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
