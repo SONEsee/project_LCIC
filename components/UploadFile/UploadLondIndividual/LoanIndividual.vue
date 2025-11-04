@@ -204,7 +204,7 @@ const hasProcessingStatus = computed(() => {
   const statusMap: Record<string, boolean> = {};
 
   data.forEach((item) => {
-    if (item.statussubmit === "3" || item.statussubmit === "4" ) {
+    if (item.statussubmit === "3" || item.statussubmit === "4") {
       statusMap[item.user_id] = true;
     }
   });
@@ -215,7 +215,10 @@ const latestPeriodByUser = computed(() => {
   const data = inDividualStore.respons_list_file_insdividual_loan?.results;
   if (!Array.isArray(data)) return {};
 
-  const periodMap: Record<string, { period: string; fid: string; statussubmit: string }> = {};
+  const periodMap: Record<
+    string,
+    { period: string; fid: string; statussubmit: string }
+  > = {};
 
   data.forEach((item) => {
     const currentPeriod = item.period;
@@ -225,7 +228,7 @@ const latestPeriodByUser = computed(() => {
       periodMap[userId] = {
         period: currentPeriod,
         fid: item.FID,
-        statussubmit: item.statussubmit
+        statussubmit: item.statussubmit,
       };
     }
   });
@@ -239,13 +242,11 @@ const latestPeriodWithStatus0ByUser = computed(() => {
   const periodMap: Record<string, { period: string; fid: string }> = {};
 
   data.forEach((item) => {
-   
     if (item.statussubmit !== "0") return;
 
     const currentPeriod = item.period;
     const userId = item.user_id;
 
-    
     if (!periodMap[userId] || currentPeriod > periodMap[userId].period) {
       periodMap[userId] = {
         period: currentPeriod,
@@ -257,13 +258,10 @@ const latestPeriodWithStatus0ByUser = computed(() => {
   return periodMap;
 });
 const shouldShowUploadButton = (item: any) => {
-
   if (item.statussubmit !== "0") return false;
 
- 
   const latestForUser = latestPeriodWithStatus0ByUser.value[item.user_id];
   if (!latestForUser) return false;
-
 
   if (item.FID !== latestForUser.fid) return false;
 
@@ -284,7 +282,10 @@ const statistics = computed(() => {
   const success = results.filter((item) => item.statussubmit === "0").length;
   const processing = results.filter((item) => item.statussubmit === "1").length;
   const rejected = results.filter(
-    (item) => item.status === "2" || item.statussubmit === "2" || item.statussubmit === "7"
+    (item) =>
+      item.status === "2" ||
+      item.statussubmit === "2" ||
+      item.statussubmit === "7"
   ).length;
 
   const jsonFiles = results.filter((item) => item.FileType === "json").length;
@@ -361,7 +362,7 @@ const UnloadData = async (fid: string) => {
     showCancelButton: true,
     cancelButtonText: "ຍົກເລີກ",
   });
-
+await inDividualStore.getListIndividualLoan();
   if (notification.isConfirmed) {
     await inDividualStore.UnloadLoan(fid);
     await inDividualStore.getListIndividualLoan();
@@ -376,14 +377,13 @@ const RejectInsertData = async (id: string) => {
     showCancelButton: true,
     cancelButtonText: "ຍົກເລີກ",
   });
-
+  
   if (notification.isConfirmed) {
     await inDividualStore.RejectUploadLoan(id);
     await inDividualStore.getListIndividualLoan();
   }
 };
-onMounted( async () => {
-  
+onMounted(async () => {
   inDividualStore.loan_query.query.user_id = userId.value;
   inDividualStore.period.query.user_id = userId.value;
   inDividualStore.getListIndividualLoan();
@@ -692,12 +692,15 @@ onMounted( async () => {
           <v-chip color="error" size="small" v-if="item.statussubmit === '7'"
             ><strong>ຖືກ Reject</strong></v-chip
           >
-          <v-chip color="orange-darken-4" size="small" v-if="item.statussubmit === '5'"
+          <v-chip
+            color="orange-darken-4"
+            size="small"
+            v-if="item.statussubmit === '5'"
             ><strong>ຖືກ Unload</strong></v-chip
           >
           <v-chip
             color="warning"
-            v-if="item.statussubmit === '3' || item.statussubmit === '4' "
+            v-if="item.statussubmit === '3' || item.statussubmit === '4'"
             style="font-size: small"
             size="small"
           >
@@ -770,7 +773,12 @@ onMounted( async () => {
             reject
           </v-btn>
 
-          <v-btn color="warning" v-if="shouldShowUploadButton(item)" flat @click="UnloadData(`n-${item.FID}`)">
+          <v-btn
+            color="warning"
+            v-if="shouldShowUploadButton(item)"
+            flat
+            @click="UnloadData(`n-${item.FID}`)"
+          >
             ອັນໂຫຼດ
           </v-btn>
           <v-chip color="error" size="small" v-if="item.statussubmit === '7'"

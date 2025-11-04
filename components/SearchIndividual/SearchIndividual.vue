@@ -416,7 +416,7 @@ onMounted(async () => {
                     >
                     ລະຫັດ LCIC
                   </label>
-                  <!-- ແກ້ໄຂ: ລຶບ @input ອອກ ໃຊ້ watch ແທນ -->
+                  
                   <v-text-field
                     v-model="lcicSearchInput"
                     density="comfortable"
@@ -430,7 +430,7 @@ onMounted(async () => {
                     rounded
                   ></v-text-field>
 
-                  <!-- ສະແດງຊື່ລູກຄ້າຢູ່ດ້ານລຸ່ມ text-field -->
+                  
                   <v-slide-y-transition>
                     <div
                       v-if="showLcicName && displayedLcicName"
@@ -496,7 +496,7 @@ onMounted(async () => {
                     </template>
                   </v-autocomplete>
 
-                  <!-- <pre>{{ categories }}</pre> -->
+                  
                 </div>
               </v-col>
               <v-col cols="12">
@@ -508,7 +508,10 @@ onMounted(async () => {
                   variant="outlined"
                   density="compact"
                   label="ເລືກປະເພດ"
-                ></v-autocomplete>
+                >
+              <template v-slot:item="{item, props}">
+                <v-list-item v-bind="props" :title="`${(item as any).raw.cat_lao_name}(${item.raw.cat_name})`"></v-list-item>
+              </template></v-autocomplete>
               </v-col>
 
               <v-col cols="12">
