@@ -513,7 +513,6 @@ onMounted(async () => {
                 <v-list-item v-bind="props" :title="`${(item as any).raw.cat_lao_name}(${item.raw.cat_name})`"></v-list-item>
               </template></v-autocomplete>
               </v-col>
-
               <v-col cols="12">
                 <div class="button-group">
                   <v-btn
