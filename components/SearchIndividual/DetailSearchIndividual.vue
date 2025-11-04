@@ -6,6 +6,7 @@ const selecCheckbox = ref("")
 const feestore = useFeesStore();
 const rout = useRoute();
 const lcicID = rout.query.lcic_id as string;
+const TypeID = rout.query.typesearch as string;
 
 const dataFee = computed(() => {
   const data = feestore.response_data_fee;
@@ -56,6 +57,7 @@ const confirmInsert = async ()=>{
 onMounted(() => {
   individualStore.reques_mapsearch.query.lcic_id = lcicID;
   individualStore.from_insert_logserch.lcic_id = lcicID
+  individualStore.from_insert_logserch.CatalogID = TypeID
   individualStore.saerchMapIndividual();
   feestore.Getdata();
 });

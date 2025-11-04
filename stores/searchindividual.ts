@@ -62,6 +62,7 @@ export const IndividualStore = defineStore("individual", {
       token: localStorage.getItem("access_token"),
       isLoading: false,
       respons_data_reques: null as SearchIndividualModel.Result | null,
+      type_search_response:null as SearchIndividualModel.TypeSearchRespons[] | null,
       respons_list_file_insdividual_loan:
         null as SearchIndividualModel.IndividualFileListRespons | null,
       Pagination:
@@ -86,7 +87,7 @@ export const IndividualStore = defineStore("individual", {
       },
       from_insert_logserch: {
         lcic_id: "",
-        CatalogID: "LOAN_PURPOSE_01",
+        CatalogID: "",
       },
       loan_query: {
         isLoading: false,
@@ -349,6 +350,24 @@ export const IndividualStore = defineStore("individual", {
         });
         if (res.status === 200) {
           this.respons_data_reques_period = res.data;
+        }
+      } catch (error) {
+        await Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text: "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ ກະລຸນາລອງໃໝ່",
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async getTypeSearch() {
+      this.isLoading = true;
+      try {
+        const res = await axios.get<SearchIndividualModel.SearchIndividualRespons>(`/api/catalog-cats/`);
+        if (res.status === 200 || res.status === 201) {
+          this.type_search_response = res.data.typeserch || [];
+          
         }
       } catch (error) {
         await Swal.fire({

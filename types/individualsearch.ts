@@ -1,8 +1,19 @@
 export interface SearchIndividualRespons {
     count:   number;
     results: Result;
+    typeserch: TypeSearchRespons[];
 }
-
+export interface TypeSearchRespons {
+    cat_sys_id:     number;
+    ct_type:        string;
+    cat_name:       string;
+    cat_lao_name:   string;
+    cat_value:      string;
+    cat_is_default: number;
+    cat_sort_order: number;
+    cat_group:      number;
+    cat_status:     number;
+}
 export interface Result {
     customerid:      string;
     lcic_id:         string;

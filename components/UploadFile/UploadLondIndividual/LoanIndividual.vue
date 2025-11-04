@@ -13,6 +13,11 @@ const SelectBank = ref("");
 const SelectPeroid = ref("");
 const SelectSatus = ref("");
 const SelectFile = ref("");
+const categories = ref<any[]>([]);
+interface Category {
+  cat_sys_id: string;
+  cat_name: string;
+}
 const { user, userId, isAdmin, isLoggedIn } = useUserData();
 const reques = inDividualStore.loan_query.query;
 const period = computed(() => {
@@ -377,7 +382,8 @@ const RejectInsertData = async (id: string) => {
     await inDividualStore.getListIndividualLoan();
   }
 };
-onMounted(() => {
+onMounted( async () => {
+  
   inDividualStore.loan_query.query.user_id = userId.value;
   inDividualStore.period.query.user_id = userId.value;
   inDividualStore.getListIndividualLoan();
