@@ -63,7 +63,7 @@
             </select>
           </div>
           
-          <!-- ✅ Bank Filter (Always visible for Admin) -->
+          <!-- Bank Filter (Admin only) -->
           <div class="filter-group" v-if="isAdmin">
             <label class="filter-label">ທະນາຄານ</label>
             <select v-model="filters.bank" class="filter-select">
@@ -79,13 +79,13 @@
             <label class="filter-label">ປະເພດຄ່າທຳນຽມ</label>
             <select v-model="filters.chg_code" class="filter-select">
               <option value="all">ທັງໝົດ</option>
-            <option
-              v-for="item in chargeCodeList"
-              :key="item.chg_sys_id"
-              :value="item.chg_code"
-            >
-              {{ item.chg_code }} - {{ item.chg_lao_type }}
-            </option>
+              <option
+                v-for="item in chargeCodeList"
+                :key="item.chg_sys_id"
+                :value="item.chg_code"
+              >
+                {{ item.chg_code }} - {{ item.chg_lao_type }}
+              </option>
             </select>
           </div>
           
@@ -226,7 +226,12 @@
                   {{ formatCurrency(bank.total_charge_amount / (bank.transaction_count || 1)) }}
                 </td>
                 <td class="text-center">
-                  <button @click="viewDetails(bank.bank_code)" class="btn-view-details" title="ເບິ່ງລາຍລະອຽດ">
+                  <!-- ✅ FIX: Pass period to viewDetails -->
+                  <button 
+                    @click="viewDetails(bank.bank_code, group.period)" 
+                    class="btn-view-details" 
+                    title="ເບິ່ງລາຍລະອຽດ"
+                  >
                     <Icon name="mdi:eye" />
                   </button>
                 </td>
@@ -259,7 +264,12 @@
                 {{ formatCurrency(bank.total_charge_amount / (bank.transaction_count || 1)) }}
               </td>
               <td class="text-center">
-                <button @click="viewDetails(bank.bank_code)" class="btn-view-details" title="ເບິ່ງລາຍລະອຽດ">
+                <!-- ✅ No period for non-grouped data -->
+                <button 
+                  @click="viewDetails(bank.bank_code)" 
+                  class="btn-view-details" 
+                  title="ເບິ່ງລາຍລະອຽດ"
+                >
                   <Icon name="mdi:eye" />
                 </button>
               </td>
@@ -365,14 +375,12 @@ const topBankByTransactions = computed(() => {
   return summaryData.value?.top_banks?.by_transactions || null
 })
 
-// ✅ Detect grouped data
 const isGroupedData = computed(() => {
   return mainReportData.value.length > 0 && 
          mainReportData.value[0].hasOwnProperty('period') &&
          mainReportData.value[0].hasOwnProperty('banks')
 })
 
-// ✅ Calculate totals for both normal and grouped data
 const totalTransactions = computed(() => {
   if (isGroupedData.value) {
     return mainReportData.value.reduce((sum, group) => {
@@ -415,7 +423,6 @@ const applyFilters = async () => {
   if (filters.value.bank && filters.value.bank !== 'all') filterParams.bank = filters.value.bank
   if (filters.value.chg_code && filters.value.chg_code !== 'all') filterParams.chg_code = filters.value.chg_code
   
-  // ✅ Apply same filters to both summary and main report
   await Promise.all([
     fetchSummaryStats(filterParams),
     fetchMainReport(filterParams)
@@ -435,15 +442,42 @@ const resetFilters = () => {
   applyFilters()
 }
 
-const viewDetails = (bankCode: string) => {
+/**
+ * ✅ FIXED: Extract month and year from period when grouped data
+ * @param bankCode - Bank code to view details for
+ * @param period - Optional period string (e.g., "09-2025" or "2025")
+ */
+const viewDetails = (bankCode: string, period?: string) => {
   const queryParams: any = { bank: bankCode }
   
-  if (filters.value.month) queryParams.month = filters.value.month
-  if (filters.value.year) queryParams.year = filters.value.year
-  if (filters.value.fromDate) queryParams.fromDate = filters.value.fromDate
-  if (filters.value.toDate) queryParams.toDate = filters.value.toDate
-  if (filters.value.chg_code && filters.value.chg_code !== 'all') queryParams.chg_code = filters.value.chg_code
+  // ✅ FIX: If period is provided (from grouped data), extract month and year from it
+  if (period) {
+    const periodParts = period.split('-')
+    
+    if (periodParts.length === 2) {
+      // Format: "09-2025" (month-year)
+      const month = periodParts[0]
+      const year = periodParts[1]
+      queryParams.month = parseInt(month).toString()  // Remove leading zero
+      queryParams.year = year
+    } else if (periodParts.length === 1) {
+      // Format: "2025" (year only)
+      queryParams.year = periodParts[0]
+    }
+  } else {
+    // ✅ No period provided, use current filter values
+    if (filters.value.month) queryParams.month = filters.value.month
+    if (filters.value.year) queryParams.year = filters.value.year
+    if (filters.value.fromDate) queryParams.fromDate = filters.value.fromDate
+    if (filters.value.toDate) queryParams.toDate = filters.value.toDate
+  }
   
+  // Add charge code if it's set and not 'all'
+  if (filters.value.chg_code && filters.value.chg_code !== 'all') {
+    queryParams.chg_code = filters.value.chg_code
+  }
+  
+  // Navigate to detail page
   navigateTo({
     path: '/test25',
     query: queryParams
@@ -462,7 +496,9 @@ onMounted(async () => {
   ])
 })
 </script>
+
 <style scoped>
+/* ... (keep all your existing styles) ... */
 .group-section {
   margin-bottom: 32px;
 }
@@ -485,6 +521,7 @@ onMounted(async () => {
 .group-section:last-child {
   margin-bottom: 0;
 }
+
 .charge-report-dashboard {
   padding: 24px;
   background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
