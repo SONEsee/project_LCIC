@@ -20,82 +20,79 @@
     </div>
   </v-card>
 
-<v-card class="filter-card mb-2" elevation="3">
-  <!-- Filter Header -->
-  <div class="filter-header pa-2">
-    <div class="d-flex align-center justify-space-between">
-      <div class="d-flex align-center">
-        <div class="filter-icon-wrapper mr-3">
-          <v-icon size="28" color="primary">mdi-filter-variant</v-icon>
+  <v-card class="filter-card mb-2" elevation="3">
+    <!-- Filter Header -->
+    <div class="filter-header pa-2">
+      <div class="d-flex align-center justify-space-between">
+        <div class="d-flex align-center">
+          <div class="filter-icon-wrapper mr-3">
+            <v-icon size="28" color="primary">mdi-filter-variant</v-icon>
+          </div>
+          <div>
+            <h2 class="text-h6 font-weight-bold">ຕົວກອງຂໍ້ມູນ</h2>
+            <p class="text-caption mb-0 text-medium-emphasis">Filter & Search Options</p>
+          </div>
         </div>
-        <div>
-          <h2 class="text-h6 font-weight-bold">ຕົວກອງຂໍ້ມູນ</h2>
-          <p class="text-caption mb-0 text-medium-emphasis">Filter & Search Options</p>
-        </div>
+
+        <!-- ปุ่มล้างตัวกรอง (ขวาสุด) -->
+        <v-btn
+          color="error"
+          variant="tonal"
+          size="small"
+          prepend-icon="mdi-refresh"
+          @click="showAllBanks"
+          :disabled="filterParams.bnk_code === '01'"
+          class="clear-btn"
+        >
+          ລ້າງຕົວກອງ
+        </v-btn>
       </div>
-
-      <!-- ปุ่มล้างตัวกรอง (ขวาสุด) -->
-      <v-btn
-        color="error"
-        variant="tonal"
-        size="small"
-        prepend-icon="mdi-refresh"
-        @click="showAllBanks"
-        :disabled="filterParams.bnk_code === '01'"
-        class="clear-btn"
-      >
-        ລ້າງຕົວກອງ
-      </v-btn>
     </div>
-  </div>
 
-  <!-- Filter Body: เลือกธนาคาร + วันที่ -->
-  <div class="pa-4 pt-0" >
-    <div class="d-flex align-center flex-wrap gap-4">
-      <!-- เลือกธนาคาร -->
-      <v-select
-        v-model="filterParams.bnk_code"
-        :items="bankOptions"
-        item-title="displayName"
-        item-value="bnk_code"
-        label="ເລືອກສະມາຊິກ"
-        dense
-        outlined
-        clearable
-        class="bank-select"
-        style="min-width: 200px; max-width: 500px;"
-        @update:model-value="handleBankSelect"
-      ></v-select>
+    <!-- Filter Body: เลือกธนาคาร + วันที่ -->
+    <div class="pa-4 pt-0">
+      <div class="d-flex align-center flex-wrap gap-4">
+        <!-- เลือกธนาคาร -->
+        <v-select
+          v-model="filterParams.bnk_code"
+          :items="bankOptions"
+          item-title="displayName"
+          item-value="bnk_code"
+          label="ເລືອກສະມາຊິກ"
+          dense
+          outlined
+          clearable
+          :loading="loading"
+          class="bank-select"
+          style="min-width: 200px; max-width: 500px;"
+          @update:model-value="handleBankSelect"
+        ></v-select>
 
-      <!-- ชิปวันที่ -->
-      <v-chip class="filter-chip ml-10" size="default" variant="flat" color="primary">
-        <v-icon start size="18" >mdi-calendar</v-icon>
-        <span class="font-weight-medium">{{ getFilterDateDisplay() }}</span>
-      </v-chip>
+        <!-- ชิปวันที่ -->
+        <v-chip class="filter-chip ml-10" size="default" variant="flat" color="primary">
+          <v-icon start size="18">mdi-calendar</v-icon>
+          <span class="font-weight-medium">{{ getFilterDateDisplay() }}</span>
+        </v-chip>
+      </div>
     </div>
-  </div>
-</v-card>
-
-  <!-- Loading State -->
-  <v-card v-if="loading" class="loading-card pa-12 text-center" elevation="0">
-    <v-progress-circular 
-      indeterminate 
-      color="primary" 
-      size="80" 
-      width="6"
-      class="mb-6"
-    ></v-progress-circular>
-    <p class="text-h6 font-weight-medium">ກຳລັງໂຫຼດຂໍ້ມູນ...</p>
-    <p class="text-body-1 text-medium-emphasis mt-2">Please wait</p>
   </v-card>
 
-  <!-- Data Table -->
-  <v-card v-else class="data-table-card" elevation="0">
+  <!-- Data Table Card (แสดงตลอด) -->
+  <v-card class="data-table-card" elevation="0">
     <v-card-title class="table-header pa-2">
       <div class="d-flex align-center justify-space-between w-100">
         <div class="d-flex align-center">
           <v-icon class="mr-3" size="28" color="#2233a1">mdi-bank-outline</v-icon>
           <span class="text-h6 font-weight-bold">ສະຫຼຸບຕາມທະນາຄານ</span>
+          <!-- ✅ แสดง loading indicator เล็กๆ ตรงนี้ -->
+          <v-progress-circular
+            v-if="loading"
+            indeterminate
+            color="primary"
+            size="20"
+            width="2"
+            class="ml-3"
+          ></v-progress-circular>
         </div>
         <v-chip class="count-chip" size="large" variant="flat">
           <v-icon start size="20" class="ml-1">mdi-bank-outline</v-icon>
@@ -106,10 +103,23 @@
 
     <v-divider class="divider-line"></v-divider>
 
+    <!-- ✅ Skeleton Loading (แสดงตอน loading) -->
+    <div v-if="loading && reportData.length === 0" class="pa-6">
+      <v-skeleton-loader
+        v-for="i in 5"
+        :key="i"
+        type="table-row"
+        class="mb-2"
+      ></v-skeleton-loader>
+    </div>
+
+    <!-- ✅ Data Table (แสดงเมื่อมีข้อมูล) -->
     <v-data-table
+      v-else
       :headers="headers"
       :items="reportData"
       :items-per-page="10"
+      :loading="loading"
       class="custom-table elevation-0"
       hover
     >
@@ -119,7 +129,7 @@
 
       <template v-slot:item.bnk_code="{ item }">
         <v-chip size="small" class="bank-chip" variant="flat">
-          {{ item.bnk_code }}
+          {{ item.code }} - {{ item.bnk_code }}
         </v-chip>
       </template>
 
@@ -206,7 +216,7 @@ const fetchBankOptions = async () => {
     const banks = memberData.data || memberData.results || memberData || [];
     bankOptions.value = banks.map(b => ({
       bnk_code: b.bnk_code,
-      displayName: `${b.nameL || b.name} (${b.bnk_code})`
+      displayName: `${b.nameL || b.name} (${b.code} - ${b.bnk_code})`
     }));
   } catch (err) {
     console.error('Error fetching bank options:', err);
@@ -250,12 +260,12 @@ const getFilterDateDisplay = () => {
   }
 };
 
-// ดึงข้อมูลด้วย bnk_code=01 เสมอ
+// ✅ ดึงข้อมูลด้วย bnk_code=01 เสมอ
 const fetchReportAllData = async () => {
   loading.value = true;
   try {
     const params = {
-      bnk_code: '01',  // ต้องส่ง 01 เท่านั้น
+      bnk_code: '01',
       group: filterParams.value.group,
       date_filter_type: filterParams.value.date_filter_type,
       date_filter_value: filterParams.value.date_filter_value
@@ -263,17 +273,25 @@ const fetchReportAllData = async () => {
 
     const { data } = await axios.get(apiReportAllURL, { params });
     
+    // ดึงข้อมูลธนาคารทั้งหมด
     const { data: memberData } = await axios.get(apiMemberURL);
     const banks = memberData.data || memberData.results || memberData || [];
+
+    // สร้าง map เก็บทุกฟิลด์
     const bankMap = {};
     banks.forEach(b => {
-      bankMap[b.bnk_code] = b.nameL || b.name || b.bnk_code;
+      bankMap[b.bnk_code] = {
+        name: b.nameL || b.name || b.bnk_code,
+        code: b.code || '',
+        bnk_code: b.bnk_code
+      };
     });
 
-    // เก็บข้อมูลดิบ
+    // รวมข้อมูลจาก report กับ memberinfo
     rawReportData.value = (data.results || []).map(item => ({
       bnk_code: item.bnk_code,
-      bank_name: bankMap[item.bnk_code] || `ທະນາຄານ ${item.bnk_code}`,
+      bank_name: bankMap[item.bnk_code]?.name || `ທະນາຄານ ${item.bnk_code}`,
+      code: bankMap[item.bnk_code]?.code || '',
       total: item.total
     }));
 
@@ -285,15 +303,9 @@ const fetchReportAllData = async () => {
   }
 };
 
-// เมื่อเปลี่ยน select → ไม่ต้อง fetch ใหม่ → computed กรองให้
-const onBankChange = () => {
-  // ไม่ต้องทำอะไร → computed จะอัปเดตเอง
-};
-
 // ปุ่มแสดงทั้งหมด
 const showAllBanks = () => {
   filterParams.value.bnk_code = '01'; // ตั้งเป็น 01 → แสดงทั้งหมด
-  // ไม่ต้อง fetch ใหม่ → computed ใช้ rawData เดิม
 };
 
 const viewDetails = (detail_bnk_code) => {
@@ -357,12 +369,6 @@ onMounted(async () => {
   border-radius: 12px;
 }
 
-.loading-card {
-  border-radius: 16px;
-  background: white;
-  border: 2px dashed #E0E0E0;
-}
-
 .data-table-card {
   border-radius: 16px;
   background: white;
@@ -415,5 +421,11 @@ onMounted(async () => {
   font-weight: 600 !important;
 }
 
-
+.no-data-container {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 </style>
