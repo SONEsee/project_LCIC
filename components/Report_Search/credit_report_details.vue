@@ -26,15 +26,19 @@
       <div class="d-flex align-center mb-2">
         <v-icon class="filter-icon mr-2" size="24">mdi-filter-variant</v-icon>
         <h3 class="text-h6 font-weight-bold mb-0">ຕົວກອງທີ່ເລືອກ</h3>
+        <v-progress-circular
+          v-if="loading"
+          indeterminate
+          color="primary"
+          size="20"
+          width="2"
+          class="ml-3"
+        ></v-progress-circular>
       </div>
       <div class="d-flex flex-wrap gap-3">
-        <!-- <v-chip class="filter-chip" size="default" variant="flat">
-          <v-icon start size="18">mdi-shape</v-icon>
-          <span class="font-weight-medium">Group: {{ filterParams.group }}</span>
-        </v-chip> -->
         <v-chip class="filter-chip" size="default" variant="flat">
           <v-icon start size="18">mdi-bank</v-icon>
-          <span class="font-weight-medium">Bank: {{ displayBnkCode }}</span>
+          <span class="font-weight-medium">{{ displayBnkCode }}</span>
         </v-chip>
         <v-chip class="filter-chip" size="default" variant="flat">
           <v-icon start size="18">mdi-calendar</v-icon>
@@ -44,21 +48,8 @@
     </div>
   </v-card>
 
-  <!-- Loading State -->
-  <v-card v-if="loading" class="loading-card pa-12 text-center" elevation="0">
-    <v-progress-circular 
-      indeterminate 
-      color="primary" 
-      size="80" 
-      width="6"
-      class="mb-6"
-    ></v-progress-circular>
-    <p class="text-h6 font-weight-medium">ກຳລັງໂຫຼດຂໍ້ມູນ...</p>
-    <p class="text-body-1 text-medium-emphasis mt-2">Please wait</p>
-  </v-card>
-
-  <!-- Data Table -->
-  <v-card v-else class="data-table-card" elevation="0">
+  <!-- Data Table Card -->
+  <v-card class="data-table-card" elevation="0">
     <v-card-title class="table-header pa-2">
       <div class="d-flex align-center justify-space-between w-100">
         <div class="d-flex align-center">
@@ -74,10 +65,23 @@
 
     <v-divider class="divider-line"></v-divider>
 
+    <!-- Skeleton Loading -->
+    <div v-if="loading && reportData.length === 0" class="pa-6">
+      <v-skeleton-loader
+        v-for="i in 8"
+        :key="i"
+        type="table-row"
+        class="mb-2"
+      ></v-skeleton-loader>
+    </div>
+
+    <!-- Data Table -->
     <v-data-table
+      v-else
       :headers="dynamicHeaders"
       :items="reportData"
       :items-per-page="10"
+      :loading="loading"
       class="custom-table elevation-0"
       hover
     >
@@ -132,8 +136,8 @@ const config = useRuntimeConfig();
 const apiDetailURL = `${config.public.strapi.url}api/request-charge-detail/`;
 const apiChargeMatrixURL = `${config.public.strapi.url}api/charge-matrix/`;
 const apiUserURL = `${config.public.strapi.url}api/user/`;
+const apiMemberURL = `${config.public.strapi.url}api/memberinfo/`;
 
-// ✅ ใช้ composable ดึงข้อมูล user
 const { userData, UID } = useUserUID();
 const currentBnkCode = computed(() => userData.value.MID?.id || '');
 const currentUID = computed(() => UID.value || null);
@@ -146,12 +150,14 @@ const filterParams = ref({
   bnk_code: '',
   detail_bnk_code: '',
   date_filter_type: '',
-  date_filter_value: ''
+  date_filter_value: '',
+  start_date: '', // ✅ เพิ่ม
+  end_date: ''    // ✅ เพิ่ม
 });
 
-// ✅ แสดง bnk_code ที่กำลังดูอยู่
 const displayBnkCode = computed(() => {
-  return filterParams.value.detail_bnk_code || currentBnkCode.value;
+  const found = reportData.value[0];
+  return found?.bank_full_display || `${filterParams.value.detail_bnk_code || currentBnkCode.value}`;
 });
 
 const visibleFields = [
@@ -171,9 +177,10 @@ const getFilterParams = () => {
     bnk_code: currentBnkCode.value,
     detail_bnk_code: route.query.detail_bnk_code || '',
     date_filter_type: route.query.date_filter_type || '',
-    date_filter_value: route.query.date_filter_value || ''
+    date_filter_value: route.query.date_filter_value || '',
+    start_date: route.query.start_date || '', // ✅ เพิ่ม
+    end_date: route.query.end_date || ''       // ✅ เพิ่ม
   };
-  
 };
 
 const getGroupTitle = () => {
@@ -188,11 +195,19 @@ const getGroupTitle = () => {
 const getFilterDateDisplay = () => {
   const type = filterParams.value.date_filter_type;
   const value = filterParams.value.date_filter_value;
+  const start = filterParams.value.start_date;
+  const end = filterParams.value.end_date;
+
+  // ✅ รองรับ Date Range
+  if (type === 'range' && start && end) {
+    return `${start} - ${end}`;
+  }
+
   switch (type) {
-    case 'year': return `Year: ${value}`;
-    case 'month': return `Month: ${value}`;
-    case 'day': return `Date: ${value}`;
-    default: return value;
+    case 'year': return `ປີ: ${value}`;
+    case 'month': return `ເດືອນ: ${value}`;
+    case 'day': return `ວັນທີ່: ${value}`;
+    default: return value || 'N/A';
   }
 };
 
@@ -216,32 +231,60 @@ const fetchDetailData = async () => {
       bnk_code: filterParams.value.bnk_code,
       detail_bnk_code: filterParams.value.detail_bnk_code,
       group: filterParams.value.group,
-      date_filter_type: filterParams.value.date_filter_type,
-      date_filter_value: filterParams.value.date_filter_value
+      date_filter_type: filterParams.value.date_filter_type
     };
-    
+
+    // ✅ รองรับ Date Range
+    if (filterParams.value.date_filter_type === 'range') {
+      params.start_date = filterParams.value.start_date;
+      params.end_date = filterParams.value.end_date;
+    } else {
+      params.date_filter_value = filterParams.value.date_filter_value;
+    }
+
     const { data } = await axios.get(apiDetailURL, { params });
     let results = data.results || [];
 
+    // ดึงข้อมูล memberinfo
+    const { data: memberData } = await axios.get(apiMemberURL);
+    const banks = memberData.data || memberData.results || memberData || [];
+
+    const bankMap = {};
+    banks.forEach(b => {
+      bankMap[b.bnk_code] = {
+        nameL: b.nameL || b.name || '-',
+        code: b.code || '',
+        bnk_code: b.bnk_code
+      };
+    });
+
+    // ดึงข้อมูล chg_lao_type
     const { data: matrixData } = await axios.get(apiChargeMatrixURL);
     const matrixMap = {};
     (matrixData.results || matrixData || []).forEach(item => {
       if (item.chg_code) matrixMap[item.chg_code] = item.chg_lao_type;
     });
 
+    // ดึงข้อมูล user
     const { data: userData } = await axios.get(apiUserURL);
     const userMap = {};
     (userData.results || userData || []).forEach(u => {
       if (u.user_id || u.UID) userMap[u.UID] = u.username;
     });
 
-    reportData.value = results.map(r => ({
-      ...r,
-      chg_lao_type: matrixMap[r.chg_code] || r.chg_code,
-      username: userMap[r.user_sys_id.split('-')[0]] || r.user_sys_id
-    }));
+    // รวมข้อมูล
+    reportData.value = results.map(r => {
+      const bank = bankMap[r.bnk_code] || {};
+      return {
+        ...r,
+        chg_lao_type: matrixMap[r.chg_code] || r.chg_code,
+        username: userMap[r.user_sys_id.split('-')[0]] || r.user_sys_id,
+        bank_display: bank.code ? `${bank.code}-${bank.bnk_code}` : r.bnk_code,
+        bank_full_display: bank.nameL ? `${bank.nameL} - (${bank.code}-${bank.bnk_code})` : r.bnk_code
+      };
+    });
 
-    // หัวตารางภาษาลาวที่ถูกต้อง
+    // หัวตาราง
     dynamicHeaders.value = [
       { title: 'NO', key: 'no', align: 'center', sortable: false },
       { title: 'ລະຫັດທະນາຄານ', key: 'bnk_code', align: 'center' },
@@ -265,17 +308,14 @@ const fetchDetailData = async () => {
   }
 };
 
-// ✅ กลับไปหน้าก่อนหน้า
 const goBack = () => {
   if (filterParams.value.detail_bnk_code) {
-    // ✅ มี detail_bnk_code = มาจาก ReportAll → ลบ detail_bnk_code
     const { detail_bnk_code, ...restQuery } = route.query;
     router.push({
       path: route.path,
       query: restQuery
     });
   } else {
-    // ✅ ไม่มี detail_bnk_code = มาจากหน้าแรก → ลบ query ทั้งหมด
     router.push({
       path: route.path,
       query: {}
@@ -289,7 +329,6 @@ watch(() => route.query, () => {
 }, { immediate: true });
 
 onMounted(() => {
-  
   getFilterParams();
   fetchDetailData();
 });
@@ -341,13 +380,6 @@ onMounted(() => {
 .filter-chip:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(41, 49, 165, 0.25);
-}
-
-.loading-card {
-  border-radius: 16px;
-  background: white;
-  border: 2px dashed #E0E0E0;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06) !important;
 }
 
 .data-table-card {
@@ -433,6 +465,11 @@ onMounted(() => {
   background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
   border-radius: 12px;
   margin: 24px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (max-width: 960px) {

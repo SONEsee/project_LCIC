@@ -125,6 +125,7 @@ const UploadFile = async () => {
     await inDividualStore.UploadFile();
   }
 };
+
 const FileType = [
   { title: "ຟາຍ Json", value: "json", icon: "mdi-code-json", color: "error" },
   { title: "ຟາຍ Xml", value: "xml", icon: "mdi-cloud-tags", color: "success" },
@@ -132,9 +133,15 @@ const FileType = [
 const Status = [
   {
     title: "ສຳເລັດ",
-    value: "1",
+    value: "0",
     icon: "mdi-check-circle-outline",
     color: "success",
+  },
+  {
+    title: "ໂຫຼດສຳເລັດ",
+    value: "1",
+    icon: " mdi-monitor-arrow-down-variant",
+    color: "light-blue-darken-4",
   },
   {
     title: "ກຳລັງໂຫຼດ",
@@ -147,6 +154,18 @@ const Status = [
     value: "2",
     icon: "mdi-comment-remove-outline",
     color: "error",
+  },
+  {
+    title: "ຖືກ Reject",
+    value: "7",
+    icon: "mdi-axis-y-rotate-counterclockwise",
+    color: "error",
+  },
+  {
+    title: "ຖືກ Unload",
+    value: "5",
+    icon: "mdi-progress-upload",
+    color: "lime-accent-4",
   },
 ];
 watch(SelectBank, async (newvalue) => {
@@ -362,7 +381,7 @@ const UnloadData = async (fid: string) => {
     showCancelButton: true,
     cancelButtonText: "ຍົກເລີກ",
   });
-await inDividualStore.getListIndividualLoan();
+  await inDividualStore.getListIndividualLoan();
   if (notification.isConfirmed) {
     await inDividualStore.UnloadLoan(fid);
     await inDividualStore.getListIndividualLoan();
@@ -377,7 +396,7 @@ const RejectInsertData = async (id: string) => {
     showCancelButton: true,
     cancelButtonText: "ຍົກເລີກ",
   });
-  
+
   if (notification.isConfirmed) {
     await inDividualStore.RejectUploadLoan(id);
     await inDividualStore.getListIndividualLoan();
@@ -661,6 +680,36 @@ onMounted(async () => {
         class="elevation-0 text-no-wrap"
         hover
       >
+        <template v-slot:header.FID="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.fileName="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.file_size="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.period="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.dispuste="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.statussubmit="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.percentage="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.actions="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.user_id="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
+        <template v-slot:header.editor="{ column }">
+          <b style="color: blue">{{ column.title }}</b>
+        </template>
         <template v-slot:item.user_id="{ item }">
           <v-chip
             size="small"
