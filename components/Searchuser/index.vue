@@ -84,7 +84,7 @@
                         <v-combobox
                           v-model="selectedCat"
                           :items="categories"
-                          item-value="cat_sys_id"
+                          item-value="cat_value"
                           item-title="cat_lao_name"
                           :return-object="true"
                           label="ເລືອກປະເພດ"

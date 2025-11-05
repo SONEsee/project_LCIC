@@ -94,11 +94,16 @@
           <label class="filter-label">ປະເພດຄ່າທຳນຽມ</label>
           <select v-model="filters.chg_code" class="filter-select">
             <option value="">ທັງໝົດ</option>
-            <option v-for="chg_code in chargeCodeList" :key="chg_code.chg_code" :value="chg_code.chg_code">
-              {{ chg_code.display }}
+            <option
+              v-for="item in chargeCodeList"
+              :key="item.chg_sys_id"
+              :value="item.chg_code"
+            >
+              {{ item.chg_code }} - {{ item.chg_lao_type }}
             </option>
           </select>
         </div>
+
 
         <div class="filter-group">
           <label class="filter-label">ສະຖານະ</label>
@@ -533,7 +538,7 @@ const totalAmount = computed(() => {
     return sum + (parseFloat(item.chg_amount) || 0)
   }, 0)
 })
-
+console.log('chargeCodeList in template:', chargeCodeList.value)
 const completedCount = computed(() => {
   return filteredData.value.filter((item: any) => 
     item.status === 'completed' || item.status === 'approved'

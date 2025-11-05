@@ -55,7 +55,6 @@ export const useChargeReportApi = () => {
     return roleInfo.bankId === bankId
   }
 
-  // Fetch charge code list
   const fetchChargeCodeList = async () => {
     try {
       const token = getAuthToken()
@@ -66,10 +65,19 @@ export const useChargeReportApi = () => {
           'Content-Type': 'application/json'
         }
       })
-      
-      if (response.status === 'success') {
-        chargeCodeList.value = response.data || []
+
+      console.log('Charge Code Response:', response)
+
+      // Detect array or object automatically
+      if (Array.isArray(response)) {
+        chargeCodeList.value = response
+      } else if (response?.status === 'success' && Array.isArray(response.data)) {
+        chargeCodeList.value = response.data
+      } else {
+        chargeCodeList.value = []
       }
+
+      console.log('✅ chargeCodeList.value:', chargeCodeList.value)
     } catch (error) {
       console.error('Error fetching charge codes:', error)
       chargeCodeList.value = []
@@ -93,7 +101,7 @@ export const useChargeReportApi = () => {
       const response = await $fetch(`${baseURL}/api/charge_report_summary/?${params.toString()}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${Bearer}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       })
@@ -190,10 +198,16 @@ export const useChargeReportApi = () => {
           'Content-Type': 'application/json'
         }
       })
+            // Detect array or object automatically
+      if (Array.isArray(response)) {
+        bankList.value = response 
+      } else if (response?.status === 'success' && Array.isArray(response.data)) {
+        bankList.value = response.data
+      } else {
+        bankList.value = []
+      } 
+      console.log('Bank List Response:', response);
       
-      if (response.status === 'success') {
-        bankList.value = response.data || []
-      }
     } catch (error) {
       console.error('Error fetching bank list:', error)
       bankList.value = []

@@ -13,6 +13,11 @@ const SelectBank = ref("");
 const SelectPeroid = ref("");
 const SelectSatus = ref("");
 const SelectFile = ref("");
+const categories = ref<any[]>([]);
+interface Category {
+  cat_sys_id: string;
+  cat_name: string;
+}
 const { user, userId, isAdmin, isLoggedIn } = useUserData();
 const reques = inDividualStore.loan_query.query;
 const period = computed(() => {
@@ -199,7 +204,7 @@ const hasProcessingStatus = computed(() => {
   const statusMap: Record<string, boolean> = {};
 
   data.forEach((item) => {
-    if (item.statussubmit === "3" || item.statussubmit === "5") {
+    if (item.statussubmit === "3" || item.statussubmit === "4") {
       statusMap[item.user_id] = true;
     }
   });
@@ -210,9 +215,35 @@ const latestPeriodByUser = computed(() => {
   const data = inDividualStore.respons_list_file_insdividual_loan?.results;
   if (!Array.isArray(data)) return {};
 
+  const periodMap: Record<
+    string,
+    { period: string; fid: string; statussubmit: string }
+  > = {};
+
+  data.forEach((item) => {
+    const currentPeriod = item.period;
+    const userId = item.user_id;
+
+    if (!periodMap[userId] || currentPeriod > periodMap[userId].period) {
+      periodMap[userId] = {
+        period: currentPeriod,
+        fid: item.FID,
+        statussubmit: item.statussubmit,
+      };
+    }
+  });
+
+  return periodMap;
+});
+const latestPeriodWithStatus0ByUser = computed(() => {
+  const data = inDividualStore.respons_list_file_insdividual_loan?.results;
+  if (!Array.isArray(data)) return {};
+
   const periodMap: Record<string, { period: string; fid: string }> = {};
 
   data.forEach((item) => {
+    if (item.statussubmit !== "0") return;
+
     const currentPeriod = item.period;
     const userId = item.user_id;
 
@@ -229,10 +260,10 @@ const latestPeriodByUser = computed(() => {
 const shouldShowUploadButton = (item: any) => {
   if (item.statussubmit !== "0") return false;
 
-  if (hasProcessingStatus.value[item.user_id]) return false;
+  const latestForUser = latestPeriodWithStatus0ByUser.value[item.user_id];
+  if (!latestForUser) return false;
 
-  const latestForUser = latestPeriodByUser.value[item.user_id];
-  if (!latestForUser || latestForUser.fid !== item.FID) return false;
+  if (item.FID !== latestForUser.fid) return false;
 
   return true;
 };
@@ -251,7 +282,10 @@ const statistics = computed(() => {
   const success = results.filter((item) => item.statussubmit === "0").length;
   const processing = results.filter((item) => item.statussubmit === "1").length;
   const rejected = results.filter(
-    (item) => item.status === "2" || item.statussubmit === "2"
+    (item) =>
+      item.status === "2" ||
+      item.statussubmit === "2" ||
+      item.statussubmit === "7"
   ).length;
 
   const jsonFiles = results.filter((item) => item.FileType === "json").length;
@@ -319,7 +353,37 @@ const confirmInsertData = async (fid: string) => {
     await inDividualStore.getListIndividualLoan();
   }
 };
-onMounted(() => {
+const UnloadData = async (fid: string) => {
+  const notification = await Swal.fire({
+    icon: "warning",
+    title: "ຄຳເຕືອນ",
+    text: "ທ່ານຕ້ອງການຢືນຢັນເພື່ອດຳເນີນການຕໍ່ບໍ?",
+    confirmButtonText: "ຕົກລົງ",
+    showCancelButton: true,
+    cancelButtonText: "ຍົກເລີກ",
+  });
+await inDividualStore.getListIndividualLoan();
+  if (notification.isConfirmed) {
+    await inDividualStore.UnloadLoan(fid);
+    await inDividualStore.getListIndividualLoan();
+  }
+};
+const RejectInsertData = async (id: string) => {
+  const notification = await Swal.fire({
+    icon: "warning",
+    title: "ຄຳເຕືອນ",
+    text: "ທ່ານຕ້ອງການຢືນຢັນເພື່ອດຳເນີນການຕໍ່ບໍ?",
+    confirmButtonText: "ຕົກລົງ",
+    showCancelButton: true,
+    cancelButtonText: "ຍົກເລີກ",
+  });
+  
+  if (notification.isConfirmed) {
+    await inDividualStore.RejectUploadLoan(id);
+    await inDividualStore.getListIndividualLoan();
+  }
+};
+onMounted(async () => {
   inDividualStore.loan_query.query.user_id = userId.value;
   inDividualStore.period.query.user_id = userId.value;
   inDividualStore.getListIndividualLoan();
@@ -590,7 +654,7 @@ onMounted(() => {
       <v-divider></v-divider>
 
       <v-data-table
-      style="font-size: 80%;"
+        style="font-size: 80%"
         :items="indData"
         :items-per-page="reques.limit"
         :headers="headers"
@@ -598,44 +662,87 @@ onMounted(() => {
         hover
       >
         <template v-slot:item.user_id="{ item }">
-          <v-chip size="small" color="primary" variant="tonal" style="font-size: x-small;">
+          <v-chip
+            size="small"
+            color="primary"
+            variant="tonal"
+            style="font-size: small"
+          >
             {{ mapMemberInfo(item.user_id) }}
           </v-chip>
         </template>
 
         <template v-slot:item.statussubmit="{ item }">
-          <v-chip color="success" v-if="item.statussubmit === '0'" style="font-size: x-small;">
+          <v-chip
+            color="success"
+            v-if="item.statussubmit === '0'"
+            style="font-size: small"
+            size="small"
+          >
             <strong>ສຳເລັດ</strong>
           </v-chip>
-          <v-chip color="error" v-if="item.statussubmit === '2'" style="font-size: x-small;">
+          <v-chip
+            color="error"
+            v-if="item.statussubmit === '2'"
+            style="font-size: small"
+            size="small"
+          >
             <strong>ປະຕິເສດ</strong>
           </v-chip>
-          <v-chip color="warning" v-if="item.statussubmit === '3'" style="font-size: x-small;">
-            <v-progress-circular style="font-size: x-small;"
+          <v-chip color="error" size="small" v-if="item.statussubmit === '7'"
+            ><strong>ຖືກ Reject</strong></v-chip
+          >
+          <v-chip
+            color="orange-darken-4"
+            size="small"
+            v-if="item.statussubmit === '5'"
+            ><strong>ຖືກ Unload</strong></v-chip
+          >
+          <v-chip
+            color="warning"
+            v-if="item.statussubmit === '3' || item.statussubmit === '4'"
+            style="font-size: small"
+            size="small"
+          >
+            <v-progress-circular
+              style="font-size: small"
               color="blue-lighten-3"
               indeterminate
             ></v-progress-circular>
           </v-chip>
 
-          <v-chip color="primary" v-if="item.statussubmit === '1'" style="font-size: x-small;"
+          <v-chip
+            color="primary"
+            v-if="item.statussubmit === '1'"
+            style="font-size: small"
+            size="small"
             ><strong>ສຳເລັດການໂຫຼດ</strong></v-chip
           >
         </template>
         <template v-slot:item.file_size="{ item }">
           {{ item.file_size }}
         </template>
-        <template v-slot:item.fileName="{ item }">
+        <template v-slot:item.fileName="{ item }" style="font-size: small">
           {{ item.fileName.slice(0, 20)
           }}{{ item.fileName.length > 20 ? "..." : "" }}
         </template>
         <template v-slot:item.period="{ item }">
-          <v-chip color="primary" style="font-size: x-small;" size="small">{{
+          <v-chip color="primary" style="font-size: small" size="small">{{
             dayjs(item.period).format("MM-YYYY")
           }}</v-chip>
         </template>
         <template v-slot:item.dispuste="{ item }">
-          <v-chip color="info" v-if="item.dispuste === '0'" style="font-size: x-small;" size="small"> ບໍ່ມີ </v-chip>
-          <v-chip style="font-size: x-small;"
+          <v-chip
+            color="info"
+            v-if="item.dispuste === '0'"
+            style="font-size: small"
+            size="small"
+          >
+            ບໍ່ມີ
+          </v-chip>
+          <v-chip
+            style="font-size: small"
+            size="small"
             color="info"
             v-else
             @click="goPath(`/disuste/?id_dispust=n-${item.FID}`)"
@@ -656,19 +763,27 @@ onMounted(() => {
             ຢືນຢັນ
           </v-btn>
           <v-btn
-            color="success"
+            class="ml-2"
+            color="red-lighten-4"
             flat
-            @click="confirmInsertData(`n-${item.FID}`)"
+            @click="RejectInsertData(`n-${item.FID}`)"
             v-if="item.statussubmit === '1'"
             :disabled="isConfirmButtonDisabled(item)"
           >
-            ຢືນຢັນ
+            reject
           </v-btn>
 
-          <v-btn color="warning" v-if="shouldShowUploadButton(item)" flat>
+          <v-btn
+            color="warning"
+            v-if="shouldShowUploadButton(item)"
+            flat
+            @click="UnloadData(`n-${item.FID}`)"
+          >
             ອັນໂຫຼດ
           </v-btn>
-
+          <v-chip color="error" size="small" v-if="item.statussubmit === '7'"
+            >ຖືກ Reject</v-chip
+          >
         </template>
 
         <template v-slot:item.percentage="{ item }">

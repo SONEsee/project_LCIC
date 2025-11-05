@@ -220,7 +220,7 @@ const downloadFile = (data, filename) => {
 
 onMounted(async () => {
   try {
-    const response = await axios.get(`http://192.168.45.55:8000/api/province-edldetail/`)
+    const response = await axios.get(`http://192.168.45.56:8000/api/province-edldetail/`)
     provinceDistricts.value = response.data
 
     
