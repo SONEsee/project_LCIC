@@ -79,7 +79,7 @@ useHead({
 const tab = ref("one");
 const subTab = ref("two-one");
 
-// ສ້າງ storage key ສຳລັບແຕ່ລະ user
+
 const getUserStorageKey = (baseKey: string) => {
   try {
     const id = userId.value || 'unknown';
@@ -90,7 +90,7 @@ const getUserStorageKey = (baseKey: string) => {
   }
 };
 
-// ບັນທຶກ tab ທີ່ເລືອກ
+
 const saveTabToStorage = (selectedTab: string) => {
   try {
     const storageKey = getUserStorageKey("upload_tab_storage");
@@ -102,7 +102,7 @@ const saveTabToStorage = (selectedTab: string) => {
   }
 };
 
-// ບັນທຶກ sub-tab ທີ່ເລືອກ
+
 const saveSubTabToStorage = (selectedSubTab: string) => {
   try {
     const storageKey = getUserStorageKey("upload_subtab_storage");
@@ -114,12 +114,12 @@ const saveSubTabToStorage = (selectedSubTab: string) => {
   }
 };
 
-// ໂຫຼດ tab ທີ່ບັນທຶກໄວ້
+
 const loadTabFromStorage = () => {
   try {
     const storageKey = getUserStorageKey("upload_tab_storage");
     
-    // ລອງຫາໃນ sessionStorage ກ່ອນ ຖ້າບໍ່ມີຈຶ່ງຫາໃນ localStorage
+
     let savedTab = sessionStorage.getItem(storageKey) || 
                    localStorage.getItem(storageKey);
     
@@ -127,7 +127,7 @@ const loadTabFromStorage = () => {
       tab.value = savedTab;
       console.log("✅ Loaded tab:", savedTab);
       
-      // Sync ກັບ sessionStorage
+     
       if (!sessionStorage.getItem(storageKey)) {
         sessionStorage.setItem(storageKey, savedTab);
       }

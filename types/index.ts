@@ -26,6 +26,7 @@ import * as DispustEditModel from './dispustedit'
 import * as DispustCallateralModel from './dispustcollateral'
 import * as AlertCallateralModel from './alertcollateral'
 import * as SearchIndividualModel from './individualsearch'
+import * as IndividualCollateral from './collateral_individual'
 export{
     DuplicatesFalse,
     DataModel,
@@ -52,6 +53,7 @@ export{
     DispustEditModel,
     DispustCallateralModel,
     AlertCallateralModel,
-    SearchIndividualModel
+    SearchIndividualModel,
+    IndividualCollateral
 
 }
