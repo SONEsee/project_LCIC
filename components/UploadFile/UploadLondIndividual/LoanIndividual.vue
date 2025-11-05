@@ -125,6 +125,7 @@ const UploadFile = async () => {
     await inDividualStore.UploadFile();
   }
 };
+
 const FileType = [
   { title: "ຟາຍ Json", value: "json", icon: "mdi-code-json", color: "error" },
   { title: "ຟາຍ Xml", value: "xml", icon: "mdi-cloud-tags", color: "success" },
