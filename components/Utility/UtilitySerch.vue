@@ -141,9 +141,8 @@
                         <span class="input-group-title">ຂໍ້ມູນໄຟຟ້າ</span>
                       </div>
                       
-                      <!-- Info Alert for Province Selection -->
+                      <!-- Info Alert for Search Methods -->
                       <v-alert
-                        v-if="!electricProvince && !selectedElectricCustomer"
                         type="info"
                         variant="tonal"
                         density="compact"
@@ -151,35 +150,17 @@
                       >
                         <div class="text-caption">
                           <v-icon size="18" class="mr-1">mdi-information</v-icon>
-                          <strong>ກະລຸນາເລືອກແຂວງກ່ອນ</strong> ເພື່ອປ້ອນລະຫັດເລກກົງເຕີ
+                          <strong>ວິທີການຄົ້ນຫາ:</strong>
+                          <div class="mt-1">
+                            • ຄົ້ນຫາດ່ວນ: ບໍ່ຕ້ອງເລືອກແຂວງ (ຄົ້ນຫາທົ່ວລະບົບ)
+                          </div>
+                          <div>
+                            • ຄົ້ນຫາດ້ວຍລະຫັດ: ຕ້ອງເລືອກແຂວງກ່ອນ
+                          </div>
                         </div>
                       </v-alert>
 
-                      <!-- Province Selection -->
-                      <v-autocomplete
-                        v-model="electricProvince"
-                        :items="provinces"
-                        item-title="name"
-                        item-value="id"
-                        label="ເລືອກແຂວງ *"
-                        prepend-inner-icon="mdi-map-marker"
-                        variant="outlined"
-                        color="primary"
-                        clearable
-                        :disabled="!!selectedElectricCustomer"
-                        class="input-field mb-4"
-                        :hint="selectedElectricCustomer ? 'ຍົກເລີກການຄົ້ນຫາດ່ວນເພື່ອປ່ຽນແຂວງ' : 'ເລືອກແຂວງເພື່ອເລີ່ມຕົ້ນ'"
-                        persistent-hint
-                        :rules="electronic && !selectedElectricCustomer ? [rules.required] : []"
-                      >
-                        <template v-slot:prepend-inner>
-                          <v-icon :color="electricProvince ? 'primary' : 'grey'">
-                            mdi-map-marker
-                          </v-icon>
-                        </template>
-                      </v-autocomplete>
-
-                      <!-- Quick Search -->
+                      <!-- Quick Search - No Province Required -->
                       <v-autocomplete
                         v-model="selectedElectricCustomer"
                         v-model:search="electricSearchQuery"
@@ -187,14 +168,13 @@
                         :loading="electricSearchLoading"
                         item-title="display"
                         item-value="Customer_ID"
-                        label="ຫຼື ຄົ້ນຫາລູກຄ້າດ່ວນ (ຊື່, ລະຫັດ, ບໍລິສັດ)"
-                        prepend-inner-icon="mdi-account-search"
+                        label="ຄົ້ນຫາລູກຄ້າດ່ວນ (ຊື່, ລະຫັດ, ບໍລິສັດ)"
                         variant="outlined"
                         color="primary"
                         clearable
                         no-filter
                         class="input-field mb-4"
-                        hint="ພິມຊື່ ຫຼື ລະຫັດລູກຄ້າເພື່ອຄົ້ນຫາ (ຈະຍົກເລີກການເລືອກແຂວງ)"
+                        hint="ຄົ້ນຫາທົ່ວລະບົບ - ບໍ່ຕ້ອງເລືອກແຂວງ"
                         persistent-hint
                         @update:search="debouncedElectricSearch"
                       >
@@ -223,11 +203,38 @@
                         </template>
                       </v-autocomplete>
 
-                      <!-- Meter ID Input -->
+                      <div class="text-center my-3 text-caption text-grey">
+                        <v-divider></v-divider>
+                        <span class="px-3 bg-white" style="position: relative; top: -12px;">ຫຼື</span>
+                      </div>
+
+                      <!-- Province Selection - Required for Manual Entry -->
+                      <v-autocomplete
+                        v-model="electricProvince"
+                        :items="provinces"
+                        item-title="name"
+                        item-value="id"
+                        label="ເລືອກແຂວງ *"
+                        variant="outlined"
+                        color="primary"
+                        clearable
+                        :disabled="!!selectedElectricCustomer"
+                        class="input-field mb-4"
+                        :hint="selectedElectricCustomer ? 'ຍົກເລີກການຄົ້ນຫາດ່ວນເພື່ອປ່ຽນແຂວງ' : 'ເລືອກແຂວງເພື່ອຄົ້ນຫາດ້ວຍລະຫັດ'"
+                        persistent-hint
+                        :rules="electronic && !selectedElectricCustomer ? [rules.required] : []"
+                      >
+                        <template v-slot:prepend-inner>
+                          <v-icon :color="electricProvince ? 'primary' : 'grey'">
+                            mdi-map-marker
+                          </v-icon>
+                        </template>
+                      </v-autocomplete>
+
+                      <!-- Meter ID Input - Requires Province -->
                       <v-text-field
                         v-model="electronicId"
                         label="ລະຫັດເລກກົງເຕີໄຟຟ້າ *"
-                        prepend-inner-icon="mdi-flash"
                         variant="outlined"
                         color="primary"
                         :disabled="!electricProvince && !selectedElectricCustomer"
@@ -236,12 +243,12 @@
                         counter="10"
                         maxlength="10"
                         class="input-field"
-                        :hint="!electricProvince && !selectedElectricCustomer ? 'ເລືອກແຂວງກ່ອນເພື່ອປ້ອນລະຫັດ' : 'ປ້ອນຕົວເລກ 10 ຫຼັກ'"
+                        :hint="!electricProvince && !selectedElectricCustomer ? 'ເລືອກແຂວງກ່ອນ ຫຼື ໃຊ້ການຄົ້ນຫາດ່ວນ' : 'ປ້ອນຕົວເລກ 10 ຫຼັກ'"
                         persistent-hint
                         @input="handleElectricIdInput"
                       >
                         <template v-slot:prepend-inner>
-                          <v-icon :color="electronicId && electricProvince ? 'primary' : 'grey'">
+                          <v-icon :color="electronicId && (electricProvince || selectedElectricCustomer) ? 'primary' : 'grey'">
                             mdi-flash
                           </v-icon>
                         </template>
@@ -260,9 +267,8 @@
                         <span class="input-group-title">ຂໍ້ມູນນໍ້າປະປາ</span>
                       </div>
                       
-                      <!-- Info Alert for Province Selection -->
+                      <!-- Info Alert for Search Methods -->
                       <v-alert
-                        v-if="!waterProvince && !selectedWaterCustomer"
                         type="info"
                         variant="tonal"
                         density="compact"
@@ -270,35 +276,17 @@
                       >
                         <div class="text-caption">
                           <v-icon size="18" class="mr-1">mdi-information</v-icon>
-                          <strong>ກະລຸນາເລືອກແຂວງກ່ອນ</strong> ເພື່ອປ້ອນລະຫັດເລກກົງເຕີ
+                          <strong>ວິທີການຄົ້ນຫາ:</strong>
+                          <div class="mt-1">
+                            • ຄົ້ນຫາດ່ວນ: ບໍ່ຕ້ອງເລືອກແຂວງ (ຄົ້ນຫາທົ່ວລະບົບ)
+                          </div>
+                          <div>
+                            • ຄົ້ນຫາດ້ວຍລະຫັດ: ຕ້ອງເລືອກແຂວງກ່ອນ
+                          </div>
                         </div>
                       </v-alert>
 
-                      <!-- Province Selection -->
-                      <v-autocomplete
-                        v-model="waterProvince"
-                        :items="provinces"
-                        item-title="name"
-                        item-value="id"
-                        label="ເລືອກແຂວງ *"
-                        prepend-inner-icon="mdi-map-marker"
-                        variant="outlined"
-                        color="primary"
-                        clearable
-                        :disabled="!!selectedWaterCustomer"
-                        class="input-field mb-4"
-                        :hint="selectedWaterCustomer ? 'ຍົກເລີກການຄົ້ນຫາດ່ວນເພື່ອປ່ຽນແຂວງ' : 'ເລືອກແຂວງເພື່ອເລີ່ມຕົ້ນ'"
-                        persistent-hint
-                        :rules="water && !selectedWaterCustomer ? [rules.required] : []"
-                      >
-                        <template v-slot:prepend-inner>
-                          <v-icon :color="waterProvince ? 'primary' : 'grey'">
-                            mdi-map-marker
-                          </v-icon>
-                        </template>
-                      </v-autocomplete>
-
-                      <!-- Quick Search -->
+                      <!-- Quick Search - No Province Required -->
                       <v-autocomplete
                         v-model="selectedWaterCustomer"
                         v-model:search="waterSearchQuery"
@@ -306,14 +294,13 @@
                         :loading="waterSearchLoading"
                         item-title="display"
                         item-value="Customer_ID"
-                        label="ຫຼື ຄົ້ນຫາລູກຄ້າດ່ວນ (ຊື່, ລະຫັດ, ບໍລິສັດ)"
-                        prepend-inner-icon="mdi-account-search"
+                        label="ຄົ້ນຫາລູກຄ້າດ່ວນ (ຊື່, ລະຫັດ, ບໍລິສັດ)"
                         variant="outlined"
                         color="primary"
                         clearable
                         no-filter
                         class="input-field mb-4"
-                        hint="ພິມຊື່ ຫຼື ລະຫັດລູກຄ້າເພື່ອຄົ້ນຫາ (ຈະຍົກເລີກການເລືອກແຂວງ)"
+                        hint="ຄົ້ນຫາທົ່ວລະບົບ - ບໍ່ຕ້ອງເລືອກແຂວງ"
                         persistent-hint
                         @update:search="debouncedWaterSearch"
                       >
@@ -342,11 +329,38 @@
                         </template>
                       </v-autocomplete>
 
-                      <!-- Meter ID Input -->
+                      <div class="text-center my-3 text-caption text-grey">
+                        <v-divider></v-divider>
+                        <span class="px-3 bg-white" style="position: relative; top: -12px;">ຫຼື</span>
+                      </div>
+
+                      <!-- Province Selection - Required for Manual Entry -->
+                      <v-autocomplete
+                        v-model="waterProvince"
+                        :items="provinces"
+                        item-title="name"
+                        item-value="id"
+                        label="ເລືອກແຂວງ *"
+                        variant="outlined"
+                        color="primary"
+                        clearable
+                        :disabled="!!selectedWaterCustomer"
+                        class="input-field mb-4"
+                        :hint="selectedWaterCustomer ? 'ຍົກເລີກການຄົ້ນຫາດ່ວນເພື່ອປ່ຽນແຂວງ' : 'ເລືອກແຂວງເພື່ອຄົ້ນຫາດ້ວຍລະຫັດ'"
+                        persistent-hint
+                        :rules="water && !selectedWaterCustomer ? [rules.required] : []"
+                      >
+                        <template v-slot:prepend-inner>
+                          <v-icon :color="waterProvince ? 'primary' : 'grey'">
+                            mdi-map-marker
+                          </v-icon>
+                        </template>
+                      </v-autocomplete>
+
+                      <!-- Meter ID Input - Requires Province -->
                       <v-text-field
                         v-model="waterId"
                         label="ລະຫັດເລກກົງເຕີນໍ້າ *"
-                        prepend-inner-icon="mdi-water"
                         variant="outlined"
                         color="primary"
                         :disabled="!waterProvince && !selectedWaterCustomer"
@@ -355,12 +369,12 @@
                         counter="10"
                         maxlength="10"
                         class="input-field"
-                        :hint="!waterProvince && !selectedWaterCustomer ? 'ເລືອກແຂວງກ່ອນເພື່ອປ້ອນລະຫັດ' : 'ປ້ອນຕົວເລກ 10 ຫຼັກ'"
+                        :hint="!waterProvince && !selectedWaterCustomer ? 'ເລືອກແຂວງກ່ອນ ຫຼື ໃຊ້ການຄົ້ນຫາດ່ວນ' : 'ປ້ອນຕົວເລກ 10 ຫຼັກ'"
                         persistent-hint
                         @input="handleWaterIdInput"
                       >
                         <template v-slot:prepend-inner>
-                          <v-icon :color="waterId && waterProvince ? 'primary' : 'grey'">
+                          <v-icon :color="waterId && (waterProvince || selectedWaterCustomer) ? 'primary' : 'grey'">
                             mdi-water
                           </v-icon>
                         </template>
@@ -386,7 +400,6 @@
                         item-title="name"
                         item-value="id"
                         label="ເລືອກແຂວງ *"
-                        prepend-inner-icon="mdi-map-marker"
                         variant="outlined"
                         color="primary"
                         clearable
@@ -406,7 +419,6 @@
                       <v-text-field
                         v-model="telecomId"
                         label="ເບີໂທລະສັບ *"
-                        prepend-inner-icon="mdi-phone"
                         variant="outlined"
                         color="primary"
                         :disabled="!telecomProvince"
@@ -500,9 +512,9 @@ const electronicId = ref('')
 const waterId = ref('')
 const telecomId = ref('')
 
-// Province selections - Initialize with default province
-const electricProvince = ref('1')
-const waterProvince = ref('1')
+// Province selections - No default for electric/water when using quick search
+const electricProvince = ref(null)
+const waterProvince = ref(null)
 const telecomProvince = ref('1')
 
 // Quick search states
@@ -528,15 +540,15 @@ let waterSearchTimer = null
 
 // Provinces data
 const provinces = ref([
-  { id: '1', name: 'ນະຄອນຫຼວງວຽງຈັນ' },
-  { id: '2', name: 'ຜົ້ງສາລີ' },
-  { id: '3', name: 'ຫຼວງນໍ້າທາ' },
-  { id: '4', name: 'ອຸດົມໄຊ' },
-  { id: '5', name: 'ບໍ່ແກ້ວ' },
-  { id: '6', name: 'ຫຼວງພະບາງ' },
-  { id: '7', name: 'ຫົວພັນ' },
-  { id: '8', name: 'ໄຊຍະບູລີ' },
-  { id: '9', name: 'ຊຽງຂວາງ' },
+  { id: '01', name: 'ນະຄອນຫຼວງວຽງຈັນ' },
+  { id: '02', name: 'ຜົ້ງສາລີ' },
+  { id: '03', name: 'ຫຼວງນໍ້າທາ' },
+  { id: '04', name: 'ອຸດົມໄຊ' },
+  { id: '05', name: 'ບໍ່ແກ້ວ' },
+  { id: '06', name: 'ຫຼວງພະບາງ' },
+  { id: '07', name: 'ຫົວພັນ' },
+  { id: '08', name: 'ໄຊຍະບູລີ' },
+  { id: '09', name: 'ຊຽງຂວາງ' },
   { id: '10', name: 'ວຽງຈັນ' },
   { id: '11', name: 'ບໍລິຄໍາໄຊ' },
   { id: '12', name: 'ຄໍາມ່ວນ' },
@@ -555,41 +567,43 @@ onMounted(() => {
   sessionStorage.removeItem('reportAccessed')
 })
 
-// Watch for customer selection - when quick search is used, clear province
+// Watch for customer selection - when quick search is used, store province from customer data
 watch(selectedElectricCustomer, (newVal, oldVal) => {
   if (newVal && newVal !== oldVal) {
-    // User selected from quick search, clear province
-    electricProvince.value = null
+    // User selected from quick search
     electronicId.value = newVal
     
-    // Store customer info
+    // Store customer info and get province_id from the selected customer
     const customer = electricSearchResults.value.find(c => c.Customer_ID === newVal)
     if (customer) {
       customerInfo.value.electric = customer
+      // Store the province_id from the customer data for API call
+      electricProvince.value = customer.province_id
     }
   } else if (!newVal && oldVal) {
-    // User cleared quick search, reset province to default
-    electricProvince.value = '1'
+    // User cleared quick search, allow manual entry
     electronicId.value = ''
+    electricProvince.value = null
     customerInfo.value.electric = null
   }
 })
 
 watch(selectedWaterCustomer, (newVal, oldVal) => {
   if (newVal && newVal !== oldVal) {
-    // User selected from quick search, clear province
-    waterProvince.value = null
+    // User selected from quick search
     waterId.value = newVal
     
-    // Store customer info
+    // Store customer info and get province_id from the selected customer
     const customer = waterSearchResults.value.find(c => c.Customer_ID === newVal)
     if (customer) {
       customerInfo.value.water = customer
+      // Store the province_id from the customer data for API call
+      waterProvince.value = customer.province_id
     }
   } else if (!newVal && oldVal) {
-    // User cleared quick search, reset province to default
-    waterProvince.value = '1'
+    // User cleared quick search, allow manual entry
     waterId.value = ''
+    waterProvince.value = null
     customerInfo.value.water = null
   }
 })
@@ -598,7 +612,6 @@ watch(selectedWaterCustomer, (newVal, oldVal) => {
 const handleElectricIdInput = (event: Event) => {
   const input = event.target as HTMLInputElement
   const value = input.value
-  // Remove any non-digit characters
   const sanitized = value.replace(/\D/g, '')
   electronicId.value = sanitized
 }
@@ -606,7 +619,6 @@ const handleElectricIdInput = (event: Event) => {
 const handleWaterIdInput = (event: Event) => {
   const input = event.target as HTMLInputElement
   const value = input.value
-  // Remove any non-digit characters
   const sanitized = value.replace(/\D/g, '')
   waterId.value = sanitized
 }
@@ -614,7 +626,6 @@ const handleWaterIdInput = (event: Event) => {
 const handleTelecomIdInput = (event: Event) => {
   const input = event.target as HTMLInputElement
   const value = input.value
-  // Remove any non-digit characters
   const sanitized = value.replace(/\D/g, '')
   telecomId.value = sanitized
 }
@@ -652,12 +663,13 @@ const debouncedWaterSearch = (query: string) => {
   }, 500)
 }
 
-// Search customer functions - No province filter in quick search
+// Search customer functions - Quick search doesn't send province (searches all)
 const searchElectricCustomers = async (query: string) => {
   try {
     const config = useRuntimeConfig()
     const token = localStorage.getItem('access_token')
     
+    // Quick search - search across all provinces (no province_id parameter)
     const params = {
       query: query,
       limit: 100
@@ -690,6 +702,7 @@ const searchWaterCustomers = async (query: string) => {
     const config = useRuntimeConfig()
     const token = localStorage.getItem('access_token')
     
+    // Quick search - search across all provinces (no province_id parameter)
     const params = {
       query: query,
       limit: 100
@@ -748,13 +761,13 @@ const rules = {
   meterLength: (value: string) => {
     if (!value) return true
     if (!/^\d+$/.test(value)) return 'ກະລຸນາປ້ອນຕົວເລກເທົ່ານັ້ນ'
-    if (value.length !== 10) return 'ລະຫັດຕ້ອງມີ 10 ຫຼັກເທົ່ານັ້ນ'
+    // if (value.length !== 10) return 'ລະຫັດຕ້ອງມີ 10 ຫຼັກເທົ່ານັ້ນ'
     return true
   },
   phoneNumber: (value: string) => {
     if (!value) return 'ກະລຸນາປ້ອນເບີໂທລະສັບ'
     if (!/^\d+$/.test(value)) return 'ກະລຸນາປ້ອນຕົວເລກເທົ່ານັ້ນ'
-    if (value.length < 8 || value.length > 11) return 'ເບີໂທລະສັບຕ້ອງມີ 8-11 ຫຼັກ'
+    // if (value.length < 8 || value.length > 11) return 'ເບີໂທລະສັບຕ້ອງມີ 8-11 ຫຼັກ'
     return true
   }
 }
@@ -767,26 +780,22 @@ const canSearch = computed(() => {
   
   // Check electric service
   if (electronic.value) {
-    if (!selectedElectricCustomer.value) {
-      // Manual entry mode - need province and valid meter ID
-      if (!electricProvince.value || !electronicId.value) return false
-      if (rules.meterLength(electronicId.value) !== true) return false
-    } else {
-      // Quick search mode - just need customer selection
-      if (!electronicId.value) return false
-    }
+    // Need valid customer ID and province (province is set either by manual selection or from quick search)
+    if (!electronicId.value || !electricProvince.value) 
+    console.log('DEBUG: Missing values:', {
+        electronicId: electronicId.value,
+        electricProvince: electricProvince.value,
+        selectedCustomer: selectedElectricCustomer.value
+      });
+    return false
+    if (!selectedElectricCustomer.value !== true) return false
   }
   
   // Check water service
   if (water.value) {
-    if (!selectedWaterCustomer.value) {
-      // Manual entry mode - need province and valid meter ID
-      if (!waterProvince.value || !waterId.value) return false
-      if (rules.meterLength(waterId.value) !== true) return false
-    } else {
-      // Quick search mode - just need customer selection
-      if (!waterId.value) return false
-    }
+    // Need valid customer ID and province (province is set either by manual selection or from quick search)
+    if (!waterId.value || !waterProvince.value) return false
+    if (!selectedWaterCustomer.value && rules.meterLength(waterId.value) !== true) return false
   }
   
   // Check telecom service
@@ -802,32 +811,34 @@ const canSearch = computed(() => {
 const toggleService = (service: string) => {
   if (service === 'electronic') {
     electronic.value = !electronic.value
-    if (electronic.value && !electricProvince.value && !selectedElectricCustomer.value) {
-      electricProvince.value = '1' // Set default province
-    }
   }
   if (service === 'water') {
     water.value = !water.value
-    if (water.value && !waterProvince.value && !selectedWaterCustomer.value) {
-      waterProvince.value = '1' // Set default province
-    }
   }
   if (service === 'telecom') {
     telecom.value = !telecom.value
     if (telecom.value && !telecomProvince.value) {
-      telecomProvince.value = '1' // Set default province
+      telecomProvince.value = '1'
     }
   }
 }
 
-const fetchWaterReport = async (customerId: string) => {
+// Fetch report functions - NOW INCLUDE province_id parameter
+const fetchWaterReport = async (customerId: string, provinceId: string) => {
   try {
     const config = useRuntimeConfig()
     const token = localStorage.getItem('access_token')
+    
+    // IMPORTANT: Include province_id when fetching report
+    const params = {
+      water: customerId,
+      province_id: provinceId
+    }
+    
     const response = await axios.get(
       `${config.public.strapi.url}api/utility-report/`,
       { 
-        params: { water: customerId },
+        params,
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -860,14 +871,21 @@ const fetchWaterReport = async (customerId: string) => {
   }
 }
 
-const fetchElectricReport = async (customerId: string) => {
+const fetchElectricReport = async (customerId: string, provinceId: string) => {
   try {
     const config = useRuntimeConfig()
     const token = localStorage.getItem('access_token')
+    
+    // IMPORTANT: Include province_id when fetching report
+    const params = {
+      edl: customerId,
+      province_id: provinceId
+    }
+    
     const response = await axios.get(
       `${config.public.strapi.url}api/edl-report/`,
       { 
-        params: { edl: customerId },
+        params,
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -900,7 +918,7 @@ const fetchElectricReport = async (customerId: string) => {
   }
 }
 
-const fetchTelecomReport = async (customerId: string) => {
+const fetchTelecomReport = async (customerId: string, provinceId: string) => {
   try {
     console.log('Telecom API not implemented yet')
     return {
@@ -967,12 +985,11 @@ const showNotFoundAlert = async (errors: any[]) => {
 
 // Enhanced confirmation dialog with customer info
 const showConfirmationDialog = async (searchResults: any) => {
-  // Build customer info display
   let customerInfoHtml = '<div style="margin-bottom: 20px;">'
   
   if (searchResults.electric) {
     const customer = customerInfo.value.electric || {}
-    const provinceName = provinces.value.find(p => p.id === electricProvince.value)?.name || 'ບໍ່ລະບຸ'
+    const provinceName = provinces.value.find(p => p.id === electricProvince.value)?.name || customer.province_name || 'ບໍ່ລະບຸ'
     
     customerInfoHtml += `
       <div style="padding: 12px; margin-bottom: 10px; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 6px;">
@@ -984,7 +1001,7 @@ const showConfirmationDialog = async (searchResults: any) => {
           <div><strong>ລະຫັດ:</strong> ${electronicId.value}</div>
           ${customer.Name ? `<div><strong>ຊື່:</strong> ${customer.Name} ${customer.Surname || ''}</div>` : ''}
           ${customer.Company_name ? `<div><strong>ບໍລິສັດ:</strong> ${customer.Company_name}</div>` : ''}
-          <div><strong>ແຂວງ:</strong> ${customer.province_name || provinceName}</div>
+          <div><strong>ແຂວງ:</strong> ${provinceName}</div>
         </div>
       </div>
     `
@@ -992,7 +1009,7 @@ const showConfirmationDialog = async (searchResults: any) => {
   
   if (searchResults.water) {
     const customer = customerInfo.value.water || {}
-    const provinceName = provinces.value.find(p => p.id === waterProvince.value)?.name || 'ບໍ່ລະບຸ'
+    const provinceName = provinces.value.find(p => p.id === waterProvince.value)?.name || customer.province_name || 'ບໍ່ລະບຸ'
     
     customerInfoHtml += `
       <div style="padding: 12px; margin-bottom: 10px; background: #f0fdfa; border-left: 4px solid #14b8a6; border-radius: 6px;">
@@ -1004,7 +1021,7 @@ const showConfirmationDialog = async (searchResults: any) => {
           <div><strong>ລະຫັດ:</strong> ${waterId.value}</div>
           ${customer.Name ? `<div><strong>ຊື່:</strong> ${customer.Name} ${customer.Surname || ''}</div>` : ''}
           ${customer.Company_name ? `<div><strong>ບໍລິສັດ:</strong> ${customer.Company_name}</div>` : ''}
-          <div><strong>ແຂວງ:</strong> ${customer.province_name || provinceName}</div>
+          <div><strong>ແຂວງ:</strong> ${provinceName}</div>
         </div>
       </div>
     `
@@ -1131,16 +1148,17 @@ const handleSearch = async () => {
       errors: []
     }
     
-    if (water.value && waterId.value) {
-      searchPromises.push(fetchWaterReport(waterId.value))
+    // IMPORTANT: Pass province_id to fetch functions
+    if (water.value && waterId.value && waterProvince.value) {
+      searchPromises.push(fetchWaterReport(waterId.value, waterProvince.value))
     }
     
-    if (electronic.value && electronicId.value) {
-      searchPromises.push(fetchElectricReport(electronicId.value))
+    if (electronic.value && electronicId.value && electricProvince.value) {
+      searchPromises.push(fetchElectricReport(electronicId.value, electricProvince.value))
     }
     
-    if (telecom.value && telecomId.value) {
-      searchPromises.push(fetchTelecomReport(telecomId.value))
+    if (telecom.value && telecomId.value && telecomProvince.value) {
+      searchPromises.push(fetchTelecomReport(telecomId.value, telecomProvince.value))
     }
     
     const results = await Promise.all(searchPromises)
@@ -1160,7 +1178,6 @@ const handleSearch = async () => {
     const hasSuccessfulResults = searchResults.water || searchResults.electric || searchResults.telecom
     
     if (!hasSuccessfulResults) {
-      // All services failed
       await Swal.fire({
         icon: 'error',
         title: 'ບໍ່ພົບຂໍ້ມູນ',
@@ -1179,7 +1196,6 @@ const handleSearch = async () => {
       return
     }
     
-    // Some services have errors, show warning
     if (searchResults.hasErrors) {
       const shouldContinue = await showNotFoundAlert(searchResults.errors)
       if (!shouldContinue) {
@@ -1187,11 +1203,9 @@ const handleSearch = async () => {
       }
     }
     
-    // Show confirmation dialog with customer info
     const confirmed = await showConfirmationDialog(searchResults)
     
     if (confirmed) {
-      // Store results and mark as accessed
       sessionStorage.setItem('utilitySearchResults', JSON.stringify(searchResults))
       sessionStorage.setItem('searchCriteria', JSON.stringify({
         water: water.value ? { id: waterId.value, province: waterProvince.value } : null,
@@ -1209,7 +1223,6 @@ const handleSearch = async () => {
         timerProgressBar: true
       })
       
-      // Navigate to report page
       await router.push('/test21')
     }
     
@@ -1255,6 +1268,7 @@ watch([electronic, water, telecom], clearInputs)
 </script>
 
 <style scoped>
+/* Same styles as before - keeping it minimal and clean */
 .search-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #dbeafe 100%);

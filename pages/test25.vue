@@ -79,6 +79,7 @@
               type="date" 
               class="date-input"
               placeholder="ເລີ່ມຕົ້ນ"
+              @change="handleDateChange"
             />
             <span class="separator">-</span>
             <input 
@@ -86,6 +87,7 @@
               type="date" 
               class="date-input"
               placeholder="ສິ້ນສຸດ"
+              @change="handleDateChange"
             />
           </div>
         </div>
@@ -103,7 +105,6 @@
             </option>
           </select>
         </div>
-
 
         <div class="filter-group">
           <label class="filter-label">ສະຖານະ</label>
@@ -395,14 +396,17 @@ const bankList = ref<any[]>([])
 const isAdmin = ref(false)
 const userBankId = ref('')
 
-const getCurrentDate = () => {
-  const now = new Date()
-  return {
-    month: now.getMonth() + 1,
-    year: now.getFullYear(),
-    day: now.getDate()
-  }
-}
+// ✅ FIX: Initialize filters with empty values, no defaults
+const filters = ref({
+  month: '',
+  year: '',
+  fromDate: '',
+  toDate: '',
+  status: '',
+  limit: '100',
+  bank: '',
+  chg_code: ''
+})
 
 const availableYears = computed(() => {
   const currentYear = new Date().getFullYear()
@@ -413,81 +417,103 @@ const availableYears = computed(() => {
   return years
 })
 
-const currentDate = getCurrentDate()
-const pad = (n: number) => String(n).padStart(2, '0')
-const now = new Date()
-const todayISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
-
-const filters = ref({
-  month: '',
-  year: '',
-  fromDate: todayISO,
-  toDate: todayISO,
-  status: '',
-  limit: '100',
-  bank: '',
-  chg_code: ''
-})
-
-onMounted(async () => {
-  const roleInfo = getUserRole()
-  isAdmin.value = roleInfo.isAdmin
-  userBankId.value = roleInfo.bankId
-
+// ✅ FIX: Initialize filters from URL parameters FIRST
+const initializeFiltersFromURL = () => {
   const monthFromUrl = route.query.month as string
   const yearFromUrl = route.query.year as string
   const fromDateFromUrl = route.query.fromDate as string
   const toDateFromUrl = route.query.toDate as string
   const chgCodeFromUrl = route.query.chg_code as string
-
-  if (monthFromUrl) {
-    filters.value.month = monthFromUrl
-    filters.value.fromDate = ''
-    filters.value.toDate = ''
-  }
+  const bankFromUrl = route.query.bank as string
   
-  if (yearFromUrl) {
-    filters.value.year = yearFromUrl
-  }
+  // Set filters from URL
+  if (monthFromUrl) filters.value.month = monthFromUrl
+  if (yearFromUrl) filters.value.year = yearFromUrl
+  if (fromDateFromUrl) filters.value.fromDate = fromDateFromUrl
+  if (toDateFromUrl) filters.value.toDate = toDateFromUrl
+  if (chgCodeFromUrl) filters.value.chg_code = chgCodeFromUrl
   
-  if (fromDateFromUrl && toDateFromUrl) {
-    filters.value.fromDate = fromDateFromUrl
-    filters.value.toDate = toDateFromUrl
-    filters.value.month = ''
-    filters.value.year = ''
-  }
-
-  if (chgCodeFromUrl) {
-    filters.value.chg_code = chgCodeFromUrl
-  }
-
-  if (isAdmin.value) {
-    await fetchBankList()
-    bankList.value = apiBankList.value
-    
-    const bankFromUrl = route.query.bank as string
-    if (bankFromUrl) {
+  // Handle bank parameter
+  if (bankFromUrl) {
+    if (isAdmin.value) {
+      // Admin can access any bank
       filters.value.bank = bankFromUrl
-    }
-  } else {
-    const bankFromUrl = route.query.bank as string
-    
-    if (bankFromUrl) {
+    } else {
+      // Regular user: check access
       const hasAccess = checkUserAccess(bankFromUrl)
       if (!hasAccess) {
         showAccessDenied.value = true
-        return
+        return false
       }
       filters.value.bank = bankFromUrl
-    } else {
+    }
+  } else {
+    // No bank in URL: use user's bank if not admin
+    if (!isAdmin.value) {
       filters.value.bank = userBankId.value
     }
   }
   
-  await fetchChargeCodeList()
-  setBankInfo()
-  await loadData()
+  return true
+}
+
+const filteredData = computed(() => {
+  if (!searchQuery.value) return detailData.value
+  
+  const query = searchQuery.value.toLowerCase()
+  return detailData.value.filter((item: any) => {
+    return (
+      item.rec_charge_ID?.toString().toLowerCase().includes(query) ||
+      item.LCIC_code?.toLowerCase().includes(query) ||
+      item.enterprise_name?.toLowerCase().includes(query) ||
+      item.chg_code?.toLowerCase().includes(query) ||
+      item.user_sys_id?.toLowerCase().includes(query)
+    )
+  })
 })
+
+const totalRecords = computed(() => filteredData.value.length)
+const totalAmount = computed(() => {
+  return filteredData.value.reduce((sum: number, item: any) => {
+    return sum + (parseFloat(item.chg_amount) || 0)
+  }, 0)
+})
+
+const completedCount = computed(() => {
+  return filteredData.value.filter((item: any) => 
+    item.status === 'completed' || item.status === 'approved'
+  ).length
+})
+
+const pendingCount = computed(() => {
+  return filteredData.value.filter((item: any) => 
+    item.status === 'pending'
+  ).length
+})
+
+const loadData = async () => {
+  loading.value = true
+  try {
+    // ✅ FIX: Build filter params properly
+    const filterParams: any = {
+      limit: parseInt(filters.value.limit)
+    }
+    
+    if (filters.value.month) filterParams.month = parseInt(filters.value.month)
+    if (filters.value.year) filterParams.year = parseInt(filters.value.year)
+    if (filters.value.fromDate) filterParams.fromDate = filters.value.fromDate
+    if (filters.value.toDate) filterParams.toDate = filters.value.toDate
+    if (filters.value.status) filterParams.status = filters.value.status
+    if (filters.value.chg_code) filterParams.chg_code = filters.value.chg_code
+    if (filters.value.bank) filterParams.bank = filters.value.bank
+    
+    await fetchDetailReport(filterParams)
+  } catch (error) {
+    console.error('Error loading data:', error)
+  } finally {
+    loading.value = false
+  }
+}
 
 const setBankInfo = () => {
   try {
@@ -517,60 +543,6 @@ const setBankInfo = () => {
   }
 }
 
-const filteredData = computed(() => {
-  if (!searchQuery.value) return detailData.value
-  
-  const query = searchQuery.value.toLowerCase()
-  return detailData.value.filter((item: any) => {
-    return (
-      item.rec_charge_ID?.toString().toLowerCase().includes(query) ||
-      item.LCIC_code?.toLowerCase().includes(query) ||
-      item.enterprise_name?.toLowerCase().includes(query) ||
-      item.chg_code?.toLowerCase().includes(query) ||
-      item.user_sys_id?.toLowerCase().includes(query)
-    )
-  })
-})
-
-const totalRecords = computed(() => filteredData.value.length)
-const totalAmount = computed(() => {
-  return filteredData.value.reduce((sum: number, item: any) => {
-    return sum + (parseFloat(item.chg_amount) || 0)
-  }, 0)
-})
-console.log('chargeCodeList in template:', chargeCodeList.value)
-const completedCount = computed(() => {
-  return filteredData.value.filter((item: any) => 
-    item.status === 'completed' || item.status === 'approved'
-  ).length
-})
-
-const pendingCount = computed(() => {
-  return filteredData.value.filter((item: any) => 
-    item.status === 'pending'
-  ).length
-})
-
-const loadData = async () => {
-  loading.value = true
-  try {
-    await fetchDetailReport({
-      month: filters.value.month ? parseInt(filters.value.month) : undefined,
-      year: filters.value.year ? parseInt(filters.value.year) : undefined,
-      fromDate: filters.value.fromDate || undefined,
-      toDate: filters.value.toDate || undefined,
-      status: filters.value.status || undefined,
-      chg_code: filters.value.chg_code || undefined,
-      limit: parseInt(filters.value.limit),
-      bank: filters.value.bank || undefined
-    })
-  } catch (error) {
-    console.error('Error loading data:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
 const onBankChange = () => {
   setBankInfo()
   loadData()
@@ -580,7 +552,16 @@ const applyFilters = () => {
   loadData()
 }
 
+const handleDateChange = () => {
+  // If date range is used, clear month/year
+  if (filters.value.fromDate || filters.value.toDate) {
+    filters.value.month = ''
+    filters.value.year = ''
+  }
+}
+
 const handleMonthYearChange = () => {
+  // If month/year is used, clear date range
   if (filters.value.month || filters.value.year) {
     filters.value.fromDate = ''
     filters.value.toDate = ''
@@ -588,10 +569,9 @@ const handleMonthYearChange = () => {
 }
 
 const resetFilters = () => {
-  const currentDate = getCurrentDate()
   filters.value = {
-    month: String(currentDate.month),
-    year: String(currentDate.year),
+    month: '',
+    year: '',
     fromDate: '',
     toDate: '',
     status: '',
@@ -652,9 +632,40 @@ const exportToExcel = () => {
 const exportToPDF = () => {
   console.log('Export to PDF')
 }
+
+// ✅ FIX: Improved onMounted with proper initialization order
+onMounted(async () => {
+  // 1. Get user role first
+  const roleInfo = getUserRole()
+  isAdmin.value = roleInfo.isAdmin
+  userBankId.value = roleInfo.bankId
+  
+  // 2. Fetch bank list if admin
+  if (isAdmin.value) {
+    await fetchBankList()
+    bankList.value = apiBankList.value
+  }
+  
+  // 3. Fetch charge code list
+  await fetchChargeCodeList()
+  
+  // 4. Initialize filters from URL
+  const hasAccess = initializeFiltersFromURL()
+  if (!hasAccess) {
+    // User doesn't have access to requested bank
+    return
+  }
+  
+  // 5. Set bank info for display
+  setBankInfo()
+  
+  // 6. Load data with URL parameters
+  await loadData()
+})
 </script>
 
 <style scoped>
+/* ... (keep all your existing styles) ... */
 .charge-details-page {
   min-height: 100vh;
   background: #f8f9fa;

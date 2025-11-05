@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { MemberStore } from "@/stores/memberinfo";
-import { IndividualStore } from "~/stores/searchindividual";
-const inDividualStore = IndividualStore();
+import { IndividualCollateralStore } from "~/stores/collateral_individual";
+const inDividualStore = IndividualCollateralStore();
 import { useMemberInfo } from "@/composables/memberInfo";
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 import { useUserData } from "~/composables/useUserData";
@@ -39,12 +39,12 @@ const periodItems = computed(() => {
 
 async function onChangPage(value: number) {
   reques.page = value;
-  await inDividualStore.getListIndividualLoan();
+  await inDividualStore.getListIndividualcollateral();
 }
 
 const headers = computed(() => {
   const baseHeaders = [
-    { title: "ໄອດີ", value: "FID" },
+    { title: "ໄອດີ", value: "CID" },
     { title: "ຊື່ໄຟລ໌", value: "fileName" },
     { title: "ຂະໜາດຟາຍ", value: "file_size" },
     { title: "ໄລຍະເວລາ", value: "period" },
@@ -66,7 +66,7 @@ const headers = computed(() => {
 
 async function onSelectPage(value: number) {
   reques.limit = value;
-  await inDividualStore.getListIndividualLoan();
+  await inDividualStore.getListIndividualcollateral();
 }
 
 const indData = computed(() => {
@@ -171,7 +171,7 @@ const Status = [
 watch(SelectBank, async (newvalue) => {
   try {
     inDividualStore.loan_query.query.user_id_filter = newvalue;
-    await inDividualStore.getListIndividualLoan();
+    await inDividualStore.getListIndividualcollateral();
   } catch (error) {
     Swal.fire({
       icon: "error",
@@ -183,7 +183,7 @@ watch(SelectBank, async (newvalue) => {
 watch(SelectSatus, async (newvalue) => {
   try {
     inDividualStore.loan_query.query.statussubmit = newvalue;
-    await inDividualStore.getListIndividualLoan();
+    await inDividualStore.getListIndividualcollateral();
   } catch (error) {
     Swal.fire({
       icon: "error",
@@ -195,7 +195,7 @@ watch(SelectSatus, async (newvalue) => {
 watch(SelectPeroid, async (newvalue) => {
   try {
     inDividualStore.loan_query.query.period = newvalue;
-    await inDividualStore.getListIndividualLoan();
+    await inDividualStore.getListIndividualcollateral();
   } catch (error) {
     Swal.fire({
       icon: "error",
@@ -207,7 +207,7 @@ watch(SelectPeroid, async (newvalue) => {
 watch(SelectFile, async (newvalue) => {
   try {
     inDividualStore.loan_query.query.FileType = newvalue;
-    await inDividualStore.getListIndividualLoan();
+    await inDividualStore.getListIndividualcollateral();
   } catch (error) {
     Swal.fire({
       icon: "error",
@@ -246,7 +246,7 @@ const latestPeriodByUser = computed(() => {
     if (!periodMap[userId] || currentPeriod > periodMap[userId].period) {
       periodMap[userId] = {
         period: currentPeriod,
-        fid: item.FID,
+        fid: item.CID,
         statussubmit: item.statussubmit,
       };
     }
@@ -269,7 +269,7 @@ const latestPeriodWithStatus0ByUser = computed(() => {
     if (!periodMap[userId] || currentPeriod > periodMap[userId].period) {
       periodMap[userId] = {
         period: currentPeriod,
-        fid: item.FID,
+        fid: item.CID,
       };
     }
   });
@@ -282,7 +282,7 @@ const shouldShowUploadButton = (item: any) => {
   const latestForUser = latestPeriodWithStatus0ByUser.value[item.user_id];
   if (!latestForUser) return false;
 
-  if (item.FID !== latestForUser.fid) return false;
+  if (item.CID !== latestForUser.fid) return false;
 
   return true;
 };
@@ -369,7 +369,7 @@ const confirmInsertData = async (fid: string) => {
 
   if (notification.isConfirmed) {
     await inDividualStore.confirmUploadLoan(fid);
-    await inDividualStore.getListIndividualLoan();
+    await inDividualStore.getListIndividualcollateral();
   }
 };
 const UnloadData = async (fid: string) => {
@@ -381,10 +381,10 @@ const UnloadData = async (fid: string) => {
     showCancelButton: true,
     cancelButtonText: "ຍົກເລີກ",
   });
-  await inDividualStore.getListIndividualLoan();
+  await inDividualStore.getListIndividualcollateral();
   if (notification.isConfirmed) {
     await inDividualStore.UnloadLoan(fid);
-    await inDividualStore.getListIndividualLoan();
+    await inDividualStore.getListIndividualcollateral();
   }
 };
 const RejectInsertData = async (id: string) => {
@@ -399,13 +399,13 @@ const RejectInsertData = async (id: string) => {
 
   if (notification.isConfirmed) {
     await inDividualStore.RejectUploadLoan(id);
-    await inDividualStore.getListIndividualLoan();
+    await inDividualStore.getListIndividualcollateral();
   }
 };
 onMounted(async () => {
   inDividualStore.loan_query.query.user_id = userId.value;
   inDividualStore.period.query.user_id = userId.value;
-  inDividualStore.getListIndividualLoan();
+  inDividualStore.getListIndividualcollateral();
   memberStore.getMemberInfo();
   inDividualStore.getPeriod();
 });
@@ -421,7 +421,7 @@ onMounted(async () => {
           </v-icon>
           <div>
             <h2 class="text-h5 font-weight-medium text-primary">
-              ການອັບໂຫຼດຂໍ້ມູນເງິນກູ້ (ບຸກຄົນ)
+              ການອັບໂຫຼດຂໍ້ມູນຫຼັກຊັບ (ບຸກຄົນ)
             </h2>
             <p class="text-caption text-medium-emphasis mb-0">
               ຈັດການແລະຕິດຕາມຂໍ້ມູນການອັບໂຫຼດ
@@ -680,7 +680,7 @@ onMounted(async () => {
         class="elevation-0 text-no-wrap"
         hover
       >
-        <template v-slot:header.FID="{ column }">
+        <template v-slot:header.CID="{ column }">
           <b style="color: blue">{{ column.title }}</b>
         </template>
         <template v-slot:header.fileName="{ column }">
@@ -794,7 +794,7 @@ onMounted(async () => {
             size="small"
             color="info"
             v-else
-            @click="goPath(`/disuste/?id_dispust=n-${item.FID}`)"
+            @click="goPath(`/disuste/?id_dispust=n-${item.CID}`)"
             density="compact"
             variant="flat"
           >
@@ -805,7 +805,7 @@ onMounted(async () => {
           <v-btn
             color="success"
             flat
-            @click="confirmInsertData(`n-${item.FID}`)"
+            @click="confirmInsertData(`n-${item.CID}`)"
             v-if="item.statussubmit === '1'"
             :disabled="isConfirmButtonDisabled(item)"
           >
@@ -815,7 +815,7 @@ onMounted(async () => {
             class="ml-2"
             color="red-lighten-4"
             flat
-            @click="RejectInsertData(`n-${item.FID}`)"
+            @click="RejectInsertData(`n-${item.CID}`)"
             v-if="item.statussubmit === '1'"
             :disabled="isConfirmButtonDisabled(item)"
           >
@@ -826,7 +826,7 @@ onMounted(async () => {
             color="warning"
             v-if="shouldShowUploadButton(item)"
             flat
-            @click="UnloadData(`n-${item.FID}`)"
+            @click="UnloadData(`n-${item.CID}`)"
           >
             ອັນໂຫຼດ
           </v-btn>
@@ -853,7 +853,7 @@ onMounted(async () => {
             color="primary"
             prepend-icon="mdi-eye"
             flat
-            @click="goPath(`/detailupload?code=n-${item.FID}`)"
+            @click="goPath(`/detailupload?code=n-${item.CID}`)"
             >ລາຍລະອຽດ</v-btn
           >
         </template>
