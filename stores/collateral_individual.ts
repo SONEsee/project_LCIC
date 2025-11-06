@@ -381,17 +381,17 @@ export const IndividualCollateralStore = defineStore("individualcollateral", {
       }
     },
     
-async confirmUploadLoan(fid: string) {
+async confirmUploadLoan(cid: string) {
   this.isLoading = true;
   try {
     
     const formData = new FormData();
-    formData.append('FID', fid);
+    formData.append('CID', cid);
     
-    console.log('Sending FID:', fid); 
+    console.log('Sending FID:', cid); 
     
     const res = await axios.post(
-      `/api/confirm_upload_individual/`,
+      `/api/confirm_upload_individual_collateral/`,
       formData,
       {
         headers: {
