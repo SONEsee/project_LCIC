@@ -120,9 +120,6 @@ onMounted(() => {
     user.value = JSON.parse(userData);
     imageError.value = false;
     imageErrorLarge.value = false;
-    console.log('✅ User data:', user.value);
-    console.log('✅ Profile image path:', user.value?.profile_image);
-    console.log('✅ Profile image URL:', profileImageUrl.value);
   }
   
   setupInactivityTimer();
