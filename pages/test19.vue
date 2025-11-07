@@ -214,7 +214,7 @@
                 <v-icon 
                   :icon="formData.icon || 'mdi-help-circle'" 
                   size="28" 
-                  :color="formData.icon ? '#6366f1' : '#cbd5e1'"
+                  :color="formData.icon && formData.icon.startsWith('mdi-') ? '#6366f1' : '#cbd5e1'"
                 ></v-icon>
               </div>
               <input 
@@ -274,11 +274,13 @@
 
             <div class="form-group">
               <label>ສະຖານະ</label>
-              <label class="switch-label">
-                <input v-model="formData.is_active" type="checkbox" class="switch-input" />
-                <span class="switch-slider"></span>
+              <div class="switch-container">
+                <label class="switch-label">
+                  <input v-model="formData.is_active" type="checkbox" class="switch-input" />
+                  <span class="switch-slider"></span>
+                </label>
                 <span class="switch-text">{{ formData.is_active ? 'ເປີດໃຊ້ງານ' : 'ປິດໃຊ້ງານ' }}</span>
-              </label>
+              </div>
             </div>
           </div>
 
@@ -306,7 +308,7 @@
             <v-icon icon="mdi-close" size="18"></v-icon>
             <span>ຍົກເລີກ</span>
           </button>
-          <button @click="saveItem" class="btn-primary" :disabled="!isFormValid || saving">
+          <button @click="saveItem" class="btn-primary" :disabled="!canSubmit || saving">
             <v-icon v-if="!saving" :icon="editingItem ? 'mdi-content-save' : 'mdi-plus'" size="18"></v-icon>
             <div v-else class="btn-spinner"></div>
             <span>{{ saving ? 'ກຳລັງບັນທຶກ...' : (editingItem ? 'ອັບເດດ' : 'ສ້າງ') }}</span>
@@ -327,7 +329,6 @@
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { refreshSidebar } from '~/components/backendComponents/sidebar/sidebarItems'
@@ -444,42 +445,50 @@ const hasRole = (itemRoles: Role[] | number[], roleId: number): boolean => {
 const validateName = () => {
   if (!formData.value.name.trim()) {
     formErrors.value.name = 'ກະລຸນາປ້ອນຊື່ເມນູ';
+    return false;
   } else if (formData.value.name.length < 2) {
     formErrors.value.name = 'ຊື່ເມນູຕ້ອງມີຢ່າງໜ້ອຍ 2 ຕົວອັກສອນ';
+    return false;
   } else {
     formErrors.value.name = '';
+    return true;
   }
 };
 
 const validateIcon = () => {
   if (!formData.value.icon.trim()) {
     formErrors.value.icon = 'ກະລຸນາປ້ອນໄອຄອນ';
+    return false;
   } else if (!formData.value.icon.startsWith('mdi-')) {
     formErrors.value.icon = 'ໄອຄອນຕ້ອງເລີ່ມດ້ວຍ mdi-';
+    return false;
   } else {
     formErrors.value.icon = '';
+    return true;
   }
 };
 
 const validateUrl = () => {
   if (!formData.value.url.trim()) {
     formErrors.value.url = 'ກະລຸນາປ້ອນເສັ້ນທາງ';
+    return false;
   } else if (!formData.value.url.startsWith('/')) {
     formErrors.value.url = 'ເສັ້ນທາງຕ້ອງເລີ່ມດ້ວຍ /';
+    return false;
   } else {
     formErrors.value.url = '';
+    return true;
   }
 };
 
-const isFormValid = computed(() => {
-  return formData.value.name.trim() && 
-         formData.value.icon.trim() && 
-         formData.value.icon.startsWith('mdi-') &&
-         formData.value.url.trim() && 
-         formData.value.url.startsWith('/') &&
-         !formErrors.value.name &&
-         !formErrors.value.icon &&
-         !formErrors.value.url;
+// Fixed validation check
+const canSubmit = computed(() => {
+  const hasName = formData.value.name.trim().length >= 2;
+  const hasIcon = formData.value.icon.trim() && formData.value.icon.startsWith('mdi-');
+  const hasUrl = formData.value.url.trim() && formData.value.url.startsWith('/');
+  const hasParent = modalType.value === 'sidebar_item' || formData.value.parent;
+  
+  return hasName && hasIcon && hasUrl && hasParent;
 });
 
 onMounted(() => {
@@ -591,7 +600,15 @@ const moveSubItem = async (parentId: number, subIndex: number, direction: 'up' |
 
 const openCreateModal = (type: 'sidebar_item' | 'sidebar_sub_item') => {
   modalType.value = type;
-  formData.value.selectedRoles = [];
+  formData.value = {
+    name: '',
+    icon: '',
+    url: '',
+    order: 0,
+    parent: '',
+    is_active: true,
+    selectedRoles: []
+  };
   formErrors.value = { name: '', icon: '', url: '' };
   showCreateModal.value = true;
 };
@@ -618,13 +635,19 @@ const editItem = (item: any, type: 'sidebar_item' | 'sidebar_sub_item') => {
 };
 
 const saveItem = async () => {
-  // Validate form
-  validateName();
-  validateIcon();
-  validateUrl();
+  // Validate all fields
+  const nameValid = validateName();
+  const iconValid = validateIcon();
+  const urlValid = validateUrl();
   
-  if (!isFormValid.value) {
+  if (!nameValid || !iconValid || !urlValid) {
     showToast('ກະລຸນາກວດສອບຂໍ້ມູນໃຫ້ຖືກຕ້ອງ', 'error');
+    return;
+  }
+
+  // Check parent for sub-items
+  if (modalType.value === 'sidebar_sub_item' && !formData.value.parent) {
+    showToast('ກະລຸນາເລືອກແມ່ເມນູ', 'error');
     return;
   }
 
@@ -723,6 +746,64 @@ const showToast = (message: string, type: 'success' | 'error') => {
 
 <style scoped>
 /* Previous styles remain the same... */
+
+.switch-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.switch-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.switch-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  background: #cbd5e1;
+  border-radius: 13px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.switch-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  top: 3px;
+  left: 3px;
+  transition: all 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.switch-input:checked + .switch-slider {
+  background: #10b981;
+}
+
+.switch-input:checked + .switch-slider::before {
+  transform: translateX(22px);
+}
+
+.switch-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+}
 .sidebar-manager {
   max-width: 1400px;
   margin: 0 auto;

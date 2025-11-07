@@ -96,7 +96,7 @@ export default defineComponent({
 
     // onMounted(async () => {
     //   try {
-    //     const response = await fetch('http://192.168.45.55:8000/api/api/upload-files2/');
+    //     const response = await fetch('http://192.168.45.56:8000/api/api/upload-files2/');
     //     if (!response.ok) {
     //       throw new Error('Network response was not ok');
     //     }
@@ -361,7 +361,7 @@ export default defineComponent({
     };
 
     // const getFullPath = (path: string) => {
-    //   return `http://192.168.45.55:8000/media/${path}`;
+    //   return `http://192.168.45.56:8000/media/${path}`;
     // };
     const config = useRuntimeConfig();
     const getFullPath = (path: string) => `${config.public.strapi.url}/${path}`;

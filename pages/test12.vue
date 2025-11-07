@@ -232,7 +232,7 @@ const createFormRef = ref(null)
 const editFormRef = ref(null)
 
 // Base URL for images
-const BASE_URL = 'http://192.168.45.55:8000'
+const BASE_URL = 'http://192.168.45.56:8000'
 
 const getImageUrl = (path) => {
   if (!path) return '/default-avatar.png'
@@ -246,7 +246,7 @@ const createObjectURL = (file) => {
 
 const fetchUsers = async () => {
   try {
-    const response = await fetch('http://192.168.45.55:8000/api/sys-list-user/', {
+    const response = await fetch('http://192.168.45.56:8000/api/sys-list-user/', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       }
@@ -288,7 +288,7 @@ const createUser = async () => {
   }
 
   try {
-    const response = await fetch('http://192.168.45.55:8000/api/sys-add-user/', {
+    const response = await fetch('http://192.168.45.56:8000/api/sys-add-user/', {
       method: 'POST',
       body: formData,
       headers: {
@@ -403,7 +403,7 @@ const updateUser = async () => {
   }
 
   try {
-    const response = await fetch(`http://192.168.45.55:8000/api/sys-detail-user/${editingUserId.value}/`, {
+    const response = await fetch(`http://192.168.45.56:8000/api/sys-detail-user/${editingUserId.value}/`, {
       method: 'PUT',
       body: formData,
       headers: {
@@ -428,7 +428,7 @@ const updateUser = async () => {
 
 const deleteUser = async (id) => {
   try {
-    const response = await fetch(`http://192.168.45.55:8000/api/sys-detail-user/${id}/`, {
+    const response = await fetch(`http://192.168.45.56:8000/api/sys-detail-user/${id}/`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`

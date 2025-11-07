@@ -392,7 +392,7 @@ import axios from 'axios'
 
 // Configuration
 const config = useRuntimeConfig()
-const apiUrl = computed(() => config.public.apiUrl || 'http://192.168.45.55:8000/')
+const apiUrl = computed(() => config.public.apiUrl || 'http://192.168.45.56:8000/')
 
 // Reactive Data - API token removed, now handled in backend
 const username = ref('system')
