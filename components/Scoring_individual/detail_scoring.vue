@@ -83,7 +83,7 @@ onMounted(() => {
 <template>
   <div class="search-details-container">
     <div class="header-section">
-      <v-icon size="32" color="primary" class="mb-2 mt-4"
+      <v-icon size="32" color="#1a2a5e" class="mb-4 mt-2"
         >mdi-account-search</v-icon
       >
       <h1 class="page-title">ລາຍລະອຽດຂໍ້ມູນທີ່ຄົ້ນຫາ</h1>
@@ -92,7 +92,7 @@ onMounted(() => {
 
     <v-card class="data-card mb-6" elevation="2">
       <v-card-title class="card-title">
-        <v-icon class="mr-2" color="primary">mdi-table</v-icon>
+        <v-icon class="mr-2" color="#f5f7fa">mdi-table</v-icon>
         ຂໍ້ມູນບຸກຄົນ
       </v-card-title>
 
@@ -165,30 +165,179 @@ onMounted(() => {
 
 <style scoped>
 .search-details-container {
-  min-height: 90vh;
+  min-height: 85vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 0rem 0;
 }
 
+/* ===== HEADER SECTION - MODERNIZED ===== */
 .header-section {
   text-align: center;
   margin-bottom: 1rem;
-  padding: 0rem 0;
+  padding: 2rem 0;
+  position: relative;
+  animation: fadeInDown 0.8s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header-section .v-icon {
+  background: linear-gradient(135deg, rgba(18, 36, 116, 0.2) 0%, rgba(9, 3, 92, 0.15) 100%);
+  padding: 24px;
+  border-radius: 50%;
+  backdrop-filter: blur(20px);
+  box-shadow: 
+    0 8px 32px rgba(18, 36, 116, 0.3),
+    0 0 0 8px rgba(18, 36, 116, 0.1),
+    0 0 0 16px rgba(18, 36, 116, 0.05),
+    inset 0 1px 2px rgba(255, 255, 255, 0.5);
+  border: 2px solid rgba(18, 36, 116, 0.3);
+  animation: pulse-float 3s ease-in-out infinite;
+  position: relative;
+}
+
+.header-section .v-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140%;
+  height: 140%;
+  background: radial-gradient(circle, rgba(18, 36, 116, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: ripple 2s ease-out infinite;
+  pointer-events: none;
+}
+
+.header-section .v-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 180%;
+  height: 180%;
+  border: 2px solid rgba(18, 36, 116, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: ripple 2s ease-out 0.5s infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse-float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 
+      0 8px 32px rgba(18, 36, 116, 0.3),
+      0 0 0 8px rgba(18, 36, 116, 0.1),
+      0 0 0 16px rgba(18, 36, 116, 0.05);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.08);
+    box-shadow: 
+      0 16px 48px rgba(18, 36, 116, 0.4),
+      0 0 0 12px rgba(18, 36, 116, 0.15),
+      0 0 0 24px rgba(18, 36, 116, 0.08);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.5);
+  }
 }
 
 .page-title {
-  font-size: 1.5rem;
-  font-weight: 400;
+  font-size: 2rem;
+  font-weight: 700;
   color: #2c3e50;
   margin-bottom: 0.5rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(18, 36, 116, 0.15);
+  letter-spacing: 0.5px;
+  background: linear-gradient(180deg, #1a2a5e 0%, #2c3e50 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: titleGlow 3s ease-in-out infinite alternate;
+  position: relative;
+}
+
+.page-title::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #122474, transparent);
+  border-radius: 2px;
+  animation: lineExpand 2s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+  0%, 100% {
+    text-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.1),
+      0 4px 16px rgba(18, 36, 116, 0.15);
+  }
+  50% {
+    text-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.1),
+      0 4px 16px rgba(18, 36, 116, 0.3),
+      0 0 40px rgba(18, 36, 116, 0.2);
+  }
+}
+
+@keyframes lineExpand {
+  0%, 100% {
+    width: 80px;
+    opacity: 0.8;
+  }
+  50% {
+    width: 120px;
+    opacity: 1;
+  }
 }
 
 .page-subtitle {
   font-size: 1.1rem;
-  color: #7f8c8d;
+  color: #5d699e;
   margin: 0;
+  margin-top: 1.5rem;
+  font-weight: 400;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  animation: subtitleFade 1s ease-out 0.3s both;
+  letter-spacing: 0.3px;
 }
+
+@keyframes subtitleFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* ===== END HEADER SECTION ===== */
 
 .data-card {
   border-radius: 16px;
@@ -293,7 +442,11 @@ onMounted(() => {
 /* Responsive Design */
 @media (max-width: 768px) {
   .page-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
   }
 
   .table-header-cell,
