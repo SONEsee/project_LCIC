@@ -11,10 +11,14 @@ const messages = ref(message);
 const timeout = ref<number | null>(null);
 const user = ref<User | null>(null);
 const { locale, setLocale } = useI18n();
+const fireworkButton = ref<HTMLElement | null>(null);
 
 // ✅ เพิ่ม state สำหรับจัดการ error ของรูปภาพ
 const imageError = ref(false);
 const imageErrorLarge = ref(false);
+
+// ✅ เพิ่ม state สำหรับ firework animation
+const showFirework = ref(false);
 
 // ✅ API endpoint
 const apiLogout = `${config.public.strapi.url}api/logout_update/`;
@@ -90,6 +94,151 @@ const signOut = () => {
 // ✅ Auto Logout
 const autoLogout = () => {
   performLogout("auto");
+};
+
+// ✅ ฟังก์ชันสำหรับเล่น firework animation
+const triggerFirework = () => {
+  console.log('🎆 Firework triggered!');
+  console.log('Before:', showFirework.value);
+  showFirework.value = true;
+  console.log('After:', showFirework.value);
+  
+  // สร้าง firework particles แบบ manual ด้วย JavaScript
+  if (fireworkButton.value) {
+    const rect = fireworkButton.value.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    console.log('Button position:', centerX, centerY);
+    
+    // สร้าง 8 particles
+    const colors = [
+      { bg: 'radial-gradient(circle, #ffd700, #ff8c00)', shadow: '#ffd700', name: '1' },
+      { bg: 'radial-gradient(circle, #ff6b6b, #ee5a6f)', shadow: '#ff6b6b', name: '2' },
+      { bg: 'radial-gradient(circle, #4ecdc4, #00d2d3)', shadow: '#4ecdc4', name: '3' },
+      { bg: 'radial-gradient(circle, #a855f7, #c56cf0)', shadow: '#a855f7', name: '4' },
+      { bg: 'radial-gradient(circle, #ff9f43, #ffa502)', shadow: '#ff9f43', name: '5' },
+      { bg: 'radial-gradient(circle, #ee5a6f, #ff6348)', shadow: '#ee5a6f', name: '6' },
+      { bg: 'radial-gradient(circle, #00d2d3, #1dd1a1)', shadow: '#00d2d3', name: '7' },
+      { bg: 'radial-gradient(circle, #c56cf0, #d63031)', shadow: '#c56cf0', name: '8' }
+    ];
+    
+    colors.forEach((color, i) => {
+      // Delay แต่ละ particle เล็กน้อยเพื่อให้ดูเป็นธรรมชาติ
+      setTimeout(() => {
+        const particle = document.createElement('div');
+        particle.className = `firework-particle-manual`;
+        particle.style.cssText = `
+          position: fixed;
+          left: ${centerX}px;
+          top: ${centerY}px;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: ${color.bg};
+          box-shadow: 0 0 15px ${color.shadow}, 0 0 30px ${color.shadow};
+          pointer-events: none;
+          z-index: 999999;
+          margin-left: -4px;
+          margin-top: -4px;
+        `;
+        
+        document.body.appendChild(particle);
+        console.log(`Particle ${i + 1} created at`, centerX, centerY);
+        
+        // Animation - ใช้ bezier curve ที่นุ่มนวล
+        const angle = (i * 45) * Math.PI / 180;
+        const distance = 70; // เพิ่มระยะทางเล็กน้อย
+        const endX = centerX + Math.cos(angle) * distance;
+        const endY = centerY + Math.sin(angle) * distance;
+        
+        // เพิ่ม trail effect - สร้าง particle เล็กตามหลัง
+        for (let j = 0; j < 3; j++) {
+          setTimeout(() => {
+            const trail = document.createElement('div');
+            trail.style.cssText = `
+              position: fixed;
+              left: ${centerX}px;
+              top: ${centerY}px;
+              width: 4px;
+              height: 4px;
+              border-radius: 50%;
+              background: ${color.bg};
+              box-shadow: 0 0 10px ${color.shadow};
+              pointer-events: none;
+              z-index: 999998;
+              margin-left: -2px;
+              margin-top: -2px;
+            `;
+            
+            document.body.appendChild(trail);
+            
+            const trailDistance = distance * (0.3 + j * 0.2);
+            const trailEndX = centerX + Math.cos(angle) * trailDistance;
+            const trailEndY = centerY + Math.sin(angle) * trailDistance;
+            
+            trail.animate([
+              { 
+                left: `${centerX}px`, 
+                top: `${centerY}px`,
+                opacity: 0.6,
+                transform: 'scale(1)'
+              },
+              { 
+                left: `${trailEndX}px`, 
+                top: `${trailEndY}px`,
+                opacity: 0,
+                transform: 'scale(0.2)'
+              }
+            ], {
+              duration: 800,
+              easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              delay: 50
+            });
+            
+            setTimeout(() => trail.remove(), 900);
+          }, j * 30);
+        }
+        
+        // Main particle animation
+        particle.animate([
+          { 
+            left: `${centerX}px`, 
+            top: `${centerY}px`,
+            opacity: 1,
+            transform: 'scale(0.5)'
+          },
+          { 
+            left: `${centerX + Math.cos(angle) * (distance * 0.3)}px`, 
+            top: `${centerY + Math.sin(angle) * (distance * 0.3)}px`,
+            opacity: 1,
+            transform: 'scale(1.2)',
+            offset: 0.3
+          },
+          { 
+            left: `${endX}px`, 
+            top: `${endY}px`,
+            opacity: 0,
+            transform: 'scale(0.3)'
+          }
+        ], {
+          duration: 1200,
+          easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+        });
+        
+        // ลบ particle หลังจาก animation เสร็จ
+        setTimeout(() => {
+          particle.remove();
+          console.log(`Particle ${i + 1} removed`);
+        }, 1300);
+      }, i * 25); // Stagger effect - แต่ละ particle ออกห่างกัน 25ms
+    });
+  }
+  
+  setTimeout(() => {
+    showFirework.value = false;
+    console.log('Firework ended');
+  }, 1500);
 };
 
 // ✅ Reset timeout
@@ -212,7 +361,7 @@ onBeforeUnmount(() => {
       class="mx-auto" 
       elevation="16" 
       rounded="xl"
-      style="width: 280px;"
+      style="width: 280px;  overflow: hidden;"
     >
       <!-- Cover Photo -->
       <div 
@@ -227,7 +376,7 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Profile Section -->
-      <div class="px-5 pb-4" style="margin-top: -40px; position: relative;" v-if="user">
+      <div class="px-5 pb-4" style="margin-top: -40px; position: relative; overflow: visible;" v-if="user">
         <div class="text-center">
           <!-- Profile Picture with Ring -->
           <div style="display: inline-block; position: relative;">
@@ -311,17 +460,17 @@ onBeforeUnmount(() => {
           <div class="d-flex justify-center gap-4 my-4">
             <div class="text-center">
               <div class="text-h7 font-weight-bold" style="color: #2931a5;">{{ user.MID?.code }}{{ user.MID?.id ? ' - ' + user.MID.id : '' }}</div>
-              <div class="text-caption text-grey">ລະຫັດ</div>
+              <div class="text-caption text-grey">ລະຫັດທະນາຄານ</div>
             </div>
             <v-divider vertical></v-divider>
             <div class="text-center">
-              <div class="text-h7 font-weight-bold text-success">ກຳລັງໃຊ້ງານ</div>
-              <div class="text-caption text-grey">ສະຖານະ</div>
+              <div class="text-h7 font-weight-bold " style="color: #268055;">{{ user.GID?.nameL }}</div>
+              <div class="text-caption text-grey">ສິດການນຳໃຊ້</div>
             </div>
           </div>
 
           <!-- Action Buttons Row -->
-          <div class="d-flex gap-2 ml-6">
+          <div class="d-flex gap-2 ml-6" style="position: relative; overflow: visible;">
             <v-btn
               @click="goToProfile()"
               variant="flat"
@@ -333,16 +482,22 @@ onBeforeUnmount(() => {
               <v-icon icon="mdi-account-edit" class="mr-2" size="25"></v-icon>
               ແກ້ໄຂໂປຣໄຟລ໌
             </v-btn>
-            <v-btn
-              icon
-              @click="goToProfile()"
-              variant="outlined"
-              color="#2931a5"
-              size="large"
-              style="border-radius: 12px; border-width: 2px; width: 40px;"
-            >
-              <v-icon icon="mdi-star-shooting" size="20"></v-icon>
-            </v-btn>
+            
+            <!-- ✅ Wrapper สำหรับปุ่ม + firework -->
+            <div style="position: relative; display: inline-block; z-index: 1000;" ref="fireworkButton">
+              <v-btn
+                icon
+                variant="outlined"
+                color="#2931a5"
+                size="large"
+                class="firework-btn"
+                style="border-radius: 12px; border-width: 2px; width: 40px;"
+                @click.stop="triggerFirework"
+                :class="{ 'btn-burst': showFirework }"
+              >
+                <v-icon icon=" mdi-gift" size="20"></v-icon>
+              </v-btn>
+            </div>
           </div>
         </div>
       </div>
@@ -388,5 +543,146 @@ onBeforeUnmount(() => {
 
 .v-list-item:hover {
   background-color: rgba(41, 49, 165, 0.05);
+}
+
+/* ✅ Firework Button Styles */
+.firework-btn {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+/* ✅ Button Burst Animation - นุ่มนวลขึ้น */
+.btn-burst {
+  animation: btnBurst 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+@keyframes btnBurst {
+  0% { transform: scale(1) rotate(0deg); }
+  30% { transform: scale(1.15) rotate(-8deg); }
+  50% { transform: scale(0.98) rotate(8deg); }
+  70% { transform: scale(1.05) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* ✅ Firework Fade Transition */
+.firework-fade-enter-active,
+.firework-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.firework-fade-enter-from,
+.firework-fade-leave-to {
+  opacity: 0;
+}
+
+/* ✅ Firework Container - วางนอกปุ่ม */
+.firework-outer {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+  z-index: 999999 !important;
+  transform: translate(-50%, -50%);
+}
+
+/* ✅ Firework Particles ที่สร้างด้วย JavaScript */
+.firework-particle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  z-index: 999999;
+  margin-left: -5px;
+  margin-top: -5px;
+}
+
+.firework-particle-1 { 
+  background: radial-gradient(circle, #ffd700, #ff8c00);
+  box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700, 0 0 60px #ff8c00;
+  animation: explode1 0.9s ease-out forwards;
+}
+
+.firework-particle-2 { 
+  background: radial-gradient(circle, #ff6b6b, #ee5a6f);
+  box-shadow: 0 0 20px #ff6b6b, 0 0 40px #ff6b6b, 0 0 60px #ee5a6f;
+  animation: explode2 0.9s ease-out forwards;
+}
+
+.firework-particle-3 { 
+  background: radial-gradient(circle, #4ecdc4, #00d2d3);
+  box-shadow: 0 0 20px #4ecdc4, 0 0 40px #4ecdc4, 0 0 60px #00d2d3;
+  animation: explode3 0.9s ease-out forwards;
+}
+
+.firework-particle-4 { 
+  background: radial-gradient(circle, #a855f7, #c56cf0);
+  box-shadow: 0 0 20px #a855f7, 0 0 40px #a855f7, 0 0 60px #c56cf0;
+  animation: explode4 0.9s ease-out forwards;
+}
+
+.firework-particle-5 { 
+  background: radial-gradient(circle, #ff9f43, #ffa502);
+  box-shadow: 0 0 20px #ff9f43, 0 0 40px #ff9f43, 0 0 60px #ffa502;
+  animation: explode5 0.9s ease-out forwards;
+}
+
+.firework-particle-6 { 
+  background: radial-gradient(circle, #ee5a6f, #ff6348);
+  box-shadow: 0 0 20px #ee5a6f, 0 0 40px #ee5a6f, 0 0 60px #ff6348;
+  animation: explode6 0.9s ease-out forwards;
+}
+
+.firework-particle-7 { 
+  background: radial-gradient(circle, #00d2d3, #1dd1a1);
+  box-shadow: 0 0 20px #00d2d3, 0 0 40px #00d2d3, 0 0 60px #1dd1a1;
+  animation: explode7 0.9s ease-out forwards;
+}
+
+.firework-particle-8 { 
+  background: radial-gradient(circle, #c56cf0, #d63031);
+  box-shadow: 0 0 20px #c56cf0, 0 0 40px #c56cf0, 0 0 60px #d63031;
+  animation: explode8 0.9s ease-out forwards;
+}
+
+/* ✅ Explosion Animations - 8 ทิศทาง */
+@keyframes explode1 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(50px, 0) scale(0.3); opacity: 0; }
+}
+
+@keyframes explode2 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(35px, -35px) scale(0.3); opacity: 0; }
+}
+
+@keyframes explode3 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(0, -50px) scale(0.3); opacity: 0; }
+}
+
+@keyframes explode4 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-35px, -35px) scale(0.3); opacity: 0; }
+}
+
+@keyframes explode5 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-50px, 0) scale(0.3); opacity: 0; }
+}
+
+@keyframes explode6 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-35px, 35px) scale(0.3); opacity: 0; }
+}
+
+@keyframes explode7 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(0, 50px) scale(0.3); opacity: 0; }
+}
+
+@keyframes explode8 {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(35px, 35px) scale(0.3); opacity: 0; }
 }
 </style>
