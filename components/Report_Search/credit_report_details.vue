@@ -150,6 +150,12 @@
               {{ formatRecInsertDate(item[field]) }}
             </div>
           </template>
+          <template v-else-if="field === 'lon_purpose_display'">
+            <div class="loan-purpose-cell">
+              <!-- <v-icon size="16" class="mr-1" color="#2931a5">mdi-cash-multiple</v-icon> -->
+              {{ item.lon_purpose_display }}
+            </div>
+          </template>
           <template v-else>{{ item[field] }}</template>
         </span>
       </template>
@@ -181,6 +187,7 @@ const apiDetailURL = `${config.public.strapi.url}api/request-charge-detail/`;
 const apiChargeMatrixURL = `${config.public.strapi.url}api/charge-matrix/`;
 const apiUserURL = `${config.public.strapi.url}api/user/`;
 const apiMemberURL = `${config.public.strapi.url}api/memberinfo/`;
+const apiCatalogURL = `${config.public.strapi.url}api/catalog-cats/`;
 
 const { userData, UID } = useUserUID();
 const currentBnkCode = computed(() => userData.value.MID?.id || '');
@@ -212,7 +219,7 @@ const visibleFields = [
   "chg_code",
   "cusType",
   "rec_reference_code",
-  "lon_purpose",
+  "lon_purpose_display",
   "user_sys_id",
   "rec_insert_date"
 ];
@@ -223,6 +230,15 @@ const getCusTypeLao = (cusType) => {
     'A2': 'ນິຕິບຸກຄົນ'
   };
   return cusTypeMap[cusType] || cusType;
+};
+
+const getLoanPurposeDisplay = (loanPurposeCode, catalogMap) => {
+  if (!loanPurposeCode) return '-';
+  const catalog = catalogMap[loanPurposeCode];
+  if (catalog) {
+    return `${catalog.cat_lao_name} - ${catalog.cat_value}`;
+  }
+  return loanPurposeCode;
 };
 
 const getCustomerName = (item) => {
@@ -250,7 +266,7 @@ const getCustomerName = (item) => {
   return '-';
 };
 
-// ✅ Export to Excel with Phetsarath OT Font (FIXED VERSION)
+// ✅ Export to Excel with Phetsarath OT Font
 const exportToExcel = async () => {
   exporting.value = true;
   try {
@@ -284,7 +300,7 @@ const exportToExcel = async () => {
       'ປະເພດຄ່າທຳນຽມ': item.chg_lao_type || item.chg_code,
       'ປະເພດລູກຄ້າ': item.cusType_lao,
       'ເລກທີ່ອ້າງອີງ': item.rec_reference_code,
-      'ຈຸດປະສົງສິນເຊື່ອ': item.lon_purpose,
+      'ຈຸດປະສົງສິນເຊື່ອ': item.lon_purpose_display,
       'ຜູ້ບັນທຶກ': item.username || item.user_sys_id,
       'ວັນທີ່ບັນທຶກ': formatRecInsertDate(item.rec_insert_date)
     }));
@@ -309,7 +325,7 @@ const exportToExcel = async () => {
       { wch: 16 }, // ປະເພດຄ່າທຳນຽມ
       { wch: 11 }, // ປະເພດລູກຄ້າ
       { wch: 18 }, // ເລກທີ່ອ້າງອີງ
-      { wch: 16 }, // ຈຸດປະສົງສິນເຊື່ອ
+      { wch: 20 }, // ຈຸດປະສົງສິນເຊື່ອ
       { wch: 14 }, // ຜູ້ບັນທຶກ
       { wch: 20 }  // ວັນທີ່ບັນທຶກ
     ];
@@ -685,15 +701,15 @@ const printReport = () => {
         <thead>
           <tr>
             <th style="width: 3%;">NO</th>
-            <th style="width: 9%;">ລະຫັດທະນາຄານ</th>
+            <th style="width: 5%;">ລະຫັດທະນາຄານ</th>
             <th style="width: 11%;">ລະຫັດລູກຄ້າ</th>
-            <th style="width: 20%;">ຊື່ລູກຄ້າ</th>
+            <th style="width: 18%;">ຊື່ລູກຄ້າ</th>
             <th style="width: 11%;">ປະເພດຄ່າທຳນຽມ</th>
             <th style="width: 9%;">ປະເພດລູກຄ້າ</th>
             <th style="width: 11%;">ເລກທີ່ອ້າງອີງ</th>
-            <th style="width: 10%;">ຈຸດປະສົງສິນເຊື່ອ</th>
+            <th style="width: 12%;">ຈຸດປະສົງສິນເຊື່ອ</th>
             <th style="width: 8%;">ຜູ້ບັນທຶກ</th>
-            <th style="width: 13%;">ວັນທີ່ບັນທຶກ</th>
+            <th style="width: 18%;">ວັນທີ່ບັນທຶກ</th>
           </tr>
         </thead>
         <tbody>
@@ -706,7 +722,7 @@ const printReport = () => {
               <td>${item.chg_lao_type || item.chg_code}</td>
               <td>${item.cusType_lao}</td>
               <td>${item.rec_reference_code}</td>
-              <td>${item.lon_purpose}</td>
+              <td>${item.lon_purpose_display}</td>
               <td>${item.username || item.user_sys_id}</td>
               <td>${formatRecInsertDate(item.rec_insert_date)}</td>
             </tr>
@@ -781,6 +797,7 @@ const getFieldStyle = (field, value) => {
   else if (field === 'cusType') style = { color: '#388E3C', fontWeight: '600' };
   else if (field === 'customer_name') style = { color: '#000', fontWeight: '500' };
   else if (field === 'rec_insert_date') style = { color: '#F57C00', fontWeight: '500' };
+  else if (field === 'lon_purpose_display') style = { color: '#000', fontWeight: '500' };
   return style;
 };
 
@@ -803,6 +820,21 @@ const fetchDetailData = async () => {
 
     const { data } = await axios.get(apiDetailURL, { params });
     let results = data.results || [];
+
+    // Fetch Catalog Data for Loan Purpose (ct_type = "LPR")
+    const { data: catalogData } = await axios.get(apiCatalogURL);
+    const catalogList = catalogData.results || catalogData.data || catalogData || [];
+    const loanPurposeCatalog = catalogList.filter(item => item.ct_type === 'LPR');
+    
+    const catalogMap = {};
+    loanPurposeCatalog.forEach(item => {
+      if (item.cat_value) {
+        catalogMap[item.cat_value] = {
+          cat_lao_name: item.cat_lao_name || item.cat_name || '',
+          cat_value: item.cat_value
+        };
+      }
+    });
 
     const { data: memberData } = await axios.get(apiMemberURL);
     const banks = memberData.data || memberData.results || memberData || [];
@@ -837,7 +869,8 @@ const fetchDetailData = async () => {
         bank_display: bank.code ? `${bank.code}-${bank.bnk_code}` : r.bnk_code,
         bank_full_display: bank.nameL ? `${bank.nameL} - (${bank.code}-${bank.bnk_code})` : r.bnk_code,
         customer_name: getCustomerName(r),
-        cusType_lao: getCusTypeLao(r.cusType)
+        cusType_lao: getCusTypeLao(r.cusType),
+        lon_purpose_display: getLoanPurposeDisplay(r.lon_purpose, catalogMap)
       };
     });
 
@@ -849,7 +882,7 @@ const fetchDetailData = async () => {
       { title: 'ປະເພດຄ່າທຳນຽມ', key: 'chg_code', align: 'center', cellAlign: 'start' },
       { title: 'ປະເພດລູກຄ້າ', key: 'cusType', align: 'center' },
       { title: 'ເລກທີ່ອ້າງອີງ', key: 'rec_reference_code', align: 'start' },
-      { title: 'ຈຸດປະສົງສິນເຊື່ອ', key: 'lon_purpose', align: 'center' },
+      { title: 'ຈຸດປະສົງສິນເຊື່ອ', key: 'lon_purpose_display', align: 'start' },
       { title: 'ຜູ້ບັນທຶກ', key: 'user_sys_id', align: 'start' },
       { title: 'ວັນທີ່ບັນທຶກ', key: 'rec_insert_date', align: 'center' }
     ];
@@ -969,6 +1002,14 @@ onMounted(() => {
 
 .customer-name-text {
   color: #000 !important;
+  font-weight: 500;
+}
+
+.loan-purpose-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
   font-weight: 500;
 }
 
