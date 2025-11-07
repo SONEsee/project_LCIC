@@ -46,7 +46,7 @@ const headers = computed(() => {
   const baseHeaders = [
     { title: "ໄອດີ", value: "CID" },
     { title: "ຊື່ໄຟລ໌", value: "fileName" },
-    { title: "ຂະໜາດຟາຍ", value: "file_size" },
+    { title: "ຂະໜາດຟາຍ", value: "fileSize" },
     { title: "ໄລຍະເວລາ", value: "period" },
     { title: "ຂໍ້ມູນ dispute", value: "dispuste" },
     { title: "ສະຖານະ", value: "statussubmit" },
@@ -357,7 +357,7 @@ const statistics = computed(() => {
     },
   ];
 });
-const confirmInsertData = async (fid: string) => {
+const confirmInsertData = async (cid: string) => {
   const notification = await Swal.fire({
     icon: "warning",
     title: "ຄຳເຕືອນ",
@@ -368,7 +368,8 @@ const confirmInsertData = async (fid: string) => {
   });
 
   if (notification.isConfirmed) {
-    await inDividualStore.confirmUploadLoan(fid);
+    
+    await inDividualStore.confirmUploadLoan(cid);
     await inDividualStore.getListIndividualcollateral();
   }
 };
@@ -686,7 +687,7 @@ onMounted(async () => {
         <template v-slot:header.fileName="{ column }">
           <b style="color: blue">{{ column.title }}</b>
         </template>
-        <template v-slot:header.file_size="{ column }">
+        <template v-slot:header.fileSize="{ column }">
           <b style="color: blue">{{ column.title }}</b>
         </template>
         <template v-slot:header.period="{ column }">
@@ -768,8 +769,8 @@ onMounted(async () => {
             ><strong>ສຳເລັດການໂຫຼດ</strong></v-chip
           >
         </template>
-        <template v-slot:item.file_size="{ item }">
-          {{ item.file_size }}
+        <template v-slot:item.fileSize="{ item }">
+          {{ item.fileSize }}
         </template>
         <template v-slot:item.fileName="{ item }" style="font-size: small">
           {{ item.fileName.slice(0, 20)
@@ -805,7 +806,7 @@ onMounted(async () => {
           <v-btn
             color="success"
             flat
-            @click="confirmInsertData(`n-${item.CID}`)"
+            @click="confirmInsertData(`c-${item.CID}`)"
             v-if="item.statussubmit === '1'"
             :disabled="isConfirmButtonDisabled(item)"
           >
@@ -815,7 +816,7 @@ onMounted(async () => {
             class="ml-2"
             color="red-lighten-4"
             flat
-            @click="RejectInsertData(`n-${item.CID}`)"
+            @click="RejectInsertData(`c-${item.CID}`)"
             v-if="item.statussubmit === '1'"
             :disabled="isConfirmButtonDisabled(item)"
           >
@@ -853,7 +854,7 @@ onMounted(async () => {
             color="primary"
             prepend-icon="mdi-eye"
             flat
-            @click="goPath(`/detailupload?code=n-${item.CID}`)"
+            @click="goPath(`/detailupload_c?CID=c-${item.CID}`)"
             >ລາຍລະອຽດ</v-btn
           >
         </template>
