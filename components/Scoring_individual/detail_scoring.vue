@@ -67,7 +67,7 @@ const confirmInsert = async () => {
     });
     if (noticonfirm.isConfirmed) {
       await individualStore.CreatInsertLog();
-      goPath(`/Scoring/reports/scoring_report`);
+      goPath(`/scoring/reports/scoring_report`);
     }
   } catch (error) {}
 };

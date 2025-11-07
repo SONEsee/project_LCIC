@@ -179,7 +179,7 @@ const performSearch = async () => {
     return;
   }
   goPath(
-    `/Scoring/detail_scoring/?customer_id=${saerchCustomerID.value}&&lcic_id=${searchLcicID.value}&&typesearch=${individualStore.from_insert_logserch.CatalogID}`
+    `/scoring/detail_scoring/?customer_id=${saerchCustomerID.value}&&lcic_id=${searchLcicID.value}&&typesearch=${individualStore.from_insert_logserch.CatalogID}`
   );
   await performAPISearch();
 };
