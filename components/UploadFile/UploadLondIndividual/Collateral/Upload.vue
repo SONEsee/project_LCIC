@@ -827,7 +827,7 @@ onMounted(async () => {
             color="warning"
             v-if="shouldShowUploadButton(item)"
             flat
-            @click="UnloadData(`n-${item.CID}`)"
+            @click="UnloadData(`c-${item.CID}`)"
           >
             ອັນໂຫຼດ
           </v-btn>
