@@ -512,9 +512,9 @@ const electronicId = ref('')
 const waterId = ref('')
 const telecomId = ref('')
 
-// Province selections - No default for electric/water when using quick search
+// Province selections
 const electricProvince = ref(null)
-const waterProvince = ref(null)
+const waterProvince = ref(null)  // Optional for water
 const telecomProvince = ref('1')
 
 // Quick search states
@@ -567,41 +567,42 @@ onMounted(() => {
   sessionStorage.removeItem('reportAccessed')
 })
 
-// Watch for customer selection - when quick search is used, store province from customer data
+// Watch for electric customer selection
 watch(selectedElectricCustomer, (newVal, oldVal) => {
   if (newVal && newVal !== oldVal) {
     // User selected from quick search
     electronicId.value = newVal
     
-    // Store customer info and get province_id from the selected customer
+    // Get province_id from the selected customer
     const customer = electricSearchResults.value.find(c => c.Customer_ID === newVal)
     if (customer) {
       customerInfo.value.electric = customer
-      // Store the province_id from the customer data for API call
-      electricProvince.value = customer.province_id
+      // CRITICAL: Extract province_id from customer data
+      electricProvince.value = customer.province_id || customer.Province_ID
     }
   } else if (!newVal && oldVal) {
-    // User cleared quick search, allow manual entry
+    // User cleared quick search
     electronicId.value = ''
     electricProvince.value = null
     customerInfo.value.electric = null
   }
 })
 
+// Watch for water customer selection
 watch(selectedWaterCustomer, (newVal, oldVal) => {
   if (newVal && newVal !== oldVal) {
     // User selected from quick search
     waterId.value = newVal
     
-    // Store customer info and get province_id from the selected customer
+    // Get province_id from the selected customer (optional for water)
     const customer = waterSearchResults.value.find(c => c.Customer_ID === newVal)
     if (customer) {
       customerInfo.value.water = customer
-      // Store the province_id from the customer data for API call
-      waterProvince.value = customer.province_id
+      // Store province if available, but it's optional for water
+      waterProvince.value = customer.province_id || customer.Province_ID || null
     }
   } else if (!newVal && oldVal) {
-    // User cleared quick search, allow manual entry
+    // User cleared quick search
     waterId.value = ''
     waterProvince.value = null
     customerInfo.value.water = null
@@ -663,13 +664,12 @@ const debouncedWaterSearch = (query: string) => {
   }, 500)
 }
 
-// Search customer functions - Quick search doesn't send province (searches all)
+// Search customer functions
 const searchElectricCustomers = async (query: string) => {
   try {
     const config = useRuntimeConfig()
     const token = localStorage.getItem('access_token')
     
-    // Quick search - search across all provinces (no province_id parameter)
     const params = {
       query: query,
       limit: 100
@@ -702,7 +702,6 @@ const searchWaterCustomers = async (query: string) => {
     const config = useRuntimeConfig()
     const token = localStorage.getItem('access_token')
     
-    // Quick search - search across all provinces (no province_id parameter)
     const params = {
       query: query,
       limit: 100
@@ -751,7 +750,7 @@ const checkAuth = () => {
   return true
 }
 
-// Enhanced validation rules
+// Validation rules
 const rules = {
   required: (value: string) => !!value || 'ກະລຸນາປ້ອນຂໍ້ມູນ',
   numbersOnly: (value: string) => {
@@ -761,13 +760,11 @@ const rules = {
   meterLength: (value: string) => {
     if (!value) return true
     if (!/^\d+$/.test(value)) return 'ກະລຸນາປ້ອນຕົວເລກເທົ່ານັ້ນ'
-    // if (value.length !== 10) return 'ລະຫັດຕ້ອງມີ 10 ຫຼັກເທົ່ານັ້ນ'
     return true
   },
   phoneNumber: (value: string) => {
     if (!value) return 'ກະລຸນາປ້ອນເບີໂທລະສັບ'
     if (!/^\d+$/.test(value)) return 'ກະລຸນາປ້ອນຕົວເລກເທົ່ານັ້ນ'
-    // if (value.length < 8 || value.length > 11) return 'ເບີໂທລະສັບຕ້ອງມີ 8-11 ຫຼັກ'
     return true
   }
 }
@@ -775,36 +772,55 @@ const rules = {
 // Computed properties
 const hasSelectedService = computed(() => electronic.value || water.value || telecom.value)
 
+// FIXED: Completely rewritten validation logic
 const canSearch = computed(() => {
   if (!hasSelectedService.value) return false
   
-  // Check electric service
+  // ELECTRIC SERVICE VALIDATION
   if (electronic.value) {
-    // Need valid customer ID and province (province is set either by manual selection or from quick search)
-    if (!electronicId.value || !electricProvince.value) 
-    console.log('DEBUG: Missing values:', {
-        electronicId: electronicId.value,
-        electricProvince: electricProvince.value,
-        selectedCustomer: selectedElectricCustomer.value
-      });
-    return false
-    if (!selectedElectricCustomer.value !== true) return false
+    // Must have customer ID
+    if (!electronicId.value) return false
+    
+    // If using quick search (selectedElectricCustomer is set)
+    if (selectedElectricCustomer.value) {
+      // Province should be auto-set from customer data
+      // Just check if we have the ID - province validation happens in watch
+      return true
+    }
+    
+    // If using manual entry (no quick search)
+    if (!selectedElectricCustomer.value) {
+      // Must have both province and valid customer ID
+      if (!electricProvince.value) return false
+      if (rules.meterLength(electronicId.value) !== true) return false
+    }
   }
   
-  // Check water service
+  // WATER SERVICE VALIDATION - Province is OPTIONAL
   if (water.value) {
-    // Need valid customer ID and province (province is set either by manual selection or from quick search)
-    if (!waterId.value || !waterProvince.value) return false
-    if (!selectedWaterCustomer.value && rules.meterLength(waterId.value) !== true) return false
+    // Must have customer ID (province is optional)
+    if (!waterId.value) return false
+    
+    // If using quick search
+    if (selectedWaterCustomer.value) {
+      // Just need the customer ID
+      return true
+    }
+    
+    // If using manual entry - validate meter length
+    if (!selectedWaterCustomer.value) {
+      if (rules.meterLength(waterId.value) !== true) return false
+    }
+    // Note: Province is optional for water, so we don't check it
   }
   
-  // Check telecom service
+  // TELECOM SERVICE VALIDATION
   if (telecom.value) {
     if (!telecomProvince.value || !telecomId.value) return false
     if (rules.phoneNumber(telecomId.value) !== true) return false
   }
   
-  return isFormValid.value
+  return true
 })
 
 // Methods
@@ -823,16 +839,20 @@ const toggleService = (service: string) => {
   }
 }
 
-// Fetch report functions - NOW INCLUDE province_id parameter
-const fetchWaterReport = async (customerId: string, provinceId: string) => {
+// Fetch report functions
+const fetchWaterReport = async (customerId: string, provinceId: string | null) => {
   try {
     const config = useRuntimeConfig()
     const token = localStorage.getItem('access_token')
     
-    // IMPORTANT: Include province_id when fetching report
-    const params = {
-      water: customerId,
-      province_id: provinceId
+    // Water: province_id is optional
+    const params: any = {
+      water: customerId
+    }
+    
+    // Only add province_id if it exists
+    if (provinceId) {
+      params.province_id = provinceId
     }
     
     const response = await axios.get(
@@ -876,7 +896,7 @@ const fetchElectricReport = async (customerId: string, provinceId: string) => {
     const config = useRuntimeConfig()
     const token = localStorage.getItem('access_token')
     
-    // IMPORTANT: Include province_id when fetching report
+    // Electric: province_id is required
     const params = {
       edl: customerId,
       province_id: provinceId
@@ -1009,7 +1029,9 @@ const showConfirmationDialog = async (searchResults: any) => {
   
   if (searchResults.water) {
     const customer = customerInfo.value.water || {}
-    const provinceName = provinces.value.find(p => p.id === waterProvince.value)?.name || customer.province_name || 'ບໍ່ລະບຸ'
+    const provinceName = waterProvince.value 
+      ? (provinces.value.find(p => p.id === waterProvince.value)?.name || customer.province_name || 'ບໍ່ລະບຸ')
+      : 'ບໍ່ລະບຸ'
     
     customerInfoHtml += `
       <div style="padding: 12px; margin-bottom: 10px; background: #f0fdfa; border-left: 4px solid #14b8a6; border-radius: 6px;">
@@ -1148,11 +1170,12 @@ const handleSearch = async () => {
       errors: []
     }
     
-    // IMPORTANT: Pass province_id to fetch functions
-    if (water.value && waterId.value && waterProvince.value) {
+    // Water: province_id is optional
+    if (water.value && waterId.value) {
       searchPromises.push(fetchWaterReport(waterId.value, waterProvince.value))
     }
     
+    // Electric: province_id is required
     if (electronic.value && electronicId.value && electricProvince.value) {
       searchPromises.push(fetchElectricReport(electronicId.value, electricProvince.value))
     }
@@ -1268,7 +1291,6 @@ watch([electronic, water, telecom], clearInputs)
 </script>
 
 <style scoped>
-/* Same styles as before - keeping it minimal and clean */
 .search-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #dbeafe 100%);
