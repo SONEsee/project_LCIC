@@ -425,15 +425,15 @@ export const IndividualCollateralStore = defineStore("individualcollateral", {
         this.isLoading = false;
       }
     },
-    async UnloadLoan(fid: string) {
+    async UnloadLoan(cid: string) {
       this.isLoading = true;
       try {
         const formData = new FormData();
-        formData.append("FID", fid);
+        formData.append("CID", cid);
 
-        console.log("Sending FID:", fid);
+        console.log("Sending FID:", cid);
 
-        const res = await axios.post(`/api/api/rollback_reconfirm/`, formData, {
+        const res = await axios.post(`/api/api/rollback_reconfirm_collateral/`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
