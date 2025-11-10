@@ -1217,72 +1217,51 @@ class="rounded-lg ml-2 mb-1 mr-2"
                   ></hr>
 
                   
-                  <v-table density="compact" style="width: 50%;" class="table-white">
+                  <v-table density="compact" style="width: 100%;" class="table-white">
                     <thead>
                         <tr>
                       <th>ຄຳຫຍໍ້</th>
                       <th>ຄຳອະທິບາຍ</th>
-                      <!-- <th>ຄຳຫຍໍ້</th>
-                      <th>ຄຳອະທິບາຍ</th> -->
+                      <th>ຄຳຫຍໍ້</th>
+                      <th>ຄຳອະທິບາຍ</th>
                     </tr>
                     </thead>
                     <tbody>
                       <tr>
                         <td>{{ getMemberCode(search_history[0]?.bnk_code) }}</td>
                         <td>{{ mapMemberInfo(search_history[0]?.bnk_code) }}</td>
+                        <td>A</td>
+                        <td>ເກດດີຫຼາຍ</td>
                       </tr>
                       <tr>
                         <td>SL</td>
                         <td>ໄລຍະສັ້ນ</td>
+                        <td>B</td>
+                        <td>ເກດດີ</td>
                       </tr>
                       <tr>
                         <td>ML</td>
                         <td>ໄລຍະກາງ</td>
+                        <td>C</td>
+                        <td>ປານກາງ</td>
                       </tr>
                       <tr>
                         <td>LL</td>
                         <td>ໄລຍະຍາວ</td>
+                        <td>D</td>
+                        <td>ອອນ</td>
                       </tr>
                       <tr>
                         <td>E</td>
                         <td>ອ່ອນຫຼາຍ</td>
+                        <td>write off</td>
+                        <td>ໜີ້ເສຍ</td>
                       </tr>
                      
                     </tbody>
                   
                   </v-table>
-                  <!-- <v-table density="compact" style="width: 50%;" class="table-white">
-                    <thead>
-                        <tr>
-                      <th>ຄຳຫຍໍ້</th>
-                      <th>ຄຳອະທິບາຍ</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                      
-                      <tr>
-                        <td>A</td>
-                        <td>ເກດດີຫຼາຍ</td>
-                      </tr>
-                      <tr>
-                        <td>B</td>
-                        <td>ເກດດີ</td>
-                      </tr>
-                      <tr>
-                        <td>C</td>
-                        <td>ປານກາງ</td>
-                      </tr>
-                      <tr>
-                        <td>D</td>
-                        <td>ອອນ</td>
-                      </tr>
-                      <tr>
-                        <td>write off</td>
-                        <td>ໜີ້ເສຍ</td>
-                      </tr>
-                    </tbody>
-                  
-                  </v-table> -->
+
         </div>
 
           <div style="border: #1565c0 1px solid; padding: 10px" class="bg-blue-darken-4 rounded-lg">
