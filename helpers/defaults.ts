@@ -1,18 +1,19 @@
-import { DefaultsInstance } from "vuetify/lib/framework.mjs"
+
+import type { DefaultsInstance } from 'vuetify'
 
 export const defaults: DefaultsInstance = {
     VAppBar: {
         elevation: 0,
     },
     VBtn: {
-        variaint: "flat", // flat, outlined, contained, text
-        height: "38",
-        rounded: "lg", // sm, lg, xl
-        size: "small", // small, medium, large
+        variant: "flat", 
+        height: 38, 
+        rounded: "lg",
+        size: "small",
     },
     VTextField: {
         color: "primary",
-        variant: "outlined", // outlined, filled, flat
-        density: "comfortable", // compact, default, comfortable
+        variant: "outlined",
+        density: "comfortable",
     },
 }
