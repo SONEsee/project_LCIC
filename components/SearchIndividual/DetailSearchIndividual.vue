@@ -47,7 +47,7 @@ const confirmInsert = async () => {
     });
     if (noticonfirm.isConfirmed) {
       await individualStore.CreatInsertLog();
-      goPath(`/backend/reports/individuals`);
+      goPath(`/backend/reports/individuals/?lcicID=${lcicID}&&type=${TypeID}`);
     }
   } catch (error) {}
 };
