@@ -19,7 +19,7 @@ import { useMemberInfo } from "@/composables/memberInfo";
 import { IndividualCollateralStore } from '~/stores/collateral_individual';
 const IndividualStore = IndividualCollateralStore()
 const investorStore = useInvestorInfoStore();
-const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
+const { mapMemberInfo, getMemberName, getMemberDetails,getMemberCode } = useMemberInfo();
 const route = useRoute();
 const Lcic_id = route.query.lcicID as string;
 const type_id =route.query.type as string;
@@ -880,9 +880,9 @@ class="rounded-lg ml-2 mb-1 mr-2"
                         <p><b>ຍອດເງິນເຫຼືອຕົ້ນທຶນ:</b> {{ Number(item.lon_outstanding_balance).toLocaleString() }} {{  item.lon_currency_code }}</p>
                         <p> <b>ຍອດເຫຼືອດອກເບ້ຍ: </b>----</p>
                         <p> <b>ອັດຕາດອກເບ້ຍ:</b> {{ item.lon_int_rate }} %</p>
-                       <p> <b>ມື້ເປິດສັນຍາ </b>{{ item.lon_open_date.slice(0, -10) }}</p> 
-                       <p> <b>ມື້ໝົດສັນຍາ: </b>{{ item.lon_exp_date }}</p>
-                       <p> <b>ມື້ໝົດຂອງມື້ຕໍ່ສັນຍາ:</b> {{ dayjs(item.lon_ext_date).format("DD-MM-YYYY") }}</p>
+                       <p> <b>ມື້ເປິດສັນຍາ </b>{{item.lon_open_date ? dayjs(item.lon_open_date).format('DD-MM-YYYY') : 'ບໍ່ມີ' }}</p> 
+                       <p> <b>ມື້ໝົດສັນຍາ: </b>{{item.lon_exp_date ? dayjs(item.lon_exp_date).format('DD-MM-YYYY') : 'ບໍ່ມີ'}}</p>
+                       <p><b>ມື້ໝົດຂອງມື້ຕໍ່ສັນຍາ:</b> {{ item.lon_ext_date ? dayjs(item.lon_ext_date).format('DD-MM-YYYY') : 'ບໍ່ມີ' }}</p>
                         <p> <b>ໄລຍະການກູ້ຢືມ:</b> {{ item.lon_term }}</p>
                         <p><b>ຈຸດປະສົງການກູ້ຢືມ:</b> {{ item.lon_purpose_code }}</p>
                         <p><b>ເຫດຜົນຫການສິ້ນສຸດໜີ້:</b> -- </p>
@@ -1198,39 +1198,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
                       </v-col>
                     </v-row>
                   </v-col>
-                  <!-- <v-data-table
-                    v-if="
-                      item.lon_class_history &&
-                      item.lon_class_history.length > 0
-                    "
-                    :headers="subHeaders"
-                    :items="item.lon_class_history"
-                    class="elevation-0 custom-header-color"
-                    hide-default-footer
-                    dense
-                  >
-                    <template v-slot:header.period>
-                      <th class="white--text">Period</th>
-                    </template>
-                    <template v-slot:header.lon_credit_line>
-                      <th class="white--text">Credit Line</th>
-                    </template>
-                    <template v-slot:header.lon_outstanding_balance>
-                      <th class="white--text">Outstanding Balance</th>
-                    </template>
-                    <template v-slot:header.lon_no_days_slow>
-                      <th class="white--text">Outstanding Balance</th>
-                    </template>
-                    <template v-slot:header.lon_currency_code>
-                      <th class="white--text">Outstanding Balance</th>
-                    </template>
-                    <template v-slot:header.lon_class>
-                      <th class="white--text">Outstanding Balance</th>
-                    </template>
-                    <template v-slot:header.lon_status>
-                      <th class="white--text">Outstanding Balance</th>
-                    </template>
-                  </v-data-table> -->
+                 
                 </div>
               </div></v-col
             >
@@ -1238,7 +1206,85 @@ class="rounded-lg ml-2 mb-1 mr-2"
         </v-col>
       </v-row>
       <v-row>
+        
         <v-col cols="12" class="text-">
+<div class=" rounded-lg mb-5 d-flex flex-wrap" style="border: #1565c0 1px solid; padding: 10px" >
+<p style="width: 100%;"><b>ຄຳອະທິບາຍ (ພົດຈະນານຸກົມ)</b></p>
+ <hr style="width: 100%;"
+                    color="indigo"
+                    model-value="100"
+                    rounded
+                  ></hr>
+
+                  
+                  <v-table density="compact" style="width: 50%;" class="table-white">
+                    <thead>
+                        <tr>
+                      <th>ຄຳຫຍໍ້</th>
+                      <th>ຄຳອະທິບາຍ</th>
+                      <!-- <th>ຄຳຫຍໍ້</th>
+                      <th>ຄຳອະທິບາຍ</th> -->
+                    </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>{{ getMemberCode(search_history[0]?.bnk_code) }}</td>
+                        <td>{{ mapMemberInfo(search_history[0]?.bnk_code) }}</td>
+                      </tr>
+                      <tr>
+                        <td>SL</td>
+                        <td>ໄລຍະສັ້ນ</td>
+                      </tr>
+                      <tr>
+                        <td>ML</td>
+                        <td>ໄລຍະກາງ</td>
+                      </tr>
+                      <tr>
+                        <td>LL</td>
+                        <td>ໄລຍະຍາວ</td>
+                      </tr>
+                      <tr>
+                        <td>E</td>
+                        <td>ອ່ອນຫຼາຍ</td>
+                      </tr>
+                     
+                    </tbody>
+                  
+                  </v-table>
+                  <!-- <v-table density="compact" style="width: 50%;" class="table-white">
+                    <thead>
+                        <tr>
+                      <th>ຄຳຫຍໍ້</th>
+                      <th>ຄຳອະທິບາຍ</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                      
+                      <tr>
+                        <td>A</td>
+                        <td>ເກດດີຫຼາຍ</td>
+                      </tr>
+                      <tr>
+                        <td>B</td>
+                        <td>ເກດດີ</td>
+                      </tr>
+                      <tr>
+                        <td>C</td>
+                        <td>ປານກາງ</td>
+                      </tr>
+                      <tr>
+                        <td>D</td>
+                        <td>ອອນ</td>
+                      </tr>
+                      <tr>
+                        <td>write off</td>
+                        <td>ໜີ້ເສຍ</td>
+                      </tr>
+                    </tbody>
+                  
+                  </v-table> -->
+        </div>
+
           <div style="border: #1565c0 1px solid; padding: 10px" class="bg-blue-darken-4 rounded-lg">
 <v-col cols="12">
   <v-row>
@@ -1259,7 +1305,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
     </div></v-container>
 </template>
 <style scoped>
-/* A4 Page Setup - ການຕັ້ງຄ່າໜ້າກະດາດ A4 */
+
 @page {
   size: A4 portrait;
   margin: 15mm 8mm 20mm 8mm; 
@@ -1290,7 +1336,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
   }
 }
 
-/* Print Styles - ສະໄຕລ໌ສຳລັບການພິມ */
+
 @media print {
   * {
     -webkit-print-color-adjust: exact !important;
@@ -1310,7 +1356,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
     overflow: visible !important;
   }
   
-  /* Container Setup - ການຕັ້ງຄ່າ Container */
+  
   .v-application {
     background: white !important;
     font-size: 9pt !important;
@@ -1376,6 +1422,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
     margin: 2mm 0 !important;
     page-break-inside: auto !important;
   }
+ 
   
   .v-table th,
   .v-table td,
