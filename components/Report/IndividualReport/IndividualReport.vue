@@ -691,7 +691,7 @@ const mapdatInfo1 = (memberinfo:string)=>{
               <h3 class="text-md mt-5">
                 <b>ບົດລາຍງານສິນເຊື່ອຄົບຖວ້ນ</b>
               </h3>
-              <h3><b>(ສໍາລັບນິຕິບຸກຄົນ)</b></h3>
+              <h3><b>(ສໍາລັບບຸກຄົນ)</b></h3>
             </div>
           </v-col>
         </v-row>
@@ -711,37 +711,20 @@ const mapdatInfo1 = (memberinfo:string)=>{
       class="rounded-lg">
      <v-row class="mt-2 mb-1 ml-1 mr-1">
       <v-col cols="12" v-if="enterpriseInfo" >
-        <div class="d-flex justify-space-between">
-          <p>hi</p>
-          <p>hi</p>
-          <p>hi</p>
-          <p>hi</p>
-        </div>
-        {{enterpriseInfo}}
-        <!-- {{ enterpriseInfo }} -->
-        <!-- <p><b>ຊື່ວິສາຫະກິດ(ພາສາລາວ):</b> {{ enterpriseInfo.enterpriseNameLao }}</p>
-        <p><b>ຊື່ວິສາຫະກິດ(ພາສາອັງກິດ):</b> {{ enterpriseInfo.eneterpriseNameEnglish }}</p>
-        <p><b>ທຶນຈົດທະບຽນ:</b> {{ Number(enterpriseInfo.investmentAmount).toLocaleString() }} 
-     <b v-if="enterpriseInfo.investmentCurrency">{{ enterpriseInfo.investmentCurrency ?? "" }}</b> -->
-  <!-- </p> -->
-         
-        <!-- <p><b>ຊື່ວິສາຫະກິດ:</b> {{ enterpriseInfo.regisStrationOfficeType }}</p> -->
-       
+        <div class="d-flex flex-wrap">
+  <p style="width: 25%;">ຊື່(ລາວ): <b>{{ enterpriseInfo[0]?.ind_lao_name ?? 'ບໍ່ໄດ້ລະບຸ'}}</b></p>
+  <p style="width: 25%;">ນາມສະກຸນ(ລາວ): <b>{{ enterpriseInfo[0]?.ind_lao_surname ?? 'ບໍ່ໄດ້ລະບຸ'}}</b></p>
+  <p style="width: 25%;">ຊື່(ອັງກິດ): <b>{{ enterpriseInfo[0]?.ind_name ?? 'ບໍ່ໄດ້ລະບຸ'}}</b></p>
+  <p style="width: 25%;">ນາມສະກຸນ(ອັງກິດ): <b>{{ enterpriseInfo[0]?.ind_surname ?? 'ບໍ່ໄດ້ລະບຸ'}}</b></p>
+  <p style="width: 25%;">ວັນເດືອນປິເກີດ: <b>{{ dayjs(enterpriseInfo[0]?.ind_birth_date).format('DD-MM-YYYY') ?? 'ບໍ່ໄດ້ລະບຸ' }}</b></p>
+  <p style="width: 25%;">ເລກບັດປະຈຳຕົວ: <b>{{ enterpriseInfo[0]?.ind_national_id ?? 'ບໍ່ໄດ້ລະບຸ' }}</b></p>
+  <p style="width: 25%;">ເລກບັດຜ່ານແດນ: <b>{{ enterpriseInfo[0]?.ind_passport ?? 'ບໍ່ໄດ້ລະບຸ' }}</b></p>
+  <p style="width: 25%;">ເລກປື້ມສຳມະໂນຄົວ: <b>{{ enterpriseInfo[0]?.ind_familybook ?? 'ບໍ່ໄດ້ລະບຸ' }}</b></p>
+</div>
+     
       </v-col>
       
-   <v-col cols="4" v-if="enterpriseInfo">
-    <!-- <p><b>ວັນທີອອກໃບທະບຽນ:</b> {{ dayjs(enterpriseInfo.regisDate).format("DD/MM/YYYY") }}</p>
-  
-  <p><b>ເລກທີ:</b> {{ enterpriseInfo.enLegalStrature ?? "ບໍ່ມີຂໍ້ມູນ" }}</p>
-  <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ (ລາວ):</b> {{ investorData[0]?.name ?? "ບໍ່ມີຂໍ້ມູນ" }}</p>
-  <p><b>ຊື່ເຈົ້າຂອງວິສາຫະກິດ (ອັງກິດ):</b> {{ investorData[0]?.nameEn ?? "ບໍ່ມີຂໍ້ມູນ" }}</p> -->
-</v-col>
-      <v-col cols="4" v-if="enterpriseInfo">
-        <!-- <p><b>ພາກສວນເສດຖະກິດ:</b> --</p>
-        <p><b>ທີ່ຕັ້ງວິສາຫະກິດ:</b> {{ addressComponents.full }}</p>
-       -->
-       
-      </v-col>
+   
      </v-row></div>
 </div>
 
