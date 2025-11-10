@@ -620,18 +620,6 @@ investorStore.getDataInvestor()
 });
 
 
-
-
-
-
-
-
-
- 
-
-
-
-
 const mapdatInfo1 = (memberinfo:string)=>{
   if(!memberinfo || !Array.isArray(dataMemberInfon.value)) return "-";
   const foundItem = dataMemberInfon.value.find((item)=> item.bnk_code === memberinfo);
@@ -723,6 +711,7 @@ const mapdatInfo1 = (memberinfo:string)=>{
       class="rounded-lg">
      <v-row class="mt-2 mb-1 ml-1 mr-1">
       <v-col cols="4" v-if="enterpriseInfo" >
+        {{enterpriseInfo}}
         <!-- {{ enterpriseInfo }} -->
         <!-- <p><b>ຊື່ວິສາຫະກິດ(ພາສາລາວ):</b> {{ enterpriseInfo.enterpriseNameLao }}</p>
         <p><b>ຊື່ວິສາຫະກິດ(ພາສາອັງກິດ):</b> {{ enterpriseInfo.eneterpriseNameEnglish }}</p>
