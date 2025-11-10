@@ -710,7 +710,13 @@ const mapdatInfo1 = (memberinfo:string)=>{
       }"
       class="rounded-lg">
      <v-row class="mt-2 mb-1 ml-1 mr-1">
-      <v-col cols="4" v-if="enterpriseInfo" >
+      <v-col cols="12" v-if="enterpriseInfo" >
+        <div class="d-flex justify-space-between">
+          <p>hi</p>
+          <p>hi</p>
+          <p>hi</p>
+          <p>hi</p>
+        </div>
         {{enterpriseInfo}}
         <!-- {{ enterpriseInfo }} -->
         <!-- <p><b>ຊື່ວິສາຫະກິດ(ພາສາລາວ):</b> {{ enterpriseInfo.enterpriseNameLao }}</p>
