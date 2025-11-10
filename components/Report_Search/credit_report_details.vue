@@ -670,7 +670,7 @@ const printReport = () => {
       <div class="header-section">
         <div class="header-left">
           <div class="logo-placeholder">
-            <img src="/_nuxt/assets/images/logo1.png" alt="Company Logo" />
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQguq0YjU42M_ijrBwnE9IpgFAFeMZQCDDJVi3yrfOCog&s" alt="Company Logo" />
           </div>
           <div class="company-info">
             <div class="company-name-lao">ບໍລິສັດຂໍ້ມູນຂ່າວສານສິນເຊື່ອແຫ່ງ ສປປ ລາວ</div>

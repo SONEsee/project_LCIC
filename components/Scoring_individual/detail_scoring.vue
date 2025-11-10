@@ -37,7 +37,6 @@ const dataFee = computed(() => {
     return [];
   }
 
-  // ✅ เพิ่มเงื่อนไขตามความยาวของ userId
   const targetChgCode = userId.value?.length === 2 ? "SCR" : "SCRFI";
   
   return processedData.filter((item) => item.chg_code === targetChgCode);
@@ -67,7 +66,8 @@ const confirmInsert = async () => {
     });
     if (noticonfirm.isConfirmed) {
       await individualStore.CreatInsertLog();
-      goPath(`/scoring/reports/scoring_report`);
+        sessionStorage.setItem("lcic_id", lcicID);
+        goPath("/scoring/reports/scoring_report");
     }
   } catch (error) {}
 };
