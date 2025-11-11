@@ -643,9 +643,9 @@ const mapdatInfo1 = (memberinfo:string)=>{
     <v-col cols="12">
       <section class="pa-5" id="main-content">
         <div>
-          <v-btn class="button" to="../backend/searchuser">
-            <v-icon icon="mdi-arrow-left" style="font-size: 150%"></v-icon>
-          </v-btn>
+          
+            <v-icon icon="mdi-arrow-left" style="font-size: 130%" @click="goPath(`/backend/individual/search`)"></v-icon>
+          
         </div>
         <div class="text-end mt-5 button">
           <v-btn @click="print" class="bg-indigo-accent-4">
@@ -1208,7 +1208,28 @@ class="rounded-lg ml-2 mb-1 mr-2"
       <v-row>
         
         <v-col cols="12" class="text-">
-<div class=" rounded-lg mb-5 d-flex flex-wrap" style="border: #1565c0 1px solid; padding: 10px" >
+
+
+          <div style="border: #1565c0 1px solid; padding: 10px" class="bg-blue-darken-4 rounded-lg">
+<v-col cols="12">
+  <v-row>
+    <v-col cols="6" >
+
+<p> <v-icon icon="mdi-map-marker" style="font-size: 120%; color: red;"></v-icon> 2nd Floor, Lao Security Exchange Building Phonthan  Village, </p><p class="ml-5">Xaysettha District, Vientiane Capital</p>
+
+    </v-col>
+    <v-col cols="6"><p> <v-icon icon="mdi-phone" style="font-size: 100%;color: #1565c0;" class="mr-2"></v-icon>  Telephone: (856)-21-25429</p>
+<p> <v-icon icon=" mdi-email-outline" style="font-size: 100%;" class="mr-2"></v-icon>  Email: info@lcic.com.la</p></v-col>
+    
+  </v-row>
+</v-col>
+          </div>
+      
+        </v-col>
+      </v-row>
+    </v-col>
+    </div>
+        <div class=" rounded-lg mt-5 d-flex flex-wrap" style="border: #1565c0 1px solid; padding: 10px" >
 <p style="width: 100%;"><b>ຄຳອະທິບາຍ (ພົດຈະນານຸກົມ)</b></p>
  <hr style="width: 100%;"
                     color="indigo"
@@ -1229,6 +1250,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
                     <tbody>
                       <tr>
                         <td>{{ getMemberCode(search_history[0]?.bnk_code) }}</td>
+                        <!-- <pre>{{ search_history }}</pre> -->
                         <td>{{ mapMemberInfo(search_history[0]?.bnk_code) }}</td>
                         <td>A</td>
                         <td>ເກດດີຫຼາຍ</td>
@@ -1263,25 +1285,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
                   </v-table>
 
         </div>
-
-          <div style="border: #1565c0 1px solid; padding: 10px" class="bg-blue-darken-4 rounded-lg">
-<v-col cols="12">
-  <v-row>
-    <v-col cols="6" >
-
-<p> <v-icon icon="mdi-map-marker" style="font-size: 120%; color: red;"></v-icon> 2nd Floor, Lao Security Exchange Building Phonthan  Village, </p><p class="ml-5">Xaysettha District, Vientiane Capital</p>
-
-    </v-col>
-    <v-col cols="6"><p> <v-icon icon="mdi-phone" style="font-size: 100%;color: #1565c0;" class="mr-2"></v-icon>  Telephone: (856)-21-25429</p>
-<p> <v-icon icon=" mdi-email-outline" style="font-size: 100%;" class="mr-2"></v-icon>  Email: info@lcic.com.la</p></v-col>
-    
-  </v-row>
-</v-col>
-          </div>
-        </v-col>
-      </v-row>
-    </v-col>
-    </div></v-container>
+    </v-container>
 </template>
 <style scoped>
 
@@ -1384,9 +1388,9 @@ class="rounded-lg ml-2 mb-1 mr-2"
     margin: 1mm 0 !important;
   }
   
-  /* Enterprise Info Section */
+ 
   .enterprise-info {
-    /* page-break-inside: avoid !important; */
+    
     margin-bottom: 4mm !important;
     border: 1px solid #1565c0 !important;
     padding: 3mm !important;

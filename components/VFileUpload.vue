@@ -1,4 +1,4 @@
-<!-- components/VFileUpload.vue -->
+
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
@@ -6,7 +6,7 @@ interface Props {
   modelValue?: File | File[] | null;
   multiple?: boolean;
   accept?: string;
-  maxSize?: number; // in bytes
+  maxSize?: number; 
   label?: string;
   placeholder?: string;
   variant?: 'outlined' | 'filled' | 'underlined' | 'plain' | 'solo';
@@ -67,7 +67,7 @@ const processFiles = (fileList: FileList | null | undefined) => {
 
   const newFiles = Array.from(fileList);
   
-  // Check file size
+  
   if (props.maxSize) {
     const oversized = newFiles.filter(f => f.size > props.maxSize!);
     if (oversized.length > 0) {
@@ -117,7 +117,7 @@ defineExpose({
 
 <template>
   <div class="v-file-upload">
-    <!-- Drop Zone -->
+    
     <div
       class="drop-zone"
       :class="{ 
@@ -145,7 +145,7 @@ defineExpose({
         <p class="text-caption">{{ placeholder || 'ຫຼື ກົດເພື່ອເລືອກໄຟລ໌' }}</p>
       </div>
 
-      <!-- File List -->
+      
       <div v-else class="file-list">
         <v-chip
           v-for="(file, index) in fileList"
@@ -164,7 +164,7 @@ defineExpose({
       </div>
     </div>
 
-    <!-- Clear Button -->
+    
     <v-btn
       v-if="clearable && fileList.length > 0"
       @click.stop="clearFiles"

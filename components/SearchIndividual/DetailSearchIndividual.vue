@@ -37,11 +37,11 @@ const dataIndividual = computed(() => {
 const confirmInsert = async () => {
   try {
     const noticonfirm = await Swal.fire({
-      icon: "warning",
-      title: "ຄຳເຕື່ອນ",
+      icon: "info",
+      title: "ຢືນຢັນ",
       text: "ທ່ານຕອ້ງການ ຄົ້ນຫາບົດລາຍງານນີ້ແທ້ຫຼືບໍ",
       showConfirmButton: true,
-      confirmButtonText: "ຕົກລົງ",
+      confirmButtonText: "ຢືນຢັນ",
       showCancelButton: true,
       cancelButtonText: "ຍົກເລີກ",
     });

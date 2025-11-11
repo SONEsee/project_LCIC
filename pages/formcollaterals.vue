@@ -86,7 +86,7 @@
                           
                           <div cols="12" style="width: 100%">
                             <v-autocomplete
-                              v-model="enLocation"
+                              v-model="enLocation "
                               :items="villages"
                               item-text="title"
                               item-value="id"
@@ -252,7 +252,7 @@ const enterpriseNameLao = ref("");
 const eneterpriseNameEnglish = ref("");
 const regisCertificateNumber = ref("");
 const regisDate = ref("");
-const enLocation = ref("");
+const enLocation = ref<any>("");
 const villageName = ref("");
 const regisStrationOfficeType = ref("");
 const regisStationOfficeCode = ref(1);
@@ -394,9 +394,9 @@ const fetchVillages = async () => {
 const handleVillageSelect = (value: number) => {
   const selected = villages.value.find((village: any) => village.id === value);
   if (selected) {
-    selectedVillageName.value = selected.Village_Name;
-    enLocation.value = selected.Village_Name;
-    title.value = `${selected.District_Name} ${selected.Province_Name}`;
+    selectedVillageName.value = (selected as any).Village_Name ;
+    enLocation.value = (selected as any).Village_Name;
+    title.value = `${(selected as any).District_Name} ${(selected as any).Province_Name}`;
   }
 };
 
@@ -448,7 +448,7 @@ const submit = async () => {
     try {
       const csrfToken = Cookies.get("csrftoken");
 
-      // ກວດສອບວ່າມີ collateral_id ຫຼືບໍ່
+      
       const collateralId = Number(route.query.id);
       if (!collateralId || isNaN(collateralId)) {
         throw new Error("ບໍ່ພົບ Collateral ID");
