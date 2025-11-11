@@ -54,6 +54,7 @@ const combinedData = computed(() => {
         branch_id_code: item.c5,
         loan_id: item.c6,
         col_id: item.c7,
+        secgmentType: item.c39,
       }))
     : [];
 
@@ -98,7 +99,9 @@ const headers1 = [
   { title: "ລະຫັດຫຼັກຊັບ", value: "col_id", key: "col_id_or_c7" },
   { title: "ປະເພດຫຼັກຊັບ", value: "col_type" },
 ];
-
+if (combinedData.value[0]?.) {
+ headers1.push({ title: "ລະຫັດລູກຄ່າ", value: "customer_id" });
+}
 const headers2 = [
   { title: "ລຳດັບ", value: "id" },
   { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },

@@ -42,6 +42,7 @@ const confirmInsert = async () => {
       text: "ທ່ານຕອ້ງການ ຄົ້ນຫາບົດລາຍງານນີ້ແທ້ຫຼືບໍ",
       showConfirmButton: true,
       confirmButtonText: "ຢືນຢັນ",
+      
       showCancelButton: true,
       cancelButtonText: "ຍົກເລີກ",
     });

@@ -826,34 +826,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
                   <p>
                     <b>- ຂໍ້ມູນລາຍລະອຽດເງິນກູ້ບ້ວງທີ {{ index + 1 }}</b>
                   </p>
-                  <!-- <v-col cols="12">
-                    <v-row>
-                      <v-col cols="4" md="4" >
-                        
-                        <p> <b>ລະຫັດເງິນກູ້: </b>{{ item.id }}</p>
-                        <p> <b>ຍອດເຫຼືອດອກເບ້ຍ: </b>----</p>
-                        
-                        <p> <b>ມື້ໝົດສັນຍາ: </b>{{ item.lon_expiry_date }}</p>
-                        <p><b>ເຫດຜົນຫການສິ້ນສຸດໜີ້:</b> -- </p>
-                      </v-col>
-                      <v-col cols="4" md="4">
-                        <p> <b>ວົງເງິນໃນອານຸມັດ:</b> {{ item.lon_credit_line.toLocaleString() }} {{  item.lon_currency_code }}</p>
-                        <p> <b>ອັດຕາດອກເບ້ຍ:</b> {{ item.lon_int_rate }} %</p>
-                        <p> <b>ມື້ໝົດຂອງມື້ຕໍ່ສັນຍາ:</b> {{ dayjs(item.lon_ext_date).format("DD-MM-YYYY") }}</p>
-                        
-                        
-                       
-                      </v-col>
-                      <v-col cols="4" md="4">
-                        <p><b>ຍອດເງິນເຫຼືອຕົ້ນທຶນ:</b> {{ Number(item.lon_outstanding_balance).toLocaleString() }} {{  item.lon_currency_code }}</p>
-                        <p> <b>ມື້ເປິດສັນຍາ </b>{{ item.lon_open_date.slice(0, -10) }}</p>
-                        <p> <b>ໄລຍະການກູ້ຢືມ:</b> {{ item.lon_term }}</p>
-                        
-
-                      </v-col>
-                    </v-row>
-
-                  </v-col> -->
+                
 
                   <hr
                     color="indigo"
@@ -1229,7 +1202,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
       </v-row>
     </v-col>
     </div>
-        <div class=" rounded-lg mt-5 d-flex flex-wrap" style="border: #1565c0 1px solid; padding: 10px" >
+        <div class=" rounded-lg mt-5 d-flex flex-wrap" style=" padding: 10px; ">
 <p style="width: 100%;"><b>ຄຳອະທິບາຍ (ພົດຈະນານຸກົມ)</b></p>
  <hr style="width: 100%;"
                     color="indigo"
@@ -1238,7 +1211,7 @@ class="rounded-lg ml-2 mb-1 mr-2"
                   ></hr>
 
                   
-                  <v-table density="compact" style="width: 100%;" class="table-white">
+                  <v-table density="compact" style="width: 100%; font-size: small;" class="table-white" >
                     <thead>
                         <tr>
                       <th>ຄຳຫຍໍ້</th>
