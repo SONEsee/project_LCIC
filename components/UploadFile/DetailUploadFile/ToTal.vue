@@ -54,6 +54,7 @@ const combinedData = computed(() => {
         branch_id_code: item.c5,
         loan_id: item.c6,
         col_id: item.c7,
+        secgmentType: item.c39,
       }))
     : [];
 

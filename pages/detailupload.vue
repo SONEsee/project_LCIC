@@ -311,7 +311,7 @@ const b1Monthly = computed(() => {
   return [];
 });
 
-// ກຳນົດ segmentType ຈາກຂໍ້ມູນທີ່ມີ
+
 const currentSegmentType = computed(() => {
   if (combinedData.value.length > 0) {
     return combinedData.value[0]?.segmentType;
@@ -319,7 +319,7 @@ const currentSegmentType = computed(() => {
   return null;
 });
 
-// Headers ຫຼັກ - Tab "ຂໍ້ມູນທັງໝົດ"
+
 const headers = computed(() => {
   const baseHeaders = [
     { title: "ລຳດັບ", value: "id" },
@@ -329,7 +329,7 @@ const headers = computed(() => {
     { title: "ລະຫັດສາຂາ", value: "branch_id" },
   ];
   
-  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນ "ລະຫັດລູກຄ່າ"
+  
   if (currentSegmentType.value === 'A2') {
     baseHeaders.push({ title: "ລະຫັດລູກຄ່າ", value: "customer_id" });
   }
@@ -338,7 +338,7 @@ const headers = computed(() => {
   return baseHeaders;
 });
 
-// Headers2 - Sub-Tab "ວິສາຫະກິດບໍ່ຖືກ"
+
 const headers2 = computed(() => {
   const baseHeaders = [
     { title: "ລຳດັບ", value: "id" },
@@ -348,14 +348,14 @@ const headers2 = computed(() => {
     { title: "ລະຫັດສາຂາ", value: "branch_id" },
   ];
   
-  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນ "ລະຫັດລູກຄ່າ"
+  
   if (currentSegmentType.value === 'A2') {
     baseHeaders.push({ title: "ລະຫັດລູກຄ່າ", value: "customer_id" });
   }
   
   baseHeaders.push({ title: "ລະຫັດເງິນກູ້", value: "loan_id" });
   
-  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນນີ້
+ 
   if (currentSegmentType.value === 'A2') {
     baseHeaders.push({ title: "ລະຫັດວິສາຫະກິດ(ໃນຖານຂໍ້ມູນ ຂສລ)", value: "lcicID_get" });
   }
@@ -364,7 +364,7 @@ const headers2 = computed(() => {
   return baseHeaders;
 });
 
-// Headers3 - Sub-Tab "ຂສລບໍ່ຖືກ"
+
 const headers3 = computed(() => {
   const baseHeaders = [
     { title: "ລຳດັບ", value: "id" },
@@ -374,14 +374,14 @@ const headers3 = computed(() => {
     { title: "ລະຫັດສາຂາ", value: "branch_id" },
   ];
   
-  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນ "ລະຫັດລູກຄ່າ"
+ 
   if (currentSegmentType.value === 'A2') {
     baseHeaders.push({ title: "ລະຫັດລູກຄ່າ", value: "customer_id" });
   }
   
   baseHeaders.push({ title: "ລະຫັດເງິນກູ້", value: "loan_id" });
   
-  // ຖ້າເປັນ A2 ຈຶ່ງສະແດງຖັນນີ້
+  
   if (currentSegmentType.value === 'A2') {
     baseHeaders.push({ title: "ລະຫັດ ຂສລ(ໃນຖານຂໍ້ມູນ ຂສລ)", value: "lcicID_get" });
   }
@@ -390,7 +390,7 @@ const headers3 = computed(() => {
   return baseHeaders;
 });
 
-// Headers4 - Sub-Tab "ທັງສອງບໍ່ຖືກ"
+
 const headers4 = computed(() => {
   const baseHeaders = [
     { title: "ລຳດັບ", value: "id" },
