@@ -2,6 +2,7 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useSidebar, refreshSidebar } from "./sidebarItems"; 
+import Swal from "sweetalert2";
 
 interface Role {
   id: number;
@@ -174,6 +175,20 @@ const isCurrentRoute = (url: string) => {
   return useRoute().path === url;
 };
 
+// Handle sub-item click with development alert
+const handleSubItemClick = (event: Event, subItem: SubItem) => {
+  const url = subItem.route || subItem.url;
+  if (url === '#') {
+    event.preventDefault();
+    Swal.fire({
+      icon: 'info',
+      title: 'ຂໍອະໄພ',
+      text: `ໜ້າ ${subItem.title || subItem.name} ກຳລັງພັດທະນາ...`,
+      confirmButtonText: 'OK'
+    })
+  }
+};
+
 // Watch for route changes to auto-expand parent items
 watch(() => useRoute().path, (newPath) => {
   if (user.value?.GID) {
@@ -217,16 +232,6 @@ defineExpose({
             class="nav-group"
           >
             <template v-if="!item.sub_items || item.sub_items.length === 0">
-              <!-- <NuxtLink
-                :to="item.url"
-                class="nav-item"
-                :class="{ 'nav-item-active': isCurrentRoute(item.url) }"
-              >
-                <div class="nav-item-content">
-                  <v-icon :icon="item.icon" class="nav-icon"></v-icon>
-                  <span class="nav-label">{{ $t(item.name) }}</span>
-                </div>
-              </NuxtLink> -->
               <NuxtLink
                 :to="item.route || item.url"
                 class="nav-item"
@@ -273,6 +278,7 @@ defineExpose({
                       :to="subItem.route || subItem.url"
                       class="nav-subitem"
                       :class="{ 'nav-subitem-active': isCurrentRoute(subItem.route || subItem.url) }"
+                      @click="handleSubItemClick($event, subItem)"
                     >
                       <div class="nav-subitem-content">
                         <div class="nav-subitem-indicator"></div>

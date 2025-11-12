@@ -214,67 +214,71 @@ const selectItem = (item: any) => {
   });
 };
 
-watch(lcicSearchInput, (newValue) => {
-  searchLcicID.value = newValue;
+watch(
+  lcicSearchInput,
+  (newValue) => {
+    searchLcicID.value = newValue;
 
-  showBankMessage.value = false;
-  bankDataMessage.value = "";
-  showLcicName.value = false;
-  displayedLcicName.value = "";
+    showBankMessage.value = false;
+    bankDataMessage.value = "";
+    showLcicName.value = false;
+    displayedLcicName.value = "";
 
-  if (newValue && newValue.length > 0) {
-    debounceSearch(async () => {
-      await performAPISearch();
+    if (newValue && newValue.length > 0) {
+      debounceSearch(async () => {
+        await performAPISearch();
 
-      // ✅ ແກ້ໄຂ: ໃຊ້ startsWith ແທນ ===
-      const matchedItem = dataReques.value.find(
-        (item) =>
-          item.lcic_id?.toString().startsWith(newValue) &&
-          item.bnk_code === userId.value
-      );
-
-      if (matchedItem) {
-        displayedLcicName.value = `${matchedItem.ind_lao_name || ""} ${
-          matchedItem.ind_lao_surname || ""
-        } ${matchedItem.ind_name || ""} ${
-          matchedItem.ind_surname || ""
-        }`.trim();
-        showLcicName.value = true;
-
-        if (matchedItem.customerid) {
-          saerchCustomerID.value = matchedItem.customerid;
-          customerSearchInput.value = matchedItem.customerid;
-          showBankMessage.value = false;
-          bankDataMessage.value = "";
-          console.log("Auto-filled customer ID:", matchedItem.customerid);
-        }
-      } else {
-        const anyMatch = dataReques.value.find((item) =>
-          item.lcic_id?.toString().startsWith(newValue)
+        // ✅ ແກ້ໄຂ: ໃຊ້ startsWith ແທນ ===
+        const matchedItem = dataReques.value.find(
+          (item) =>
+            item.lcic_id?.toString().startsWith(newValue) &&
+            item.bnk_code === userId.value
         );
 
-        if (anyMatch) {
-          displayedLcicName.value = `${anyMatch.ind_lao_name || ""} ${
-            anyMatch.ind_lao_surname || ""
-          } ${anyMatch.ind_name || ""} ${anyMatch.ind_surname || ""}`.trim();
+        if (matchedItem) {
+          displayedLcicName.value = `${matchedItem.ind_lao_name || ""} ${
+            matchedItem.ind_lao_surname || ""
+          } ${matchedItem.ind_name || ""} ${
+            matchedItem.ind_surname || ""
+          }`.trim();
           showLcicName.value = true;
 
-          if (anyMatch.bnk_code !== userId.value) {
-            saerchCustomerID.value = "";
-            customerSearchInput.value = "";
-            showBankMessage.value = true;
-            // bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
+          if (matchedItem.customerid) {
+            saerchCustomerID.value = matchedItem.customerid;
+            customerSearchInput.value = matchedItem.customerid;
+            showBankMessage.value = false;
+            bankDataMessage.value = "";
+            console.log("Auto-filled customer ID:", matchedItem.customerid);
+          }
+        } else {
+          const anyMatch = dataReques.value.find((item) =>
+            item.lcic_id?.toString().startsWith(newValue)
+          );
+
+          if (anyMatch) {
+            displayedLcicName.value = `${anyMatch.ind_lao_name || ""} ${
+              anyMatch.ind_lao_surname || ""
+            } ${anyMatch.ind_name || ""} ${anyMatch.ind_surname || ""}`.trim();
+            showLcicName.value = true;
+
+            if (anyMatch.bnk_code !== userId.value) {
+              saerchCustomerID.value = "";
+              customerSearchInput.value = "";
+              showBankMessage.value = true;
+              // bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
+            }
           }
         }
-      }
-    }, 500);
-  } else {
-    saerchCustomerID.value = "";
-    customerSearchInput.value = "";
-    displayedLcicName.value = "";
-    showLcicName.value = false;
-  }
-}, { immediate: true });
+      }, 500);
+    } else {
+      saerchCustomerID.value = "";
+      customerSearchInput.value = "";
+      displayedLcicName.value = "";
+      showLcicName.value = false;
+    }
+  },
+  { immediate: true }
+);
 
 watch(saerchCustomerID, async (newValue) => {
   if (newValue && newValue !== customerSearchInput.value) {
@@ -340,7 +344,7 @@ onMounted(async () => {
     </div>
 
     <div class="search-form">
-      <v-card class="search-card" elevation="0">
+      <v-card class="search-card" elevation="0" rounded>
         <v-card-text class="pa-6">
           <v-container fluid>
             <v-row>
@@ -356,7 +360,6 @@ onMounted(async () => {
                   <v-text-field
                     v-model="lcicSearchInput"
                     density="comfortable"
-                    
                     variant="outlined"
                     :loading="individualStore.reques_query.isLoading"
                     placeholder="ປ້ອນລະຫັດ LCIC"
@@ -371,10 +374,17 @@ onMounted(async () => {
                     style="color: orange"
                     v-if="
                       displayedLcicName === null ||
-                      (displayedLcicName === '' && searchLcicID !== ''  )
+                      (displayedLcicName === '' && searchLcicID !== '')
                     "
                   >
-                    <strong :loading="individualStore.reques_query.isLoading">ບໍ່ພົບລະຫັດ ຂສລ ນີ້</strong>
+                    <strong :loading="individualStore.reques_query.isLoading"
+                      >ບໍ່ພົບລະຫັດ ຂສລ ນີ້
+                      <b
+                        style="color: blue"
+                        @click="goPath(`/backend/register_lcic`)"
+                        >ກົດທີ່ນິ້ເພືອອອກລະຫັດ ຂສລ ໃໝ່</b
+                      ></strong
+                    >
                   </p>
 
                   <v-slide-y-transition>
@@ -410,7 +420,6 @@ onMounted(async () => {
                     item-title="customerid"
                     item-value="lcic_id"
                     density="comfortable"
-                   
                     variant="outlined"
                     :loading="individualStore.reques_query.isLoading"
                     hide-no-data
