@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IndividualStore } from "~/stores/searchindividual";
+import { IndividualStore } from "~/stores/scoring_ind";
 import { useUserData } from "~/composables/useUserData";
 import Swal from "sweetalert2";
 import { MemberStore } from "@/stores/memberinfo";
@@ -56,6 +56,7 @@ const onCustomerSelect = (lcicId: string) => {
       saerchCustomerID.value = selectedItem.customerid;
       customerSearchInput.value = selectedItem.customerid;
 
+     
       displayedLcicName.value = `${selectedItem.ind_lao_name || ""} ${
         selectedItem.ind_lao_surname || ""
       } ${selectedItem.ind_name || ""} ${
@@ -108,6 +109,7 @@ const performAPISearch = async () => {
   try {
     individualStore.reques_query.query.customerid = "";
     individualStore.reques_query.query.lcic_id = "";
+    
 
     if (lcicSearchInput.value) {
       individualStore.reques_query.query.lcic_id = lcicSearchInput.value;
@@ -160,11 +162,7 @@ const dataReques = computed(() => {
 });
 
 const performSearch = async () => {
-  if (
-    !searchLcicID.value &&
-    !saerchCustomerID.value &&
-    !individualStore.from_insert_logserch.CatalogID
-  ) {
+  if (!searchLcicID.value && !saerchCustomerID.value && !individualStore.from_insert_logserch.CatalogID) {
     Swal.fire({
       icon: "warning",
       text: "ກະລຸນາປ້ອນຂໍ້ມູນເພື່ອຄົ້ນຫາ",
@@ -172,8 +170,16 @@ const performSearch = async () => {
     });
     return;
   }
+  if (!individualStore.from_insert_logserch.CatalogID) {
+    Swal.fire({
+      icon: "warning",
+      text: "ກະລຸນາເລືອກຈຸດປະສົງການກູ້ຢືມ",
+      title: "ແຈ້ງເຕືອນ",
+    });
+    return;
+  }
   goPath(
-    `/backend/individual/detailsearch/?customer_id=${saerchCustomerID.value}&&lcic_id=${searchLcicID.value}&&typesearch=${individualStore.from_insert_logserch.CatalogID}`
+    `/scoring/detail_scoring/?customer_id=${saerchCustomerID.value}&&lcic_id=${searchLcicID.value}&&typesearch=${individualStore.from_insert_logserch.CatalogID}`
   );
   await performAPISearch();
 };
@@ -224,9 +230,20 @@ watch(lcicSearchInput, (newValue) => {
 
   if (newValue && newValue.length > 0) {
     debounceSearch(async () => {
-      await performAPISearch();
+      // ✅ บันทึก bnk_code เดิมไว้
+      const originalBnkCode = individualStore.reques_query.query.bnk_code;
+      
+      // ✅ เรียก API โดยไม่ filter ธนาคาร
+      individualStore.reques_query.query.lcic_id = newValue;
+      individualStore.reques_query.query.customerid = "";
+      individualStore.reques_query.query.bnk_code = "";
+      
+      await individualStore.saerchListIndividual();
+      
+      // ✅ คืนค่า bnk_code เดิม
+      individualStore.reques_query.query.bnk_code = originalBnkCode;
 
-      // ✅ ແກ້ໄຂ: ໃຊ້ startsWith ແທນ ===
+      // ✅ หาข้อมูลจากธนาคารตัวเองก่อน
       const matchedItem = dataReques.value.find(
         (item) =>
           item.lcic_id?.toString().startsWith(newValue) &&
@@ -246,9 +263,9 @@ watch(lcicSearchInput, (newValue) => {
           customerSearchInput.value = matchedItem.customerid;
           showBankMessage.value = false;
           bankDataMessage.value = "";
-          console.log("Auto-filled customer ID:", matchedItem.customerid);
         }
       } else {
+        // ✅ ถ้าไม่เจอในธนาคารตัวเอง หาจากธนาคารอื่น
         const anyMatch = dataReques.value.find((item) =>
           item.lcic_id?.toString().startsWith(newValue)
         );
@@ -274,7 +291,7 @@ watch(lcicSearchInput, (newValue) => {
     displayedLcicName.value = "";
     showLcicName.value = false;
   }
-}, { immediate: true });
+});
 
 watch(saerchCustomerID, async (newValue) => {
   if (newValue && newValue !== customerSearchInput.value) {
@@ -330,10 +347,11 @@ onMounted(async () => {
     <div class="header-section">
       <div class="header-content">
         <div class="icon-wrapper">
-          <v-icon size="48" color="white">mdi-account-search</v-icon>
+          <div class="icon-bg-animation"></div>
+          <v-icon size="48" color="white" class="header-icon">mdi-finance</v-icon>
         </div>
         <div class="title-section">
-          <h1 class="page-title">ຄົ້ນຫາຂໍ້ມູນບຸກຄົນ</h1>
+          <h1 class="page-title">ຄົ້ນຫາຄະແນນສິນເຊື່ອບຸກຄົນ</h1>
           <p class="page-subtitle">ຄົ້ນຫາດ້ວຍລະຫັດ LCIC ຫຼື ລະຫັດລູກຄ້າ</p>
         </div>
       </div>
@@ -341,53 +359,40 @@ onMounted(async () => {
 
     <div class="search-form">
       <v-card class="search-card" elevation="0">
-        <v-card-text class="pa-6">
+        <v-card-text class="pa-4">
           <v-container fluid>
             <v-row>
               <v-col cols="12" md="6">
                 <div class="input-group">
                   <label class="input-label">
-                    <v-icon size="18" class="mr-2"
-                      >mdi-card-account-details</v-icon
-                    >
-                    ລະຫັດ LCIC
+                    <div class="label-icon-wrapper">
+                      <v-icon size="18">mdi-shield-account</v-icon>
+                    </div>
+                    <span>ລະຫັດ LCIC</span>
                   </label>
-
+                  
                   <v-text-field
                     v-model="lcicSearchInput"
                     density="comfortable"
-                    
+                    clearable
                     variant="outlined"
                     :loading="individualStore.reques_query.isLoading"
                     placeholder="ປ້ອນລະຫັດ LCIC"
                     prepend-inner-icon="mdi-magnify"
-                    class="search-input"
+                    class="search-input modern-input"
                     color="primary"
                     rounded
-                    hide-details
                   ></v-text-field>
-                  <p
-                    class="mt-2"
-                    style="color: orange"
-                    v-if="
-                      displayedLcicName === null ||
-                      (displayedLcicName === '' && searchLcicID !== ''  )
-                    "
-                  >
-                    <strong :loading="individualStore.reques_query.isLoading">ບໍ່ພົບລະຫັດ ຂສລ ນີ້</strong>
-                  </p>
 
                   <v-slide-y-transition>
                     <div
                       v-if="showLcicName && displayedLcicName"
                       class="customer-name-display"
                     >
-                      <v-icon size="16" color="primary" class="mr-1"
-                        >mdi-account-circle</v-icon
-                      >
-                      <span class="customer-name-text">{{
-                        displayedLcicName
-                      }}</span>
+                      <div class="name-badge">
+                        <v-icon size="16" color="primary" class="mr-1">mdi-account-check</v-icon>
+                        <span class="customer-name-text">{{ displayedLcicName }}</span>
+                      </div>
                     </div>
                   </v-slide-y-transition>
                 </div>
@@ -396,10 +401,10 @@ onMounted(async () => {
               <v-col cols="12" md="6">
                 <div class="input-group">
                   <label class="input-label">
-                    <v-icon size="18" class="mr-2"
-                      >mdi-account-card-details</v-icon
-                    >
-                    ລະຫັດລູກຄ້າ
+                    <div class="label-icon-wrapper">
+                      <v-icon size="18">mdi-badge-account</v-icon>
+                    </div>
+                    <span>ລະຫັດລູກຄ້າ</span>
                   </label>
                   <v-autocomplete
                     v-model="saerchCustomerID"
@@ -410,32 +415,26 @@ onMounted(async () => {
                     item-title="customerid"
                     item-value="lcic_id"
                     density="comfortable"
-                   
+                    clearable
                     variant="outlined"
                     :loading="individualStore.reques_query.isLoading"
                     hide-no-data
                     placeholder="ລະຫັດລູກຄ້າ"
                     prepend-inner-icon="mdi-magnify"
-                    class="search-input"
+                    class="search-input modern-input"
                     color="primary"
                     rounded
                   >
                     <template v-slot:item="{ props, item }">
                       <v-list-item
                         v-bind="props"
-                        :title="`ລະຫັດ ຂສລ:${
-                          item.raw.lcic_id
-                        },ສະມາຊິກ${getMemberCode(item.raw.bnk_code)} ສາຂາ ${
-                          item.raw.branchcode
-                        }`"
+                        :title="`ລະຫັດ ຂສລ:${item.raw.lcic_id},ສະມາຊິກ${getMemberCode(item.raw.bnk_code)} ສາຂາ ${item.raw.branchcode}`"
                         class="search-item"
                         rounded
                       >
                         <template v-slot:prepend>
-                          <v-avatar color="secondary" size="36" class="mr-3">
-                            <v-icon color="white" size="18"
-                              >mdi-account-card-details</v-icon
-                            >
+                          <v-avatar color="secondary" size="36" class="mr-3 item-avatar">
+                            <v-icon color="white" size="18">mdi-credit-card-check</v-icon>
                           </v-avatar>
                         </template>
                       </v-list-item>
@@ -443,23 +442,38 @@ onMounted(async () => {
                   </v-autocomplete>
                 </div>
               </v-col>
+
               <v-col cols="12">
-                <v-autocomplete
-                  v-model="individualStore.from_insert_logserch.CatalogID"
-                  :items="categories"
-                  item-title="cat_lao_name"
-                  item-value="cat_value"
-                  variant="outlined"
-                  density="compact"
-                  label="ເລືກປະເພດ"
-                >
-                  <template v-slot:item="{ item, props }">
-                    <v-list-item
-                      v-bind="props"
-                      :title="`${(item as any).raw.cat_lao_name}(${item.raw.cat_name})`"
-                    ></v-list-item> </template
-                ></v-autocomplete>
+                <div class="input-group">
+                  <label class="input-label">
+                    <div class="label-icon-wrapper">
+                      <v-icon size="18">mdi-chart-box</v-icon>
+                    </div>
+                    <span>ຈຸດປະສົງການກູ້ຢືມ</span>
+                  </label>
+                  <v-autocomplete
+                    v-model="individualStore.from_insert_logserch.CatalogID"
+                    :items="categories"
+                    item-title="cat_lao_name"
+                    item-value="cat_value"
+                    variant="outlined"
+                    label="ຈຸດປະສົງ"
+                    density="comfortable"
+                    class="search-input modern-input"
+                    color="primary"
+                    rounded
+                  >
+                    <template v-slot:item="{item, props}">
+                      <v-list-item 
+                        v-bind="props" 
+                        :title="`${(item as any).raw.cat_lao_name}(${item.raw.cat_name})`"
+                        class="search-item"
+                      ></v-list-item>
+                    </template>
+                  </v-autocomplete>
+                </div>
               </v-col>
+
               <v-col cols="12">
                 <div class="button-group">
                   <v-btn
@@ -467,21 +481,22 @@ onMounted(async () => {
                     size="large"
                     :loading="individualStore.reques_query.isLoading"
                     @click="performSearch"
-                    class="search-btn"
-                    elevation="2"
+                    class="search-btn modern-btn"
+                    elevation="0"
                   >
-                    <v-icon left>mdi-magnify</v-icon>
-                    ຄົ້ນຫາ
+                    <v-icon left class="mr-2">mdi-database-search</v-icon>
+                    <span class="btn-text">ຄົ້ນຫາ</span>
+                    <div class="btn-shine"></div>
                   </v-btn>
                   <v-btn
                     color="grey-lighten-1"
                     size="large"
                     @click="clearSearch"
-                    class="clear-btn"
+                    class="clear-btn modern-btn"
                     variant="outlined"
                   >
-                    <v-icon left>mdi-refresh</v-icon>
-                    ລ້າງຂໍ້ມູນ
+                    <v-icon left class="mr-2">mdi-refresh</v-icon>
+                    <span class="btn-text">ລ້າງຂໍ້ມູນ</span>
                   </v-btn>
                 </div>
               </v-col>
@@ -494,31 +509,87 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* Container & Background */
 .search-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 24px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 2%;
+  background: linear-gradient(135deg, #2038a1 0%, #5772ca 100%);
   min-height: 80vh;
+  position: relative;
+  overflow: hidden;
 }
 
+.search-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+  animation: rotate 30s linear infinite;
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Header Section */
 .header-section {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 25px;
+  position: relative;
+  z-index: 1;
 }
 
 .header-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
 }
 
 .icon-wrapper {
-  background: linear-gradient(135deg, #07165a 0%, #281192 100%);
-  padding: 16px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e1b4b 100%);
+  padding: 15px;
   border-radius: 50%;
-  box-shadow: 0 8px 32px rgba(4, 19, 85, 0.3);
+  box-shadow: 0 12px 40px rgba(9, 3, 92, 0.6),
+              0 0 0 8px rgba(255, 255, 255, 0.1),
+              0 0 0 16px rgba(255, 255, 255, 0.05),
+              0 0 60px rgba(18, 36, 116, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.icon-bg-animation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  animation: pulse-icon 2s ease-in-out infinite;
+}
+
+@keyframes pulse-icon {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 0;
+  }
+}
+
+.header-icon {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .title-section {
@@ -526,32 +597,58 @@ onMounted(async () => {
 }
 
 .page-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #2c3e50;
+  font-size: 25px;
+  font-weight: 700;
+  color: #ffffff;
   margin-bottom: 8px;
   letter-spacing: -0.5px;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3),
+               0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .page-subtitle {
-  font-size: 16px;
-  color: #64748b;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
   font-weight: 400;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* Search Card */
 .search-form {
   margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .search-card {
-  border-radius: 20px !important;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.95) !important;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 24px !important;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: 0 24px 60px rgba(9, 3, 92, 0.4),
+              0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+              0 8px 32px rgba(18, 36, 116, 0.3) !important;
+  overflow: hidden;
 }
 
+.search-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(18, 36, 116, 0.6), transparent);
+  animation: scan 3s ease-in-out infinite;
+}
+
+@keyframes scan {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Input Groups */
 .input-group {
   margin-bottom: 8px;
 }
@@ -560,109 +657,209 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+}
+
+.label-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 25px;
+  background: linear-gradient(135deg, #122474 0%, #09035c 100%);
+  border-radius: 8px;
+  margin-right: 8px;
+  box-shadow: 0 2px 8px rgba(18, 36, 116, 0.3),
+              0 0 12px rgba(9, 3, 92, 0.2);
+}
+
+.label-icon-wrapper .v-icon {
+  color: white !important;
+  margin: 0 !important;
+}
+
+/* Modern Inputs */
+.modern-input :deep(.v-field) {
+  border-radius: 14px !important;
+  border: 2px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #ffffff;
+}
+
+.modern-input :deep(.v-field):hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.modern-input :deep(.v-field--focused) {
+  border-color: #122474 !important;
+  box-shadow: 0 0 0 4px rgba(18, 36, 116, 0.15),
+              0 4px 16px rgba(9, 3, 92, 0.25) !important;
+  transform: translateY(-1px);
+}
+
+.modern-input :deep(.v-field__input) {
   font-weight: 500;
-  color: #374151;
-  margin-bottom: 12px;
-  letter-spacing: 0.25px;
 }
 
-.search-input :deep(.v-field) {
-  border-radius: 12px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+.modern-input :deep(.v-progress-linear) {
+  border-radius: 12px;
 }
 
-.search-input :deep(.v-field):hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+.modern-input :deep(.v-field--focused .v-icon) {
+  color: #122474 !important;
 }
 
-.search-input :deep(.v-field--focused) {
-  box-shadow: 0 4px 20px rgba(9, 28, 116, 0.25) !important;
-}
-
+/* Search Item */
 .search-item {
   border-radius: 12px !important;
   margin: 4px 8px;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
 }
 
 .search-item:hover {
-  background-color: rgba(102, 126, 234, 0.08) !important;
+  background: linear-gradient(135deg, rgba(18, 36, 116, 0.08) 0%, rgba(9, 3, 92, 0.08) 100%) !important;
+  border-color: rgba(18, 36, 116, 0.2);
   transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(18, 36, 116, 0.15);
 }
 
-.button-group {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  margin-top: 16px;
+.item-avatar {
+  background: linear-gradient(135deg, #122474 0%, #09035c 100%) !important;
+  box-shadow: 0 2px 8px rgba(18, 36, 116, 0.3);
 }
 
-.search-btn {
-  min-width: 140px;
-  height: 48px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  background: linear-gradient(135deg, #667eea 0%, #0712a5 100%) !important;
-  color: white !important;
-  transition: all 0.3s ease;
-}
-
-.search-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(52, 4, 187, 0.4) !important;
-}
-
-.clear-btn {
-  min-width: 140px;
-  height: 48px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-}
-
-.clear-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.info-alert {
-  border-radius: 12px !important;
-  border-left: 4px solid #2196f3;
-}
-
-/* ສະໄຕລ์ສຳລັບສະແດງຊື່ລູກຄ້າ */
+/* Customer Name Display */
 .customer-name-display {
+  margin-top: 8px;
+  animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.name-badge {
   display: flex;
   align-items: center;
-  margin-top: 8px;
-  padding: 10px 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(102, 126, 234, 0.08) 0%,
-    rgba(118, 75, 162, 0.08) 100%
-  );
-  border-radius: 10px;
-  border-left: 3px solid #667eea;
-  animation: slideIn 0.3s ease-out;
+  padding: 12px 10px;
+  background: linear-gradient(135deg, rgba(18, 36, 116, 0.1) 0%, rgba(9, 3, 92, 0.1) 100%);
+  border-radius: 12px;
+  border-left: 4px solid #122474;
+  box-shadow: 0 2px 8px rgba(18, 36, 116, 0.15);
 }
 
 .customer-name-text {
   font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  letter-spacing: 0.25px;
+  font-weight: 600;
+  color: #1e293b;
+  letter-spacing: 0.3px;
 }
 
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-12px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Buttons */
+.button-group {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 5px;
+}
+
+.modern-btn {
+  min-width: 120px;
+  height: 40px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border-radius: 12px !important;
+  text-transform: none;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-btn {
+  background: linear-gradient(135deg, #122474 0%, #09035c 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 16px rgba(18, 36, 116, 0.5),
+              0 0 20px rgba(9, 3, 92, 0.3) !important;
+}
+
+.search-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(18, 36, 116, 0.6),
+              0 0 30px rgba(9, 3, 92, 0.4) !important;
+}
+
+.search-btn:active {
+  transform: translateY(-1px);
+}
+
+.btn-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shine 3s ease-in-out infinite;
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  20%, 100% { left: 100%; }
+}
+
+.clear-btn {
+  background: white !important;
+  border: 2px solid #e2e8f0 !important;
+  color: #64748b !important;
+}
+
+.clear-btn:hover {
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.btn-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* Scrollbar Styling */
+:deep(.v-list) {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+:deep(.v-list)::-webkit-scrollbar {
+  width: 6px;
+}
+
+:deep(.v-list)::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+:deep(.v-list)::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #cbd5e1, #94a3b8);
+  border-radius: 6px;
+}
+
+:deep(.v-list)::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #94a3b8, #64748b);
 }
 
 /* Responsive Design */
@@ -673,6 +870,7 @@ onMounted(async () => {
 
   .search-card {
     margin: 0 -8px;
+    border-radius: 20px !important;
   }
 
   .button-group {
@@ -680,8 +878,7 @@ onMounted(async () => {
     gap: 12px;
   }
 
-  .search-btn,
-  .clear-btn {
+  .modern-btn {
     width: 100%;
   }
 
@@ -694,7 +891,11 @@ onMounted(async () => {
   }
 
   .customer-name-display {
-    padding: 8px 12px;
+    padding: 0;
+  }
+
+  .name-badge {
+    padding: 10px 14px;
   }
 
   .customer-name-text {
@@ -702,43 +903,8 @@ onMounted(async () => {
   }
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.search-input :deep(.v-progress-linear) {
-  border-radius: 12px;
-}
-
+/* Smooth Transitions */
 * {
   transition: all 0.2s ease;
-}
-
-:deep(.v-list) {
-  scrollbar-width: thin;
-  scrollbar-color: #e2e8f0 transparent;
-}
-
-:deep(.v-list)::-webkit-scrollbar {
-  width: 6px;
-}
-
-:deep(.v-list)::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-:deep(.v-list)::-webkit-scrollbar-thumb {
-  background-color: #e2e8f0;
-  border-radius: 6px;
-}
-
-:deep(.v-list)::-webkit-scrollbar-thumb:hover {
-  background-color: #cbd5e1;
 }
 </style>
