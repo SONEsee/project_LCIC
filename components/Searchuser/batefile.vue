@@ -600,6 +600,7 @@ const getDisplayText = (item: any) => {
       <v-row>
         <v-col cols="12" md="3" v-if="user?.MID.id !== '01'">
           <v-file-input
+          label="ອັບໂຫຼດ Json File"
             type="file"
             accept=".json"
             @change="handleFileUpload"
