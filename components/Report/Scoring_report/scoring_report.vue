@@ -11,7 +11,8 @@ const apiCreditScoreURL = `${config.public.strapi.url}api/credit-score/calculate
 
 // ข้อมูลพื้นฐาน
 const lcicID = ref("");
-const enquiryReference = ref("");
+const enquiryReference = ref("");  // ⭐ จะเป็น rec_reference_code
+const recSysId = ref("");  // ⭐ เพิ่มตัวแปรนี้สำหรับ rec_sys_id
 const reportDate = ref("");
 const loading = ref(false);
 const error = ref("");
@@ -180,6 +181,8 @@ loans.value = allLoans
   .filter((loan: any) => loan.loan_status === 'ACTIVE')
   .map((loan: any) => ({
     bank: loan.bnk_code || "",
+    bank_display: loan.bank_info?.display_code || loan.bnk_code || "",
+    code_display: loan.bank_info?.code || "",
     purpose: loan.loan_purpose || "",
     creditLine: formatNumber(loan.credit_line || 0),
     outstanding: formatNumber(loan.outstanding_balance || 0),
@@ -191,7 +194,8 @@ loans.value = allLoans
     // เพิ่มการ map collaterals ให้ครบถ้วน
     collaterals: (loan.collaterals || []).map((col: any) => ({
       col_type: col.col_type || "",
-      col_type_name: col.col_type_name || "",
+      col_type_name_eng: col.col_type_name_eng || "",  // ⭐ เพิ่มบรรทัดนี้
+      col_type_name_lao: col.col_type_name_lao || "",  // ⭐ เพิ่มบรรทัดนี้
       col_id: col.col_id || "",
       description: col.description || "",
       value: col.value || 0,
@@ -203,12 +207,22 @@ loans.value = allLoans
     total_collateral_value: loan.total_collateral_value || 0
   }));
   
-  // ⭐ 5. ธนาคารที่มี Active (เฉพาะ ACTIVE เท่านั้น)
+// ⭐ 5. ธนาคารที่มี Active - แสดงชื่อเต็ม
   const activeLoans = allLoans.filter((l: any) => l.loan_status === 'ACTIVE');
-  const uniqueBanks = [...new Set(activeLoans.map((l: any) => l.bnk_code))];
-  activeBanks.value = uniqueBanks.join(", ");
   
-  // ⭐ 6. วงเงินรวมแต่ละสกุลเงิน (คำนวณจาก ACTIVE loans เท่านั้น)
+  // สร้าง array ของชื่อธนาคาร
+  const bankDisplays = activeLoans.map((l: any) => {
+    if (l.bank_info && l.bank_info.display_code) {
+      return `${l.bank_info.code}`;
+    }
+    return l.bnk_code || '';
+  });
+  
+  // เอาชื่อที่ไม่ซ้ำกัน
+  const uniqueBankDisplays = [...new Set(bankDisplays)];
+  activeBanks.value = uniqueBankDisplays.join(", ");
+  
+  // ⭐ 6. วงเงินรวมแต่ละสกุลเงิน
   const creditLinesByCurrency: any = {};
   activeLoans.forEach((loan: any) => {
     const currency = loan.currency || 'LAK';
@@ -230,34 +244,63 @@ const formatNumber = (num: number): string => {
 };
 
 // โหลดข้อมูลจาก sessionStorage และเรียก API
+// โหลดข้อมูลจาก sessionStorage และเรียก API
 onMounted(async () => {
   const storedLcicID = sessionStorage.getItem("lcic_id");
   
   if (!storedLcicID) {
-    error.value = "ບໍ່ພົບຂໍ້ມູນ lcic_id";
-    lcicID.value = "ບໍ່ພົບຂໍ້ມູນ lcic_id";
+    error.value = "ບໍ່ພົບຂໍ້ມູນ ";
+    lcicID.value = "ບໍ່ພົບຂໍ້ມູນ ";
     return;
   }
   
   lcicID.value = storedLcicID;
   
-  const today = new Date();
-  reportDate.value = today.toLocaleDateString('lo-LA', { 
-    year: 'numeric', 
-    month: '2-digit', 
-    day: '2-digit' 
-  });
+  // ⭐ ดึงข้อມูล scoring_data จาก sessionStorage
+  const scoringDataStr = sessionStorage.getItem("scoring_data");
+  if (scoringDataStr) {
+    try {
+      const scoringData = JSON.parse(scoringDataStr);
+      
+      // ตั้งค่า enquiryReference จาก rec_reference_code
+      if (scoringData.rec_reference_code) {
+        enquiryReference.value = scoringData.rec_reference_code;
+      }
+      
+      // ตั้งค่า recSysId จาก rec_sys_id
+      if (scoringData.rec_sys_id) {
+        recSysId.value = scoringData.rec_sys_id.toString();
+      }
+      
+      // ⭐ ตั้งค่า reportDate จาก rec_insert_date
+      if (scoringData.rec_insert_date) {
+        reportDate.value = scoringData.rec_insert_date;
+      }
+      
+    } catch (e) {
+      console.error("Error parsing scoring data:", e);
+    }
+  }
   
-  // ⭐ เรียก API
+  // ถ้าไม่มีข้อมูลจาก API ให้สร้างค่า default
+  if (!enquiryReference.value) {
+    enquiryReference.value = `REF${new Date().getFullYear()}-${storedLcicID.slice(-6)}`;
+  }
+  
+  // ⭐ ถ้าไม่มี reportDate จาก API ให้ใช้วันที่ปัจจุบัน
+  if (!reportDate.value) {
+    const today = new Date();
+    reportDate.value = today.toLocaleDateString('lo-LA', { 
+      year: 'numeric', 
+      month: '2-digit', 
+      day: '2-digit' 
+    });
+  }
+  
+  // เรียก API
   try {
     const apiData = await fetchCreditScore(storedLcicID);
-    
-    // แปลงข้อมูลจาก API
     mapApiDataToFrontend(apiData);
-    
-    // สร้าง Enquiry Reference
-    enquiryReference.value = `REF${new Date().getFullYear()}-${storedLcicID.slice(-6)}`;
-    
   } catch (err) {
     console.error('Failed to load credit score:', err);
   }
@@ -335,7 +378,7 @@ function getScoreLabel(key: string): string {
             <v-row align="center">
               <v-col cols="auto">
                 <v-img
-                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQguq0YjU42M_ijrBwnE9IpgFAFeMZQCDDJVi3yrfOCog&s"
+                  src="/images/logo1.png"
                   width="70"
                 ></v-img>
               </v-col>
@@ -351,9 +394,14 @@ function getScoreLabel(key: string): string {
         </v-col>
 
         <!-- Logo และหัวข้อ -->
-        <div class="text-center pa-4 header-section">
+        <div class="text-center pa-2 header-section">
+            <v-img
+                src="/images/national_symbol.png"
+                width="100"
+                style="margin: 0 auto;"
+            ></v-img>
           <h3 class="text-h6">ສາທາລະນະລັດ ປະຊາທິປະໄຕ ປະຊາຊົນລາວ</h3>
-          <p class="text-subtitle-2">ສັນຕິພາບ ເອກະລາດ ປະຊາທິປະໄຕ ເອກະພາບ ວັດທະນະຖາວອນ</p>
+          <h3 class="text-h6">ສັນຕິພາບ ເອກະລາດ ປະຊາທິປະໄຕ ເອກະພາບ ວັດທະນະຖາວອນ</h3>
           <div class="my-2">======00000======</div>
         </div>
 
@@ -365,14 +413,14 @@ function getScoreLabel(key: string): string {
               ບໍລິສັດຂໍ້ມູນຂ່າວສານສິນເຊື່ອແຫ່ງ ສປປ ລາວ
             </div>
             <div class="document-info-right">
-              <strong>ເລກທີ:</strong> {{ enquiryReference }}/ສຂສ<br>
-              <strong>ວຽງຈັນ, ວັນທີ:</strong> {{ reportDate }}
+              <strong>ເລກທີ:</strong> {{ recSysId }}/ຂສລ<br>
+              <strong>ນະຄອນຫຼວງວຽງຈັນ, ວັນທີ:</strong> {{ reportDate }}
             </div>
           </div>
         </div>
 
         <!-- ชื่อรายงาน -->
-        <div class="text-center mb-2 report-title">
+        <div class="text-center mb-2 pa-6 report-title">
           <h2 class="text-h5 font-weight-bold">ບົດລາຍງານການໃຫ້ຄະແນນສິນເຊື່ອ</h2>
           <p class="text-subtitle-1">(ສຳລັບບຸກຄົນ)</p>
         </div>
@@ -380,7 +428,7 @@ function getScoreLabel(key: string): string {
         <v-divider class="my-2"></v-divider>
 
         <!-- ข้อมูลอ้างอิง -->
-        <v-card flat class="pa-3 mb-2 reference-info-card" color="grey-lighten-4">
+        <v-card flat class=" text-center pa-3 mb-2 reference-info-card ml-6" color="grey-lighten-4">
           <div class="reference-info-flex">
             <div class="reference-info-item">
               <strong>ເລກອ້າງອິງ:</strong> {{ enquiryReference }}
@@ -393,7 +441,10 @@ function getScoreLabel(key: string): string {
 
         <!-- ข้อมูลส่วนบุคคล -->
         <v-card flat class="pa-3 mb-2 personal-info-section">
-          <h3 class="text-h6 mb-2 font-weight-bold section-title">ຂໍ້ມູນສ່ວນບຸກຄົນ</h3>
+          <h3 class="text-h7 mb-2 font-weight-bold section-title">
+                <v-icon >mdi-dot</v-icon>
+                ຂໍ້ມູນສ່ວນບຸກຄົນ
+          </h3>
           <v-row dense class="personal-info-grid">
             <v-col cols="12" md="6" lg="4" class="info-column">
               <div class="info-row">
@@ -446,7 +497,7 @@ function getScoreLabel(key: string): string {
             <v-col cols="12" md="6" lg="4" class="info-column">
               <div class="info-row">
                 <span class="font-weight-bold">ວັນເດືອນປີເກີດ:</span>
-                <span>{{ personalInfo.birthDate }} ({{ personalInfo.age }} ປີ)</span>
+                <span>{{ personalInfo.birthDate }}</span>
               </div>
             </v-col>
           </v-row>
@@ -454,7 +505,10 @@ function getScoreLabel(key: string): string {
 
         <!-- เงื่อนไขการให้คะแนน -->
         <v-card flat class="pa-3  conditional-scores-section" color="blue-lighten-5">
-          <h3 class="text-h5 mb-1 font-weight-bold section-title">ເງື່ອນໄຂການໃຫ້ຄະແນນ</h3>
+          <h3 class="text-h7 mb-1 font-weight-bold section-title">
+            <v-icon>mdi-dot</v-icon>
+            ເງື່ອນໄຂການໃຫ້ຄະແນນ
+        </h3>
           <v-row dense class="scores-grid">
             <v-col cols="12" md="6" lg="4" class="score-column" v-for="(value, key) in conditionalScores" :key="key">
               <div class="score-item">
@@ -467,13 +521,16 @@ function getScoreLabel(key: string): string {
 
         <!-- Credit Risk Score -->
         <v-card flat class="pa-3 mb-2 credit-score-section">
-          <h3 class="text-h6 mb-2 font-weight-bold section-title">Credit Risk Score</h3>
+          <h3 class="text-h7 mb-2 font-weight-bold section-title">
+            <v-icon>mdi-dot</v-icon>
+            Credit Risk Score
+        </h3>
           <div class="text-center mb-2">
             <p class="text-subtitle-1 font-weight-bold">ຄະແນນສິນເຊື່ອຂອງທ່ານແມ່ນ</p>
           </div>
           
           <!-- ⭐ คะแนนขนาดใหญ่ - ใช้จาก API โดยตรง -->
-          <div class="score-display mx-auto mb-2" :style="{ backgroundColor: scoreColor }">
+          <div class="score-display mx-auto mb-3" :style="{ backgroundColor: scoreColor }">
             <span class="score-number">{{ creditScore }}</span>
           </div>
 
@@ -489,7 +546,10 @@ function getScoreLabel(key: string): string {
 
         <!-- Score Factors -->
         <v-card flat class="pa-3 mb-2 score-factors-section">
-          <h3 class="text-h6 mb-2 font-weight-bold section-title">SCORE FACTORS</h3>
+          <h3 class="text-h7 mb-2 font-weight-bold section-title">
+            <v-icon>mdi-dot</v-icon>
+            SCORE FACTORS
+        </h3>
           <div class="mb-2 text-body-2">
             <p>1. Your Credit Line greater than outstanding amount.</p>
             <p>2. You have 30-60 days overdue.</p>
@@ -522,10 +582,13 @@ function getScoreLabel(key: string): string {
 
         <!-- Financial Overview -->
         <v-card flat class="pa-3 mb-2">
-          <h3 class="text-h6 mb-2 font-weight-bold section-title">FINANCIAL OVERVIEW</h3>
+          <h3 class="text-h7 mb-2 font-weight-bold section-title">
+            <v-icon>mdi-dot</v-icon>
+            FINANCIAL OVERVIEW
+        </h3>
           
           <!-- Active Accounts -->
-          <div class="mb-1">
+          <div class="mb-1 font-weight-bold">
             <strong>Active Accounts With:</strong> {{ activeBanks }}
           </div>
 
@@ -553,7 +616,10 @@ function getScoreLabel(key: string): string {
 
         <!-- ⭐ ตารางสินเชื่อ (แสดงเฉพาะ ACTIVE เท่านั้น) -->
         <v-card flat class="pa-3 mb-2">
-          <h3 class="text-h6 mb-2 font-weight-bold section-title">ລາຍລະອຽດສິນເຊື່ອ (ACTIVE)</h3>
+          <h3 class="text-h7 mb-2 font-weight-bold section-title">
+            <v-icon>mdi-dot</v-icon>
+            ລາຍລະອຽດສິນເຊື່ອ (ACTIVE)
+          </h3>
           
           <!-- ถ้าไม่มีสินเชื่อ ACTIVE -->
           <v-alert v-if="loans.length === 0" type="info" variant="tonal" density="compact">
@@ -569,10 +635,10 @@ function getScoreLabel(key: string): string {
                 <tr>
                   <th class="text-center">ທະນາຄານ</th>
                   <th class="text-center">ຈຸດປະສົງ</th>
-                  <th class="text-right">ວົງເງິນສິນເຊື່ອ</th>
-                  <th class="text-right">ຍອດເຫຼືອໜີ້</th>
+                  <th class="text-center">ວົງເງິນສິນເຊື່ອ</th>
+                  <th class="text-center">ຍອດເຫຼືອໜີ້</th>
                   <th class="text-center">ສະກຸນເງິນ</th>
-                  <th class="text-right">ວັນທີຄ້າງຊຳລະ</th>
+                  <th class="text-center">ວັນທີຄ້າງຊຳລະ</th>
                   <th class="text-center">ປະເພດສິນເຊື່ອ</th>
                   <th class="text-center">ໄລຍະ</th>
                   <th class="text-center">ສະຖານະ</th>
@@ -580,23 +646,17 @@ function getScoreLabel(key: string): string {
               </thead>
               <tbody>
                 <tr class="bg-blue-lighten-5">
-                  <td class="text-center">{{ loan.bank }}</td>
-                  <td>{{ loan.purpose }}</td>
-                  <td class="text-right">{{ loan.creditLine }}</td>
-                  <td class="text-right">{{ loan.outstanding }}</td>
+                  <td class="text-center ">{{ loan.code_display }}</td>
+                  <td class="text-center">{{ loan.purpose }}</td>
+                  <td class="text-center">{{ loan.creditLine }}</td>
+                  <td class="text-center">{{ loan.outstanding }}</td>
                   <td class="text-center">{{ loan.currency }}</td>
-                  <td class="text-right">{{ loan.daysSlow }}</td>
-                  <td>{{ loan.loanType }}</td>
-                  <td>{{ loan.loanTerm }}</td>
-                  <td class="text-center">
-                    <v-chip 
-                      color="#35A646"
-                      size="small"
-                      variant="flat"
-                    >
-                      {{ loan.status }}
-                    </v-chip>
-                  </td>
+                  <td class="text-center">{{ loan.daysSlow }}</td>
+                  <td class="text-center">{{ loan.loanType }}</td>
+                  <td class="text-center">{{ loan.loanTerm }}</td>
+                  <!-- <td class="text-center"><v-chip color="#35A646"size="small"variant="flat">
+                      {{ loan.status }}</v-chip></td> -->
+                  <td class="text-center" >{{ loan.status }}</td>
                 </tr>
               </tbody>
             </v-table>
@@ -605,8 +665,8 @@ function getScoreLabel(key: string): string {
             <div v-if="loan.collaterals && loan.collaterals.length > 0" class="ml-8 mb-2">
                 <v-card flat color="grey-lighten-5" class="pa-2">
                 <div class="d-flex align-center mb-2">
-                    <v-icon size="small" class="mr-2" color="primary">mdi-shield-check</v-icon>
-                    <strong class="text-subtitle-2" style="color: #0b1d70;">
+                    <v-icon size="small" class="mr-2" color="#4472ad">mdi-shield-check</v-icon>
+                    <strong class="text-subtitle-2" >
                     ຫຼັກຊັບຄ້ຳປະກັນ ({{ loan.collateral_count }} ລາຍການ)
                     </strong>
                 </div>
@@ -614,36 +674,26 @@ function getScoreLabel(key: string): string {
                 <v-table density="compact" class="collateral-table">
                     <thead class="collateral-table-header">
                     <tr>
-                        <th class="text-white">ປະເພດຫຼັກຊັບ</th>
+                        <th class="text-white " style="width: 40%;">ປະເພດຫຼັກຊັບ</th>
 
-                        <th class="text-white text-right">ມູນຄ່າ</th>
-                        <th class="text-white text-center">ໜ່ວຍ</th>
-                        <th class="text-white text-center">ສະຖານະ</th>
+                        <th class="text-white text-center"style="width: 15%;">ມູນຄ່າ</th>
+                        <th class="text-white text-center"style="width: 10%;">ໜ່ວຍ</th>
+                        <th class="text-white text-center"style="width: 20%;">ສະຖານະ</th>
 
                     </tr>
                     </thead>
                     <tbody>
                     <tr v-for="(collateral, colIndex) in loan.collaterals" :key="colIndex" class="collateral-row">
-                        <td>
-                        <v-chip size="small" color="primary" variant="outlined">
-                            {{ collateral.col_type_name }}
+                        <td style="width: 40%;">
+                        <v-chip size="small" >
+                            {{ collateral.col_type_name_lao || collateral.col_type_name_eng }}
                         </v-chip>
                         </td>
-                        <td class="text-right">
-                        <span :class="collateral.value > 0 ? 'text-success font-weight-bold' : 'text-grey'">
-                            {{ formatNumber(collateral.value) }}
-                        </span>
-                        </td>
-                        <td class="text-center">{{ collateral.value_unit || '-' }}</td>
-                        <td class="text-center">
-                        <v-chip 
-                            size="x-small" 
-                            color="#35A646"
-                            variant="flat"
-                        >
-                            {{ collateral.status }}
-                        </v-chip>
-                        </td>
+                        <td class="text-center" style="width: 15%;">{{ formatNumber(collateral.value) }}</td>
+                        <td class="text-center" style="width: 10%;">{{ collateral.value_unit || '-' }}</td>
+                        <!-- <td class="text-center"><v-chip size="x-small" color="#35A646"variant="flat">
+                            {{ collateral.status }}</v-chip></td> -->
+                        <td class="text-center" style="width: 20%;">{{ collateral.status || '-'}}</td>
                     </tr>
                     </tbody>
                 </v-table>
@@ -660,7 +710,7 @@ function getScoreLabel(key: string): string {
           type="warning" 
           color="red"
           variant="tonal" 
-          class="mx-4 mb-2"
+          class="mx-4 mb-2 "
         >
           <strong>ຫມາຍເຫດ:</strong> ຂໍ້ມູນນີ້ແມ່ນນຳໃຊ້ເຂົ້າໃນວຽກງານພິຈາລະນາສິນເຊື່ອເທົ່ານັ້ນ.
         </v-alert>
@@ -697,12 +747,12 @@ function getScoreLabel(key: string): string {
 
 /* Header ตารางหลักประกัน - ใช้สีน้ำเงินเข้มเหมือนตารางอื่น */
 .collateral-table-header {
-  background-color: #4f9bff !important;
+  background-color: #4472ad !important;
 }
 
 .collateral-table-header th {
   color: white !important;
-  font-weight: bold !important;
+  font-weight: 500 !important;
   font-size: 11px !important;
   padding: 6px 8px !important;
   vertical-align: middle !important;
@@ -721,6 +771,7 @@ function getScoreLabel(key: string): string {
   padding: 6px 8px !important; 
   vertical-align: middle !important;
   border-bottom: 1px solid #f0f0f0;
+  font-weight: bold !important;
 }
 
 /* ปรับสีข้อความ */
@@ -746,7 +797,7 @@ function getScoreLabel(key: string): string {
 }
 
 .report-footer {
-  background: linear-gradient(135deg, #07165a 0%, #281192 100%);
+  background: #0a1e77;
 }
 /* === ตารางวงเงินรวม 2 คอลัมน์ จัดกึ่งกลาง กระชับสุด ๆ === */
 .mini-table-center {
@@ -775,7 +826,7 @@ function getScoreLabel(key: string): string {
 }
 
 .compact-center-table th {
-  background-color: #0b1d70 !important;
+  background-color: #0a1e77 !important;
   color: white !important;
   font-weight: bold !important;
   font-size: 13px !important;
@@ -789,7 +840,7 @@ function getScoreLabel(key: string): string {
 
 /* ลดช่องว่างระหว่างข้อความกับตาราง */
 .d-flex.gap-1 {
-  gap: 6px !important;
+  gap: 4px !important;
   align-items: center !important;
 }
 
@@ -797,7 +848,7 @@ function getScoreLabel(key: string): string {
 .mini-table-header,
 .factors-table-header,
 .bg-blue-lighten-4 {
-  background-color: #0b1d70 !important;
+  background-color: #0a1e77 !important;
 }
 
 .mini-table-header th,
@@ -842,7 +893,7 @@ function getScoreLabel(key: string): string {
 .document-info-left, .document-info-right { flex: 1; font-size: 14px; }
 .document-info-right { text-align: right; }
 
-.reference-info-card { padding: 12px !important; }
+.reference-info-card { padding: 5px !important; }
 .reference-info-flex { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .reference-info-item { flex: 1; font-size: 14px; }
 
@@ -863,16 +914,16 @@ function getScoreLabel(key: string): string {
 .score-item {
   display: flex;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 8px 16px;
   background: white;
   border-radius: 4px;
-  margin-bottom: 2px;
+  /* margin-bottom: 2px; */
 }
 .score-label { font-weight: 600; }
-.score-value { font-weight: bold; color: #0b1d70; }
+.score-value { font-weight: bold; color: #000000; }
 
 .score-display {
-  width: 380px;
+  width: 400px;
   height: 150px;
   display: flex;
   align-items: center;
@@ -909,11 +960,6 @@ function getScoreLabel(key: string): string {
 .score-bar.good { background-color: #FFFF00; flex: 300; color: #333; }
 .score-bar.very-good { background-color: #9ACD32; flex: 300; }
 .score-bar.extra { background-color: #228B22; flex: 300; }
-
-.report-footer {
-  background: linear-gradient(135deg, #07165a 0%, #281192 100%);
-}
-
 .collateral-table { font-size: 12px !important; background: white; }
 .collateral-table th, .collateral-table td { font-size: 11px !important; padding: 4px 8px !important; }
 .text-success { color: #2e7d32 !important; }
@@ -1280,17 +1326,6 @@ table th, table td,
     margin-bottom: 2px !important;
     color: white !important;
   }
-  .collateral-table-header {
-    background-color: #4f9bff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  
-  .collateral-table-header th {
-    color: white !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
   
   .collateral-table {
     font-size: 9pt !important;
@@ -1307,4 +1342,4 @@ table th, table td,
     padding: 2px 4px !important;
   }
 }
-</style>
+</style> 

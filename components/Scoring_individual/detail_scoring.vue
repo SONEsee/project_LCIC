@@ -53,6 +53,7 @@ const dataIndividual = computed(() => {
   }
   return [];
 });
+
 const confirmInsert = async () => {
   try {
     const noticonfirm = await Swal.fire({
@@ -64,13 +65,23 @@ const confirmInsert = async () => {
       showCancelButton: true,
       cancelButtonText: "ຍົກເລີກ",
     });
+    
     if (noticonfirm.isConfirmed) {
-      await individualStore.CreatInsertLog();
+      const success = await individualStore.CreatInsertLog();
+      
+      if (success) {
         sessionStorage.setItem("lcic_id", lcicID);
-        goPath("/scoring/reports/scoring_report");
+        
+        setTimeout(() => {
+          goPath("/scoring/reports/scoring_report");
+        }, 500);
+      }
     }
-  } catch (error) {}
+  } catch (error) {
+    // Handle error silently or show user-friendly message
+  }
 };
+
 onMounted(() => {
   individualStore.reques_mapsearch.query.lcic_id = lcicID;
   individualStore.from_insert_logserch.lcic_id = lcicID;
