@@ -165,86 +165,57 @@ export const IndividualStore = defineStore("individual", {
     },
 
     async CreatInsertLog() {
-      this.isLoading = true;
-      
-      try {
+    this.isLoading = true;
+    
+    try {
         const req = await axios.post(
-          `/api/api/scoring-individual/`,
-          this.from_insert_logserch,
-          {
+        `/api/api/scoring-individual/`,
+        this.from_insert_logserch,
+        {
             headers: {
-              Authorization: `Bearer ${this.token}`,
-              "Content-Type": "application/json",
+            Authorization: `Bearer ${this.token}`,
+            "Content-Type": "application/json",
             },
-          }
+        }
         );
         
         if (req.status === 200 || req.status === 201) {
-          const responseData = req.data;
-          
-          if (!responseData.success) {
-            throw new Error("API returned success: false");
-          }
-          
-          const createdLogs = responseData.created_logs;
-          
-          if (createdLogs && Array.isArray(createdLogs) && createdLogs.length > 0) {
+        // ดึงข้อมูลจาก response
+        const createdLogs = req.data?.created_logs;
+        
+        if (createdLogs && Array.isArray(createdLogs) && createdLogs.length > 0) {
             const firstLog = createdLogs[0];
             
+            // เตรียมข้อมูลเพื่อเก็บ
             this.response_insert_log = {
-              search_log_id: firstLog.search_log_id,
-              charge_id: firstLog.charge_id,
-              rec_reference_code: firstLog.rec_reference_code || "",
-              rec_sys_id: firstLog.rec_sys_id || firstLog.charge_id,
-              customerid: firstLog.customerid || "",
-              lcic_id: firstLog.lcic_id || this.from_insert_logserch.lcic_id,
-              rec_insert_date: firstLog.rec_insert_date || ""
+            search_log_id: firstLog.search_log_id,
+            charge_id: firstLog.charge_id,
+            rec_reference_code: firstLog.rec_reference_code || "",
+            rec_sys_id: firstLog.rec_sys_id || firstLog.charge_id,
+            customerid: firstLog.customerid || "",
+            lcic_id: firstLog.lcic_id || this.from_insert_logserch.lcic_id,
+            rec_insert_date: firstLog.rec_insert_date || ""
             };
             
-            const dataToStore = JSON.stringify(this.response_insert_log);
-            sessionStorage.setItem("scoring_data", dataToStore);
-            
-            const verifyData = sessionStorage.getItem("scoring_data");
-            
-            if (verifyData) {
-              await Swal.fire({
-                icon: "success",
-                title: "ສຳເລັດ",
-                text: "ດຶງຂໍ້ມູນບົດລາຍງານສຳເລັດແລ້ວ",
-                timer: 1500,
-                showConfirmButton: false
-              });
-              
-              return true;
-            } else {
-              throw new Error("Failed to save data to sessionStorage");
-            }
-            
-          } else {
-            throw new Error("No log data received from API");
-          }
-          
-        } else {
-          throw new Error(`Unexpected status code: ${req.status}`);
+            // บันทึกลง sessionStorage
+            sessionStorage.setItem("scoring_data", JSON.stringify(this.response_insert_log));
         }
         
-      } catch (error: any) {
-        const errorMessage = error.response?.data?.error || 
-                           error.response?.data?.details || 
-                           error.message ||
-                           "ບໍ່ສາມາດຄົ້ນຫາເອົາບົດລາຍງານໄດ້";
+        this.isLoading = false;
+        return true;
+        }
         
-        await Swal.fire({
-          icon: "error",
-          title: "ຜິດພາດ",
-          text: errorMessage,
+    } catch (error) {
+        Swal.fire({
+        icon: "error",
+        title: "ຜິດພາດ",
+        text: "ບໍ່ສາມາດຄົ້ນຫາເອົາບົດລາຍງານໄດ້",
         });
-        
         return false;
         
-      } finally {
+    } finally {
         this.isLoading = false;
-      }
+    }
     },
 
     async getTypeSearch() {

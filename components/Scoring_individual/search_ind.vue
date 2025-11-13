@@ -8,6 +8,8 @@ const { mapMemberInfo, getMemberName, getMemberDetails, getMemberCode } =
   useMemberInfo();
 const individualStore = IndividualStore();
 const { user, userId, isAdmin, isLoggedIn, userid } = useUserData();
+const hasSearched = ref(false); // เพิ่มบรรทัดนี้
+const isSearching = ref(false);
 const memberStore = MemberStore();
 const saerchCustomerID = ref("");
 const searchLcicID = ref("");
@@ -195,6 +197,9 @@ const clearSearch = () => {
 
   showLcicName.value = false;
   displayedLcicName.value = "";
+  
+  hasSearched.value = false;
+  isSearching.value = false; // ✅ เพิ่มบรรทัดนี้
 
   individualStore.reques_query.query.customerid = "";
   individualStore.reques_query.query.lcic_id = "";
@@ -229,21 +234,20 @@ watch(lcicSearchInput, (newValue) => {
   displayedLcicName.value = "";
 
   if (newValue && newValue.length > 0) {
+    hasSearched.value = true;
+    isSearching.value = true; // ✅ เริ่มค้นหา - ซ่อนข้อความ error ทันที
+    
     debounceSearch(async () => {
-      // ✅ บันทึก bnk_code เดิมไว้
       const originalBnkCode = individualStore.reques_query.query.bnk_code;
       
-      // ✅ เรียก API โดยไม่ filter ธนาคาร
       individualStore.reques_query.query.lcic_id = newValue;
       individualStore.reques_query.query.customerid = "";
       individualStore.reques_query.query.bnk_code = "";
       
       await individualStore.saerchListIndividual();
       
-      // ✅ คืนค่า bnk_code เดิม
       individualStore.reques_query.query.bnk_code = originalBnkCode;
 
-      // ✅ หาข้อมูลจากธนาคารตัวเองก่อน
       const matchedItem = dataReques.value.find(
         (item) =>
           item.lcic_id?.toString().startsWith(newValue) &&
@@ -265,7 +269,6 @@ watch(lcicSearchInput, (newValue) => {
           bankDataMessage.value = "";
         }
       } else {
-        // ✅ ถ้าไม่เจอในธนาคารตัวเอง หาจากธนาคารอื่น
         const anyMatch = dataReques.value.find((item) =>
           item.lcic_id?.toString().startsWith(newValue)
         );
@@ -280,12 +283,16 @@ watch(lcicSearchInput, (newValue) => {
             saerchCustomerID.value = "";
             customerSearchInput.value = "";
             showBankMessage.value = true;
-            // bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
           }
         }
       }
+      
+      isSearching.value = false; // ✅ ค้นหาเสร็จแล้ว
     }, 500);
   } else {
+    hasSearched.value = false;
+    isSearching.value = false; // ✅ ไม่มีการค้นหา
+    
     saerchCustomerID.value = "";
     customerSearchInput.value = "";
     displayedLcicName.value = "";
@@ -383,6 +390,26 @@ onMounted(async () => {
                     color="primary"
                     rounded
                   ></v-text-field>
+                    <v-fade-transition>
+                    <p
+                      class="ml-2 error-message"
+                      v-if="hasSearched && 
+                            !isSearching &&
+                            displayedLcicName === '' && 
+                            searchLcicID !== '' && 
+                            !individualStore.reques_query.isLoading"
+                    >
+                      <strong>
+                        ບໍ່ພົບລະຫັດ ຂສລ ນີ້
+                        <!-- <b
+                          class="register-link"
+                          @click="goPath('/backend/register_lcic')"
+                        >
+                          ກົດທີ່ນີ້ເພື່ອອອກລະຫັດ ຂສລ ໃໝ່
+                        </b> -->
+                      </strong>
+                    </p>
+                  </v-fade-transition>
 
                   <v-slide-y-transition>
                     <div
@@ -510,6 +537,34 @@ onMounted(async () => {
 
 <style scoped>
 /* Container & Background */
+.error-message {
+  color: #f50b0b;
+  font-size: 14px;
+  font-weight: 500;
+  animation: fadeInSlide 0.3s ease-out;
+}
+
+.register-link {
+  color: #2563eb;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: all 0.2s ease;
+}
+
+.register-link:hover {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .search-container {
   max-width: 800px;
   margin: 0 auto;
