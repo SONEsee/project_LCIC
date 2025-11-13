@@ -816,7 +816,7 @@ onMounted(async () => {
             class="ml-2"
             color="red-lighten-4"
             flat
-            @click="RejectInsertData(`n-${item.BID}`)"
+            @click="RejectInsertData(`${item.BID}`)"
             v-if="item.statussubmit === '1'"
             :disabled="isConfirmButtonDisabled(item)"
           >

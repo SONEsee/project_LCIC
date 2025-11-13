@@ -467,7 +467,7 @@ async RejectUploadLoan(id:string) {
   
     
     const res = await axios.post(
-      `/api/api/reject_individual_loan/${id}/`,
+      `/api/api/borrower/reject/${id}/`,
       
       {
         headers: {
