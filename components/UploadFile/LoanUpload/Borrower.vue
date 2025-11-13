@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { MemberStore } from "@/stores/memberinfo";
-import { IndividualStore } from "~/stores/searchindividual";
-const inDividualStore = IndividualStore();
+import { BorrowerStore } from "~/stores/borrower";
+const inDividualStore = BorrowerStore();
 import { useMemberInfo } from "@/composables/memberInfo";
 const { mapMemberInfo, getMemberName, getMemberDetails } = useMemberInfo();
 import { useUserData } from "~/composables/useUserData";
@@ -44,11 +44,11 @@ async function onChangPage(value: number) {
 
 const headers = computed(() => {
   const baseHeaders = [
-    { title: "ໄອດີ", value: "FID" },
+    { title: "ໄອດີ", value: "BID" },
     { title: "ຊື່ໄຟລ໌", value: "fileName" },
-    { title: "ຂະໜາດຟາຍ", value: "file_size" },
+    { title: "ຂະໜາດຟາຍ", value: "fileSize" },
     { title: "ໄລຍະເວລາ", value: "period" },
-    { title: "ຂໍ້ມູນ dispute", value: "dispuste" },
+    // { title: "ຂໍ້ມູນ dispute", value: "dispuste" },
     { title: "ສະຖານະ", value: "statussubmit" },
     { title: "ອັດຕາສ່ວນ(ຜິດພາດ)", value: "percentage" },
     { title: "ການດຳເນີນການ", value: "actions", sortable: false },
@@ -236,7 +236,7 @@ const latestPeriodByUser = computed(() => {
 
   const periodMap: Record<
     string,
-    { period: string; fid: string; statussubmit: string }
+    { period: string; bid: number; statussubmit: string }
   > = {};
 
   data.forEach((item) => {
@@ -246,7 +246,7 @@ const latestPeriodByUser = computed(() => {
     if (!periodMap[userId] || currentPeriod > periodMap[userId].period) {
       periodMap[userId] = {
         period: currentPeriod,
-        fid: item.FID,
+        bid: item.BID,
         statussubmit: item.statussubmit,
       };
     }
@@ -258,7 +258,7 @@ const latestPeriodWithStatus0ByUser = computed(() => {
   const data = inDividualStore.respons_list_file_insdividual_loan?.results;
   if (!Array.isArray(data)) return {};
 
-  const periodMap: Record<string, { period: string; fid: string }> = {};
+  const periodMap: Record<string, { period: string; bid: number }> = {};
 
   data.forEach((item) => {
     if (item.statussubmit !== "0") return;
@@ -269,7 +269,7 @@ const latestPeriodWithStatus0ByUser = computed(() => {
     if (!periodMap[userId] || currentPeriod > periodMap[userId].period) {
       periodMap[userId] = {
         period: currentPeriod,
-        fid: item.FID,
+        bid: item.BID,
       };
     }
   });
@@ -282,7 +282,7 @@ const shouldShowUploadButton = (item: any) => {
   const latestForUser = latestPeriodWithStatus0ByUser.value[item.user_id];
   if (!latestForUser) return false;
 
-  if (item.FID !== latestForUser.fid) return false;
+  if (item.BID !== latestForUser.bid) return false;
 
   return true;
 };
@@ -357,7 +357,7 @@ const statistics = computed(() => {
     },
   ];
 });
-const confirmInsertData = async (fid: string) => {
+const confirmInsertData = async (bid: string) => {
   const notification = await Swal.fire({
     icon: "warning",
     title: "ຄຳເຕືອນ",
@@ -368,11 +368,11 @@ const confirmInsertData = async (fid: string) => {
   });
 
   if (notification.isConfirmed) {
-    await inDividualStore.confirmUploadLoan(fid);
+    await inDividualStore.confirmUploadLoan(bid);
     await inDividualStore.getListIndividualLoan();
   }
 };
-const UnloadData = async (fid: string) => {
+const UnloadData = async (bid: string) => {
   const notification = await Swal.fire({
     icon: "warning",
     title: "ຄຳເຕືອນ",
@@ -383,7 +383,7 @@ const UnloadData = async (fid: string) => {
   });
   await inDividualStore.getListIndividualLoan();
   if (notification.isConfirmed) {
-    await inDividualStore.UnloadLoan(fid);
+    await inDividualStore.UnloadLoan(bid);
     await inDividualStore.getListIndividualLoan();
   }
 };
@@ -417,11 +417,11 @@ onMounted(async () => {
       <v-card-text>
         <div class="d-flex align-center">
           <v-icon size="32" color="primary" class="mr-3">
-            mdi-account-tie-outline
+            mdi-account-multiple-outline
           </v-icon>
           <div>
             <h2 class="text-h5 font-weight-medium text-primary">
-              ການອັບໂຫຼດຂໍ້ມູນເງິນກູ້ (ບຸກຄົນ)
+              ການອັບໂຫຼດຂໍ້ມູນຜູ້ກູ້ຮວ່ມ
             </h2>
             <p class="text-caption text-medium-emphasis mb-0">
               ຈັດການແລະຕິດຕາມຂໍ້ມູນການອັບໂຫຼດ
@@ -680,13 +680,13 @@ onMounted(async () => {
         class="elevation-0 text-no-wrap"
         hover
       >
-        <template v-slot:header.FID="{ column }">
+        <template v-slot:header.BID="{ column }">
           <b style="color: blue">{{ column.title }}</b>
         </template>
         <template v-slot:header.fileName="{ column }">
           <b style="color: blue">{{ column.title }}</b>
         </template>
-        <template v-slot:header.file_size="{ column }">
+        <template v-slot:header.fileSize="{ column }">
           <b style="color: blue">{{ column.title }}</b>
         </template>
         <template v-slot:header.period="{ column }">
@@ -768,8 +768,9 @@ onMounted(async () => {
             ><strong>ລໍຖ້າກວດສອບ</strong></v-chip
           >
         </template>
-        <template v-slot:item.file_size="{ item }">
-          {{ item.file_size }}
+        <template v-slot:item.fileSize="{ item }">
+          {{ (Number(item.fileSize) / (1024 * 1024)).toFixed(4)
+}} MB
         </template>
         <template v-slot:item.fileName="{ item }" style="font-size: small">
           {{ item.fileName.slice(0, 20)
@@ -794,7 +795,7 @@ onMounted(async () => {
             size="small"
             color="info"
             v-else
-            @click="goPath(`/disuste/?id_dispust=n-${item.FID}`)"
+            @click="goPath(`/disuste/?id_dispust=n-${item.BID}`)"
             density="compact"
             variant="flat"
           >
@@ -805,7 +806,7 @@ onMounted(async () => {
           <v-btn
             color="success"
             flat
-            @click="confirmInsertData(`n-${item.FID}`)"
+            @click="confirmInsertData((item as any).BID)"
             v-if="item.statussubmit === '1'"
             :disabled="isConfirmButtonDisabled(item)"
           >
@@ -815,7 +816,7 @@ onMounted(async () => {
             class="ml-2"
             color="red-lighten-4"
             flat
-            @click="RejectInsertData(`n-${item.FID}`)"
+            @click="RejectInsertData(`${item.BID}`)"
             v-if="item.statussubmit === '1'"
             :disabled="isConfirmButtonDisabled(item)"
           >
@@ -826,7 +827,7 @@ onMounted(async () => {
             color="warning"
             v-if="shouldShowUploadButton(item)"
             flat
-            @click="UnloadData(`n-${item.FID}`)"
+            @click="UnloadData(`n-${item.BID}`)"
           >
             ອັນໂຫຼດ
           </v-btn>
@@ -837,11 +838,19 @@ onMounted(async () => {
 
         <template v-slot:item.percentage="{ item }">
           <div class="d-flex align-center">
-            <v-progress-linear
+            <v-progress-linear v-if="item.statussubmit==='2'"
               :model-value="item.percentage || 0"
               height="8"
               rounded
-              color="primary"
+              color="error"
+              class="mr-2"
+              style="min-width: 60px"
+            ></v-progress-linear>
+            <v-progress-linear v-else
+              :model-value="item.percentage || 0"
+              height="8"
+              rounded
+              color="success"
               class="mr-2"
               style="min-width: 60px"
             ></v-progress-linear>
@@ -853,7 +862,7 @@ onMounted(async () => {
             color="primary"
             prepend-icon="mdi-eye"
             flat
-            @click="goPath(`/detailupload?code=n-${item.FID}`)"
+            @click="goPath(`/detailupload?code=n-${item.BID}`)"
             >ລາຍລະອຽດ</v-btn
           >
         </template>

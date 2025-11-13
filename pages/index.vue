@@ -20,6 +20,8 @@
                 class="rounded-lg"
                 variant="outlined"
                 style="border-radius: 1px;"
+                hide-details
+                flat
               />
             </div>
             <div class="mt-1 text-start rounded-lg" >

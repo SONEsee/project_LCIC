@@ -246,7 +246,7 @@ const filters = ref({
 });
 
 const statusOptions = ref([
-  { title: "ສຳເລັດການໂຫຼດ", value: "0" },
+  { title: "ລໍຖ້າກວດສອບ", value: "0" },
   { title: "ລໍຖ້າຢືນຢັນ", value: "1" },
   { title: "ປະຕິເສດ", value: "2" },
   { title: "ກຳລັງອັບໂຫຼດ", value: "3" },
