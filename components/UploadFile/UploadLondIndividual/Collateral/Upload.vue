@@ -766,7 +766,7 @@ onMounted(async () => {
             v-if="item.statussubmit === '1'"
             style="font-size: small"
             size="small"
-            ><strong>ສຳເລັດການໂຫຼດ</strong></v-chip
+            ><strong>ລໍຖ້າກວດສອບ</strong></v-chip
           >
         </template>
         <template v-slot:item.fileSize="{ item }">
