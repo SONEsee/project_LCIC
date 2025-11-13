@@ -677,7 +677,7 @@ function getScoreLabel(key: string): string {
                         <th class="text-white " style="width: 40%;">ປະເພດຫຼັກຊັບ</th>
 
                         <th class="text-white text-center"style="width: 15%;">ມູນຄ່າ</th>
-                        <th class="text-white text-center"style="width: 10%;">ໜ່ວຍ</th>
+                        <th class="text-white text-center"style="width: 10%;">ສະກຸນເງິນ</th>
                         <th class="text-white text-center"style="width: 20%;">ສະຖານະ</th>
 
                     </tr>
@@ -735,17 +735,21 @@ function getScoreLabel(key: string): string {
 </template>
 
 <style scoped>
-/* === คงทุกอย่างเหมือนเดิม ยกเว้นสีตารางที่ขอ === */
-/* ⭐ ปรับแต่ง CSS สำหรับตารางหลักประกัน */
+/* ============================================
+   🎯 ส่วนที่ 1: CSS สำหรับหน้าจอปกติ (NOT PRINT)
+   ฟอนต์ปกติ: 12px
+   ============================================ */
+
+/* === ตารางหลักประกัน (Collateral Table) === */
 .collateral-table { 
-  font-size: 12px !important; 
+  font-size: 12px !important; /* 🔧 ฟอนต์ปกติ */
   background: white; 
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   overflow: hidden;
+  line-height: 1.3 !important;
 }
 
-/* Header ตารางหลักประกัน - ใช้สีน้ำเงินเข้มเหมือนตารางอื่น */
 .collateral-table-header {
   background-color: #4472ad !important;
 }
@@ -753,9 +757,11 @@ function getScoreLabel(key: string): string {
 .collateral-table-header th {
   color: white !important;
   font-weight: 500 !important;
-  font-size: 11px !important;
+  font-size: 12px !important; /* 🔧 ฟอนต์ header */
   padding: 6px 8px !important;
   vertical-align: middle !important;
+  line-height: 1.3 !important;
+  height: 36px !important;
 }
 
 .collateral-table tbody tr {
@@ -763,18 +769,26 @@ function getScoreLabel(key: string): string {
 }
 
 .collateral-table tbody tr:hover {
-  background-color: #f0f4ff !important; /* สีฟ้าอ่อนเมื่อ hover */
+  background-color: #f0f4ff !important;
 }
 
 .collateral-row td {
-  font-size: 11px !important; 
-  padding: 6px 8px !important; 
+  font-size: 12px !important; /* 🔧 ฟอนต์ข้อมูล */
+  padding: 6px 8px !important;
   vertical-align: middle !important;
   border-bottom: 1px solid #f0f0f0;
   font-weight: bold !important;
+  line-height: 1.3 !important;
+  height: 34px !important;
 }
 
-/* ปรับสีข้อความ */
+.collateral-table .v-chip {
+  font-weight: 500;
+  font-size: 11px !important;
+  padding: 3px 8px !important;
+  height: 24px !important;
+}
+
 .text-success { 
   color: #2e7d32 !important; 
   font-weight: 600 !important;
@@ -784,22 +798,60 @@ function getScoreLabel(key: string): string {
   color: #9e9e9e !important; 
 }
 
-/* ปรับ v-chip ในตาราง */
-.collateral-table .v-chip {
-  font-weight: 500;
-}
-/* Footer contact info */
-.footer-contact {
-  color: white;
-  font-size: 16px;
-  line-height: 1.6;
-  font-weight: 500 !important;
+/* === ตาราง Score Factors === */
+.factors-table {
+  font-size: 12px !important; /* 🔧 ฟอนต์ปกติ */
+  line-height: 1.3 !important;
 }
 
-.report-footer {
-  background: #0a1e77;
+.factors-table-header {
+  background-color: #0a1e77 !important;
 }
-/* === ตารางวงเงินรวม 2 คอลัมน์ จัดกึ่งกลาง กระชับสุด ๆ === */
+
+.factors-table-header th {
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 12px !important; /* 🔧 ฟอนต์ header */
+  padding: 6px 8px !important;
+  line-height: 1.3 !important;
+  height: 36px !important;
+}
+
+.factors-table tbody td {
+  font-size: 12px !important; /* 🔧 ฟอนต์ข้อมูล */
+  padding: 6px 8px !important;
+  line-height: 1.3 !important;
+  height: 34px !important;
+}
+
+/* === ตาราง Loan (สินเชื่อ) === */
+.bg-blue-lighten-4 {
+  background-color: #0a1e77 !important;
+}
+
+.bg-blue-lighten-4 th {
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 12px !important; /* 🔧 ฟอนต์ header */
+  padding: 6px 8px !important;
+  line-height: 1.3 !important;
+  height: 38px !important;
+}
+
+.bg-blue-lighten-5 {
+  background-color: #e6e8f5 !important;
+  color: #000 !important;
+}
+
+.bg-blue-lighten-5 td {
+  font-size: 12px !important; /* 🔧 ฟอนต์ข้อมูล */
+  padding: 6px 8px !important;
+  font-weight: bold !important;
+  line-height: 1.3 !important;
+  height: 36px !important;
+}
+
+/* === ตาราง Financial Overview (ตารางวงเงินรวม) === */
 .mini-table-center {
   display: inline-block;
   vertical-align: middle;
@@ -812,59 +864,53 @@ function getScoreLabel(key: string): string {
   border: 1px solid #ccc;
   border-radius: 4px;
   overflow: hidden;
-  font-size: 13px !important;
-  width: 200px !important;
+  font-size: 12px !important; /* 🔧 ฟอนต์ปกติ */
+  width: 220px !important;
+  line-height: 1.3 !important;
 }
 
 .compact-center-table th,
 .compact-center-table td {
-  padding: 3px 8px !important;
+  padding: 6px 8px !important;
   text-align: center !important;
   vertical-align: middle !important;
   white-space: nowrap;
   font-weight: 500 !important;
+  line-height: 1.3 !important;
 }
 
 .compact-center-table th {
   background-color: #0a1e77 !important;
   color: white !important;
   font-weight: bold !important;
-  font-size: 13px !important;
+  font-size: 12px !important; /* 🔧 ฟอนต์ header */
+  height: 32px !important;
 }
 
 .compact-center-table td {
   background-color: #f8f9fa;
-  font-size: 13px !important;
+  font-size: 12px !important; /* 🔧 ฟอนต์ข้อมูล */
   font-weight: bold !important;
+  height: 30px !important;
 }
 
-/* ลดช่องว่างระหว่างข้อความกับตาราง */
 .d-flex.gap-1 {
   gap: 4px !important;
   align-items: center !important;
 }
 
-/* --- เปลี่ยนสีเฉพาะ 3 ตาราง --- */
-.mini-table-header,
-.factors-table-header,
-.bg-blue-lighten-4 {
-  background-color: #0a1e77 !important;
+/* === ส่วนอื่นๆ (คงเดิม) === */
+.footer-contact {
+  color: white;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 500 !important;
 }
 
-.mini-table-header th,
-.factors-table-header th,
-.bg-blue-lighten-4 th {
-  color: white !important;
-  font-weight: bold !important;
+.report-footer {
+  background: #0a1e77;
 }
 
-/* แถวรองของ Loan Table */
-.bg-blue-lighten-5 {
-  background-color: #e6e8f5 !important; /* สีอ่อนรองรับ #0b1d70 */
-  color: #000 !important;
-}
-
-/* --- ส่วนอื่น ๆ คงเดิมทั้งหมด --- */
 .report-wrapper {
   background-color: #f5f5f5;
   min-height: 100vh;
@@ -886,23 +932,58 @@ function getScoreLabel(key: string): string {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.section-title { font-size: 16px; }
+.section-title { 
+  font-size: 16px; 
+}
 
-.document-info-wrapper { margin-bottom: 8px; }
-.document-info-flex { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
-.document-info-left, .document-info-right { flex: 1; font-size: 14px; }
-.document-info-right { text-align: right; }
+.document-info-wrapper { 
+  margin-bottom: 8px; 
+}
 
-.reference-info-card { padding: 5px !important; }
-.reference-info-flex { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
-.reference-info-item { flex: 1; font-size: 14px; }
+.document-info-flex { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start; 
+  gap: 20px; 
+}
+
+.document-info-left, 
+.document-info-right { 
+  flex: 1; 
+  font-size: 14px; 
+}
+
+.document-info-right { 
+  text-align: right; 
+}
+
+.reference-info-card { 
+  padding: 5px !important; 
+}
+
+.reference-info-flex { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  gap: 20px; 
+}
+
+.reference-info-item { 
+  flex: 1; 
+  font-size: 14px; 
+}
 
 .mini-table {
   max-width: 400px !important;
   width: 400px !important;
   margin: 0;
 }
-.mini-table td { padding: 8px !important; font-size: 13px !important; font-weight: bold !important; }
+
+.mini-table td { 
+  padding: 8px !important; 
+  font-size: 13px !important; 
+  font-weight: bold !important; 
+}
 
 .info-row {
   display: flex;
@@ -917,10 +998,16 @@ function getScoreLabel(key: string): string {
   padding: 8px 16px;
   background: white;
   border-radius: 4px;
-  /* margin-bottom: 2px; */
 }
-.score-label { font-weight: 600; }
-.score-value { font-weight: bold; color: #000000; }
+
+.score-label { 
+  font-weight: 600; 
+}
+
+.score-value { 
+  font-weight: bold; 
+  color: #000000; 
+}
 
 .score-display {
   width: 400px;
@@ -931,6 +1018,7 @@ function getScoreLabel(key: string): string {
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
+
 .score-number {
   font-size: 80px;
   font-weight: bold;
@@ -945,6 +1033,7 @@ function getScoreLabel(key: string): string {
   border-radius: 4px;
   overflow: hidden;
 }
+
 .score-bar {
   display: flex;
   align-items: center;
@@ -955,29 +1044,41 @@ function getScoreLabel(key: string): string {
   text-align: center;
   padding: 4px;
 }
-.score-bar.poor { background-color: #FF0000; flex: 300; }
-.score-bar.medium { background-color: #FFA500; flex: 300; }
-.score-bar.good { background-color: #FFFF00; flex: 300; color: #333; }
-.score-bar.very-good { background-color: #9ACD32; flex: 300; }
-.score-bar.extra { background-color: #228B22; flex: 300; }
-.collateral-table { font-size: 12px !important; background: white; }
-.collateral-table th, .collateral-table td { font-size: 11px !important; padding: 4px 8px !important; }
-.text-success { color: #2e7d32 !important; }
-.text-grey { color: #9e9e9e !important; }
 
-/* ... โค้ดเดิมทั้งหมด ... */
+.score-bar.poor { 
+  background-color: #FF0000; 
+  flex: 300; 
+}
 
-/* วางตรงนี้ ก่อน @media print */
+.score-bar.medium { 
+  background-color: #FFA500; 
+  flex: 300; 
+}
+
+.score-bar.good { 
+  background-color: #FFFF00; 
+  flex: 300; 
+  color: #333; 
+}
+
+.score-bar.very-good { 
+  background-color: #9ACD32; 
+  flex: 300; 
+}
+
+.score-bar.extra { 
+  background-color: #228B22; 
+  flex: 300; 
+}
+
 table,
 .v-table,
 .factors-table,
 .collateral-table,
 .mini-table,
 .report-container table {
-
   border: 1px solid #ccc !important;
   border-radius: 4px !important;
-
 }
 
 table th, table td,
@@ -990,7 +1091,10 @@ table th, table td,
   border: none !important;
 }
 
-/* (คัดลอกจากโค้ดเดิมของคุณมาแบบไม่แตะเลย) */
+/* ============================================
+   🖨️ ส่วนที่ 2: CSS สำหรับการพิมพ์ (PRINT)
+   ฟอนต์: 9pt ทั่วไป, Smooth & Clean
+   ============================================ */
 @media print {
   .no-print {
     display: none !important;
@@ -1009,18 +1113,131 @@ table th, table td,
 
   @page {
     size: A4;
-    margin: 8mm;
+    margin: 10mm;
   }
 
   body {
     margin: 0;
     padding: 0;
-    font-size: 10pt !important;
+    font-size: 9pt !important; /* 🔧 ฟอนต์ทั่วไป */
+    line-height: 1.3 !important;
   }
 
+  /* === ตาราง Collateral (พิมพ์) - ฟอนต์ 9pt === */
+  .collateral-table {
+    font-size: 8pt !important; /* 🔧 ฟอนต์ */
+    margin-top: 3px !important;
+    line-height: 1.3 !important;
+    page-break-inside: avoid;
+  }
+
+  .collateral-table-header th {
+    font-size: 8pt !important; /* 🔧 ฟอนต์ header */
+    padding: 3px 5px !important;
+    line-height: 1.3 !important;
+    height: 20px !important;
+    background-color: #4472ad !important;
+    color: white !important;
+  }
+
+  .collateral-row td {
+    font-size: 8pt !important; /* 🔧 ฟอนต์ข้อมูล */
+    padding: 3px 5px !important;
+    line-height: 1.3 !important;
+    height: 18px !important;
+  }
+
+  .collateral-table .v-chip {
+    font-size: 8pt !important;
+    padding: 2px 4px !important;
+    height: 16px !important;
+  }
+
+  /* === ตาราง Score Factors (พิมพ์) - ฟอนต์ 9pt === */
+  .factors-table {
+    font-size: 9pt !important; /* 🔧 ฟอนต์ */
+    line-height: 1.3 !important;
+    page-break-inside: avoid;
+  }
+
+  .factors-table-header th {
+    padding: 3px 5px !important;
+    font-size: 9pt !important; /* 🔧 ฟอนต์ header */
+    line-height: 1.3 !important;
+    height: 20px !important;
+    background-color: #0a1e77 !important;
+    color: white !important;
+  }
+
+  .factors-table tbody td {
+    padding: 3px 5px !important;
+    font-size: 9pt !important; /* 🔧 ฟอนต์ข้อมูล */
+    line-height: 1.3 !important;
+    height: 18px !important;
+  }
+
+  /* === ตาราง Loan (พิมพ์) - ฟอนต์ 9pt === */
+  .bg-blue-lighten-4 {
+    background-color: #0a1e77 !important;
+  }
+
+  .bg-blue-lighten-4 th {
+    font-size: 8pt !important; /* 🔧 ฟอนต์ header */
+    padding: 3px 5px !important;
+    line-height: 1.3 !important;
+    height: 22px !important;
+    color: white !important;
+    background-color: #0a1e77 !important;
+  }
+
+  .bg-blue-lighten-5 {
+    background-color: #e6e8f5 !important;
+  }
+
+  .bg-blue-lighten-5 td {
+    font-size: 8pt !important; /* 🔧 ฟอนต์ข้อมูล */
+    padding: 3px 5px !important;
+    line-height: 1.3 !important;
+    height: 20px !important;
+  }
+
+  /* === ตาราง Financial Overview (พิมพ์) - ฟอนต์ 9pt === */
+  .compact-center-table {
+    font-size: 8pt !important; /* 🔧 ฟอนต์ */
+    width: 180px !important;
+    line-height: 1.3 !important;
+    page-break-inside: avoid;
+  }
+
+  .compact-center-table th {
+    padding: 3px 5px !important;
+    font-size: 8pt !important; /* 🔧 ฟอนต์ header */
+    line-height: 1.3 !important;
+    height: 20px !important;
+    background-color: #0a1e77 !important;
+    color: white !important;
+  }
+
+  .compact-center-table td {
+    padding: 3px 5px !important;
+    font-size: 8pt !important; /* 🔧 ฟอนต์ข้อมูล */
+    line-height: 1.3 !important;
+    height: 18px !important;
+  }
+
+  .mini-table-center {
+    line-height: 1.3 !important;
+  }
+
+  .d-flex.gap-1 strong {
+    font-size: 8pt !important;
+  }
+
+  /* === ส่วนอื่นๆ (Print) - ทุกอย่างเป็น 9pt === */
   .section-title {
-    font-size: 12pt !important;
-    margin-bottom: 2px !important;
+    font-size: 10pt !important;
+    margin-bottom: 3px !important;
+    line-height: 1.3 !important;
   }
 
   .header-section {
@@ -1028,35 +1245,40 @@ table th, table td,
   }
 
   .header-section h3 {
-    font-size: 12pt !important;
-    margin-bottom: 1px !important;
+    font-size: 10pt !important;
+    margin-bottom: 2px !important;
+    line-height: 1.3 !important;
   }
 
   .header-section p {
     font-size: 9pt !important;
-    margin-bottom: 1px !important;
+    margin-bottom: 2px !important;
+    line-height: 1.3 !important;
   }
 
   .header-section .my-2 {
-    margin: 1px 0 !important;
+    margin: 2px 0 !important;
     font-size: 9pt !important;
   }
 
   .report-title {
-    margin-bottom: 2px !important;
+    margin-bottom: 3px !important;
+    padding: 4px !important;
   }
 
   .report-title h2 {
-    font-size: 13pt !important;
-    margin-bottom: 1px !important;
+    font-size: 11pt !important;
+    margin-bottom: 2px !important;
+    line-height: 1.3 !important;
   }
 
   .report-title p {
-    font-size: 10pt !important;
+    font-size: 9pt !important;
+    line-height: 1.3 !important;
   }
 
   .document-info-wrapper {
-    margin-bottom: 2px !important;
+    margin-bottom: 3px !important;
     padding: 0 4px !important;
     page-break-inside: avoid !important;
   }
@@ -1071,14 +1293,14 @@ table th, table td,
 
   .document-info-left,
   .document-info-right {
-    font-size: 10pt !important;
-    line-height: 1.2 !important;
+    font-size: 9pt !important;
+    line-height: 1.3 !important;
     page-break-inside: avoid !important;
   }
 
   .reference-info-card {
-    padding: 3px !important;
-    margin-bottom: 2px !important;
+    padding: 4px !important;
+    margin-bottom: 3px !important;
     page-break-inside: avoid !important;
   }
 
@@ -1090,20 +1312,21 @@ table th, table td,
   }
 
   .reference-info-item {
-    font-size: 10pt !important;
-    line-height: 1.2 !important;
+    font-size: 9pt !important;
+    line-height: 1.3 !important;
   }
 
   .personal-info-section {
-    padding: 3px !important;
-    margin-bottom: 2px !important;
+    padding: 4px !important;
+    margin-bottom: 3px !important;
+    page-break-inside: avoid;
   }
 
   .personal-info-section .personal-info-grid {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 2px !important;
-    column-gap: 4px !important;
+    gap: 3px !important;
+    column-gap: 5px !important;
   }
 
   .personal-info-section .info-column {
@@ -1113,26 +1336,28 @@ table th, table td,
 
   .personal-info-section .info-row {
     padding: 2px 0 !important;
-    font-size: 10pt !important;
+    font-size: 9pt !important;
     display: flex !important;
     justify-content: space-between !important;
     border-bottom: 1px solid #e0e0e0 !important;
+    line-height: 1.3 !important;
   }
 
   .personal-info-section .info-row span {
-    font-size: 10pt !important;
+    font-size: 9pt !important;
   }
 
   .conditional-scores-section {
-    padding: 3px !important;
-    margin-bottom: 2px !important;
+    padding: 4px !important;
+    margin-bottom: 3px !important;
+    page-break-inside: avoid;
   }
 
   .conditional-scores-section .scores-grid {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 2px !important;
-    column-gap: 4px !important;
+    gap: 3px !important;
+    column-gap: 5px !important;
   }
 
   .conditional-scores-section .score-column {
@@ -1141,75 +1366,73 @@ table th, table td,
   }
 
   .conditional-scores-section .score-item {
-    padding: 2px 4px !important;
+    padding: 3px 5px !important;
     margin-bottom: 2px !important;
-    font-size: 10pt !important;
+    font-size: 8pt !important;
+    line-height: 1.3 !important;
   }
 
   .conditional-scores-section .score-label,
   .conditional-scores-section .score-value {
-    font-size: 10pt !important;
+    font-size: 8pt !important;
   }
 
   .credit-score-section {
     page-break-inside: avoid;
-    padding: 3px !important;
-    margin-bottom: 2px !important;
+    padding: 4px !important;
+    margin-bottom: 3px !important;
   }
 
   .credit-score-section .text-subtitle-1 {
-    font-size: 10pt !important;
-    margin-bottom: 2px !important;
+    font-size: 8pt !important;
+    margin-bottom: 3px !important;
+    line-height: 1.3 !important;
   }
 
   .score-display {
-    width: 300px !important;
-    height: 100px !important;
+    width: 320px !important;
+    height: 110px !important;
     margin-bottom: 4px !important;
   }
 
   .score-number {
-    font-size: 50px !important;
+    font-size: 55px !important;
   }
 
   .score-bar-container {
-    height: 25px !important;
+    height: 28px !important;
     margin-bottom: 4px !important;
   }
 
   .score-bar {
     font-size: 8pt !important;
-    padding: 1px !important;
+    padding: 2px !important;
+    line-height: 1.2 !important;
   }
 
   .score-factors-section {
     page-break-inside: avoid;
-    padding: 3px !important;
-    margin-bottom: 2px !important;
+    padding: 4px !important;
+    margin-bottom: 3px !important;
   }
 
   .score-factors-section .text-body-2,
   .score-factors-section p {
-    font-size: 9pt !important;
-    margin-bottom: 1px !important;
+    font-size: 8pt !important;
+    margin-bottom: 2px !important;
+    line-height: 1.3 !important;
   }
 
-  .factors-table {
-    font-size: 9pt !important;
-  }
-
-  .factors-table th,
-  .factors-table td {
-    padding: 2px !important;
-    font-size: 9pt !important;
-  }
-
+  /* === Global Print Styles === */
   p, div, span, strong {
-    font-size: 10pt !important;
+    font-size: 9pt !important;
+    line-height: 1.3 !important;
   }
 
   table {
-    font-size: 10pt !important;
+    font-size: 9pt !important;
+    line-height: 1.3 !important;
+    page-break-inside: avoid;
   }
 
   thead {
@@ -1221,125 +1444,74 @@ table th, table td,
   }
 
   th, td {
-    padding: 2px !important;
     font-size: 9pt !important;
+    line-height: 1.3 !important;
   }
 
   .mini-table th,
   .mini-table td {
     font-size: 9pt !important;
-    padding: 2px !important;
+    padding: 3px !important;
+    line-height: 1.3 !important;
   }
 
   v-card,
   .v-card {
     page-break-inside: avoid;
     box-shadow: none !important;
-    padding: 3px !important;
-    margin-bottom: 2px !important;
-  }
-
-  .collateral-table {
-    font-size: 9pt !important;
-    margin-top: 2px !important;
-  }
-
-  .collateral-table th,
-  .collateral-table td {
-    font-size: 8pt !important;
-    padding: 1px 2px !important;
-  }
-
-  .pa-3 {
-    padding: 3px !important;
-  }
-
-  .pa-4 {
-    padding: 3px !important;
-  }
-
-  .mb-2 {
-    margin-bottom: 2px !important;
-  }
-
-  .mb-4 {
+    padding: 4px !important;
     margin-bottom: 3px !important;
   }
 
+  .pa-3 {
+    padding: 4px !important;
+  }
+
+  .pa-4 {
+    padding: 4px !important;
+  }
+
+  .mb-2 {
+    margin-bottom: 3px !important;
+  }
+
+  .mb-4 {
+    margin-bottom: 4px !important;
+  }
+
   .my-2 {
-    margin-top: 2px !important;
-    margin-bottom: 2px !important;
+    margin-top: 3px !important;
+    margin-bottom: 3px !important;
   }
 
   .my-3 {
-    margin-top: 2px !important;
-    margin-bottom: 2px !important;
+    margin-top: 3px !important;
+    margin-bottom: 3px !important;
   }
 
   .mx-4 {
-    margin-left: 4px !important;
-    margin-right: 4px !important;
+    margin-left: 5px !important;
+    margin-right: 5px !important;
   }
 
   .px-4 {
-    padding-left: 4px !important;
-    padding-right: 4px !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
   }
 
   .ml-8 {
-    margin-left: 8px !important;
+    margin-left: 10px !important;
   }
 
   .v-alert {
     font-size: 9pt !important;
     padding: 3px !important;
     margin: 3px !important;
+    line-height: 1.3 !important;
   }
 
   .v-divider {
-    margin: 2px 0 !important;
+    margin: 3px 0 !important;
   }
 }
-
-/* Responsive */
-@media (max-width: 768px) {
-  .action-buttons {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .action-buttons .v-btn {
-    width: 100%;
-  }
-
-  .score-display {
-    width: 100%;
-    max-width: 380px;
-    height: 150px;
-  }
-
-  .score-number {
-    font-size: 70px;
-  }
-    .footer-contact {
-    font-size: 9pt !important;
-    margin-bottom: 2px !important;
-    color: white !important;
-  }
-  
-  .collateral-table {
-    font-size: 9pt !important;
-    margin-top: 2px !important;
-  }
-
-  .collateral-table th,
-  .collateral-table td {
-    font-size: 8pt !important;
-    padding: 2px 4px !important;
-  }
-  
-  .collateral-row td {
-    padding: 2px 4px !important;
-  }
-}
-</style> 
+</style>
