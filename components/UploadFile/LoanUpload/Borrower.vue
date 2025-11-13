@@ -769,7 +769,8 @@ onMounted(async () => {
           >
         </template>
         <template v-slot:item.fileSize="{ item }">
-          {{ item.fileSize }}
+          {{ (Number(item.fileSize) / (1024 * 1024)).toFixed(4)
+}} MB
         </template>
         <template v-slot:item.fileName="{ item }" style="font-size: small">
           {{ item.fileName.slice(0, 20)
