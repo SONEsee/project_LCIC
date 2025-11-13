@@ -368,7 +368,6 @@ const confirmInsertData = async (cid: string) => {
   });
 
   if (notification.isConfirmed) {
-    
     await inDividualStore.confirmUploadLoan(cid);
     await inDividualStore.getListIndividualcollateral();
   }
@@ -854,7 +853,9 @@ onMounted(async () => {
             color="primary"
             prepend-icon="mdi-eye"
             flat
-            @click="goPath(`/detailupload_c?CID=c-${item.CID}`)"
+            @click="
+              goPath(`/backend/upload/lcictestc/detail?CID=c-${item.CID}`)
+            "
             >ລາຍລະອຽດ</v-btn
           >
         </template>
