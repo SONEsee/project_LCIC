@@ -84,7 +84,7 @@ const scoreLevel = computed(() => {
 
 // ฟังก์ชันกลับหน้าก่อนหน้า
 const goBack = () => {
-  router.back();
+  goPath("/scoring/scoring_individual");
 };
 
 // ฟังก์ชันพิมพ์
@@ -614,11 +614,11 @@ function getScoreLabel(key: string): string {
           </div>
         </v-card>
 
-        <!-- ⭐ ตารางสินเชื่อ (แสดงเฉพาะ ACTIVE เท่านั้น) -->
+        <!-- ⭐ UPDATED: ລາຍລະອຽດສິນເຊື່ອ ແລະ ຫຼັກຊັບຄ້ຳປະກັນ ⭐ -->
         <v-card flat class="pa-3 mb-2">
-          <h3 class="text-h7 mb-2 font-weight-bold section-title">
+          <h3 class="text-h7 mb-3 font-weight-bold section-title">
             <v-icon>mdi-dot</v-icon>
-            ລາຍລະອຽດສິນເຊື່ອ (ACTIVE)
+            ລາຍລະອຽດສິນເຊື່ອ ແລະ ຫຼັກຊັບຄ້ຳປະກັນ (ACTIVE)
           </h3>
           
           <!-- ถ้าไม่มีสินเชื่อ ACTIVE -->
@@ -628,80 +628,93 @@ function getScoreLabel(key: string): string {
           </v-alert>
 
           <!-- Loop ผ่านแต่ละสินเชื่อ ACTIVE -->
-          <div v-else v-for="(loan, loanIndex) in loans" :key="loanIndex" class="mb-4">
-            <!-- ตารางสินเชื่อหลัก -->
-            <v-table density="compact" class="mb-2">
-              <thead class="bg-blue-lighten-4">
-                <tr>
-                  <th class="text-center">ທະນາຄານ</th>
-                  <th class="text-center">ຈຸດປະສົງ</th>
-                  <th class="text-center">ວົງເງິນສິນເຊື່ອ</th>
-                  <th class="text-center">ຍອດເຫຼືອໜີ້</th>
-                  <th class="text-center">ສະກຸນເງິນ</th>
-                  <th class="text-center">ວັນທີຄ້າງຊຳລະ</th>
-                  <th class="text-center">ປະເພດສິນເຊື່ອ</th>
-                  <th class="text-center">ໄລຍະ</th>
-                  <th class="text-center">ສະຖານະ</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="bg-blue-lighten-5">
-                  <td class="text-center ">{{ loan.code_display }}</td>
-                  <td class="text-center">{{ loan.purpose }}</td>
-                  <td class="text-center">{{ loan.creditLine }}</td>
-                  <td class="text-center">{{ loan.outstanding }}</td>
-                  <td class="text-center">{{ loan.currency }}</td>
-                  <td class="text-center">{{ loan.daysSlow }}</td>
-                  <td class="text-center">{{ loan.loanType }}</td>
-                  <td class="text-center">{{ loan.loanTerm }}</td>
-                  <!-- <td class="text-center"><v-chip color="#35A646"size="small"variant="flat">
-                      {{ loan.status }}</v-chip></td> -->
-                  <td class="text-center" >{{ loan.status }}</td>
-                </tr>
-              </tbody>
-            </v-table>
-
-            <!-- ⭐ ปรับส่วน Sub-table หลักประกัน -->
-            <div v-if="loan.collaterals && loan.collaterals.length > 0" class="ml-8 mb-2">
-                <v-card flat color="grey-lighten-5" class="pa-2">
-                <div class="d-flex align-center mb-2">
-                    <v-icon size="small" class="mr-2" color="#4472ad">mdi-shield-check</v-icon>
-                    <strong class="text-subtitle-2" >
-                    ຫຼັກຊັບຄ້ຳປະກັນ ({{ loan.collateral_count }} ລາຍການ)
-                    </strong>
+          <div v-else v-for="(loan, loanIndex) in loans" :key="loanIndex" class="loan-collateral-wrapper">
+            
+            <!-- Main Container: Header Row + Content Row -->
+            <div class="box-layout-container">
+              <!-- ========== HEADER ROW ========== -->
+              <div class="box-header-row">
+                <div class="box-header loan-header">
+                  <v-icon size="small" class="mr-2">mdi-bank</v-icon>
+                  <strong>ລາຍລະອຽດສິນເຊື່ອ</strong>
                 </div>
-                
-                <v-table density="compact" class="collateral-table">
-                    <thead class="collateral-table-header">
-                    <tr>
-                        <th class="text-white " style="width: 40%;">ປະເພດຫຼັກຊັບ</th>
+                <div class="box-header collateral-header">
+                  <v-icon size="small" class="mr-2">mdi-shield-check</v-icon>
+                  <strong>ຫຼັກຊັບຄ້ຳປະກັນ ({{ loan.collateral_count }} ລາຍການ)</strong>
+                </div>
+              </div>
 
-                        <th class="text-white text-center"style="width: 15%;">ມູນຄ່າ</th>
-                        <th class="text-white text-center"style="width: 10%;">ສະກຸນເງິນ</th>
-                        <th class="text-white text-center"style="width: 20%;">ສະຖານະ</th>
+              <!-- ========== CONTENT ROW ========== -->
+              <div class="box-content-row">
+                <!-- LEFT: Loan Box -->
+                <div class="loan-box">
+                  <div class="loan-info-row">
+                    <span class="info-label">ທະນາຄານ:</span>
+                    <span class="info-value">{{ loan.code_display }}</span>
+                  </div>
+                  <div class="loan-info-row">
+                    <span class="info-label">ຈຸດປະສົງ:</span>
+                    <span class="info-value">{{ loan.purpose }}</span>
+                  </div>
+                  <div class="loan-info-row">
+                    <span class="info-label">ວົງເງິນສິນເຊື່ອ:</span>
+                    <span class="info-value">{{ loan.creditLine }} {{ loan.currency }}</span>
+                  </div>
+                  <div class="loan-info-row">
+                    <span class="info-label">ຍອດເຫຼືອໜີ້:</span>
+                    <span class="info-value">{{ loan.outstanding }} {{ loan.currency }}</span>
+                  </div>
+                  <div class="loan-info-row">
+                    <span class="info-label">ວັນທີຄ້າງຊຳລະ:</span>
+                    <span class="info-value">{{ loan.daysSlow }}</span>
+                  </div>
+                  <div class="loan-info-row">
+                    <span class="info-label">ປະເພດສິນເຊື່ອ:</span>
+                    <span class="info-value">{{ loan.loanType }}</span>
+                  </div>
+                  <div class="loan-info-row">
+                    <span class="info-label">ໄລຍະ:</span>
+                    <span class="info-value">{{ loan.loanTerm }}</span>
+                  </div>
+                  <div class="loan-info-row">
+                    <span class="info-label">ສະຖານະ:</span>
+                    <span class="info-value">{{ loan.status }}</span>
+                  </div>
+                </div>
 
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="(collateral, colIndex) in loan.collaterals" :key="colIndex" class="collateral-row">
-                        <td style="width: 40%;">
-                        <v-chip size="small" >
-                            {{ collateral.col_type_name_lao || collateral.col_type_name_eng }}
-                        </v-chip>
-                        </td>
-                        <td class="text-center" style="width: 15%;">{{ formatNumber(collateral.value) }}</td>
-                        <td class="text-center" style="width: 10%;">{{ collateral.value_unit || '-' }}</td>
-                        <!-- <td class="text-center"><v-chip size="x-small" color="#35A646"variant="flat">
-                            {{ collateral.status }}</v-chip></td> -->
-                        <td class="text-center" style="width: 20%;">{{ collateral.status || '-'}}</td>
-                    </tr>
-                    </tbody>
-                </v-table>
-                </v-card>
+                <!-- RIGHT: Collateral Grid -->
+                <div class="collateral-grid">
+                  <!-- Each Collateral Box -->
+                  <div 
+                    v-for="(collateral, colIndex) in loan.collaterals" 
+                    :key="colIndex" 
+                    class="collateral-box"
+                  >
+                    <div class="collateral-info-row">
+                      <span class="col-label">ປະເພດ: </span>
+                      <span class="col-value font-weight-bold ml-2">{{ collateral.col_type_name_lao || collateral.col_type_name_eng }}</span>
+                    </div>
+                    <div class="collateral-info-row">
+                      <span class="col-label">ມູນຄ່າ:</span>
+                      <span class="col-value">{{ formatNumber(collateral.value) }} {{ collateral.value_unit || '-' }}</span>
+                    </div>
+                    <div class="collateral-info-row">
+                      <span class="col-label">ສະຖານະ:</span>
+                      <span class="col-value col-status">{{ collateral.status || '-' }}</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Empty state if no collaterals -->
+                  <div v-if="loan.collaterals.length === 0" class="no-collateral">
+                    <v-icon size="large" color="grey">mdi-shield-off-outline</v-icon>
+                    <p class="text-grey">ບໍ່ມີຫຼັກຊັບຄ້ຳປະກັນ</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <!-- Divider ระหว่างสินเชื่อ -->
-            <!-- <v-divider v-if="loanIndex < loans.length - 1" class="my-3"></v-divider> -->
+            <!-- Separator Line between loans -->
+            <v-divider v-if="loanIndex < loans.length - 1" class="my-4 separator-line"></v-divider>
           </div>
         </v-card>
 
@@ -716,18 +729,18 @@ function getScoreLabel(key: string): string {
         </v-alert>
 
         <!-- Footer -->
-                <div class="report-footer pa-3 text-center">
-        <div class="footer-contact mb-2">
+        <div class="report-footer pa-3 text-center">
+          <div class="footer-contact mb-2">
             <strong>ບໍລິສັດຂໍ້ມູນຂ່າວສານສິນເຊື່ອແຫ່ງ ສປປລາວ, ຖະໜົນ T4, ບ້ານ ໂພນທັນ, ເມືອງ ໄຊເສດຖາ, ນະຄອນຫຼວງວຽງຈັນ</strong>
-        </div>
-        <div class="footer-contact mb-2">
+          </div>
+          <div class="footer-contact mb-2">
             <strong>ໂທລະສັບ (856)-21-254292, (021) 216529, Email: LCIC@BoL.Gov.La</strong>
-        </div>
-        <v-img 
+          </div>
+          <v-img 
             src="" 
             max-width="150"
             class="mx-auto"
-        />
+          />
         </div>
       </v-card>
     </v-container>
@@ -737,167 +750,146 @@ function getScoreLabel(key: string): string {
 <style scoped>
 /* ============================================
    🎯 ส่วนที่ 1: CSS สำหรับหน้าจอปกติ (NOT PRINT)
-   ฟอนต์ปกติ: 12px
    ============================================ */
 
-/* === ตารางหลักประกัน (Collateral Table) === */
-.collateral-table { 
-  font-size: 12px !important; /* 🔧 ฟอนต์ปกติ */
-  background: white; 
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
-  line-height: 1.3 !important;
+/* ========== ⭐ UPDATED BOX LAYOUT ========== */
+.loan-collateral-wrapper {
+  margin-bottom: 24px;
 }
 
-.collateral-table-header {
-  background-color: #4472ad !important;
-}
-
-.collateral-table-header th {
-  color: white !important;
-  font-weight: 500 !important;
-  font-size: 12px !important; /* 🔧 ฟอนต์ header */
-  padding: 6px 8px !important;
-  vertical-align: middle !important;
-  line-height: 1.3 !important;
-  height: 36px !important;
-}
-
-.collateral-table tbody tr {
-  transition: background-color 0.2s ease;
-}
-
-.collateral-table tbody tr:hover {
-  background-color: #f0f4ff !important;
-}
-
-.collateral-row td {
-  font-size: 12px !important; /* 🔧 ฟอนต์ข้อมูล */
-  padding: 6px 8px !important;
-  vertical-align: middle !important;
-  border-bottom: 1px solid #f0f0f0;
-  font-weight: bold !important;
-  line-height: 1.3 !important;
-  height: 34px !important;
-}
-
-.collateral-table .v-chip {
-  font-weight: 500;
-  font-size: 11px !important;
-  padding: 3px 8px !important;
-  height: 24px !important;
-}
-
-.text-success { 
-  color: #2e7d32 !important; 
-  font-weight: 600 !important;
-}
-
-.text-grey { 
-  color: #9e9e9e !important; 
-}
-
-/* === ตาราง Score Factors === */
-.factors-table {
-  font-size: 12px !important; /* 🔧 ฟอนต์ปกติ */
-  line-height: 1.3 !important;
-}
-
-.factors-table-header {
-  background-color: #0a1e77 !important;
-}
-
-.factors-table-header th {
-  color: white !important;
-  font-weight: bold !important;
-  font-size: 12px !important; /* 🔧 ฟอนต์ header */
-  padding: 6px 8px !important;
-  line-height: 1.3 !important;
-  height: 36px !important;
-}
-
-.factors-table tbody td {
-  font-size: 12px !important; /* 🔧 ฟอนต์ข้อมูล */
-  padding: 6px 8px !important;
-  line-height: 1.3 !important;
-  height: 34px !important;
-}
-
-/* === ตาราง Loan (สินเชื่อ) === */
-.bg-blue-lighten-4 {
-  background-color: #0a1e77 !important;
-}
-
-.bg-blue-lighten-4 th {
-  color: white !important;
-  font-weight: bold !important;
-  font-size: 12px !important; /* 🔧 ฟอนต์ header */
-  padding: 6px 8px !important;
-  line-height: 1.3 !important;
-  height: 38px !important;
-}
-
-.bg-blue-lighten-5 {
-  background-color: #e6e8f5 !important;
-  color: #000 !important;
-}
-
-.bg-blue-lighten-5 td {
-  font-size: 12px !important; /* 🔧 ฟอนต์ข้อมูล */
-  padding: 6px 8px !important;
-  font-weight: bold !important;
-  line-height: 1.3 !important;
-  height: 36px !important;
-}
-
-/* === ตาราง Financial Overview (ตารางวงเงินรวม) === */
-.mini-table-center {
-  display: inline-block;
-  vertical-align: middle;
-  line-height: 1;
-}
-
-.compact-center-table {
-  display: inline-table !important;
-  margin: 0 !important;
+.box-layout-container {
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 8px; /* ✅ เพิ่ม border-radius */
   overflow: hidden;
-  font-size: 12px !important; /* 🔧 ฟอนต์ปกติ */
-  width: 220px !important;
-  line-height: 1.3 !important;
+  background: white;
 }
 
-.compact-center-table th,
-.compact-center-table td {
-  padding: 6px 8px !important;
-  text-align: center !important;
-  vertical-align: middle !important;
-  white-space: nowrap;
-  font-weight: 500 !important;
-  line-height: 1.3 !important;
+/* Header Row - มีสีพื้นหลังเท่านั้น */
+.box-header-row {
+  display: grid;
+  grid-template-columns: 1fr 3fr; /* 👈 เปลี่ยนจาก 2fr เป็น 3fr (Loan แคบลง) */
+  border-bottom: 1px solid #ccc;
 }
 
-.compact-center-table th {
-  background-color: #0a1e77 !important;
-  color: white !important;
-  font-weight: bold !important;
-  font-size: 12px !important; /* 🔧 ฟอนต์ header */
-  height: 32px !important;
+.box-header {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
 }
 
-.compact-center-table td {
-  background-color: #f8f9fa;
-  font-size: 12px !important; /* 🔧 ฟอนต์ข้อมูล */
-  font-weight: bold !important;
-  height: 30px !important;
+.loan-header {
+  background: #0a1e77;
+  border-right: 1px solid #ccc;
 }
 
-.d-flex.gap-1 {
-  gap: 4px !important;
-  align-items: center !important;
+.collateral-header {
+  background: #0a1e77;
 }
+
+/* Content Row - ⭐ ลดความสูงลง */
+.box-content-row {
+  display: grid;
+  grid-template-columns: 1fr 3fr; /* 👈 เปลี่ยนจาก 2fr เป็น 3fr (Loan แคบลง) */
+  min-height: 120px; /* ✅ ลดจาก 200px เป็น 120px */
+}
+
+/* Left: Loan Box - ไม่มี design */
+.loan-box {
+  padding: 12px;
+  border-right: 1px solid #ccc;
+  background: white;
+}
+
+.loan-info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  margin-bottom: 2px;
+  background: white;
+  border: none;
+  border-radius: 0;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #333;
+  font-size: 13px;
+}
+
+.info-value {
+  font-weight: 400;
+  color: #000;
+  font-size: 13px;
+}
+
+/* Right: Collateral Grid - ไม่มี design */
+.collateral-grid {
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  align-content: start;
+}
+
+.collateral-box {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px; /* ✅ เพิ่ม border-radius */
+  padding: 8px;
+}
+
+.collateral-info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 11px;
+}
+
+.collateral-info-row:last-child {
+  border-bottom: none;
+}
+
+.col-label {
+  font-weight: 600;
+  color: #555;
+}
+
+.col-value {
+  font-weight: 400;
+  color: #000;
+}
+
+.col-status {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+/* ⭐ จัด no-collateral ให้อยู่กึ่งกลางแนวตั้งและแนวนอน */
+.no-collateral {
+  grid-column: 1 / -1;
+  display: flex; /* ✅ ใช้ flexbox */
+  flex-direction: column; /* ✅ จัดเรียงแนวตั้ง */
+  align-items: center; /* ✅ กึ่งกลางแนวนอน */
+  justify-content: center; /* ✅ กึ่งกลางแนวตั้ง */
+  min-height: 120px; /* ✅ ให้สูงเท่ากับ min-height ของ content-row */
+  padding: 20px;
+  color: #999;
+}
+
+.no-collateral p {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.separator-line {
+  border-color: #ccc !important;
+  border-width: 1px !important;
+}
+
+/* ========== END UPDATED BOX LAYOUT ========== */
 
 /* === ส่วนอื่นๆ (คงเดิม) === */
 .footer-contact {
@@ -971,18 +963,6 @@ function getScoreLabel(key: string): string {
 .reference-info-item { 
   flex: 1; 
   font-size: 14px; 
-}
-
-.mini-table {
-  max-width: 400px !important;
-  width: 400px !important;
-  margin: 0;
-}
-
-.mini-table td { 
-  padding: 8px !important; 
-  font-size: 13px !important; 
-  font-weight: bold !important; 
 }
 
 .info-row {
@@ -1071,11 +1051,81 @@ function getScoreLabel(key: string): string {
   flex: 300; 
 }
 
+.factors-table {
+  font-size: 12px !important;
+  line-height: 1.3 !important;
+}
+
+.factors-table-header {
+  background-color: #0a1e77 !important;
+}
+
+.factors-table-header th {
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 12px !important;
+  padding: 6px 8px !important;
+  line-height: 1.3 !important;
+  height: 36px !important;
+}
+
+.factors-table tbody td {
+  font-size: 12px !important;
+  padding: 6px 8px !important;
+  line-height: 1.3 !important;
+  height: 34px !important;
+}
+
+.mini-table-center {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+.compact-center-table {
+  display: inline-table !important;
+  margin: 0 !important;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 12px !important;
+  width: 220px !important;
+  line-height: 1.3 !important;
+}
+
+.compact-center-table th,
+.compact-center-table td {
+  padding: 6px 8px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  white-space: nowrap;
+  font-weight: 500 !important;
+  line-height: 1.3 !important;
+}
+
+.compact-center-table th {
+  background-color: #0a1e77 !important;
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 12px !important;
+  height: 32px !important;
+}
+
+.compact-center-table td {
+  background-color: #f8f9fa;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  height: 30px !important;
+}
+
+.d-flex.gap-1 {
+  gap: 4px !important;
+  align-items: center !important;
+}
+
 table,
 .v-table,
 .factors-table,
-.collateral-table,
-.mini-table,
 .report-container table {
   border: 1px solid #ccc !important;
   border-radius: 4px !important;
@@ -1084,8 +1134,6 @@ table,
 table th, table td,
 .v-table th, .v-table td,
 .factors-table th, .factors-table td,
-.collateral-table th, .collateral-table td,
-.mini-table th, .mini-table td,
 .report-container table th,
 .report-container table td {
   border: none !important;
@@ -1093,7 +1141,6 @@ table th, table td,
 
 /* ============================================
    🖨️ ส่วนที่ 2: CSS สำหรับการพิมพ์ (PRINT)
-   ฟอนต์: 9pt ทั่วไป, Smooth & Clean
    ============================================ */
 @media print {
   .no-print {
@@ -1119,121 +1166,129 @@ table th, table td,
   body {
     margin: 0;
     padding: 0;
-    font-size: 9pt !important; /* 🔧 ฟอนต์ทั่วไป */
+    font-size: 9pt !important;
     line-height: 1.3 !important;
   }
 
-  /* === ตาราง Collateral (พิมพ์) - ฟอนต์ 9pt === */
-  .collateral-table {
-    font-size: 8pt !important; /* 🔧 ฟอนต์ */
-    margin-top: 3px !important;
-    line-height: 1.3 !important;
+  /* ========== PRINT: BOX LAYOUT ========== */
+  
+  .loan-collateral-wrapper {
     page-break-inside: avoid;
+    margin-bottom: 8px;
   }
 
-  .collateral-table-header th {
-    font-size: 8pt !important; /* 🔧 ฟอนต์ header */
-    padding: 3px 5px !important;
-    line-height: 1.3 !important;
-    height: 20px !important;
-    background-color: #4472ad !important;
+  .box-layout-container {
+    border: 0.5px solid #a3a0a0;
+    border-radius: 6px; /* ✅ เพิ่ม border-radius */
+    overflow: hidden;
+  }
+
+  /* HEADER ROW (Print) */
+  .box-header-row {
+    display: grid;
+    grid-template-columns: 2fr 3fr; /* 👈 เปลี่ยนจาก 2fr เป็น 3fr (Loan แคบลง) */
+    border-bottom: 0.5px solid #a3a0a0;
+  }
+
+  .box-header {
+    padding: 4px 6px;
+    font-size: 9pt !important;
+    display: flex;
+    align-items: center;
+  }
+
+  .loan-header {
+    background: #0a1e77 !important;
+    color: white !important;
+    border-right: 0.5px solid #a3a0a0;
+  }
+
+  .collateral-header {
+    background: #0a1e77 !important;
     color: white !important;
   }
 
-  .collateral-row td {
-    font-size: 8pt !important; /* 🔧 ฟอนต์ข้อมูล */
-    padding: 3px 5px !important;
-    line-height: 1.3 !important;
-    height: 18px !important;
+  /* CONTENT ROW (Print) */
+  .box-content-row {
+    display: grid;
+    grid-template-columns: 1fr 3fr; /* 👈 เปลี่ยนจาก 2fr เป็น 3fr (Loan แคบลง) */
+    min-height: auto;
   }
 
-  .collateral-table .v-chip {
+  /* LOAN BOX (Print) */
+  .loan-box {
+    padding: 4px;
+    border-right: 0.5px solid #a3a0a0;
+    background: white;
+  }
+
+  .loan-info-row {
+    padding: 1px 3px;
+    margin-bottom: 1px;
     font-size: 8pt !important;
-    padding: 2px 4px !important;
-    height: 16px !important;
+    line-height: 1.2;
+    background: white;
+    border: none;
   }
 
-  /* === ตาราง Score Factors (พิมพ์) - ฟอนต์ 9pt === */
-  .factors-table {
-    font-size: 9pt !important; /* 🔧 ฟอนต์ */
-    line-height: 1.3 !important;
-    page-break-inside: avoid;
-  }
-
-  .factors-table-header th {
-    padding: 3px 5px !important;
-    font-size: 9pt !important; /* 🔧 ฟอนต์ header */
-    line-height: 1.3 !important;
-    height: 20px !important;
-    background-color: #0a1e77 !important;
-    color: white !important;
-  }
-
-  .factors-table tbody td {
-    padding: 3px 5px !important;
-    font-size: 9pt !important; /* 🔧 ฟอนต์ข้อมูล */
-    line-height: 1.3 !important;
-    height: 18px !important;
-  }
-
-  /* === ตาราง Loan (พิมพ์) - ฟอนต์ 9pt === */
-  .bg-blue-lighten-4 {
-    background-color: #0a1e77 !important;
-  }
-
-  .bg-blue-lighten-4 th {
-    font-size: 8pt !important; /* 🔧 ฟอนต์ header */
-    padding: 3px 5px !important;
-    line-height: 1.3 !important;
-    height: 22px !important;
-    color: white !important;
-    background-color: #0a1e77 !important;
-  }
-
-  .bg-blue-lighten-5 {
-    background-color: #e6e8f5 !important;
-  }
-
-  .bg-blue-lighten-5 td {
-    font-size: 8pt !important; /* 🔧 ฟอนต์ข้อมูล */
-    padding: 3px 5px !important;
-    line-height: 1.3 !important;
-    height: 20px !important;
-  }
-
-  /* === ตาราง Financial Overview (พิมพ์) - ฟอนต์ 9pt === */
-  .compact-center-table {
-    font-size: 8pt !important; /* 🔧 ฟอนต์ */
-    width: 180px !important;
-    line-height: 1.3 !important;
-    page-break-inside: avoid;
-  }
-
-  .compact-center-table th {
-    padding: 3px 5px !important;
-    font-size: 8pt !important; /* 🔧 ฟอนต์ header */
-    line-height: 1.3 !important;
-    height: 20px !important;
-    background-color: #0a1e77 !important;
-    color: white !important;
-  }
-
-  .compact-center-table td {
-    padding: 3px 5px !important;
-    font-size: 8pt !important; /* 🔧 ฟอนต์ข้อมูล */
-    line-height: 1.3 !important;
-    height: 18px !important;
-  }
-
-  .mini-table-center {
-    line-height: 1.3 !important;
-  }
-
-  .d-flex.gap-1 strong {
+  .info-label {
     font-size: 8pt !important;
+    font-weight: 600;
   }
 
-  /* === ส่วนอื่นๆ (Print) - ทุกอย่างเป็น 9pt === */
+  .info-value {
+    font-size: 8pt !important;
+    font-weight: 400;
+  }
+
+  /* COLLATERAL GRID (Print) */
+  .collateral-grid {
+    padding: 4px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+  }
+
+  .collateral-box {
+    border: 0.5px solid #a3a0a0;
+    border-radius: 4px; /* ✅ เพิ่ม border-radius */
+    padding: 4px;
+    page-break-inside: avoid;
+    background: white;
+  }
+
+  .collateral-info-row {
+    padding: 2px 0;
+    font-size: 7pt !important;
+    line-height: 1.2;
+  }
+
+  .col-label,
+  .col-value {
+    font-size: 7pt !important;
+  }
+
+  /* ⭐ จัด no-collateral กึ่งกลางในโหมด print */
+  .no-collateral {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    font-size: 7pt !important;
+    min-height: 60px;
+  }
+
+  .separator-line {
+    margin: 4px 0 !important;
+    border-width: 1px !important;
+  }
+
+  /* ========== END PRINT BOX LAYOUT ========== */
+
+  /* ========== ส่วนอื่นๆ - Print Styles ========== */
+  
   .section-title {
     font-size: 10pt !important;
     margin-bottom: 3px !important;
@@ -1423,6 +1478,59 @@ table th, table td,
     line-height: 1.3 !important;
   }
 
+  .factors-table {
+    font-size: 9pt !important;
+    line-height: 1.3 !important;
+    page-break-inside: avoid;
+  }
+
+  .factors-table-header th {
+    padding: 3px 5px !important;
+    font-size: 9pt !important;
+    line-height: 1.3 !important;
+    height: 20px !important;
+    background-color: #0a1e77 !important;
+    color: white !important;
+  }
+
+  .factors-table tbody td {
+    padding: 3px 5px !important;
+    font-size: 9pt !important;
+    line-height: 1.3 !important;
+    height: 18px !important;
+  }
+
+  .compact-center-table {
+    font-size: 8pt !important;
+    width: 180px !important;
+    line-height: 1.3 !important;
+    page-break-inside: avoid;
+  }
+
+  .compact-center-table th {
+    padding: 3px 5px !important;
+    font-size: 8pt !important;
+    line-height: 1.3 !important;
+    height: 20px !important;
+    background-color: #0a1e77 !important;
+    color: white !important;
+  }
+
+  .compact-center-table td {
+    padding: 3px 5px !important;
+    font-size: 8pt !important;
+    line-height: 1.3 !important;
+    height: 18px !important;
+  }
+
+  .mini-table-center {
+    line-height: 1.3 !important;
+  }
+
+  .d-flex.gap-1 strong {
+    font-size: 8pt !important;
+  }
+
   /* === Global Print Styles === */
   p, div, span, strong {
     font-size: 9pt !important;
@@ -1445,13 +1553,6 @@ table th, table td,
 
   th, td {
     font-size: 9pt !important;
-    line-height: 1.3 !important;
-  }
-
-  .mini-table th,
-  .mini-table td {
-    font-size: 9pt !important;
-    padding: 3px !important;
     line-height: 1.3 !important;
   }
 
@@ -1489,6 +1590,11 @@ table th, table td,
     margin-bottom: 3px !important;
   }
 
+  .my-4 {
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
+  }
+
   .mx-4 {
     margin-left: 5px !important;
     margin-right: 5px !important;
@@ -1497,10 +1603,6 @@ table th, table td,
   .px-4 {
     padding-left: 5px !important;
     padding-right: 5px !important;
-  }
-
-  .ml-8 {
-    margin-left: 10px !important;
   }
 
   .v-alert {
@@ -1512,6 +1614,17 @@ table th, table td,
 
   .v-divider {
     margin: 3px 0 !important;
+  }
+
+  .report-footer {
+    background: #0a1e77 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .footer-contact {
+    font-size: 9pt !important;
+    line-height: 1.4 !important;
   }
 }
 </style>
