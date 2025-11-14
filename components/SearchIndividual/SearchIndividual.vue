@@ -379,11 +379,7 @@ onMounted(async () => {
                   >
                     <strong :loading="individualStore.reques_query.isLoading"
                       >ບໍ່ພົບລະຫັດ ຂສລ ນີ້
-                      <b
-                        style="color: blue"
-                        @click="goPath(`/backend/register_lcic`)"
-                        >ກົດທີ່ນິ້ເພືອອອກລະຫັດ ຂສລ ໃໝ່</b
-                      ></strong
+                     </strong
                     >
                   </p>
 
