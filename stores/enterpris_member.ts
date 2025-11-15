@@ -27,11 +27,22 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
       },
       respons_data_list_file:
         null as EnterpriseModel.ListFileRegisterEnterpriseRespons | null,
+      respon_data_check_enterprise:
+        null as EnterpriseModel.CheckEnterpriseRespons | null,
+      respon_data_detail_enterprise:
+        null as EnterpriseModel.DetailEnterpiseWhitIDRespons | null,
       query: {
         bank_id: "",
         bank_id_filter: "",
+        id: "",
         page: 1,
         limit: 20,
+      },
+      query_enterprise_id:{
+        id_file: "",
+      },
+      check_enterprise: {
+        EnterpriseID: "",
       },
       isLoading: false,
     };
@@ -166,6 +177,69 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
           icon: "error",
           title: "ຜິດພາດ",
           text: "ບໍ່ສາມາດໄດ້ຮັບຂໍ້ມູນໄດ້, ກະລຸນາລອງໃໝ່ອີກຄັ້ງ",
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async GetdataDetailEnterprisID() {
+      this.isLoading = true;
+      try {
+        const res =
+          await axios.get<EnterpriseModel.DetailEnterpiseWhitIDRespons>(
+            "/api/enterprises/?",
+            {
+              params: {
+                ...this.query_enterprise_id,
+              },
+              headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${this.token}`,
+            },
+            }
+          );
+        if (res.status === 200) {
+          this.respon_data_detail_enterprise = res.data;
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text: "ບໍ່ສາມາດໄດ້ຮັບຂໍ້ມູນໄດ້, ກະລຸນາລອງໃໝ່ອີກຄັ້ງ",
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async CheckEnterpriseID() {
+      this.isLoading = true;
+      try {
+        const notification = await Swal.fire({
+          icon: "question",
+          title: "ຢືນຢັນ",
+          text: "ທ່ານຕ້ອງການກວດສອບ ລະຫັດ ວິສາຫະກິດ ຫຼື ບໍ່?",
+          showCancelButton: true,
+          confirmButtonText: "ຕົກລົງ",
+          cancelButtonText: "ຍົກເລີກ",
+        });
+        if (notification.isConfirmed) {
+          const formData = new FormData();
+          formData.append("EnterpriseID", this.check_enterprise.EnterpriseID);
+          const req = await axios.post<EnterpriseModel.CheckEnterpriseRespons>(
+            `/api/check-enterprise/`,
+            formData
+          );
+          if (req.status === 200) {
+            this.respon_data_check_enterprise = req.data;
+          }
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text: "ບໍ່ສາມາດກວດສອບ ລະຫັດ ວິສາຫະກິດໄດ້, ກະລຸນາລອງໃໝ່ອີກຄັ້ງ",
+          timer: 2000,
+          showConfirmButton: false,
         });
       } finally {
         this.isLoading = false;

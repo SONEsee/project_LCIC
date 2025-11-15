@@ -24,7 +24,16 @@ const memberData = computed(() => {
   }
   return [];
 });
-
+const datareturn = computed(() => {
+  const data = enterprisStore.respon_data_check_enterprise?.data;
+  if (Array.isArray(data)) {
+    return data;
+  }
+  if (data && typeof data === "object") {
+    return [data];
+  }
+  return [];
+});
 const header = [
   { title: "ລຳດັບ", value: "index" },
   { title: "ສະມາຊິກ", value: "bank_id" },
@@ -34,6 +43,7 @@ const header = [
   { title: "ວັນທີສ້າງ", value: "insertdate" },
   { title: "ສະຖານະ", value: "status" },
   { title: "ລະຫັດຂສລ", value: "LCIC_reques" },
+  { title: "ລາຍລະອຽກ", value: "action" },
 ];
 
 const reques = enterprisStore.query;
@@ -59,10 +69,9 @@ const enterprisData = computed(() => {
   return [];
 });
 
-
 const filteredEnterpriseData = computed(() => {
   if (!search.value) return enterprisData.value;
-  
+
   const searchLower = search.value.toLowerCase();
   return enterprisData.value.filter((item: any) => {
     return (
@@ -112,54 +121,134 @@ const display = (item: any) => {
   if (!item || !item.bnk_code || !item.code || !item.nameL) return "ທັງໝົດ";
   return `${item.bnk_code} - ${item.code} - ${item.nameL}`;
 };
-
+const submitCheckEnterprise = async () => {
+  await enterprisStore.CheckEnterpriseID();
+};
 onMounted(async () => {
   enterprisStore.query.bank_id = userId.value;
   await Promise.all([
     enterprisStore.GetdataListFileEnterpris(),
-    memberinfoStore.getMemberInfo()
+    memberinfoStore.getMemberInfo(),
   ]);
 });
 </script>
 
 <template>
-  <v-sheet
-    :elevation="3"
-    rounded
-    class="pa-4 mb-4 d-flex justify-lg-space-between justify-center align-center"
-  >
-  <div>
-    ກວດສອບລະຫັດ ຂສລ ຈາກລະຫັດວິສາຫະກິດ
-    <v-text-field
-        v-if="userId ==='01'"
-       
-        class="mt-2"
-        density="compact"
-        label="ກະລຸນາປອ້ນລະຫັດ ວິສາຫະກິດ"
-        variant="solo"
-        hide-details
-        single-line
-        
-      ></v-text-field>
-     <v-btn></v-btn>
-  </div>
-  <div>
-    <v-row>
-        <v-col cols="6">hi</v-col>
-        <v-col cols="6">hi</v-col>
-    </v-row>
-  </div>
-  </v-sheet>
-  
   <v-sheet :elevation="3" rounded class="pa-4 mb-4">
-    <div class="d-flex justify-lg-space-between justify-center align-center mb-4">
+    <v-row>
+      <v-col cols="12" lg="12">
+        <div class="mb-3">
+          <h4>
+            ກວດສອບລະຫັດ ຂສລ ຈາກລະຫັດວິສາຫະກິດ
+            <strong style="color: orange" class="text-caption"
+              >*ກະລຸນາກວດລະຫັດວິສາຫະກິດກອ່ນລົງທະບຽນ*</strong
+            >
+          </h4>
+        </div>
+        <v-row>
+          <v-col cols="12" sm="3">
+            <v-text-field
+              v-if="userId === '01'"
+              v-model="enterprisStore.check_enterprise.EnterpriseID"
+              density="compact"
+              label="ກະລຸນາປ້ອນລະຫັດວິສາຫະກິດ"
+              variant="solo"
+              hide-details
+              clearable
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" sm="2">
+            <v-btn
+              color="primary"
+              @click="submitCheckEnterprise"
+              :disabled="
+                enterprisStore.check_enterprise.EnterpriseID === '' ||
+                enterprisStore.check_enterprise.EnterpriseID === null
+              "
+            >
+              ກວດສອບ
+            </v-btn>
+            <!-- {{ datareturn }} -->
+          </v-col>
+          <v-col cols="12" sm="7" class="text-end">
+            <v-btn
+              color="primary"
+              :disabled="
+                enterprisStore.respon_data_check_enterprise?.exists !== false
+              "
+              @click="goPath(`/backend/register_lcic/`)"
+            >
+              ລົງທະບຽນອອກລະຫັດ ຂສລ
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-col>
+
+      <v-alert
+        type="warning"
+        density="compact"
+        class="text-caption"
+        v-if="enterprisStore.respon_data_check_enterprise?.exists === false"
+      >
+        ບໍ່ພົບລະຫັດວິສາຫະກິດນີ້:
+        {{ enterprisStore.check_enterprise.EnterpriseID }} ໃນລະບົບຂອງ ຂສລ
+      </v-alert>
+
+      <v-alert
+        type="success"
+        density="compact"
+        class="text-caption"
+        v-if="enterprisStore.respon_data_check_enterprise?.exists === true"
+      >
+        <div
+          class="d-flex justify-lg-space-between justify-center align-center"
+        >
+          <p>
+            ລະຫັດວິສາຫະກິດ: <strong>{{ datareturn[0]?.EnterpriseID }}</strong>
+          </p>
+          <p>
+            ລະຫັດ ຂສລ: <strong>{{ datareturn[0]?.EnterpriseID }}</strong>
+          </p>
+          <p>
+            ຊື່ວິສາຫະກິດ(ລາວ):
+            <strong>{{ datareturn[0]?.enterpriseNameLao }}</strong>
+          </p>
+          <p>
+            ຊື່ວິສາຫະກິດ(ອັງກິດ):
+            <strong>{{ datareturn[0]?.eneterpriseNameEnglish }}</strong>
+          </p>
+          <p>
+            ມື້ລົງທະບຽນ:
+            <strong>{{
+              dayjs(datareturn[0]?.regisDate).format("DD-MM-YYYY")
+            }}</strong>
+          </p>
+          <p>
+            ທືນຈົດທະບຽນ:
+            <strong
+              >{{
+                datareturn[0]?.investmentAmount?.toLocaleString("en-US") ?? "0"
+              }}
+              {{ datareturn[0]?.investmentCurrency ?? "-" }}</strong
+            >
+          </p>
+        </div>
+      </v-alert>
+    </v-row>
+  </v-sheet>
+
+  <v-sheet :elevation="3" rounded class="pa-4 mb-4">
+    <div
+      class="d-flex justify-lg-space-between justify-center align-center mb-4"
+    >
       <h4 style="color: #01579b">
-        ລາຍການທັງໝົດ: {{ enterprisStore.respons_data_list_file?.count || 0 }} ລາຍການ
+        ລາຍການທັງໝົດ:
+        {{ enterprisStore.respons_data_list_file?.count || 0 }} ລາຍການ
       </h4>
-      
-      <div class="d-flex gap-2" >
+
+      <div class="d-flex gap-2">
         <v-text-field
-        v-if="userId !=='01'"
+          v-if="userId !== '01'"
           v-model="search"
           append-inner-icon="mdi-magnify"
           density="compact"
@@ -169,9 +258,9 @@ onMounted(async () => {
           single-line
           style="width: 300px"
         />
-        
+
         <v-autocomplete
-        v-if="userId ==='01'"
+          v-if="userId === '01'"
           v-model="selecMember"
           width="400"
           density="compact"
@@ -199,9 +288,9 @@ onMounted(async () => {
         </v-autocomplete>
       </div>
     </div>
-    
-    <v-data-table 
-      :items="filteredEnterpriseData" 
+
+    <v-data-table
+      :items="filteredEnterpriseData"
       :headers="header"
       :loading="!enterprisStore.respons_data_list_file"
     >
@@ -229,22 +318,30 @@ onMounted(async () => {
       <template v-slot:header.LCIC_reques="{ column }">
         <strong style="color: blue">{{ column.title }}</strong>
       </template>
-      
+      <template v-slot:header.action="{ column }">
+        <strong style="color: blue">{{ column.title }}</strong>
+      </template>
+
       <template v-slot:item.index="{ index }">
         {{ (reques.page - 1) * reques.limit + index + 1 }}
       </template>
-      
+
       <template v-slot:item.bank_id="{ item }">
         <v-chip size="small" color="primary">
           {{ mapMemberInfo(item.bank_id) }}
         </v-chip>
       </template>
-      
+
       <template v-slot:item.image="{ item }">
         <div class="text-center">
           <div class="image-preview-container">
             <v-avatar>
-              <img :src="item.image" :alt="item.filename" width="40" class="thumbnail" />
+              <img
+                :src="item.image"
+                :alt="item.filename"
+                width="40"
+                class="thumbnail"
+              />
             </v-avatar>
             <div class="image-popup">
               <img :src="item.image" :alt="item.filename" />
@@ -252,24 +349,28 @@ onMounted(async () => {
           </div>
           <p>
             <v-chip variant="flat" size="small" color="green-lighten-4">
-              {{ item.filename?.slice(0, 10) }}{{ item.filename?.length > 10 ? "..." : "" }}
+              {{ item.filename?.slice(0, 10)
+              }}{{ item.filename?.length > 10 ? "..." : "" }}
             </v-chip>
           </p>
         </div>
       </template>
-      
+
       <template v-slot:item.user="{ item }">
         <v-chip color="primary" size="small">
           {{ item.user }}
         </v-chip>
       </template>
-      
+
       <template v-slot:item.insertdate="{ item }">
         <v-chip color="primary" size="small">
           {{ dayjs(item.insertdate).format("DD/MM/YYYY HH:mm") }}
         </v-chip>
       </template>
-      
+      <template v-slot:item.action="{ item }">
+       <v-btn color="primary" @click="goPath(`/backend/register_lcic/detail/?enterprisfile=${item.id}`)">ລາຍລະອຽດ</v-btn>
+      </template>
+
       <template v-slot:item.status="{ item }">
         <v-chip color="warning" size="small" v-if="item.status === '1'">
           <strong>ລໍຖ້າກວດສອບ</strong>
@@ -278,7 +379,7 @@ onMounted(async () => {
           <strong>ສຳເລັດການກວດສອບ</strong>
         </v-chip>
       </template>
-      
+
       <template v-slot:item.LCIC_reques="{ item }">
         <div class="lcic-code-container">
           <v-chip
@@ -315,7 +416,7 @@ onMounted(async () => {
           </v-chip>
         </div>
       </template>
-      
+
       <template v-slot:bottom>
         <GloBalTablePaginations
           :limit="reques.limit"

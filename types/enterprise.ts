@@ -29,3 +29,65 @@ export interface Result {
     status:      string;
     LCIC_reques: null;
 }
+
+
+
+export interface CheckEnterpriseRespons {
+    success: boolean;
+    message: string;
+    exists:  boolean;
+    data:    Data;
+}
+
+export interface Data {
+    LCICID:                    number;
+    EnterpriseID:              string;
+    enterpriseNameLao:         string;
+    eneterpriseNameEnglish:    string;
+    regisCertificateNumber:    string;
+    regisDate:                 string;
+    enLocation:                string;
+    regisStrationOfficeType:   string;
+    regisStationOfficeCode:    string;
+    enLegalStrature:           string;
+    foreigninvestorFlag:       string;
+    investmentAmount:          number;
+    status:                    number;
+    investmentCurrency:        string;
+    representativeNationality: string;
+    LastUpdate:                string;
+    CancellationDate:          string;
+    InsertDate:                string;
+    UpdateDate:                string;
+    LCIC_code:                 string;
+    id_file:                   null;
+}
+
+
+export interface DetailEnterpiseWhitIDRespons {
+    LCICID:                    number;
+    id_file_name:              null;
+    EnterpriseID:              string;
+    enterpriseNameLao:         string;
+    eneterpriseNameEnglish:    string;
+    regisCertificateNumber:    string;
+    regisDate:                 null;
+    enLocation:                string;
+    regisStrationOfficeType:   string;
+    regisStationOfficeCode:    string;
+    enLegalStrature:           string;
+    foreigninvestorFlag:       string;
+    investmentAmount:          number;
+    status:                    number;
+    investmentCurrency:        string;
+    representativeNationality: string;
+    LastUpdate:                null;
+    user_insert:               null;
+    user_update:               null;
+    CancellationDate:          null;
+    InsertDate:                Date;
+    UpdateDate:                null;
+    LCIC_code:                 null;
+    id_file:                   number;
+    status_text:               string;
+}
