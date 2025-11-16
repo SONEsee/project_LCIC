@@ -3,6 +3,7 @@ import { useEnterprisInfo } from "~/stores/enterpris_member";
 import { useUserData } from "~/composables/useUserData";
 import axios from "~/helpers/axios";
 import Swal from "sweetalert2";
+
 interface Village {
   ID: number;
   Prov_ID: string;
@@ -14,6 +15,7 @@ interface Village {
   title: string;
   id: number;
 }
+
 const selecVivage = ref("");
 const config = useRuntimeConfig();
 const villages = ref<Village[]>([]);
@@ -168,47 +170,73 @@ const selecprovineRegister = computed(() => {
   if (!currentData.value?.regisStrationOfficeType) {
     return "ບໍ່ພົບຂໍ້ມູນ";
   }
-  
+
   const provinceId = currentData.value?.regisStrationOfficeType;
-  const province = regisStrationOfficeTypes.find(p => p.id === provinceId);
-  
+  const province = regisStrationOfficeTypes.find((p) => p.id === provinceId);
+
   return province ? province.title : "ບໍ່ພົບຂໍ້ມູນ";
 });
 
-const registerCode = computed(()=>{
-    if(!currentData.value?.regisStationOfficeCode){
-        return "ບໍ່ມີຂໍ້ມູນ"
-    }
-    const codeID = Number(currentData.value?.regisStationOfficeCode)
-    const registerCode = regisStationOfficeCodes.find(p=>p.id === codeID);
-    return registerCode ? registerCode.title : "ບໍ່ມີຂໍ້ມູນ"
+const registerCode = computed(() => {
+  if (!currentData.value?.regisStationOfficeCode) {
+    return "ບໍ່ມີຂໍ້ມູນ";
+  }
+  const codeID = Number(currentData.value?.regisStationOfficeCode);
+  const registerCode = regisStationOfficeCodes.find((p) => p.id === codeID);
+  return registerCode ? registerCode.title : "ບໍ່ມີຂໍ້ມູນ";
+});
 
-})
+const SelectenLegalStrature = computed(() => {
+  if (!currentData.value?.enLegalStrature) {
+    return "ບໍມີ";
+  }
+  const enLegalStratureId = Number(currentData?.value.enLegalStrature);
+  const enLegalStratureDetail = enLegalStratures.find(
+    (p) => p.id === enLegalStratureId
+  );
+  return enLegalStratureDetail ? enLegalStratureDetail.title : "ບໍ່ມີ";
+});
+const TypeforeigninvestorFlag = computed(() => {
+  if (!currentData.value?.foreigninvestorFlag) {
+    return "ບໍ່ມີ";
+  }
+  const foreigninvestorFlagID = currentData.value?.foreigninvestorFlag;
+  const foreigninvestorFlagDetail = foreigninvestorFlags.find(
+    (p) => p.id === foreigninvestorFlagID
+  );
+  return foreigninvestorFlagDetail ? foreigninvestorFlagDetail.title : "ບໍ່ມີ";
+});
+const selecrepresentativeNationalitys = computed(() => {
+  if (!currentData.value.representativeNationality) {
+    return "ບໍ່ມີ";
+  }
+  const representativeNationalitysId =
+    currentData.value.representativeNationality;
+  const representativeNationalitysDetail = representativeNationalitys.find(
+    (p) => p.id === representativeNationalitysId
+  );
+  return representativeNationalitysDetail
+    ? representativeNationalitysDetail.title
+    : "ບໍ່ມີ";
+});
 
-const SelectenLegalStrature = computed(()=>{
-    if(!currentData.value?.enLegalStrature){
-        return "ບໍມີ"
-    }
-    const enLegalStratureId = Number(currentData?.value.enLegalStrature);
-    const enLegalStratureDetail = enLegalStratures.find(p=>p.id === enLegalStratureId)
-    return enLegalStratureDetail ? enLegalStratureDetail.title : "ບໍ່ມີ"
-})
-const TypeforeigninvestorFlag = computed(()=>{
-    if(!currentData.value?.foreigninvestorFlag){
-        return "ບໍ່ມີ"
-    }
-    const foreigninvestorFlagID = currentData.value?.foreigninvestorFlag
-    const foreigninvestorFlagDetail  = foreigninvestorFlags.find(p=>p.id===foreigninvestorFlagID)
-    return foreigninvestorFlagDetail ? foreigninvestorFlagDetail.title : "ບໍ່ມີ"
-})
-const selecrepresentativeNationalitys = computed(()=>{
-    if(!currentData.value.representativeNationality){
-        return "ບໍ່ມີ"
-    }
-    const representativeNationalitysId  = currentData.value.representativeNationality;
-    const representativeNationalitysDetail =representativeNationalitys.find(p=>p.id === representativeNationalitysId)
-    return representativeNationalitysDetail ? representativeNationalitysDetail.title :"ບໍ່ມີ"
-})
+const reject = async () => {
+  try {
+    enterprisStore.form_reject.rejected_by = userId.value;
+    enterprisStore.form_reject.collateral_id = enterprisfile;
+
+    await enterprisStore.Reject();
+    enterprisStore.Reject();
+  } catch (error) {}
+};
+const Approve = async () => {
+  try {
+    enterprisStore.form_aprove.approved_by = userId.value;
+    enterprisStore.form_aprove.collateral_id = enterprisfile;
+
+    await enterprisStore.Approve();
+  } catch (error) {}
+};
 onMounted(() => {
   fetchVillages();
   enterprisStore.query.bank_id = userId.value;
@@ -242,7 +270,7 @@ onMounted(() => {
           </v-card-title>
 
           <v-card-text class="pa-4">
-            <v-form>
+            <v-form class="">
               <v-row dense>
                 <v-col cols="12">
                   <div class="text-subtitle-2 text-primary mb-2">
@@ -434,7 +462,21 @@ onMounted(() => {
                     class="mb-2"
                   ></v-text-field>
                 </v-col>
+                <v-col cols="12">
+                  <v-text-field
+                  v-if="userId === '01'"
+                    v-model="enterprisStore.form_reject.reason"
+                    label="ເຫດຜົນຂອງການ Reject"
+                    variant="solo"
+                    density="compact"
+                    hide-details="auto"
+                    class="mb-2"
+                  ></v-text-field>
+                </v-col>
               </v-row>
+
+              <v-btn color="primary" class="mr-4" @click="Approve" v-if="userId === '01'">ບັນທືກ</v-btn>
+              <v-btn color="error" @click="reject" v-if="userId === '01'">Reject</v-btn>
             </v-form>
           </v-card-text>
         </v-card>

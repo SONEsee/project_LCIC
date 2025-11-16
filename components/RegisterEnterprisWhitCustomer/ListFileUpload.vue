@@ -148,7 +148,7 @@ onMounted(async () => {
         <v-row>
           <v-col cols="12" sm="3">
             <v-text-field
-              v-if="userId === '01'"
+              
               v-model="enterprisStore.check_enterprise.EnterpriseID"
               density="compact"
               label="ກະລຸນາປ້ອນລະຫັດວິສາຫະກິດ"
@@ -368,7 +368,13 @@ onMounted(async () => {
         </v-chip>
       </template>
       <template v-slot:item.action="{ item }">
-       <v-btn color="primary" @click="goPath(`/backend/register_lcic/detail/?enterprisfile=${item.id}`)">ລາຍລະອຽດ</v-btn>
+        <v-btn
+          color="primary"
+          @click="
+            goPath(`/backend/register_lcic/detail/?enterprisfile=${item.id}`)
+          "
+          >ລາຍລະອຽດ</v-btn
+        >
       </template>
 
       <template v-slot:item.status="{ item }">
@@ -378,10 +384,14 @@ onMounted(async () => {
         <v-chip color="success" size="small" v-else-if="item.status === '0'">
           <strong>ສຳເລັດການກວດສອບ</strong>
         </v-chip>
+        <v-chip v-if="item.status === '3'" color="error">
+            ຖືກ Reject
+          </v-chip>
       </template>
 
       <template v-slot:item.LCIC_reques="{ item }">
         <div class="lcic-code-container">
+          
           <v-chip
             v-if="item.LCIC_reques"
             color="success"
@@ -404,6 +414,10 @@ onMounted(async () => {
                 </v-btn>
               </template>
             </v-tooltip>
+          </v-chip>
+          <v-chip  v-else-if="item.status === '3'" color="error" variant="tonal"
+            size="small">
+            {{ item.decaption }}
           </v-chip>
           <v-chip
             v-else

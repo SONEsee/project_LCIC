@@ -27,6 +27,7 @@ export interface Result {
     updatedate:  null;
     pathfile:    null;
     status:      string;
+    decaption:   string;
     LCIC_reques: null;
 }
 
