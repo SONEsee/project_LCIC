@@ -516,7 +516,7 @@ onMounted(() => {
           </v-autocomplete>
              <v-text-field
             v-model="request.branch_id"
-            label="ທຶນຈົດທະບຽນ"
+            label="ສາຂາ"
             
             variant="outlined"
             hide-details="auto"

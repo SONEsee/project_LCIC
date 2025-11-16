@@ -46,7 +46,7 @@ export interface Data {
     eneterpriseNameEnglish:    string;
     regisCertificateNumber:    string;
     regisDate:                 string;
-    enLocation:                string;
+    enLocation:                number;
     regisStrationOfficeType:   string;
     regisStationOfficeCode:    string;
     enLegalStrature:           string;
