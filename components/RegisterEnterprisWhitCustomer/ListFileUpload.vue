@@ -134,7 +134,18 @@ onMounted(async () => {
 </script>
 
 <template>
-  <v-sheet :elevation="3" rounded class="pa-4 mb-4">
+ 
+    
+ <v-sheet :elevation="3" rounded class="pa-4 mb-4">
+<h4 style="color: blue;">  ກວດສອບ ແລະ ລົງທະບຽນລະຫັດ ຂສລ</h4>
+
+   <v-progress-linear
+      buffer-value="50"
+      color="cyan"
+      stream
+    ></v-progress-linear>
+
+    <br>
     <v-row>
       <v-col cols="12" lg="12">
         <div class="mb-3">
