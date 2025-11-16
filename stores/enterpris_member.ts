@@ -152,7 +152,7 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
               timer: 1500,
             });
             setTimeout(() => {
-              goPath("#");
+              goPath("/backend/register_lcic/list_file");
             }, 1500);
           }
         }
