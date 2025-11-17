@@ -8,8 +8,8 @@ import { useUserData } from "~/composables/useUserData";
 import { useEnterprisInfo } from "~/stores/enterpris_member";
 import { MemberStore } from "@/stores/memberinfo";
 const memberinfoStore = MemberStore();
-const rout = useRoute()
-const EnterpriseMap = rout.query.enterpris as string
+const rout = useRoute();
+const EnterpriseMap = rout.query.enterpris as string;
 
 const memberData = computed(() => {
   const data = memberinfoStore.respons_data_query;
@@ -246,12 +246,22 @@ watch(
   () => route.query.enterpris,
   (newValue) => {
     if (newValue) {
-      request.EnterpriseID = newValue as string
-      console.log('EnterpriseID loaded from URL:', newValue)
+      request.EnterpriseID = newValue as string;
+     
     }
   },
-  { immediate: true } 
-)
+  { immediate: true }
+);
+watch(
+  () => userId.value,
+  (newValue) => {
+    if (newValue) {
+      request.bank_id = newValue as string ;
+     
+    }
+  },
+  { immediate: true }
+);
 const uploadFiles = async () => {
   if (!files.value || files.value.length === 0) {
     return;
@@ -312,7 +322,7 @@ const updateCollateralStatus = async (id: number) => {
 };
 
 const submit = async () => {
-await EnterprisStore.InsertEnterPrisMemberSubmit();
+  await EnterprisStore.InsertEnterPrisMemberSubmit();
 };
 const displayMemver = (item: any) => {
   if (!item || !item.nameL || !item.bnk_code || !item.code) {
@@ -509,9 +519,9 @@ onMounted(() => {
             hide-details="auto"
             density="compact"
             class="mb-4"
-            clearable
+           
+            readonly
           >
-          
             <template v-slot:item="{ item, props }">
               <v-list-item
                 v-bind="props"
@@ -525,10 +535,9 @@ onMounted(() => {
               </v-list-item>
             </template>
           </v-autocomplete>
-             <v-text-field
+          <v-text-field
             v-model="request.branch_id"
             label="ສາຂາ"
-            
             variant="outlined"
             hide-details="auto"
             density="compact"
@@ -537,7 +546,6 @@ onMounted(() => {
 
           <v-btn
             :loading="loading"
-           
             class="bg-green text-white"
             text="ບັນທຶກ"
             type="submit"
