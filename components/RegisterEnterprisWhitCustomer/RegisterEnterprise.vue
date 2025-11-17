@@ -8,7 +8,8 @@ import { useUserData } from "~/composables/useUserData";
 import { useEnterprisInfo } from "~/stores/enterpris_member";
 import { MemberStore } from "@/stores/memberinfo";
 const memberinfoStore = MemberStore();
-
+const rout = useRoute();
+const EnterpriseMap = rout.query.enterpris as string;
 
 const memberData = computed(() => {
   const data = memberinfoStore.respons_data_query;
@@ -241,7 +242,26 @@ const checkEnterpriseCode = async (): Promise<boolean> => {
     return true;
   }
 };
-
+watch(
+  () => route.query.enterpris,
+  (newValue) => {
+    if (newValue) {
+      request.EnterpriseID = newValue as string;
+     
+    }
+  },
+  { immediate: true }
+);
+watch(
+  () => userId.value,
+  (newValue) => {
+    if (newValue) {
+      request.bank_id = newValue as string ;
+     
+    }
+  },
+  { immediate: true }
+);
 const uploadFiles = async () => {
   if (!files.value || files.value.length === 0) {
     return;
@@ -302,7 +322,8 @@ const updateCollateralStatus = async (id: number) => {
 };
 
 const submit = async () => {
-await EnterprisStore.InsertEnterPrisMemberSubmit();
+
+  await EnterprisStore.InsertEnterPrisMemberSubmit();
 };
 const displayMemver = (item: any) => {
   if (!item || !item.nameL || !item.bnk_code || !item.code) {
@@ -330,9 +351,7 @@ onMounted(() => {
         color="grey-lighten-5"
         border="dotted thin info lg"
       >
-        <!-- <pre>
-        {{ memberData }}
-      </pre> -->
+     
         <v-form @submit.prevent="submit">
           <v-text-field
             v-model="request.EnterpriseID"
@@ -342,18 +361,10 @@ onMounted(() => {
             hide-details="auto"
             density="compact"
             class="mb-3"
+            readonly
           ></v-text-field>
 
-          <!-- <v-text-field
-            v-model="LCICID"
-            label="LCIC ID"
-            variant="outlined"
-            hide-details="auto"
-            density="compact"
-            class="mb-3"
-            readonly
-            bg-color="grey-lighten-3"
-          ></v-text-field> -->
+         
 
           <v-text-field
             v-model="request.enterpriseNameLao"
@@ -498,9 +509,9 @@ onMounted(() => {
             hide-details="auto"
             density="compact"
             class="mb-4"
-            clearable
+           
+            readonly
           >
-          
             <template v-slot:item="{ item, props }">
               <v-list-item
                 v-bind="props"
@@ -514,10 +525,9 @@ onMounted(() => {
               </v-list-item>
             </template>
           </v-autocomplete>
-             <v-text-field
+          <v-text-field
             v-model="request.branch_id"
             label="ສາຂາ"
-            
             variant="outlined"
             hide-details="auto"
             density="compact"
@@ -526,7 +536,6 @@ onMounted(() => {
 
           <v-btn
             :loading="loading"
-           
             class="bg-green text-white"
             text="ບັນທຶກ"
             type="submit"

@@ -187,7 +187,7 @@ onMounted(async () => {
               :disabled="
                 enterprisStore.respon_data_check_enterprise?.exists !== false
               "
-              @click="goPath(`/backend/register_lcic/`)"
+              @click="goPath(`/backend/register_lcic/?enterpris=${enterprisStore.check_enterprise.EnterpriseID}`)"
             >
               ລົງທະບຽນອອກລະຫັດ ຂສລ
             </v-btn>

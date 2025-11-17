@@ -92,3 +92,43 @@ export interface DetailEnterpiseWhitIDRespons {
     id_file:                   number;
     status_text:               string;
 }
+
+
+export interface ListEnterprisRespons {
+    success:    boolean;
+    message:    string;
+    data:       DataEnterprise;
+    pagination: Pagination;
+}
+
+export interface DataEnterprise {
+    LCICID:                    number;
+    EnterpriseID:              string;
+    enterpriseNameLao:         string;
+    eneterpriseNameEnglish:    string;
+    regisCertificateNumber:    string;
+    regisDate:                 null;
+    enLocation:                string;
+    regisStrationOfficeType:   string;
+    regisStationOfficeCode:    string;
+    enLegalStrature:           string;
+    foreigninvestorFlag:       string;
+    investmentAmount:          number;
+    status:                    number;
+    investmentCurrency:        string;
+    representativeNationality: string;
+    LastUpdate:                null;
+    CancellationDate:          null;
+    InsertDate:                Date;
+    UpdateDate:                null;
+    LCIC_code:                 null;
+}
+
+export interface Pagination {
+    current_page: number;
+    total_pages:  number;
+    total_items:  number;
+    per_page:     number;
+    has_next:     boolean;
+    has_previous: boolean;
+}

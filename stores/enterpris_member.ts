@@ -31,6 +31,7 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
         null as EnterpriseModel.CheckEnterpriseRespons | null,
       respon_data_detail_enterprise:
         null as EnterpriseModel.DetailEnterpiseWhitIDRespons | null,
+      list_data_enterprise: null as EnterpriseModel.ListEnterprisRespons | null,
       query: {
         bank_id: "",
         bank_id_filter: "",
@@ -53,12 +54,43 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
         rejected_by: "",
         reason: "",
       },
+      filter_enterprise: {
+        query: {
+          limit: 20,
+          page: 1,
+          enLegalStrature: "",
+          EnterpriseID: "",
+        },
+        isLoading: false,
+      },
       isLoading: false,
     };
   },
   actions: {
     async InsertEnterPrisMemberSubmit() {
       try {
+        if (!this.form_insert_member_submit_data.file) {
+          Swal.fire({
+            icon: "warning",
+            title: "ຄຳເຕືອນ",
+            text: "ກະລຸນາແນບເອກະສານອ້າງອີງ",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+          return { success: false, message: "ບໍ່ມີໄຟລ໌" };
+        }
+
+        if (!this.form_insert_member_submit_data.EnterpriseID) {
+          Swal.fire({
+            icon: "warning",
+            title: "ຄຳເຕືອນ",
+            text: "ກະລຸນາປ້ອນລະຫັດວິສາຫະກິດ",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+          return { success: false, message: "ບໍ່ມີລະຫັດວິສາຫະກິດ" };
+        }
+
         const noticonfirm = await Swal.fire({
           icon: "question",
           title: "ຢືນຢັນ",
@@ -255,146 +287,165 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
       }
     },
 
-    async Approve(){
-        this.isLoading = true
-        try {
-            const notification = await Swal.fire({
-                icon:"question",
-                title:"ຢືນຢັນ",
-                text:"ທ່ານຕອ້ງການທີ່ຈະຢືນຢັນແທ້ຫຼືບໍ  ?",
-                showCancelButton:true,
-                cancelButtonText:"ຍົກເລີກ",
-                confirmButtonText:"ຢືນຢັນ"
-            });if(notification.isConfirmed){
-                const dataForm = new FormData()
-                dataForm.append("collateral_id", this.form_aprove.collateral_id)
-                dataForm.append("approved_by", this.form_aprove.approved_by)
-                const req = await axios.post(`api/api/collateral/approve/`,dataForm);
-                if(req.status===200){
-                    Swal.fire({
-                        icon:"success",
-                        title:"ສຳເລັດ",
-                        text:"ຢືນຢັນສຳເລັດ",
-                        timer:2000,
-                        showConfirmButton:false
-                    
-                    });setTimeout(() => {
-                        goPath(`/backend/register_lcic/list_file`)
-                    }, 2000);
-                }
-            }
-        } catch (error) {
+    async Approve() {
+      this.isLoading = true;
+      try {
+        const notification = await Swal.fire({
+          icon: "question",
+          title: "ຢືນຢັນ",
+          text: "ທ່ານຕອ້ງການທີ່ຈະຢືນຢັນແທ້ຫຼືບໍ  ?",
+          showCancelButton: true,
+          cancelButtonText: "ຍົກເລີກ",
+          confirmButtonText: "ຢືນຢັນ",
+        });
+        if (notification.isConfirmed) {
+          const dataForm = new FormData();
+          dataForm.append("collateral_id", this.form_aprove.collateral_id);
+          dataForm.append("approved_by", this.form_aprove.approved_by);
+          const req = await axios.post(`api/api/collateral/approve/`, dataForm);
+          if (req.status === 200) {
             Swal.fire({
-                icon:"error",
-                title:"ຜິດພາດ",
-                text:"ບໍ່ສາມາດ ຢືນຢັນໄດ້ເດໍກີດຂໍ້ຜິດພາດ",
-                timer:2000,
-                showConfirmButton:false
-            })
-        }finally{
-            this.isLoading = false
+              icon: "success",
+              title: "ສຳເລັດ",
+              text: "ຢືນຢັນສຳເລັດ",
+              timer: 2000,
+              showConfirmButton: false,
+            });
+            setTimeout(() => {
+              goPath(`/backend/register_lcic/list_file`);
+            }, 2000);
+          }
         }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text: "ບໍ່ສາມາດ ຢືນຢັນໄດ້ເດໍກີດຂໍ້ຜິດພາດ",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } finally {
+        this.isLoading = false;
+      }
     },
     async Reject() {
-      this.isLoading = true
+      this.isLoading = true;
       try {
-      
-        if (!this.form_reject.reason || this.form_reject.reason.trim() === '') {
+        if (!this.form_reject.reason || this.form_reject.reason.trim() === "") {
           Swal.fire({
-            icon: 'warning',
-            title: 'ແຈ້ງເຕືອນ',
-            text: 'ກະລຸນາປ້ອນເຫດຜົນການປະຕິເສດກ່ອນ',
+            icon: "warning",
+            title: "ແຈ້ງເຕືອນ",
+            text: "ກະລຸນາປ້ອນເຫດຜົນການປະຕິເສດກ່ອນ",
             timer: 2000,
-            showConfirmButton: false
-          })
-          return false
+            showConfirmButton: false,
+          });
+          return false;
         }
 
         if (!this.form_reject.collateral_id) {
           Swal.fire({
-            icon: 'warning',
-            title: 'ແຈ້ງເຕືອນ',
-            text: 'ບໍ່ພົບ ID ຂອງເອກະສານ',
+            icon: "warning",
+            title: "ແຈ້ງເຕືອນ",
+            text: "ບໍ່ພົບ ID ຂອງເອກະສານ",
             timer: 2000,
-            showConfirmButton: false
-          })
-          return false
+            showConfirmButton: false,
+          });
+          return false;
         }
 
-      
         const notification = await Swal.fire({
-          icon: 'question',
-          title: 'ຢືນຢັນການປະຕິເສດ',
-          text: 'ທ່ານຕ້ອງການທີ່ຈະປະຕິເສດແທ້ຫຼືບໍ່?',
+          icon: "question",
+          title: "ຢືນຢັນການປະຕິເສດ",
+          text: "ທ່ານຕ້ອງການທີ່ຈະປະຕິເສດແທ້ຫຼືບໍ່?",
           showCancelButton: true,
-          cancelButtonText: 'ຍົກເລີກ',
-          confirmButtonText: 'ຢືນຢັນ',
-          confirmButtonColor: '#d33',
-          cancelButtonColor: '#757575'
-        })
+          cancelButtonText: "ຍົກເລີກ",
+          confirmButtonText: "ຢືນຢັນ",
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#757575",
+        });
 
         if (notification.isConfirmed) {
-          const dataForm = new FormData()
-          dataForm.append('collateral_id', this.form_reject.collateral_id)
-          dataForm.append('rejected_by', this.form_reject.rejected_by)
-          dataForm.append('reason', this.form_reject.reason)
+          const dataForm = new FormData();
+          dataForm.append("collateral_id", this.form_reject.collateral_id);
+          dataForm.append("rejected_by", this.form_reject.rejected_by);
+          dataForm.append("reason", this.form_reject.reason);
 
-          const req = await axios.post(`api/api/collateral/reject/`, dataForm)
+          const req = await axios.post(`api/api/collateral/reject/`, dataForm);
 
           if (req.status === 200 && req.data.success) {
             await Swal.fire({
-              icon: 'success',
-              title: 'ສຳເລັດ',
-              text: 'ປະຕິເສດສຳເລັດແລ້ວ',
+              icon: "success",
+              title: "ສຳເລັດ",
+              text: "ປະຕິເສດສຳເລັດແລ້ວ",
               timer: 2000,
               showConfirmButton: false,
-              timerProgressBar: true
-            })
+              timerProgressBar: true,
+            });
 
-           
-          
-
-           
             setTimeout(() => {
-              goPath(`/backend/register_lcic/list_file`)
-            }, 2000)
+              goPath(`/backend/register_lcic/list_file`);
+            }, 2000);
 
-            return true
+            return true;
           } else {
-            throw new Error(req.data.message || 'ບໍ່ສາມາດປະຕິເສດໄດ້')
+            throw new Error(req.data.message || "ບໍ່ສາມາດປະຕິເສດໄດ້");
           }
         }
 
-        return false
+        return false;
       } catch (error: any) {
-        console.error('Reject Error:', error)
-        
-        const errorMessage = error.response?.data?.message || 
-                           error.message || 
-                           'ບໍ່ສາມາດປະຕິເສດໄດ້ ເກີດຂໍ້ຜິດພາດ'
+        console.error("Reject Error:", error);
+
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "ບໍ່ສາມາດປະຕິເສດໄດ້ ເກີດຂໍ້ຜິດພາດ";
 
         Swal.fire({
-          icon: 'error',
-          title: 'ຜິດພາດ',
+          icon: "error",
+          title: "ຜິດພາດ",
           text: errorMessage,
           timer: 3000,
-          showConfirmButton: false
-        })
+          showConfirmButton: false,
+        });
 
-        return false
+        return false;
       } finally {
-        this.isLoading = false
+        this.isLoading = false;
       }
     },
 
-    
     resetForms() {
       this.form_reject = {
-        collateral_id: '',
-        rejected_by: '',
-        reason: ''
+        collateral_id: "",
+        rejected_by: "",
+        reason: "",
+      };
+    },
+
+    async GetEnterpriseList() {
+      this.isLoading = true;
+      try {
+        const res = await axios.get<EnterpriseModel.ListEnterprisRespons>(
+          `/api/api/enterprises_list/`,
+          {
+            params: {
+              ...this.filter_enterprise.query,
+            },
+          }
+        );
+        if (res.status === 200) {
+          this.list_data_enterprise = res.data;
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text: "ບໍ່ສາມາດໄດ້ຮັບຂໍ້ມູນໄດ້, ກະລຸນາລອງໃໝ່ອີກຄັ້ງ",
+        });
+      } finally {
+        this.isLoading = false;
       }
-      
-    }
+    },
   },
 });
