@@ -8,6 +8,8 @@ import { useUserData } from "~/composables/useUserData";
 import { useEnterprisInfo } from "~/stores/enterpris_member";
 import { MemberStore } from "@/stores/memberinfo";
 const memberinfoStore = MemberStore();
+
+
 const memberData = computed(() => {
   const data = memberinfoStore.respons_data_query;
   if (Array.isArray(data)) {
@@ -514,7 +516,7 @@ onMounted(() => {
           </v-autocomplete>
              <v-text-field
             v-model="request.branch_id"
-            label="ທຶນຈົດທະບຽນ"
+            label="ສາຂາ"
             
             variant="outlined"
             hide-details="auto"
