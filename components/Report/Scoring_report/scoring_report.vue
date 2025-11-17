@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from "axios";
+import { useUserUID } from '~/composables/useUserUID';
 
 const router = useRouter();
 const config = useRuntimeConfig();
@@ -16,6 +17,7 @@ const recSysId = ref("");  // ⭐ เพิ่มตัวแปรนี้ส�
 const reportDate = ref("");
 const loading = ref(false);
 const error = ref("");
+const { userData, UID } = useUserUID();
 
 // ข้อมูลส่วนตัว
 const personalInfo = ref({
@@ -373,62 +375,50 @@ function getScoreLabel(key: string): string {
 
       <!-- Report Container (แสดงเมื่อโหลดเสร็จ) -->
       <v-card v-else-if="!loading && !error" flat class="report-container">
-        <v-col cols="8" class="text-center">
-          <div>
-            <v-row align="center">
-              <v-col cols="auto">
-                <v-img
-                  src="/images/logo1.png"
-                  width="70"
-                ></v-img>
-              </v-col>
-              <v-col>
-                <div class="row-content text-start float-left">
-                  <h4>ບໍລິສັດ ຂໍ້ມູນຂ່າວສານສິນເຊື່ອເເຫ່ງ ສປປ ລາວ</h4>
-                  <hr>
-                  <h4>Lao Credit Information Company</h4>
-                </div>
-              </v-col>
-            </v-row>
-          </div>
-        </v-col>
-
-        <!-- Logo และหัวข้อ -->
-        <div class="text-center pa-2 header-section">
-            <v-img
-                src="/images/national_symbol.png"
-                width="100"
-                style="margin: 0 auto;"
-            ></v-img>
-          <h3 class="text-h6">ສາທາລະນະລັດ ປະຊາທິປະໄຕ ປະຊາຊົນລາວ</h3>
-          <h3 class="text-h6">ສັນຕິພາບ ເອກະລາດ ປະຊາທິປະໄຕ ເອກະພາບ ວັດທະນະຖາວອນ</h3>
-          <div class="my-2">======00000======</div>
-        </div>
-
         <!-- ข้อมูลเอกสาร -->
         <div class="document-info-wrapper px-4 mb-2">
-          <div class="document-info-flex">
-            <div class="document-info-left">
-              <strong>ທະນາຄານແຫ່ງ ສປປ ລາວ</strong><br>
-              ບໍລິສັດຂໍ້ມູນຂ່າວສານສິນເຊື່ອແຫ່ງ ສປປ ລາວ
+        <v-row>
+            <!-- Left: Logo + Company Name -->
+            <v-col cols="8" class="text-center">
+            <div>
+                <v-row align="center">
+                <v-col cols="auto">
+                    <v-img
+                    src="/images/logo1.png"
+                    width="70"
+                    ></v-img>
+                </v-col>
+                <v-col>
+                    <div class="row-content text-start float-left">
+                    <h4>ບໍລິສັດ ຂໍ້ມູນຂ່າວສານສິນເຊື່ອເເຫ່ງ ສປປ ລາວ</h4>
+                    <hr>
+                    <h4>Lao Credit Information Company</h4>
+                    </div>
+                </v-col>
+                </v-row>
             </div>
-            <div class="document-info-right">
-              <strong>ເລກທີ:</strong> {{ recSysId }}/ຂສລ<br>
-              <strong>ນະຄອນຫຼວງວຽງຈັນ, ວັນທີ:</strong> {{ reportDate }}
+            </v-col>
+            
+            <!-- Right: Document Info -->
+            <v-col cols="4" class="text-end mt-4">
+            <div>
+                <p><strong>ລະຫັດຂສລ:</strong> {{ lcicID }}</p>
+                <p>ຜູ້ສອບຖາມ: <b>{{ userData?.username }}</b> ຈາກທະນາຄານ: <b>{{ userData?.MID?.code }}</b></p>
             </div>
-          </div>
+            </v-col>
+        </v-row>
         </div>
 
         <!-- ชื่อรายงาน -->
-        <div class="text-center mb-2 pa-6 report-title">
+        <div class="text-center pa-7 report-title">
           <h2 class="text-h5 font-weight-bold">ບົດລາຍງານການໃຫ້ຄະແນນສິນເຊື່ອ</h2>
           <p class="text-subtitle-1">(ສຳລັບບຸກຄົນ)</p>
         </div>
 
-        <v-divider class="my-2"></v-divider>
+        <!-- <v-divider class="my-2"></v-divider> -->
 
         <!-- ข้อมูลอ้างอิง -->
-        <v-card flat class=" text-center pa-3 mb-2 reference-info-card ml-6" color="grey-lighten-4">
+        <!-- <v-card flat class=" text-center pa-3 mb-2 reference-info-card ml-6" color="grey-lighten-4">
           <div class="reference-info-flex">
             <div class="reference-info-item">
               <strong>ເລກອ້າງອິງ:</strong> {{ enquiryReference }}
@@ -437,75 +427,66 @@ function getScoreLabel(key: string): string {
               <strong>LCIC ID:</strong> {{ lcicID }}
             </div>
           </div>
-        </v-card>
+        </v-card> -->
 
         <!-- ข้อมูลส่วนบุคคล -->
         <v-card flat class="pa-3 mb-2 personal-info-section">
-          <h3 class="text-h7 mb-2 font-weight-bold section-title">
+          <h3 class="text-h6 mb-2 font-weight-bold section-title">
                 <v-icon >mdi-dot</v-icon>
                 ຂໍ້ມູນສ່ວນບຸກຄົນ
           </h3>
-          <v-row dense class="personal-info-grid">
+          <v-row dense class="personal-info-grid ml-2">
             <v-col cols="12" md="6" lg="4" class="info-column">
               <div class="info-row">
-                <span class="font-weight-bold">ບັດປະຈຳຕົວ:</span>
-                <span>{{ personalInfo.nationalID }}</span>
+                <span>ຊື່ພາສາລາວ: <span class="font-weight-bold">{{ personalInfo.laoName }}</span></span>
               </div>
             </v-col>
             <v-col cols="12" md="6" lg="4" class="info-column">
               <div class="info-row">
-                <span class="font-weight-bold">ສຳມະໂນຄົວ:</span>
-                <span>{{ personalInfo.familyBook }}</span>
+                <span>ນາມສະກຸນພາສາລາວ: <span class="font-weight-bold">{{ personalInfo.laoSurname }}</span></span>
               </div>
             </v-col>
             <v-col cols="12" md="6" lg="4" class="info-column">
               <div class="info-row">
-                <span class="font-weight-bold">ໜັງສືຜ່ານແດນ:</span>
-                <span>{{ personalInfo.passport }}</span>
+                <span>ຊື່ພາສາອັງກິດ: <span class="font-weight-bold">{{ personalInfo.engName }}</span></span>
               </div>
             </v-col>
             <v-col cols="12" md="6" lg="4" class="info-column">
               <div class="info-row">
-                <span class="font-weight-bold">ສັນຊາດ:</span>
-                <span>{{ personalInfo.nationality }}</span>
+                <span>ນາມສະກຸນພາສາອັງກິດ: <span class="font-weight-bold">{{ personalInfo.engSurname }}</span></span>
               </div>
             </v-col>
             <v-col cols="12" md="6" lg="4" class="info-column">
               <div class="info-row">
-                <span class="font-weight-bold">ຊື່ພາສາລາວ:</span>
-                <span>{{ personalInfo.laoName }}</span>
+                <span>ວັນເດືອນປີເກີດ: <span class="font-weight-bold">{{ personalInfo.birthDate }}</span></span>
               </div>
             </v-col>
             <v-col cols="12" md="6" lg="4" class="info-column">
               <div class="info-row">
-                <span class="font-weight-bold">ນາມສະກຸນພາສາລາວ:</span>
-                <span>{{ personalInfo.laoSurname }}</span>
+                <span>ສັນຊາດ: <span class="font-weight-bold">{{ personalInfo.nationality }}</span></span>
               </div>
             </v-col>
             <v-col cols="12" md="6" lg="4" class="info-column">
               <div class="info-row">
-                <span class="font-weight-bold">ຊື່ພາສາອັງກິດ:</span>
-                <span>{{ personalInfo.engName }}</span>
+                <span>ບັດປະຈຳຕົວ: <span class="font-weight-bold">{{ personalInfo.nationalID }}</span></span>
               </div>
             </v-col>
             <v-col cols="12" md="6" lg="4" class="info-column">
               <div class="info-row">
-                <span class="font-weight-bold">ນາມສະກຸນພາສາອັງກິດ:</span>
-                <span>{{ personalInfo.engSurname }}</span>
+                <span>ສຳມະໂນຄົວ: <span class="font-weight-bold">{{ personalInfo.familyBook }}</span></span>
               </div>
             </v-col>
             <v-col cols="12" md="6" lg="4" class="info-column">
               <div class="info-row">
-                <span class="font-weight-bold">ວັນເດືອນປີເກີດ:</span>
-                <span>{{ personalInfo.birthDate }}</span>
+                <span>ໜັງສືຜ່ານແດນ: <span class="font-weight-bold">{{ personalInfo.passport }}</span></span>
               </div>
             </v-col>
           </v-row>
         </v-card>
 
         <!-- เงื่อนไขการให้คะแนน -->
-        <v-card flat class="pa-3  conditional-scores-section" color="blue-lighten-5">
-          <h3 class="text-h7 mb-1 font-weight-bold section-title">
+        <v-card flat class="pa-3  conditional-scores-section text-black" color="#C7D1FC">
+          <h3 class="text-h6 mb-1 font-weight-bold section-title">
             <v-icon>mdi-dot</v-icon>
             ເງື່ອນໄຂການໃຫ້ຄະແນນ
         </h3>
@@ -521,7 +502,7 @@ function getScoreLabel(key: string): string {
 
         <!-- Credit Risk Score -->
         <v-card flat class="pa-3 mb-2 credit-score-section">
-          <h3 class="text-h7 mb-2 font-weight-bold section-title">
+          <h3 class="text-h6 mb-2 font-weight-bold section-title">
             <v-icon>mdi-dot</v-icon>
             Credit Risk Score
         </h3>
@@ -546,7 +527,7 @@ function getScoreLabel(key: string): string {
 
         <!-- Score Factors -->
         <v-card flat class="pa-3 mb-2 score-factors-section">
-          <h3 class="text-h7 mb-2 font-weight-bold section-title">
+          <h3 class="text-h6 mb-2 font-weight-bold section-title">
             <v-icon>mdi-dot</v-icon>
             SCORE FACTORS
         </h3>
@@ -580,43 +561,35 @@ function getScoreLabel(key: string): string {
           </v-table>
         </v-card>
 
-        <!-- Financial Overview -->
+        <!-- Financial Overview - Badge Style -->
         <v-card flat class="pa-3 mb-2">
-          <h3 class="text-h7 mb-2 font-weight-bold section-title">
+        <h3 class="text-h6 mb-2 font-weight-bold section-title">
             <v-icon>mdi-dot</v-icon>
             FINANCIAL OVERVIEW
         </h3>
-          
-          <!-- Active Accounts -->
-          <div class="mb-1 font-weight-bold">
-            <strong>Active Accounts With:</strong> {{ activeBanks }}
-          </div>
+        
+        <!-- Active Accounts -->
+        <div class="mb-3 ml-7">
+            <strong>Active Accounts With: {{ activeBanks }}</strong>
+        </div>
 
-          <!-- ວົງເງິນລວມ: + ตาราง 2 คอลัมน์ จัดกึ่งกลาง กระชับ -->
-          <div class="d-flex align-center gap-1">
+        <!-- ວົງເງິນລວມ: Badge Style -->
+        <div class="d-flex align-center flex-wrap gap-2 ml-7">
             <strong>ວົງເງິນລວມ:</strong>
-            <div class="mini-table-center ml-4">
-              <v-table density="compact" class="compact-center-table">
-                <thead>
-                  <tr>
-                    <th>ສະກຸນ</th>
-                    <th>ວົງເງິນ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(line, index) in overallCreditLines" :key="index">
-                    <td>{{ line.currency }}</td>
-                    <td>{{ line.amount }}</td>
-                  </tr>
-                </tbody>
-              </v-table>
+            <div 
+            v-for="(line, index) in overallCreditLines" 
+            :key="index" 
+            class="currency-badge"
+            >
+            <span class="badge-amount">{{ line.amount }}</span>
+            <span class="badge-currency">{{ line.currency }}</span>
             </div>
-          </div>
+        </div>
         </v-card>
 
         <!-- ⭐ UPDATED: ລາຍລະອຽດສິນເຊື່ອ ແລະ ຫຼັກຊັບຄ້ຳປະກັນ ⭐ -->
         <v-card flat class="pa-3 mb-2">
-          <h3 class="text-h7 mb-3 font-weight-bold section-title">
+          <h3 class="text-h6 mb-2 font-weight-bold section-title">
             <v-icon>mdi-dot</v-icon>
             ລາຍລະອຽດສິນເຊື່ອ ແລະ ຫຼັກຊັບຄ້ຳປະກັນ (ACTIVE)
           </h3>
@@ -692,7 +665,7 @@ function getScoreLabel(key: string): string {
                   >
                     <div class="collateral-info-row">
                       <span class="col-label">ປະເພດ: </span>
-                      <span class="col-value font-weight-bold ml-2">{{ collateral.col_type_name_lao || collateral.col_type_name_eng }}</span>
+                      <span class="col-value font-weight-bold ml-5">{{ collateral.col_type_name_lao || collateral.col_type_name_eng }}</span>
                     </div>
                     <div class="collateral-info-row">
                       <span class="col-label">ມູນຄ່າ:</span>
@@ -749,6 +722,38 @@ function getScoreLabel(key: string): string {
 
 <style scoped>
 /* ============================================
+   BADGE STYLE CSS
+   ============================================ */
+
+.currency-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: white;
+  border: 1px solid #2931a5;
+  color: #2931a5;
+}
+
+.currency-badge:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.badge-currency {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.badge-amount {
+  font-weight: 600;
+  font-size: 14px;
+}
+/* ============================================
    🎯 ส่วนที่ 1: CSS สำหรับหน้าจอปกติ (NOT PRINT)
    ============================================ */
 
@@ -759,7 +764,7 @@ function getScoreLabel(key: string): string {
 
 .box-layout-container {
   border: 1px solid #ccc;
-  border-radius: 8px; /* ✅ เพิ่ม border-radius */
+  border-radius: 8px;
   overflow: hidden;
   background: white;
 }
@@ -767,7 +772,7 @@ function getScoreLabel(key: string): string {
 /* Header Row - มีสีพื้นหลังเท่านั้น */
 .box-header-row {
   display: grid;
-  grid-template-columns: 1fr 3fr; /* 👈 เปลี่ยนจาก 2fr เป็น 3fr (Loan แคบลง) */
+  grid-template-columns: 1fr 3fr;
   border-bottom: 1px solid #ccc;
 }
 
@@ -775,6 +780,7 @@ function getScoreLabel(key: string): string {
   padding: 10px 12px;
   display: flex;
   align-items: center;
+  justify-content: flex-start; /* ⭐ เพิ่มบรรทัดนี้ - ชิดซ้าย */
   font-size: 14px;
   font-weight: bold;
   color: white;
@@ -783,17 +789,19 @@ function getScoreLabel(key: string): string {
 .loan-header {
   background: #0a1e77;
   border-right: 1px solid #ccc;
+  justify-content: flex-start !important; /* ⭐ บังคับชิดซ้าย */
 }
 
 .collateral-header {
   background: #0a1e77;
+  justify-content: flex-start !important; /* ⭐ บังคับชิดซ้าย */
 }
 
 /* Content Row - ⭐ ลดความสูงลง */
 .box-content-row {
   display: grid;
-  grid-template-columns: 1fr 3fr; /* 👈 เปลี่ยนจาก 2fr เป็น 3fr (Loan แคบลง) */
-  min-height: 120px; /* ✅ ลดจาก 200px เป็น 120px */
+  grid-template-columns: 1fr 3fr;
+  min-height: 120px;
 }
 
 /* Left: Loan Box - ไม่มี design */
@@ -807,20 +815,20 @@ function getScoreLabel(key: string): string {
   display: flex;
   justify-content: space-between;
   padding: 2px 0;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
   background: white;
   border: none;
   border-radius: 0;
 }
 
 .info-label {
-  font-weight: 600;
-  color: #333;
+  font-weight: 500;
+  color: #000000;
   font-size: 13px;
 }
 
 .info-value {
-  font-weight: 400;
+  font-weight: bold;
   color: #000;
   font-size: 13px;
 }
@@ -837,7 +845,7 @@ function getScoreLabel(key: string): string {
 .collateral-box {
   background: white;
   border: 1px solid #ddd;
-  border-radius: 6px; /* ✅ เพิ่ม border-radius */
+  border-radius: 6px;
   padding: 8px;
 }
 
@@ -845,7 +853,7 @@ function getScoreLabel(key: string): string {
   display: flex;
   justify-content: space-between;
   padding: 4px 0;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .collateral-info-row:last-child {
@@ -853,28 +861,28 @@ function getScoreLabel(key: string): string {
 }
 
 .col-label {
-  font-weight: 600;
-  color: #555;
+  font-weight: 500;
+  color: #000000;
 }
 
 .col-value {
-  font-weight: 400;
+  font-weight: bold;
   color: #000;
 }
 
 .col-status {
-  color: #2e7d32;
-  font-weight: 700;
+  color: #000000;
+  font-weight: 400;
 }
 
 /* ⭐ จัด no-collateral ให้อยู่กึ่งกลางแนวตั้งและแนวนอน */
 .no-collateral {
   grid-column: 1 / -1;
-  display: flex; /* ✅ ใช้ flexbox */
-  flex-direction: column; /* ✅ จัดเรียงแนวตั้ง */
-  align-items: center; /* ✅ กึ่งกลางแนวนอน */
-  justify-content: center; /* ✅ กึ่งกลางแนวตั้ง */
-  min-height: 120px; /* ✅ ให้สูงเท่ากับ min-height ของ content-row */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
   padding: 20px;
   color: #999;
 }
@@ -925,10 +933,12 @@ function getScoreLabel(key: string): string {
 }
 
 .section-title { 
-  font-size: 16px; 
+  font-size: 16px;
+  margin: 1; 
 }
 
 .document-info-wrapper { 
+  margin-top: 40px;
   margin-bottom: 8px; 
 }
 
@@ -949,27 +959,12 @@ function getScoreLabel(key: string): string {
   text-align: right; 
 }
 
-.reference-info-card { 
-  padding: 5px !important; 
-}
-
-.reference-info-flex { 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  gap: 20px; 
-}
-
-.reference-info-item { 
-  flex: 1; 
-  font-size: 14px; 
-}
-
 .info-row {
   display: flex;
   justify-content: space-between;
   padding: 4px 0;
   border-bottom: 1px solid #e0e0e0;
+  font-weight: 500;
 }
 
 .score-item {
@@ -981,7 +976,7 @@ function getScoreLabel(key: string): string {
 }
 
 .score-label { 
-  font-weight: 600; 
+  font-weight: 500; 
 }
 
 .score-value { 
@@ -1172,88 +1167,99 @@ table th, table td,
 
   /* ========== PRINT: BOX LAYOUT ========== */
   
+  /* ⭐ ให้ loan wrapper แบ่งหน้าได้ตามธรรมชาติ */
   .loan-collateral-wrapper {
-    page-break-inside: avoid;
+    page-break-inside: auto; /* เปลี่ยนจาก avoid เป็น auto */
     margin-bottom: 8px;
   }
 
+  /* ⭐ ให้ box container แบ่งหน้าได้ */
   .box-layout-container {
     border: 0.5px solid #a3a0a0;
-    border-radius: 6px; /* ✅ เพิ่ม border-radius */
+    border-radius: 6px;
     overflow: hidden;
+    page-break-inside: auto; /* อนุญาตให้แบ่งหน้าได้ */
   }
 
   /* HEADER ROW (Print) */
   .box-header-row {
     display: grid;
-    grid-template-columns: 2fr 3fr; /* 👈 เปลี่ยนจาก 2fr เป็น 3fr (Loan แคบลง) */
+    grid-template-columns: 1fr 3fr;
     border-bottom: 0.5px solid #a3a0a0;
+    page-break-after: avoid; /* ป้องกัน header แยกจาก content */
   }
 
   .box-header {
     padding: 4px 6px;
-    font-size: 9pt !important;
+    font-size: 8pt !important;
     display: flex;
     align-items: center;
+    justify-content: flex-start !important;
   }
 
   .loan-header {
     background: #0a1e77 !important;
     color: white !important;
     border-right: 0.5px solid #a3a0a0;
+    justify-content: flex-start !important;
   }
 
   .collateral-header {
     background: #0a1e77 !important;
     color: white !important;
+    justify-content: flex-start !important;
   }
 
   /* CONTENT ROW (Print) */
   .box-content-row {
     display: grid;
-    grid-template-columns: 1fr 3fr; /* 👈 เปลี่ยนจาก 2fr เป็น 3fr (Loan แคบลง) */
+    grid-template-columns: 1fr 3fr;
     min-height: auto;
+    page-break-inside: auto; /* อนุญาตให้แบ่งหน้าได้ */
   }
 
-  /* LOAN BOX (Print) */
+  /* LOAN BOX (Print) - ป้องกันแยกครึ่ง */
   .loan-box {
     padding: 4px;
     border-right: 0.5px solid #a3a0a0;
     background: white;
+    page-break-inside: avoid; /* ป้องกัน loan info แยกครึ่ง */
   }
 
   .loan-info-row {
     padding: 1px 3px;
     margin-bottom: 1px;
-    font-size: 8pt !important;
+    font-size: 6pt !important;
     line-height: 1.2;
     background: white;
     border: none;
   }
 
   .info-label {
-    font-size: 8pt !important;
-    font-weight: 600;
+    font-size: 7pt !important;
+    font-weight: 500;
   }
 
   .info-value {
-    font-size: 8pt !important;
-    font-weight: 400;
+    font-size: 7pt !important;
+    font-weight: bold;
   }
 
-  /* COLLATERAL GRID (Print) */
+  /* COLLATERAL GRID (Print) - อนุญาตให้แบ่งหน้าได้ */
   .collateral-grid {
     padding: 4px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 4px;
+    page-break-inside: auto; /* ⭐ อนุญาตให้แบ่งหน้าได้ */
   }
 
+  /* COLLATERAL BOX - ป้องกันแต่ละกล่องแยกครึ่ง */
   .collateral-box {
     border: 0.5px solid #a3a0a0;
-    border-radius: 4px; /* ✅ เพิ่ม border-radius */
+    border-radius: 4px;
     padding: 4px;
-    page-break-inside: avoid;
+    page-break-inside: avoid; /* ⭐ ป้องกัน collateral box แต่ละอันแยกครึ่ง */
     background: white;
   }
 
@@ -1277,7 +1283,7 @@ table th, table td,
     justify-content: center;
     padding: 8px;
     font-size: 7pt !important;
-    min-height: 60px;
+    min-height: 50px;
   }
 
   .separator-line {
@@ -1290,7 +1296,7 @@ table th, table td,
   /* ========== ส่วนอื่นๆ - Print Styles ========== */
   
   .section-title {
-    font-size: 10pt !important;
+    font-size: 9pt !important;
     margin-bottom: 3px !important;
     line-height: 1.3 !important;
   }
@@ -1333,6 +1339,7 @@ table th, table td,
   }
 
   .document-info-wrapper {
+    margin-top: 0px !important;
     margin-bottom: 3px !important;
     padding: 0 4px !important;
     page-break-inside: avoid !important;
@@ -1353,24 +1360,6 @@ table th, table td,
     page-break-inside: avoid !important;
   }
 
-  .reference-info-card {
-    padding: 4px !important;
-    margin-bottom: 3px !important;
-    page-break-inside: avoid !important;
-  }
-
-  .reference-info-flex {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    page-break-inside: avoid !important;
-  }
-
-  .reference-info-item {
-    font-size: 9pt !important;
-    line-height: 1.3 !important;
-  }
-
   .personal-info-section {
     padding: 4px !important;
     margin-bottom: 3px !important;
@@ -1379,6 +1368,7 @@ table th, table td,
 
   .personal-info-section .personal-info-grid {
     display: grid !important;
+    padding: 10px !important;
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 3px !important;
     column-gap: 5px !important;
@@ -1410,9 +1400,11 @@ table th, table td,
 
   .conditional-scores-section .scores-grid {
     display: grid !important;
+    padding: 13px !important;
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 3px !important;
     column-gap: 5px !important;
+    border-bottom: 1px solid #ddd;
   }
 
   .conditional-scores-section .score-column {
@@ -1425,6 +1417,7 @@ table th, table td,
     margin-bottom: 2px !important;
     font-size: 8pt !important;
     line-height: 1.3 !important;
+    border: 1px solid #ddd;
   }
 
   .conditional-scores-section .score-label,
@@ -1445,13 +1438,13 @@ table th, table td,
   }
 
   .score-display {
-    width: 320px !important;
-    height: 110px !important;
+    width: 300px !important;
+    height: 100px !important;
     margin-bottom: 4px !important;
   }
 
   .score-number {
-    font-size: 55px !important;
+    font-size: 50px !important;
   }
 
   .score-bar-container {
@@ -1463,6 +1456,7 @@ table th, table td,
     font-size: 8pt !important;
     padding: 2px !important;
     line-height: 1.2 !important;
+    border-bottom: 1px solid #ddd;
   }
 
   .score-factors-section {
@@ -1474,7 +1468,7 @@ table th, table td,
   .score-factors-section .text-body-2,
   .score-factors-section p {
     font-size: 8pt !important;
-    margin-bottom: 2px !important;
+    margin-bottom: 1px !important;
     line-height: 1.3 !important;
   }
 
@@ -1486,16 +1480,16 @@ table th, table td,
 
   .factors-table-header th {
     padding: 3px 5px !important;
-    font-size: 9pt !important;
+    font-size: 7pt !important;
     line-height: 1.3 !important;
-    height: 20px !important;
+    height: 18px !important;
     background-color: #0a1e77 !important;
     color: white !important;
   }
 
   .factors-table tbody td {
     padding: 3px 5px !important;
-    font-size: 9pt !important;
+    font-size: 7pt !important;
     line-height: 1.3 !important;
     height: 18px !important;
   }
@@ -1558,7 +1552,7 @@ table th, table td,
 
   v-card,
   .v-card {
-    page-break-inside: avoid;
+    page-break-inside: auto; /* ⭐ เปลี่ยนเป็น auto */
     box-shadow: none !important;
     padding: 4px !important;
     margin-bottom: 3px !important;
@@ -1626,5 +1620,32 @@ table th, table td,
     font-size: 9pt !important;
     line-height: 1.4 !important;
   }
+
+  .currency-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 14px;
+    border-radius: 15px;
+    font-size: 8px;
+    font-weight: 500;
+    box-shadow: none !important;
+    background: white !important;
+    border: 1px solid #696a70 !important;
+    color: #000000 !important;
+    margin-bottom: 10px !important;
+  }
+
+  .badge-currency {
+    font-weight: 600;
+    font-size: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-amount {
+    font-weight: 600;
+    font-size: 8px;
+  }
+  
 }
 </style>
