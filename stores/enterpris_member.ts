@@ -31,6 +31,7 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
         null as EnterpriseModel.CheckEnterpriseRespons | null,
       respon_data_detail_enterprise:
         null as EnterpriseModel.DetailEnterpiseWhitIDRespons | null,
+      list_data_enterprise: null as EnterpriseModel.ListEnterprisRespons | null,
       query: {
         bank_id: "",
         bank_id_filter: "",
@@ -53,24 +54,32 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
         rejected_by: "",
         reason: "",
       },
+      filter_enterprise: {
+        query: {
+          limit: 20,
+          page: 1,
+          enLegalStrature: "",
+          EnterpriseID: "",
+        },
+        isLoading: false,
+      },
       isLoading: false,
     };
   },
   actions: {
     async InsertEnterPrisMemberSubmit() {
       try {
-         if (!this.form_insert_member_submit_data.file) {
+        if (!this.form_insert_member_submit_data.file) {
           Swal.fire({
             icon: "warning",
             title: "ຄຳເຕືອນ",
             text: "ກະລຸນາແນບເອກະສານອ້າງອີງ",
             showConfirmButton: false,
             timer: 2000,
-          })
-          return { success: false, message: 'ບໍ່ມີໄຟລ໌' } 
+          });
+          return { success: false, message: "ບໍ່ມີໄຟລ໌" };
         }
 
-        
         if (!this.form_insert_member_submit_data.EnterpriseID) {
           Swal.fire({
             icon: "warning",
@@ -78,10 +87,10 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
             text: "ກະລຸນາປ້ອນລະຫັດວິສາຫະກິດ",
             showConfirmButton: false,
             timer: 2000,
-          })
-          return { success: false, message: 'ບໍ່ມີລະຫັດວິສາຫະກິດ' }
+          });
+          return { success: false, message: "ບໍ່ມີລະຫັດວິສາຫະກິດ" };
         }
-        
+
         const noticonfirm = await Swal.fire({
           icon: "question",
           title: "ຢືນຢັນ",
@@ -412,6 +421,31 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
         rejected_by: "",
         reason: "",
       };
+    },
+
+    async GetEnterpriseList() {
+      this.isLoading = true;
+      try {
+        const res = await axios.get<EnterpriseModel.ListEnterprisRespons>(
+          `/api/api/enterprises_list/`,
+          {
+            params: {
+              ...this.filter_enterprise.query,
+            },
+          }
+        );
+        if (res.status === 200) {
+          this.list_data_enterprise = res.data;
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text: "ບໍ່ສາມາດໄດ້ຮັບຂໍ້ມູນໄດ້, ກະລຸນາລອງໃໝ່ອີກຄັ້ງ",
+        });
+      } finally {
+        this.isLoading = false;
+      }
     },
   },
 });
