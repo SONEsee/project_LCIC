@@ -322,6 +322,7 @@ const updateCollateralStatus = async (id: number) => {
 };
 
 const submit = async () => {
+
   await EnterprisStore.InsertEnterPrisMemberSubmit();
 };
 const displayMemver = (item: any) => {
@@ -350,9 +351,7 @@ onMounted(() => {
         color="grey-lighten-5"
         border="dotted thin info lg"
       >
-        <!-- <pre>
-        {{ memberData }}
-      </pre> -->
+     
         <v-form @submit.prevent="submit">
           <v-text-field
             v-model="request.EnterpriseID"
@@ -365,16 +364,7 @@ onMounted(() => {
             readonly
           ></v-text-field>
 
-          <!-- <v-text-field
-            v-model="LCICID"
-            label="LCIC ID"
-            variant="outlined"
-            hide-details="auto"
-            density="compact"
-            class="mb-3"
-            readonly
-            bg-color="grey-lighten-3"
-          ></v-text-field> -->
+         
 
           <v-text-field
             v-model="request.enterpriseNameLao"
