@@ -8,7 +8,8 @@ import { useUserData } from "~/composables/useUserData";
 import { useEnterprisInfo } from "~/stores/enterpris_member";
 import { MemberStore } from "@/stores/memberinfo";
 const memberinfoStore = MemberStore();
-
+const rout = useRoute()
+const EnterpriseMap = rout.query.enterpris as string
 
 const memberData = computed(() => {
   const data = memberinfoStore.respons_data_query;
@@ -241,7 +242,16 @@ const checkEnterpriseCode = async (): Promise<boolean> => {
     return true;
   }
 };
-
+watch(
+  () => route.query.enterpris,
+  (newValue) => {
+    if (newValue) {
+      request.EnterpriseID = newValue as string
+      console.log('EnterpriseID loaded from URL:', newValue)
+    }
+  },
+  { immediate: true } 
+)
 const uploadFiles = async () => {
   if (!files.value || files.value.length === 0) {
     return;
@@ -342,6 +352,7 @@ onMounted(() => {
             hide-details="auto"
             density="compact"
             class="mb-3"
+            readonly
           ></v-text-field>
 
           <!-- <v-text-field
