@@ -1,4 +1,5 @@
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
+import axios from "./helpers/axios";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -112,7 +113,11 @@ export default defineNuxtConfig({
         url: process.env.STRAPI_URL || "http://192.168.45.52:8000/",
       },
      
+<<<<<<< HEAD
       apiBase: process.env.STRAPI_URL || "http://192.168.45.52:8000",
+=======
+      apiBase: process.env.STRAPI_URL || "http://192.168.45.55:8000",
+>>>>>>> origin/tooktik
     },
   },
   

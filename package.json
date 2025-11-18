@@ -38,6 +38,7 @@
     "vite": "^4.5.5",
     "vite-plugin-vuetify": "^1.0.2",
     "vue-chartjs": "^3.1.1",
+    "vue-toastification": "^1.7.14",
     "vuedraggable": "^4.1.0",
     "xlsx": "^0.18.5"
   },
