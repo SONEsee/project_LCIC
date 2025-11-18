@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-    layout: "backend",
+    layout:"default",
     middleware: ["auth"],
 });
 const robotItems = ref([

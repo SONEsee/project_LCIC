@@ -56,7 +56,6 @@ const onCustomerSelect = (lcicId: string) => {
       saerchCustomerID.value = selectedItem.customerid;
       customerSearchInput.value = selectedItem.customerid;
 
-     
       displayedLcicName.value = `${selectedItem.ind_lao_name || ""} ${
         selectedItem.ind_lao_surname || ""
       } ${selectedItem.ind_name || ""} ${
@@ -109,7 +108,6 @@ const performAPISearch = async () => {
   try {
     individualStore.reques_query.query.customerid = "";
     individualStore.reques_query.query.lcic_id = "";
-    
 
     if (lcicSearchInput.value) {
       individualStore.reques_query.query.lcic_id = lcicSearchInput.value;
@@ -162,7 +160,11 @@ const dataReques = computed(() => {
 });
 
 const performSearch = async () => {
-  if (!searchLcicID.value && !saerchCustomerID.value && !individualStore.from_insert_logserch.CatalogID) {
+  if (
+    !searchLcicID.value &&
+    !saerchCustomerID.value &&
+    !individualStore.from_insert_logserch.CatalogID
+  ) {
     Swal.fire({
       icon: "warning",
       text: "ກະລຸນາປ້ອນຂໍ້ມູນເພື່ອຄົ້ນຫາ",
@@ -212,133 +214,71 @@ const selectItem = (item: any) => {
   });
 };
 
-// ============================================
-// ແກ້ໄຂບັນຫາ PASTE: ໃຊ້ watch ແທນ @input
-// ============================================
-// watch(lcicSearchInput, (newValue) => {
-//   searchLcicID.value = newValue;
+watch(
+  lcicSearchInput,
+  (newValue) => {
+    searchLcicID.value = newValue;
 
-//   showBankMessage.value = false;
-//   bankDataMessage.value = "";
-//   showLcicName.value = false;
-//   displayedLcicName.value = "";
+    showBankMessage.value = false;
+    bankDataMessage.value = "";
+    showLcicName.value = false;
+    displayedLcicName.value = "";
 
-//   if (newValue && newValue.length > 0) {
-//     debounceSearch(async () => {
-//       await performAPISearch();
+    if (newValue && newValue.length > 0) {
+      debounceSearch(async () => {
+        await performAPISearch();
 
-//       // ຫຼັງຈາກຄົ້ນຫາແລ້ວ ກວດສອບແລະເຕີມ customerid ອັດຕະໂນມັດ
-//       const matchedItem = dataReques.value.find(
-//         (item) =>
-//           (item.lcic_id?.toString() === newValue ||
-//            item.lcic_id?.toString().includes(newValue)) &&
-//           item.bnk_code === userId.value
-//       );
-
-//       if (matchedItem) {
-//         // ສະແດງຊື່ລູກຄ້າ
-//         displayedLcicName.value = `${matchedItem.ind_lao_name || ''} ${matchedItem.ind_lao_surname || ''} ${matchedItem.ind_name || ''} ${matchedItem.ind_surname || ''}`.trim();
-//         showLcicName.value = true;
-
-//         // ເຕີມ customerid ອັດຕະໂນມັດ
-//         if (matchedItem.customerid) {
-//           saerchCustomerID.value = matchedItem.customerid;
-//           customerSearchInput.value = matchedItem.customerid;
-//           showBankMessage.value = false;
-//           bankDataMessage.value = "";
-//           console.log("Auto-filled customer ID:", matchedItem.customerid);
-//         }
-//       } else {
-//         // ຖ້າບໍ່ພົບຂໍ້ມູນທີ່ມີ bnk_code ກົງກັນ
-//         const anyMatch = dataReques.value.find(
-//           (item) =>
-//             item.lcic_id?.toString() === newValue ||
-//             item.lcic_id?.toString().includes(newValue)
-//         );
-
-//         if (anyMatch) {
-//           // ສະແດງຊື່ລູກຄ້າຖ້າເຈົ້າຂໍ້ມູນຈາກທະນາຄານອື່ນ
-//           displayedLcicName.value = `${anyMatch.ind_lao_name || ''} ${anyMatch.ind_lao_surname || ''} ${anyMatch.ind_name || ''} ${anyMatch.ind_surname || ''}`.trim();
-//           showLcicName.value = true;
-
-//           if (anyMatch.bnk_code !== userId.value) {
-//             saerchCustomerID.value = "";
-//             customerSearchInput.value = "";
-//             showBankMessage.value = true;
-//             bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
-//           }
-//         }
-//       }
-//     }, 500);
-//   } else {
-//     // ຖ້າລຶບຂໍ້ມູນໃນຊ່ອງ LCIC ກໍໃຫ້ລຶບທຸກຢ່າງ
-//     saerchCustomerID.value = "";
-//     customerSearchInput.value = "";
-//     displayedLcicName.value = "";
-//     showLcicName.value = false;
-//   }
-// });
-watch(lcicSearchInput, (newValue) => {
-  searchLcicID.value = newValue;
-
-  showBankMessage.value = false;
-  bankDataMessage.value = "";
-  showLcicName.value = false;
-  displayedLcicName.value = "";
-
-  if (newValue && newValue.length > 0) {
-    debounceSearch(async () => {
-      await performAPISearch();
-
-      // ✅ ແກ້ໄຂ: ໃຊ້ startsWith ແທນ ===
-      const matchedItem = dataReques.value.find(
-        (item) =>
-          item.lcic_id?.toString().startsWith(newValue) &&
-          item.bnk_code === userId.value
-      );
-
-      if (matchedItem) {
-        displayedLcicName.value = `${matchedItem.ind_lao_name || ""} ${
-          matchedItem.ind_lao_surname || ""
-        } ${matchedItem.ind_name || ""} ${
-          matchedItem.ind_surname || ""
-        }`.trim();
-        showLcicName.value = true;
-
-        if (matchedItem.customerid) {
-          saerchCustomerID.value = matchedItem.customerid;
-          customerSearchInput.value = matchedItem.customerid;
-          showBankMessage.value = false;
-          bankDataMessage.value = "";
-          console.log("Auto-filled customer ID:", matchedItem.customerid);
-        }
-      } else {
-        const anyMatch = dataReques.value.find((item) =>
-          item.lcic_id?.toString().startsWith(newValue)
+        // ✅ ແກ້ໄຂ: ໃຊ້ startsWith ແທນ ===
+        const matchedItem = dataReques.value.find(
+          (item) =>
+            item.lcic_id?.toString().startsWith(newValue) &&
+            item.bnk_code === userId.value
         );
 
-        if (anyMatch) {
-          displayedLcicName.value = `${anyMatch.ind_lao_name || ""} ${
-            anyMatch.ind_lao_surname || ""
-          } ${anyMatch.ind_name || ""} ${anyMatch.ind_surname || ""}`.trim();
+        if (matchedItem) {
+          displayedLcicName.value = `${matchedItem.ind_lao_name || ""} ${
+            matchedItem.ind_lao_surname || ""
+          } ${matchedItem.ind_name || ""} ${
+            matchedItem.ind_surname || ""
+          }`.trim();
           showLcicName.value = true;
 
-          if (anyMatch.bnk_code !== userId.value) {
-            saerchCustomerID.value = "";
-            customerSearchInput.value = "";
-            showBankMessage.value = true;
-            // bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
+          if (matchedItem.customerid) {
+            saerchCustomerID.value = matchedItem.customerid;
+            customerSearchInput.value = matchedItem.customerid;
+            showBankMessage.value = false;
+            bankDataMessage.value = "";
+            console.log("Auto-filled customer ID:", matchedItem.customerid);
+          }
+        } else {
+          const anyMatch = dataReques.value.find((item) =>
+            item.lcic_id?.toString().startsWith(newValue)
+          );
+
+          if (anyMatch) {
+            displayedLcicName.value = `${anyMatch.ind_lao_name || ""} ${
+              anyMatch.ind_lao_surname || ""
+            } ${anyMatch.ind_name || ""} ${anyMatch.ind_surname || ""}`.trim();
+            showLcicName.value = true;
+
+            if (anyMatch.bnk_code !== userId.value) {
+              saerchCustomerID.value = "";
+              customerSearchInput.value = "";
+              showBankMessage.value = true;
+              // bankDataMessage.value = "ຍັງບໍ່ທັນມີຂໍ້ມູນໃນທະນາຄານຂອງທ່ານ";
+            }
           }
         }
-      }
-    }, 500);
-  } else {
-    saerchCustomerID.value = "";
-    customerSearchInput.value = "";
-    displayedLcicName.value = "";
-    showLcicName.value = false;
-  }
-});
+      }, 500);
+    } else {
+      saerchCustomerID.value = "";
+      customerSearchInput.value = "";
+      displayedLcicName.value = "";
+      showLcicName.value = false;
+    }
+  },
+  { immediate: true }
+);
 
 watch(saerchCustomerID, async (newValue) => {
   if (newValue && newValue !== customerSearchInput.value) {
@@ -404,7 +344,7 @@ onMounted(async () => {
     </div>
 
     <div class="search-form">
-      <v-card class="search-card" elevation="0">
+      <v-card class="search-card" elevation="0" rounded>
         <v-card-text class="pa-6">
           <v-container fluid>
             <v-row>
@@ -416,11 +356,10 @@ onMounted(async () => {
                     >
                     ລະຫັດ LCIC
                   </label>
-                  
+
                   <v-text-field
                     v-model="lcicSearchInput"
                     density="comfortable"
-                    clearable
                     variant="outlined"
                     :loading="individualStore.reques_query.isLoading"
                     placeholder="ປ້ອນລະຫັດ LCIC"
@@ -428,9 +367,22 @@ onMounted(async () => {
                     class="search-input"
                     color="primary"
                     rounded
+                    hide-details
                   ></v-text-field>
+                  <p
+                    class="mt-2"
+                    style="color: orange"
+                    v-if="
+                      displayedLcicName === null ||
+                      (displayedLcicName === '' && searchLcicID !== '')
+                    "
+                  >
+                    <strong :loading="individualStore.reques_query.isLoading"
+                      >ບໍ່ພົບລະຫັດ ຂສລ ນີ້
+                     </strong
+                    >
+                  </p>
 
-                  
                   <v-slide-y-transition>
                     <div
                       v-if="showLcicName && displayedLcicName"
@@ -464,7 +416,6 @@ onMounted(async () => {
                     item-title="customerid"
                     item-value="lcic_id"
                     density="comfortable"
-                    clearable
                     variant="outlined"
                     :loading="individualStore.reques_query.isLoading"
                     hide-no-data
@@ -495,13 +446,11 @@ onMounted(async () => {
                       </v-list-item>
                     </template>
                   </v-autocomplete>
-
-                  
                 </div>
               </v-col>
               <v-col cols="12">
                 <v-autocomplete
-                v-model="individualStore.from_insert_logserch.CatalogID"
+                  v-model="individualStore.from_insert_logserch.CatalogID"
                   :items="categories"
                   item-title="cat_lao_name"
                   item-value="cat_value"
@@ -509,9 +458,12 @@ onMounted(async () => {
                   density="compact"
                   label="ເລືກປະເພດ"
                 >
-              <template v-slot:item="{item, props}">
-                <v-list-item v-bind="props" :title="`${(item as any).raw.cat_lao_name}(${item.raw.cat_name})`"></v-list-item>
-              </template></v-autocomplete>
+                  <template v-slot:item="{ item, props }">
+                    <v-list-item
+                      v-bind="props"
+                      :title="`${(item as any).raw.cat_lao_name}(${item.raw.cat_name})`"
+                    ></v-list-item> </template
+                ></v-autocomplete>
               </v-col>
               <v-col cols="12">
                 <div class="button-group">
@@ -522,6 +474,7 @@ onMounted(async () => {
                     @click="performSearch"
                     class="search-btn"
                     elevation="2"
+                    :disabled="individualStore.from_insert_logserch.CatalogID ===null  && !searchLcicID || individualStore.from_insert_logserch.CatalogID ===''"
                   >
                     <v-icon left>mdi-magnify</v-icon>
                     ຄົ້ນຫາ
@@ -532,6 +485,7 @@ onMounted(async () => {
                     @click="clearSearch"
                     class="clear-btn"
                     variant="outlined"
+                    
                   >
                     <v-icon left>mdi-refresh</v-icon>
                     ລ້າງຂໍ້ມູນ

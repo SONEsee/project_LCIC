@@ -1,4 +1,5 @@
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
+import axios from "./helpers/axios";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -37,7 +38,11 @@ export default defineNuxtConfig({
     server: {
       proxy: {
         '/media': {
+<<<<<<< HEAD
           target: process.env.STRAPI_URL || 'http://192.168.45.53:5000',
+=======
+          target: process.env.STRAPI_URL || 'http://192.168.45.55:8000',
+>>>>>>> bce9cd3e0ae9275d1342a0121578f5a2db4df7c9
           changeOrigin: true,
         }
       }
@@ -108,10 +113,17 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       strapi: {
+<<<<<<< HEAD
         url: process.env.STRAPI_URL || "http://192.168.45.53:5000/",
       },
      
       apiBase: process.env.STRAPI_URL || "http://192.168.45.53:5000",
+=======
+        url: process.env.STRAPI_URL || "http://192.168.45.55:8000/",
+      },
+     
+      apiBase: process.env.STRAPI_URL || "http://192.168.45.55:8000",
+>>>>>>> bce9cd3e0ae9275d1342a0121578f5a2db4df7c9
     },
   },
   
@@ -119,7 +131,11 @@ export default defineNuxtConfig({
   nitro: {
     devProxy: {
       '/media': {
+<<<<<<< HEAD
         target: process.env.STRAPI_URL || 'http://192.168.45.53:5000',
+=======
+        target: process.env.STRAPI_URL || 'http://192.168.45.55:8000',
+>>>>>>> bce9cd3e0ae9275d1342a0121578f5a2db4df7c9
         changeOrigin: true,
       }
     },

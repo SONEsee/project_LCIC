@@ -368,7 +368,6 @@ const confirmInsertData = async (cid: string) => {
   });
 
   if (notification.isConfirmed) {
-    
     await inDividualStore.confirmUploadLoan(cid);
     await inDividualStore.getListIndividualcollateral();
   }
@@ -766,7 +765,7 @@ onMounted(async () => {
             v-if="item.statussubmit === '1'"
             style="font-size: small"
             size="small"
-            ><strong>ສຳເລັດການໂຫຼດ</strong></v-chip
+            ><strong>ລໍຖ້າກວດສອບ</strong></v-chip
           >
         </template>
         <template v-slot:item.fileSize="{ item }">
@@ -827,7 +826,7 @@ onMounted(async () => {
             color="warning"
             v-if="shouldShowUploadButton(item)"
             flat
-            @click="UnloadData(`n-${item.CID}`)"
+            @click="UnloadData(`c-${item.CID}`)"
           >
             ອັນໂຫຼດ
           </v-btn>
@@ -854,7 +853,9 @@ onMounted(async () => {
             color="primary"
             prepend-icon="mdi-eye"
             flat
-            @click="goPath(`/detailupload_c?CID=c-${item.CID}`)"
+            @click="
+              goPath(`/backend/upload/lcictestc/detail?CID=c-${item.CID}`)
+            "
             >ລາຍລະອຽດ</v-btn
           >
         </template>

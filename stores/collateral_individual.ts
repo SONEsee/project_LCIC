@@ -72,6 +72,12 @@ export const IndividualCollateralStore = defineStore("individualcollateral", {
         null as IndividualCollateral.ResultMapsearch | null,
       respons_data_reques_period:
         null as IndividualCollateral.PerliodIndividualFileListRespons | null,
+      report_individual_full_credit:null as IndividualCollateral.ReportIndividualRespons | null,
+      report_query_individual:{
+CatalogID:"",
+lcic_id:"",
+      },
+
       reques_query: {
         isLoading: false,
         query: {
@@ -425,15 +431,15 @@ export const IndividualCollateralStore = defineStore("individualcollateral", {
         this.isLoading = false;
       }
     },
-    async UnloadLoan(fid: string) {
+    async UnloadLoan(cid: string) {
       this.isLoading = true;
       try {
         const formData = new FormData();
-        formData.append("FID", fid);
+        formData.append("CID", cid);
 
-        console.log("Sending FID:", fid);
+        console.log("Sending FID:", cid);
 
-        const res = await axios.post(`/api/api/rollback_reconfirm/`, formData, {
+        const res = await axios.post(`/api/api/rollback_reconfirm_collateral/`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -499,7 +505,32 @@ export const IndividualCollateralStore = defineStore("individualcollateral", {
         this.isLoading = false;
       }
     },
+    async GetReportIndividual(){
+      this.isLoading = true
+      try {
+        const res = await axios.get<IndividualCollateral.ReportIndividualRespons>(`/api/report_individual/`,{
+          params:{
+            ...this.report_query_individual
+          }
+        });
+        if(res.status===200){
+          this.report_individual_full_credit = res.data
+        }
+        
+      } catch (error) {
+      await Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text:
+            
+            "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ ກະລຸນາລອງໃໝ່",
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    }
   },
+
   // async UploadFile() {
   //   this.isLoading = true;
   //   try {
