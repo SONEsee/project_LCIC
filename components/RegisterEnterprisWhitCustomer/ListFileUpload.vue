@@ -39,10 +39,11 @@ const header = [
   { title: "ສະມາຊິກ", value: "bank_id" },
   { title: "ສາຂາ", value: "branch_id" },
   { title: "ຮູບພາບ", value: "image" },
-  { title: "ຜູ້ບັນທືກ", value: "user" },
-  { title: "ວັນທີສ້າງ", value: "insertdate" },
+  // { title: "ຜູ້ບັນທືກ", value: "user" },
+
   { title: "ສະຖານະ", value: "status" },
   { title: "ລະຫັດຂສລ", value: "LCIC_reques" },
+  { title: "ວັນທີສ້າງ", value: "insertdate" },
   { title: "ລາຍລະອຽກ", value: "action" },
 ];
 
@@ -134,18 +135,16 @@ onMounted(async () => {
 </script>
 
 <template>
- 
-    
- <v-sheet :elevation="3" rounded class="pa-4 mb-4">
-<h4 style="color: blue;">  ກວດສອບ ແລະ ລົງທະບຽນລະຫັດ ຂສລ</h4>
+  <v-sheet :elevation="3" rounded class="pa-4 mb-4">
+    <h4 style="color: blue">ກວດສອບ ແລະ ລົງທະບຽນລະຫັດ ຂສລ</h4>
 
-   <v-progress-linear
+    <v-progress-linear
       buffer-value="50"
       color="cyan"
       stream
     ></v-progress-linear>
 
-    <br>
+    <br />
     <v-row>
       <v-col cols="12" lg="12">
         <div class="mb-3">
@@ -159,7 +158,6 @@ onMounted(async () => {
         <v-row>
           <v-col cols="12" sm="3">
             <v-text-field
-              
               v-model="enterprisStore.check_enterprise.EnterpriseID"
               density="compact"
               label="ກະລຸນາປ້ອນລະຫັດວິສາຫະກິດ"
@@ -179,7 +177,7 @@ onMounted(async () => {
             >
               ກວດສອບ
             </v-btn>
-            <!-- {{ datareturn }} -->
+           
           </v-col>
           <v-col cols="12" sm="7" class="text-end">
             <v-btn
@@ -187,7 +185,11 @@ onMounted(async () => {
               :disabled="
                 enterprisStore.respon_data_check_enterprise?.exists !== false
               "
-              @click="goPath(`/backend/register_lcic/?enterpris=${enterprisStore.check_enterprise.EnterpriseID}`)"
+              @click="
+                goPath(
+                  `/backend/register_lcic/?enterpris=${enterprisStore.check_enterprise.EnterpriseID}`
+                )
+              "
             >
               ລົງທະບຽນອອກລະຫັດ ຂສລ
             </v-btn>
@@ -301,6 +303,7 @@ onMounted(async () => {
     </div>
 
     <v-data-table
+    density="compact"
       :items="filteredEnterpriseData"
       :headers="header"
       :loading="!enterprisStore.respons_data_list_file"
@@ -398,14 +401,11 @@ onMounted(async () => {
         <v-chip color="info" size="small" v-else-if="item.status === '4'">
           <strong>{{ item.decaption }}</strong>
         </v-chip>
-        <v-chip v-if="item.status === '3'" color="error">
-            ຖືກ Reject
-          </v-chip>
+        <v-chip v-if="item.status === '3'" color="error"> ຖືກ Reject </v-chip>
       </template>
 
       <template v-slot:item.LCIC_reques="{ item }">
         <div class="lcic-code-container">
-          
           <v-chip
             v-if="item.LCIC_reques"
             color="success"
@@ -429,8 +429,12 @@ onMounted(async () => {
               </template>
             </v-tooltip>
           </v-chip>
-          <v-chip  v-else-if="item.status === '3'" color="error" variant="tonal"
-            size="small">
+          <v-chip
+            v-else-if="item.status === '3'"
+            color="error"
+            variant="tonal"
+            size="small"
+          >
             {{ item.decaption }}
           </v-chip>
           <v-chip

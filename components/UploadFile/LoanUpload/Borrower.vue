@@ -298,17 +298,17 @@ const statistics = computed(() => {
   const results = Array.isArray(data?.results) ? data.results : [];
   const total = data?.count || 0;
 
-  const success = results.filter((item) => item.statussubmit === "0").length;
-  const processing = results.filter((item) => item.statussubmit === "1").length;
+  const success = results.filter((item:any) => item.statussubmit === "0").length;
+  const processing = results.filter((item:any) => item.statussubmit === "1").length;
   const rejected = results.filter(
-    (item) =>
+    (item:any) =>
       item.status === "2" ||
       item.statussubmit === "2" ||
       item.statussubmit === "7"
   ).length;
 
-  const jsonFiles = results.filter((item) => item.FileType === "json").length;
-  const xmlFiles = results.filter((item) => item.FileType === "xml").length;
+  const jsonFiles = results.filter((item:any) => item.FileType === "json").length;
+  const xmlFiles = results.filter((item:any) => item.FileType === "xml").length;
 
   const successRate = total > 0 ? ((success / total) * 100).toFixed(1) : "0.0";
 
