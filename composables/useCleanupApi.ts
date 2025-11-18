@@ -46,7 +46,7 @@ export const useCleanupApi = () => {
         }, {} as Record<string, string>)
       ).toString()
       
-      return await fetchApi(`/api/cleanup/duplicates/${queryString ? '?' + queryString : ''}`)
+      return await fetchApi(`api/cleanup/duplicates/${queryString ? '?' + queryString : ''}`)
     },
 
     // Merge multiple info records
@@ -64,12 +64,12 @@ export const useCleanupApi = () => {
     // Get cleanup statistics
     getCleanupStatistics: async (forceRefresh: boolean = false) => {
       const query = forceRefresh ? '?force_refresh=true' : ''
-      return await fetchApi(`/api/cleanup/statistics/${query}`)
+      return await fetchApi(`api/cleanup/statistics/${query}`)
     },
 
     // Clear cache (admin function)
     clearCache: async () => {
-      return await fetchApi('/api/cleanup/clear-cache/', {
+      return await fetchApi('api/cleanup/clear-cache/', {
         method: 'POST',
       })
     },
