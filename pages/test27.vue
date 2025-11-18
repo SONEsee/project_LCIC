@@ -1,6 +1,6 @@
 <template>
   <div class="matching-container">
-    <!-- Message Banner (replaces toast) -->
+    <!-- Message Banner -->
     <transition name="slide-down">
       <div v-if="message" :class="['message-banner', `message-${message.type}`]">
         <span class="message-icon">
@@ -16,47 +16,47 @@
       <div class="header-content">
         <h1 class="page-title">
           <span class="icon">🔍</span>
-          Customer Matching Dashboard
+          ຄົ້ນຫາຂໍ້ມູນລູກຄ້າທີ່ອາດຊໍ້າກັນ Individual_IBK (Auto)
         </h1>
-        <p class="page-subtitle">Review and manage duplicate customer records</p>
+        <p class="page-subtitle">ກວດສອບຂໍ້ມູນລູກຄ້າກ່ອນ Match ເຂົ້າກັນ</p>
       </div>
       <button class="btn btn-primary" @click="showFindModal = true">
         <span class="icon">✨</span>
-        Find New Matches
+        ຄົ້ນຫາ Match ໃໝ່
       </button>
     </header>
 
     <!-- Statistics Cards -->
-    <section class="statistics-grid">
+    <section v-if="statistics" class="statistics-grid">
       <div class="stat-card">
         <div class="stat-icon pending">📋</div>
         <div class="stat-content">
-          <div class="stat-value">{{ statistics?.matching_candidates.pending || 0 }}</div>
-          <div class="stat-label">Pending Reviews</div>
+          <div class="stat-value">{{ statistics.matching_candidates.pending || 0 }}</div>
+          <div class="stat-label">ລໍຖ້າກວດສອບ</div>
         </div>
       </div>
 
       <div class="stat-card">
         <div class="stat-icon success">✅</div>
         <div class="stat-content">
-          <div class="stat-value">{{ statistics?.matching_candidates.approved || 0 }}</div>
-          <div class="stat-label">Approved</div>
+          <div class="stat-value">{{ statistics.matching_candidates.approved || 0 }}</div>
+          <div class="stat-label">ຢືນຢັນສໍາເລັດ</div>
         </div>
       </div>
 
       <div class="stat-card">
         <div class="stat-icon danger">❌</div>
         <div class="stat-content">
-          <div class="stat-value">{{ statistics?.matching_candidates.rejected || 0 }}</div>
-          <div class="stat-label">Rejected</div>
+          <div class="stat-value">{{ statistics.matching_candidates.rejected || 0 }}</div>
+          <div class="stat-label">ປ່ອຍວ່າງ</div>
         </div>
       </div>
 
       <div class="stat-card">
         <div class="stat-icon info">📊</div>
         <div class="stat-content">
-          <div class="stat-value">{{ formatScore(statistics?.matching_candidates.avg_score) }}%</div>
-          <div class="stat-label">Average Score</div>
+          <div class="stat-value">{{ formatScore(statistics.scores.average) }}%</div>
+          <div class="stat-label">ຄະເເນນສະເລ່ຍ</div>
         </div>
       </div>
     </section>
@@ -64,7 +64,7 @@
     <!-- Filters -->
     <section class="filters-section">
       <div class="filter-group">
-        <label for="status-filter">Status:</label>
+        <label for="status-filter">ສະຖານະ:</label>
         <select
           id="status-filter"
           v-model="statusFilter"
@@ -74,6 +74,7 @@
           <option value="PENDING">Pending</option>
           <option value="APPROVED">Approved</option>
           <option value="REJECTED">Rejected</option>
+          <option value="AUTO_MATCHED">Auto Matched</option>
         </select>
       </div>
 
@@ -86,13 +87,18 @@
           min="0"
           max="100"
           class="filter-input"
-          @change="changeFilter(undefined, minScoreFilter)"
+          placeholder="e.g., 70"
         />
       </div>
 
-      <button class="btn btn-secondary" @click="loadCandidates(1)">
+      <button class="btn btn-secondary" @click="applyFilters">
+        <span class="icon">🔍</span>
+        Apply Filters
+      </button>
+
+      <button class="btn btn-secondary" @click="resetFilters">
         <span class="icon">🔄</span>
-        Refresh
+        Reset
       </button>
     </section>
 
@@ -135,44 +141,40 @@
           <div class="customer-card">
             <div class="customer-header">
               <span class="customer-label">Customer A</span>
-              <span class="customer-id">ID: {{ candidate.source.ind_sys_id }}</span>
+              <span class="customer-id">ID: {{ candidate.source_ind_sys_id }}</span>
             </div>
             <div class="customer-details">
               <div class="detail-row">
                 <span class="detail-label">LCIC ID:</span>
-                <span class="detail-value">{{ candidate.source.lcic_id || 'N/A' }}</span>
+                <span class="detail-value">{{ candidate.source_record.lcic_id || 'N/A' }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Name:</span>
-                <span class="detail-value">
-                  {{ candidate.source.ind_name }} {{ candidate.source.ind_surname }}
-                </span>
+                <span class="detail-value">{{ candidate.source_record.name }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Lao Name:</span>
-                <span class="detail-value">
-                  {{ candidate.source.ind_lao_name }} {{ candidate.source.ind_lao_surname }}
-                </span>
+                <span class="detail-value">{{ candidate.source_record.lao_name }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">National ID:</span>
-                <span class="detail-value">{{ candidate.source.ind_national_id || 'N/A' }}</span>
+                <span class="detail-value">{{ candidate.source_record.national_id || 'N/A' }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Passport:</span>
-                <span class="detail-value">{{ candidate.source.ind_passport || 'N/A' }}</span>
+                <span class="detail-value">{{ candidate.source_record.passport || 'N/A' }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Family Book:</span>
-                <span class="detail-value">{{ candidate.source.ind_familybook || 'N/A' }}</span>
+                <span class="detail-value">{{ candidate.source_record.family_book || 'N/A' }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Birth Date:</span>
-                <span class="detail-value">{{ formatDate(candidate.source.ind_birth_date) }}</span>
+                <span class="detail-value">{{ formatDate(candidate.source_record.birth_date) }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Bank:</span>
-                <span class="detail-value">{{ candidate.source.bnk_code || 'N/A' }}</span>
+                <span class="detail-value">{{ candidate.source_record.bank || 'N/A' }}</span>
               </div>
             </div>
           </div>
@@ -181,44 +183,40 @@
           <div class="customer-card">
             <div class="customer-header">
               <span class="customer-label">Customer B</span>
-              <span class="customer-id">ID: {{ candidate.target.ind_sys_id }}</span>
+              <span class="customer-id">ID: {{ candidate.target_ind_sys_id }}</span>
             </div>
             <div class="customer-details">
               <div class="detail-row">
                 <span class="detail-label">LCIC ID:</span>
-                <span class="detail-value">{{ candidate.target.lcic_id || 'N/A' }}</span>
+                <span class="detail-value">{{ candidate.target_record.lcic_id || 'N/A' }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Name:</span>
-                <span class="detail-value">
-                  {{ candidate.target.ind_name }} {{ candidate.target.ind_surname }}
-                </span>
+                <span class="detail-value">{{ candidate.target_record.name }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Lao Name:</span>
-                <span class="detail-value">
-                  {{ candidate.target.ind_lao_name }} {{ candidate.target.ind_lao_surname }}
-                </span>
+                <span class="detail-value">{{ candidate.target_record.lao_name }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">National ID:</span>
-                <span class="detail-value">{{ candidate.target.ind_national_id || 'N/A' }}</span>
+                <span class="detail-value">{{ candidate.target_record.national_id || 'N/A' }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Passport:</span>
-                <span class="detail-value">{{ candidate.target.ind_passport || 'N/A' }}</span>
+                <span class="detail-value">{{ candidate.target_record.passport || 'N/A' }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Family Book:</span>
-                <span class="detail-value">{{ candidate.target.ind_familybook || 'N/A' }}</span>
+                <span class="detail-value">{{ candidate.target_record.family_book || 'N/A' }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Birth Date:</span>
-                <span class="detail-value">{{ formatDate(candidate.target.ind_birth_date) }}</span>
+                <span class="detail-value">{{ formatDate(candidate.target_record.birth_date) }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Bank:</span>
-                <span class="detail-value">{{ candidate.target.bnk_code || 'N/A' }}</span>
+                <span class="detail-value">{{ candidate.target_record.bank || 'N/A' }}</span>
               </div>
             </div>
           </div>
@@ -314,6 +312,7 @@
               max="100"
               class="form-input"
             />
+            <small class="form-help">Recommended: 70 or higher</small>
           </div>
           <div class="form-group">
             <label for="modal-limit">Maximum Records to Process:</label>
@@ -326,6 +325,7 @@
               step="100"
               class="form-input"
             />
+            <small class="form-help">Process up to this many records</small>
           </div>
           <p class="modal-note">
             ⚠️ This may take a few moments depending on the number of records.
@@ -341,7 +341,7 @@
             @click="handleFindMatches"
           >
             <span v-if="findingMatches" class="spinner-small"></span>
-            <span v-else>🔍</span>
+            <span v-else class="icon">🔍</span>
             {{ findingMatches ? 'Processing...' : 'Find Matches' }}
           </button>
         </div>
@@ -352,7 +352,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-
+definePageMeta({
+  middleware: 'auth',
+  layout: 'backend',
+})
 // Composable
 const {
   statistics,
@@ -408,6 +411,16 @@ const handleFindMatches = async () => {
   showFindModal.value = false
 }
 
+const applyFilters = async () => {
+  await changeFilter(statusFilter.value, minScoreFilter.value || undefined)
+}
+
+const resetFilters = async () => {
+  statusFilter.value = 'PENDING'
+  minScoreFilter.value = null
+  await loadCandidates(1)
+}
+
 // Helpers
 const formatScore = (score?: number): string => {
   return score ? score.toFixed(1) : '0.0'
@@ -423,51 +436,45 @@ const formatKey = (key: string): string => {
 onMounted(() => {
   initialize()
 })
-
-// Meta
-definePageMeta({
-  layout: 'default',
-})
-
-useHead({
-  title: 'Customer Matching Dashboard',
-})
 </script>
 
 <style scoped>
+/* Base styles */
+.matching-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
 /* Message Banner */
 .message-banner {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  max-width: 400px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-width: 300px;
+  max-width: 500px;
 }
 
 .message-success {
-  background: #d1fae5;
-  color: #065f46;
-  border-left: 4px solid #10b981;
+  background: #10b981;
+  color: white;
 }
 
 .message-error {
-  background: #fee2e2;
-  color: #991b1b;
-  border-left: 4px solid #ef4444;
+  background: #ef4444;
+  color: white;
 }
 
 .message-info {
-  background: #dbeafe;
-  color: #1e40af;
-  border-left: 4px solid #3b82f6;
+  background: #3b82f6;
+  color: white;
 }
 
 .message-icon {
@@ -482,24 +489,13 @@ useHead({
 .message-close {
   background: none;
   border: none;
+  color: inherit;
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  opacity: 0.6;
-  transition: opacity 0.2s;
+  line-height: 1;
 }
 
-.message-close:hover {
-  opacity: 1;
-}
-
-/* Slide down animation */
 .slide-down-enter-active,
 .slide-down-leave-active {
   transition: all 0.3s ease;
@@ -515,24 +511,14 @@ useHead({
   opacity: 0;
 }
 
-/* Container */
-.matching-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
-
 /* Header */
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #e5e7eb;
 }
 
 .header-content {
@@ -542,16 +528,16 @@ useHead({
 .page-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #1a202c;
-  margin-bottom: 0.5rem;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .page-subtitle {
   font-size: 1rem;
-  color: #718096;
+  color: #6b7280;
   margin: 0;
 }
 
@@ -564,19 +550,13 @@ useHead({
 }
 
 .stat-card {
-  background: #fff;
-  padding: 1.5rem;
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   gap: 1rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .stat-icon {
@@ -612,140 +592,76 @@ useHead({
 .stat-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #1a202c;
+  color: #111827;
   line-height: 1;
 }
 
 .stat-label {
   font-size: 0.875rem;
-  color: #718096;
+  color: #6b7280;
   margin-top: 0.25rem;
 }
 
 /* Filters */
 .filters-section {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-  margin-bottom: 2rem;
+  background: white;
   padding: 1.5rem;
-  background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
 .filter-group {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.filter-group label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #4a5568;
-}
-
-.filter-select,
-.filter-input {
-  padding: 0.625rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.filter-select:focus,
-.filter-input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.filter-input {
-  width: 100px;
-}
-
-/* Buttons */
-.btn {
-  padding: 0.625rem 1.25rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: #3b82f6;
-  color: #fff;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #2563eb;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.btn-secondary {
-  background: #f3f4f6;
+.filter-group label {
+  font-weight: 500;
   color: #374151;
+  white-space: nowrap;
 }
 
-.btn-secondary:hover:not(:disabled) {
-  background: #e5e7eb;
+.filter-select,
+.filter-input {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  min-width: 150px;
 }
 
-.btn-success {
-  background: #10b981;
-  color: #fff;
+.filter-input {
+  min-width: 100px;
 }
 
-.btn-success:hover:not(:disabled) {
-  background: #059669;
-}
-
-.btn-danger {
-  background: #ef4444;
-  color: #fff;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: #dc2626;
-}
-
-/* Loading & Empty States */
+/* Loading State */
 .loading-state,
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #3b82f6;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
 }
 
 @keyframes spin {
-  to {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
     transform: rotate(360deg);
   }
 }
@@ -757,15 +673,15 @@ useHead({
 
 .empty-state h3 {
   font-size: 1.5rem;
-  color: #1a202c;
-  margin-bottom: 0.5rem;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
 }
 
 .empty-state p {
-  color: #718096;
+  color: #6b7280;
 }
 
-/* Match Cards */
+/* Candidates List */
 .candidates-list {
   display: flex;
   flex-direction: column;
@@ -773,15 +689,10 @@ useHead({
 }
 
 .match-card {
-  background: #fff;
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  transition: box-shadow 0.2s;
-}
-
-.match-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .match-header {
@@ -790,7 +701,7 @@ useHead({
   align-items: center;
   padding: 1.25rem 1.5rem;
   background: #f9fafb;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .match-info {
@@ -801,12 +712,12 @@ useHead({
 
 .match-id {
   font-weight: 600;
-  color: #1a202c;
+  color: #374151;
 }
 
 .status-badge {
   padding: 0.25rem 0.75rem;
-  border-radius: 999px;
+  border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -827,33 +738,39 @@ useHead({
   color: #991b1b;
 }
 
-.match-score {
-  font-size: 1.75rem;
-  font-weight: 700;
-  padding: 0.5rem 1rem;
-  border-radius: 999px;
-  border: 3px solid;
+.status-badge.info {
+  background: #dbeafe;
+  color: #1e40af;
 }
 
-.match-score.high {
-  color: #059669;
-  border-color: #059669;
+.match-score {
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+}
+
+.match-score.excellent {
   background: #d1fae5;
+  color: #065f46;
+}
+
+.match-score.good {
+  background: #dbeafe;
+  color: #1e40af;
 }
 
 .match-score.medium {
-  color: #d97706;
-  border-color: #d97706;
   background: #fef3c7;
+  color: #92400e;
 }
 
 .match-score.low {
-  color: #dc2626;
-  border-color: #dc2626;
   background: #fee2e2;
+  color: #991b1b;
 }
 
-/* Customer Comparison */
+/* Comparison Grid */
 .comparison-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -862,28 +779,28 @@ useHead({
 }
 
 .customer-card {
-  border: 2px solid #e2e8f0;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
   overflow: hidden;
 }
 
 .customer-header {
+  background: #f9fafb;
+  padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background: #f9fafb;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .customer-label {
-  font-weight: 700;
-  color: #1a202c;
+  font-weight: 600;
+  color: #374151;
 }
 
 .customer-id {
   font-size: 0.875rem;
-  color: #718096;
+  color: #6b7280;
 }
 
 .customer-details {
@@ -892,6 +809,7 @@ useHead({
 
 .detail-row {
   display: flex;
+  justify-content: space-between;
   padding: 0.5rem 0;
   border-bottom: 1px solid #f3f4f6;
 }
@@ -901,80 +819,84 @@ useHead({
 }
 
 .detail-label {
-  flex: 0 0 120px;
+  font-weight: 500;
+  color: #6b7280;
   font-size: 0.875rem;
-  font-weight: 600;
-  color: #718096;
 }
 
 .detail-value {
-  flex: 1;
+  font-weight: 500;
+  color: #111827;
   font-size: 0.875rem;
-  color: #1a202c;
+  text-align: right;
 }
 
 /* Match Breakdown */
 .match-breakdown {
   padding: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
 }
 
 .match-breakdown h4 {
   font-size: 1rem;
   font-weight: 600;
-  color: #1a202c;
-  margin-bottom: 1rem;
+  color: #374151;
+  margin: 0 0 1rem 0;
 }
 
 .breakdown-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  display: grid;
+  gap: 1rem;
 }
 
 .breakdown-item {
   display: grid;
-  grid-template-columns: 120px 1fr 60px;
+  grid-template-columns: 150px 1fr 80px;
   align-items: center;
   gap: 1rem;
 }
 
 .breakdown-label {
   font-size: 0.875rem;
-  font-weight: 600;
-  color: #4a5568;
+  color: #6b7280;
+  font-weight: 500;
 }
 
 .breakdown-bar {
-  height: 24px;
-  background: #e2e8f0;
-  border-radius: 999px;
+  background: #e5e7eb;
+  border-radius: 9999px;
+  height: 8px;
   overflow: hidden;
 }
 
 .breakdown-fill {
   height: 100%;
-  transition: width 0.3s;
-  border-radius: 999px;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
 }
 
-.breakdown-fill.high {
-  background: linear-gradient(90deg, #10b981, #059669);
+.breakdown-fill.excellent {
+  background: #10b981;
+}
+
+.breakdown-fill.good {
+  background: #3b82f6;
 }
 
 .breakdown-fill.medium {
-  background: linear-gradient(90deg, #f59e0b, #d97706);
+  background: #f59e0b;
 }
 
 .breakdown-fill.low {
-  background: linear-gradient(90deg, #ef4444, #dc2626);
+  background: #ef4444;
 }
 
 .breakdown-value {
+  text-align: right;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #1a202c;
-  text-align: right;
+  color: #374151;
 }
 
 /* Actions */
@@ -982,22 +904,20 @@ useHead({
   display: flex;
   gap: 1rem;
   padding: 1.5rem;
-  border-top: 1px solid #e2e8f0;
-}
-
-.match-actions .btn {
-  flex: 1;
+  border-top: 1px solid #e5e7eb;
+  background: white;
 }
 
 .reviewed-info {
   padding: 1rem 1.5rem;
   background: #f9fafb;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
 }
 
 .reviewed-text {
   font-size: 0.875rem;
-  color: #718096;
+  color: #6b7280;
 }
 
 /* Pagination */
@@ -1005,17 +925,78 @@ useHead({
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
   margin-top: 2rem;
   padding: 1.5rem;
-  background: #fff;
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .page-info {
   font-size: 0.875rem;
-  color: #4a5568;
+  color: #6b7280;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.btn-secondary {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #4b5563;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+  flex: 1;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+  flex: 1;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.icon {
+  font-size: 1rem;
 }
 
 /* Modal */
@@ -1034,11 +1015,11 @@ useHead({
 }
 
 .modal-content {
-  background: #fff;
+  background: white;
   border-radius: 12px;
   max-width: 500px;
   width: 100%;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
 .modal-header {
@@ -1046,13 +1027,13 @@ useHead({
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .modal-header h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1a202c;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
   margin: 0;
 }
 
@@ -1060,21 +1041,10 @@ useHead({
   background: none;
   border: none;
   font-size: 2rem;
-  color: #718096;
+  color: #6b7280;
   cursor: pointer;
   line-height: 1;
   padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: background 0.2s;
-}
-
-.btn-close:hover {
-  background: #f3f4f6;
 }
 
 .modal-body {
@@ -1087,56 +1057,54 @@ useHead({
 
 .form-group label {
   display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #4a5568;
+  font-weight: 500;
+  color: #374151;
   margin-bottom: 0.5rem;
 }
 
 .form-input {
   width: 100%;
-  padding: 0.625rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  padding: 0.625rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
   font-size: 0.875rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.form-input:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+.form-help {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280;
 }
 
 .modal-note {
-  font-size: 0.875rem;
-  color: #718096;
-  padding: 0.75rem;
   background: #fef3c7;
+  color: #92400e;
+  padding: 0.75rem;
   border-radius: 6px;
-  border-left: 3px solid #f59e0b;
+  font-size: 0.875rem;
+  margin: 0;
 }
 
 .modal-footer {
   display: flex;
-  justify-content: flex-end;
   gap: 1rem;
   padding: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #e5e7eb;
+}
+
+.modal-footer .btn {
+  flex: 1;
 }
 
 .spinner-small {
+  display: inline-block;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-/* Icons */
-.icon {
-  display: inline-block;
+  animation: spin 1s linear infinite;
 }
 
 /* Responsive */
@@ -1147,6 +1115,7 @@ useHead({
 
   .page-header {
     flex-direction: column;
+    align-items: flex-start;
     gap: 1rem;
   }
 
@@ -1159,6 +1128,12 @@ useHead({
     align-items: stretch;
   }
 
+  .filter-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-select,
   .filter-input {
     width: 100%;
   }
@@ -1167,24 +1142,27 @@ useHead({
     grid-template-columns: 1fr;
   }
 
-  .match-actions {
-    flex-direction: column;
-  }
-
   .breakdown-item {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
 
-  .breakdown-label,
+  .breakdown-bar {
+    order: 2;
+  }
+
   .breakdown-value {
+    order: 3;
     text-align: left;
   }
 
-  .message-banner {
-    left: 20px;
-    right: 20px;
-    max-width: none;
+  .match-actions {
+    flex-direction: column;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 1rem;
   }
 }
 </style>

@@ -1,326 +1,233 @@
 // composables/useCustomerMatching.ts
-import type { Ref } from 'vue'
+import { ref, computed } from 'vue'
 
-export interface MatchDetails {
-  national_id?: number
-  passport?: number
-  family_book?: number
-  birth_date?: number
-  name?: number
-  lao_name?: number
+interface MatchingCandidate {
+  id: number
+  source_ind_sys_id: number
+  target_ind_sys_id: number
+  similarity_score: number
+  status: string
+  match_details: Record<string, number>
+  created_at: string
+  reviewed_at: string | null
+  reviewed_by: string | null
+  source_record: CustomerRecord
+  target_record: CustomerRecord
 }
 
-export interface CustomerRecord {
-  ind_sys_id: number
-  lcic_id?: string
+interface CustomerRecord {
+  name: string
+  lao_name: string
+  birth_date: string | null
+  gender: string
+  national_id: string
+  passport: string
+  family_book: string
+  bank: string
+  segment: string
+  lcic_id: string
+  ind_sys_id?: number
   ind_name?: string
   ind_surname?: string
   ind_lao_name?: string
   ind_lao_surname?: string
+  ind_birth_date?: string
   ind_national_id?: string
   ind_passport?: string
   ind_familybook?: string
-  ind_birth_date?: string
   bnk_code?: string
 }
 
-export interface Candidate {
-  id: number
-  similarity_score: number
-  match_details: MatchDetails
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'AUTO_MATCHED'
-  created_at?: string
-  reviewed_by?: string
-  reviewed_at?: string
-  source: CustomerRecord
-  target: CustomerRecord
-}
-
-export interface Statistics {
-  total_bank_records: number
-  normalized_records: number
+interface Statistics {
   matching_candidates: {
     total: number
     pending: number
     approved: number
     rejected: number
+    auto_matched: number
     avg_score: number
+    pending_percentage: number
   }
-  merge_operations: {
+  scores: {
+    average: number
+    maximum: number
+    minimum: number
+  }
+  customers: {
+    total_merged_customers: number
+    total_merged_records: number
+    total_unmerged_records: number
+    merge_ratio: number
+  }
+  operations: {
     total_merges: number
     total_unmerges: number
   }
+  recent_activity: {
+    reviews_last_7_days: number
+    merges_last_7_days: number
+  }
+  top_reviewers: Array<{ reviewed_by: string; count: number }>
 }
 
-export interface FindMatchesParams {
-  min_score: number
-  limit: number
-  save_to_db: boolean
+interface Message {
+  text: string
+  type: 'success' | 'error' | 'info'
 }
 
-export interface ReviewParams {
-  candidate_id: number
-  action: 'approve' | 'reject'
-  notes?: string
-}
-
-export interface MergeParams {
-  source_ids: number[]
-  master_record_id?: number
-  reason?: string
-}
-
-export function useCustomerMatching() {
-  const runtimeConfig = useRuntimeConfig()
-  const apiBase = `${runtimeConfig.public.apiBase}/api`
+export const useCustomerMatching = () => {
+  const api = useMatchingApi()
 
   // State
-  const statistics: Ref<Statistics | null> = ref(null)
-  const candidates: Ref<Candidate[]> = ref([])
-  const currentPage: Ref<number> = ref(1)
-  const totalPages: Ref<number> = ref(1)
-  const totalCount: Ref<number> = ref(0)
-  const pageSize: Ref<number> = ref(20)
-  
-  // UI State
-  const loading: Ref<boolean> = ref(false)
-  const submitting: Ref<boolean> = ref(false)
-  const findingMatches: Ref<boolean> = ref(false)
-  
-  // Message state (replaces toast)
-  const message: Ref<{ type: 'success' | 'error' | 'info'; text: string } | null> = ref(null)
-  
-  // Filters
-  const statusFilter: Ref<'PENDING' | 'APPROVED' | 'REJECTED'> = ref('PENDING')
-  const minScoreFilter: Ref<number> = ref(60)
+  const statistics = ref<Statistics | null>(null)
+  const candidates = ref<MatchingCandidate[]>([])
+  const currentPage = ref(1)
+  const totalPages = ref(1)
+  const totalCount = ref(0)
+  const statusFilter = ref('PENDING')
+  const minScoreFilter = ref<number | null>(null)
+  const message = ref<Message | null>(null)
+  const loading = ref(false)
+  const submitting = ref(false)
+  const findingMatches = ref(false)
 
-  // Get auth token
-  const getToken = (): string | null => {
-    if (process.client) {
-      return localStorage.getItem('access_token')
-    }
-    return null
-  }
-
-  /**
-   * Show message (replaces toast)
-   */
-  const showMessage = (type: 'success' | 'error' | 'info', text: string) => {
-    message.value = { type, text }
-    console.log(`[${type.toUpperCase()}]`, text)
-    
-    // Auto-hide after 5 seconds
+  // Helper functions
+  const showMessage = (text: string, type: 'success' | 'error' | 'info' = 'info') => {
+    message.value = { text, type }
     setTimeout(() => {
       message.value = null
     }, 5000)
   }
 
-  /**
-   * Fetch wrapper with auth
-   */
-  const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
-    const token = getToken()
-    
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    }
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`
-    }
-
-    const response = await fetch(`${apiBase}${url}`, {
-      ...options,
-      headers,
-    })
-
-    // Handle auth errors
-    if (response.status === 401) {
-      showMessage('error', 'Session expired. Please login again.')
-      if (process.client) {
-        localStorage.removeItem('access_token')
-        window.location.href = '/login'
-      }
-      throw new Error('Unauthorized')
-    }
-
-    if (response.status === 403) {
-      showMessage('error', 'Access denied. Insufficient permissions.')
-      throw new Error('Forbidden')
-    }
-
-    if (!response.ok && response.status >= 500) {
-      showMessage('error', 'Server error. Please try again later.')
-      throw new Error('Server Error')
-    }
-
-    return response
+  const clearMessage = () => {
+    message.value = null
   }
 
-  /**
-   * Load statistics from API
-   */
-  const loadStatistics = async (): Promise<void> => {
+  // Load statistics
+  const loadStatistics = async () => {
     try {
-      const response = await fetchWithAuth('/statistics/')
-      const data = await response.json()
-      
-      if (data.success) {
-        statistics.value = data.statistics
-      } else {
-        showMessage('error', 'Failed to load statistics')
+      const response = await api.getStatistics()
+      if (response.success) {
+        statistics.value = response.statistics
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading statistics:', error)
-      showMessage('error', 'Error loading statistics')
+      showMessage(error?.data?.error || 'Failed to load statistics', 'error')
     }
   }
 
-  /**
-   * Load matching candidates with pagination
-   */
-  const loadCandidates = async (page: number = 1): Promise<void> => {
+  // Load candidates
+  const loadCandidates = async (page: number = 1) => {
     loading.value = true
-    currentPage.value = page
-
     try {
-      const params = new URLSearchParams({
+      const params: any = {
+        page,
+        page_size: 20,
         status: statusFilter.value,
-        page: page.toString(),
-        page_size: pageSize.value.toString(),
-        min_score: minScoreFilter.value.toString(),
-      })
-
-      const response = await fetchWithAuth(`/candidates/?${params}`)
-      const data = await response.json()
-
-      if (data.success) {
-        candidates.value = data.candidates
-        totalPages.value = data.total_pages
-        totalCount.value = data.total_count
-      } else {
-        candidates.value = []
-        showMessage('error', data.error || 'Failed to load candidates')
       }
-    } catch (error) {
+
+      if (minScoreFilter.value !== null) {
+        params.min_score = minScoreFilter.value
+      }
+
+      const response = await api.listMatchingCandidates(params)
+      
+      // Handle paginated response
+      if (response.results) {
+        candidates.value = response.results.map((c: any) => ({
+          id: c.id,
+          source_ind_sys_id: c.source_ind_sys_id,
+          target_ind_sys_id: c.target_ind_sys_id,
+          similarity_score: c.similarity_score,
+          status: c.status,
+          match_details: c.match_details,
+          created_at: c.created_at,
+          reviewed_at: c.reviewed_at,
+          reviewed_by: c.reviewed_by,
+          source_record: c.source_record,
+          target_record: c.target_record,
+          source: c.source_record, // For backwards compatibility with template
+          target: c.target_record, // For backwards compatibility with template
+        }))
+        
+        totalCount.value = response.count
+        currentPage.value = page
+        totalPages.value = Math.ceil(response.count / 20)
+      }
+    } catch (error: any) {
       console.error('Error loading candidates:', error)
+      showMessage(error?.data?.error || 'Failed to load candidates', 'error')
       candidates.value = []
-      showMessage('error', 'Error loading candidates')
     } finally {
       loading.value = false
     }
   }
 
-  /**
-   * Find new matching candidates
-   */
-  const findNewMatches = async (params: FindMatchesParams): Promise<void> => {
+  // Find new matches
+  const findNewMatches = async (params: {
+    min_score: number
+    limit: number
+    save_to_db?: boolean
+  }) => {
     findingMatches.value = true
-
     try {
-      const response = await fetchWithAuth('/find-candidates/', {
-        method: 'POST',
-        body: JSON.stringify(params),
+      const response = await api.findMatchingCandidates({
+        limit: params.limit,
+        min_score: params.min_score,
+        save: params.save_to_db !== false,
       })
 
-      const data = await response.json()
-
-      if (data.success) {
+      if (response.success) {
         showMessage(
-          'success',
-          `Found ${data.total_found} matches. Saved ${data.saved_to_db} to database.`
+          `Found ${response.candidates_found} candidates, saved ${response.candidates_saved}`,
+          'success'
         )
-        // Reload candidates and statistics
-        await Promise.all([
-          loadCandidates(1),
-          loadStatistics(),
-        ])
-      } else {
-        showMessage('error', data.error || 'Failed to find matches')
+        await loadCandidates(1)
+        await loadStatistics()
       }
     } catch (error: any) {
       console.error('Error finding matches:', error)
-      showMessage('error', 'Error finding matches')
+      showMessage(error?.data?.error || 'Failed to find matches', 'error')
     } finally {
       findingMatches.value = false
     }
   }
 
-  /**
-   * Review a candidate (approve or reject)
-   */
-  const reviewCandidate = async (params: ReviewParams): Promise<void> => {
+  // Review candidate
+  const reviewCandidate = async (data: {
+    candidate_id: number
+    action: 'approve' | 'reject'
+    notes?: string
+  }) => {
     submitting.value = true
-
     try {
-      const response = await fetchWithAuth('/review/', {
-        method: 'POST',
-        body: JSON.stringify(params),
+      const response = await api.reviewCandidate({
+        candidate_id: data.candidate_id,
+        action: data.action,
+        notes: data.notes,
+        merge_reason: data.action === 'approve' ? data.notes : undefined,
       })
 
-      const data = await response.json()
-
-      if (data.success) {
-        const action = params.action === 'approve' ? 'approved' : 'rejected'
-        showMessage('success', `Match ${action} successfully`)
-        
-        // Reload current page and statistics
-        await Promise.all([
-          loadCandidates(currentPage.value),
-          loadStatistics(),
-        ])
-      } else {
-        showMessage('error', data.error || 'Failed to review candidate')
+      if (response.success) {
+        showMessage(
+          data.action === 'approve'
+            ? `Approved and merged successfully! LCIC ID: ${response.lcic_id}`
+            : 'Rejected successfully',
+          'success'
+        )
+        await loadCandidates(currentPage.value)
+        await loadStatistics()
       }
     } catch (error: any) {
       console.error('Error reviewing candidate:', error)
-      showMessage('error', 'Error reviewing candidate')
+      showMessage(error?.data?.error || 'Failed to review candidate', 'error')
     } finally {
       submitting.value = false
     }
   }
 
-  /**
-   * Manually merge customers
-   */
-  const mergeCustomers = async (params: MergeParams): Promise<void> => {
-    submitting.value = true
-
-    try {
-      const response = await fetchWithAuth('/merge/', {
-        method: 'POST',
-        body: JSON.stringify(params),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        showMessage('success', `Merged ${data.result.merged_count} customers successfully`)
-        
-        // Reload data
-        await Promise.all([
-          loadCandidates(currentPage.value),
-          loadStatistics(),
-        ])
-      } else {
-        showMessage('error', data.error || 'Failed to merge customers')
-      }
-    } catch (error: any) {
-      console.error('Error merging customers:', error)
-      showMessage('error', 'Error merging customers')
-    } finally {
-      submitting.value = false
-    }
-  }
-
-  /**
-   * Change filter and reload
-   */
-  const changeFilter = async (
-    status?: 'PENDING' | 'APPROVED' | 'REJECTED',
-    minScore?: number
-  ): Promise<void> => {
+  // Change filter
+  const changeFilter = async (status?: string, minScore?: number) => {
     if (status !== undefined) {
       statusFilter.value = status
     }
@@ -330,69 +237,53 @@ export function useCustomerMatching() {
     await loadCandidates(1)
   }
 
-  /**
-   * Go to specific page
-   */
-  const goToPage = async (page: number): Promise<void> => {
-    if (page >= 1 && page <= totalPages.value) {
-      await loadCandidates(page)
-    }
+  // Go to page
+  const goToPage = async (page: number) => {
+    await loadCandidates(page)
   }
 
-  /**
-   * Clear message
-   */
-  const clearMessage = () => {
-    message.value = null
+  // Initialize
+  const initialize = async () => {
+    await Promise.all([loadStatistics(), loadCandidates(1)])
   }
 
-  /**
-   * Initialize - load initial data
-   */
-  const initialize = async (): Promise<void> => {
-    await Promise.all([
-      loadStatistics(),
-      loadCandidates(1),
-    ])
-  }
-
-  /**
-   * Get score color class
-   */
+  // Helper functions for UI
   const getScoreColor = (score: number): string => {
-    if (score >= 85) return 'high'
+    if (score >= 90) return 'excellent'
+    if (score >= 80) return 'good'
     if (score >= 70) return 'medium'
     return 'low'
   }
 
-  /**
-   * Get status badge color
-   */
   const getStatusColor = (status: string): string => {
     switch (status) {
       case 'PENDING':
         return 'warning'
       case 'APPROVED':
-      case 'AUTO_MATCHED':
         return 'success'
       case 'REJECTED':
         return 'danger'
-      default:
+      case 'AUTO_MATCHED':
         return 'info'
+      default:
+        return 'secondary'
     }
   }
 
-  /**
-   * Format date
-   */
-  const formatDate = (dateString?: string): string => {
+  const formatDate = (dateString: string | null): string => {
     if (!dateString) return 'N/A'
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-GB', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    })
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    } catch {
+      return 'Invalid Date'
+    }
   }
 
   return {
@@ -402,27 +293,23 @@ export function useCustomerMatching() {
     currentPage,
     totalPages,
     totalCount,
-    pageSize,
     statusFilter,
     minScoreFilter,
     message,
-    
-    // UI State
     loading,
     submitting,
     findingMatches,
-    
+
     // Methods
     loadStatistics,
     loadCandidates,
     findNewMatches,
     reviewCandidate,
-    mergeCustomers,
     changeFilter,
     goToPage,
     clearMessage,
     initialize,
-    
+
     // Helpers
     getScoreColor,
     getStatusColor,
