@@ -37,7 +37,6 @@ const dataFee = computed(() => {
     return [];
   }
 
-  // ✅ เพิ่มเงื่อนไขตามความยาวของ userId
   const targetChgCode = userId.value?.length === 2 ? "SCR" : "SCRFI";
   
   return processedData.filter((item) => item.chg_code === targetChgCode);
@@ -54,6 +53,7 @@ const dataIndividual = computed(() => {
   }
   return [];
 });
+
 const confirmInsert = async () => {
   try {
     const noticonfirm = await Swal.fire({
@@ -65,12 +65,23 @@ const confirmInsert = async () => {
       showCancelButton: true,
       cancelButtonText: "ຍົກເລີກ",
     });
+    
     if (noticonfirm.isConfirmed) {
-      await individualStore.CreatInsertLog();
-      goPath(`/scoring/reports/scoring_report`);
+      const success = await individualStore.CreatInsertLog();
+      
+      if (success) {
+        sessionStorage.setItem("lcic_id", lcicID);
+        
+        setTimeout(() => {
+          goPath("/scoring/reports/scoring_report");
+        }, 500);
+      }
     }
-  } catch (error) {}
+  } catch (error) {
+    // Handle error silently or show user-friendly message
+  }
 };
+
 onMounted(() => {
   individualStore.reques_mapsearch.query.lcic_id = lcicID;
   individualStore.from_insert_logserch.lcic_id = lcicID;

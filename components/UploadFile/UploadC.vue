@@ -148,7 +148,7 @@ const filters = ref({
 // const period = ref<Period[]>([]);
 
 const statusOptions = ref([
-  { title: "ສຳເລັດການໂຫຼດ", value: "0" },
+  { title: "ລໍຖ້າກວດສອບ", value: "0" },
   { title: "ນຳສົ່ງຂໍ້ມູນສຳເລັດ", value: "1" },
   { title: "ປະຕິເສດ", value: "2" },
   // { title: "ກຳລັງອັບໂຫຼດ", value: "3" },
@@ -526,7 +526,7 @@ const getStatusText = (statussubmit: string) => {
     case "4":
       return "ກຳລັງຖືກອັນໂຫຼດ..";
     case "0":
-      return "ສຳເລັດການໂຫຼດ";
+      return "ລໍຖ້າກວດສອບ";
     default:
       return "ບໍ່ຮູ້ສະຖານະ";
   }
@@ -930,7 +930,7 @@ UplodafileStore.getDataUplodC();
         size="small"
       >
         <v-icon icon="mdi-check-all" size="16" class="mr-1"></v-icon>
-        ສຳເລັດການໂຫຼດ
+        ລໍຖ້າກວດສອບ
       </v-chip>
       <v-chip v-else color="grey" size="small">
         {{ item.status_display || "ບໍ່ຮູ້ສະຖານະ" }}

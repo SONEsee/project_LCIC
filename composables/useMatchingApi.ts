@@ -1,7 +1,11 @@
 // composables/useMatchingApi.ts
 export const useMatchingApi = () => {
   const config = useRuntimeConfig()
+<<<<<<< HEAD
   const baseURL = config.public.apiBase || 'http://192.168.45.52:8000/api'
+=======
+  const baseURL = config.public.apiBase || 'http://192.168.45.55:8000/api'
+>>>>>>> ccb9c77aaf85b6648731b138814b7b8eabb3be29
 
   // Helper function for API calls
   const fetchApi = async (endpoint: string, options: any = {}) => {

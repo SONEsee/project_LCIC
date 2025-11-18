@@ -5,7 +5,7 @@ definePageMeta({
 })
 </script>
 <template>
-  <div class="pa-4">
-    <AnimationRobot />
-  </div>
+    <div class="pa-4">
+        <RegisterEnterprisWhitCustomerDetail/>
+    </div>
 </template>

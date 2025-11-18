@@ -48,9 +48,9 @@ const combinedData = computed(() => {
     ? cdlItems.map((item) => ({
         ...item,
         LCIC_code: item.c1,
-        com_enterprise_code: item.c2,
+        bank_customer_ID: item.c2,
         user_id: item.c3,
-        bank_customer_ID: item.c4,
+       
         branch_id_code: item.c5,
         loan_id: item.c6,
         col_id: item.c7,
@@ -89,9 +89,9 @@ const headers1 = [
   { title: "ລຳດັບ", value: "id" },
   { title: "ລະຫັດຂສລ", value: "LCIC_code", key: "LCIC_code_or_c1" },
   {
-    title: "ລະຫັດວິສາຫະກິດ",
-    value: "com_enterprise_code",
-    key: "com_enterprise_code_or_c2",
+    title: "ລະຫັດລູກຄ້າ",
+    value: "bank_customer_ID",
+    key: "bank_customer_ID_or_c2",
   },
   // { title: "ສະມາຊຶກ", value: "user_id", key: "user_id_or_c3" },
   { title: "ສາຂາ", value: "branch_id_code", key: "branch_id_code_or_c5" },
@@ -103,19 +103,19 @@ const headers1 = [
 const headers2 = [
   { title: "ລຳດັບ", value: "id" },
   { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
-  { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
   { title: "ລະຫັດລູກຄ້າ", value: "bank_customer_ID" },
+  
   { title: "ລະຫັດສາຂາ", value: "branch_id_code" },
   { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
   { title: "ລະຫັດຫຼັກຊັບ", value: "col_id" },
-  { title: "ລະຫັດວິສາຫະກິດໃນຖານຂໍ້ມູນ ຂສລ", value: "datamatch" },
+  { title: "ລະຫັດລູກຄ້າໃນຖານຂໍ້ມູນ ຂສລ", value: "datamatch" },
   { title: "ສະຖານະ", value: "collateral_status" },
 ];
 
 const headers3 = [
   { title: "ID", value: "id" },
   { title: "LCIC_code", value: "LCIC_code" },
-  { title: "Com_Enterprise_Code", value: "com_enterprise_code" },
+  { title: "Com_Enterprise_Code", value: "bank_customer_ID" },
   { title: "Bank_customer_ID", value: "bank_customer_ID" },
   { title: "Branch_id_Code", value: "branch_id_code" },
   { title: "Loan_id", value: "loan_id" },
@@ -127,7 +127,7 @@ const headers3 = [
 const headers4 = [
    { title: "ລຳດັບ", value: "id" },
   { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
-  { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+  { title: "ລະຫັດລູກຄ້າ", value: "bank_customer_ID" },
   { title: "ລະຫັດລູກຄ້າໍ", value: "bank_customer_ID" },
   { title: "ລະຫັດສາຂາ", value: "branch_id_code" },
   { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
@@ -138,7 +138,7 @@ const headers4 = [
 const headers5 = [
   { title: "ລຳດັບ", value: "id" },
   { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
-  { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+  { title: "ລະຫັດລູກຄ້າ", value: "bank_customer_ID" },
   { title: "ລະຫັດລູກຄ້າໍ", value: "bank_customer_ID" },
   { title: "ລະຫັດສາຂາ", value: "branch_id_code" },
   { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
@@ -148,7 +148,7 @@ const headers5 = [
 const headers6 = [
   { title: "ລຳດັບ", value: "id" },
   { title: "ລະຫັດ ຂສລ", value: "LCIC_code" },
-  { title: "ລະຫັດວິສາຫະກິດ", value: "com_enterprise_code" },
+  { title: "ລະຫັດລູກຄ້າ", value: "bank_customer_ID" },
   { title: "ລະຫັດລູກຄ້າໍ", value: "bank_customer_ID" },
   { title: "ລະຫັດສາຂາ", value: "branch_id_code" },
   { title: "ລະຫັດເງິນກູ້", value: "loan_id" },
@@ -256,11 +256,11 @@ const exportToJson = () => {
   const dataToExport = lcicerror.value.map((item) => {
     const {
       datamatch,
-      com_enterprise_code_get,
+      bank_customer_ID_get,
       id_file,
       id,
       period,
-      com_enterprise_code_error,
+      bank_customer_ID_error,
       LCIC_code_error,
       filteredBDataIsDamagedLCIC_codeError01,
       ...rest
@@ -371,7 +371,7 @@ onMounted(() => {
             }}</b>
             ລາຍການ
           </p> -->
-
+<!-- <pre>{{ combinedData }}</pre> -->
           <v-data-table
             :items-per-page="request.page_size"
             class="text-no-wrap"
@@ -386,7 +386,7 @@ onMounted(() => {
             <template v-slot:header.LCIC_code_or_c1="{ column }">
               <th style="color: #0d47a1">{{ column.title }}</th>
             </template>
-            <template v-slot:header.com_enterprise_code_or_c2="{ column }">
+            <template v-slot:header.bank_customer_ID_or_c2="{ column }">
               <th style="color: #0d47a1">{{ column.title }}</th>
             </template>
             <template v-slot:header.user_id_or_c3="{ column }">
@@ -415,9 +415,9 @@ onMounted(() => {
               </v-chip>
             </template>
 
-            <template v-slot:item.com_enterprise_code="{ item }">
+            <template v-slot:item.bank_customer_ID="{ item }">
               <v-chip color="info" size="small" variant="flat">
-                {{ item.com_enterprise_code || (item as any).c2 || "-" }}
+                {{ item.bank_customer_ID || (item as any).c2 || "-" }}
               </v-chip>
             </template>
 
@@ -466,7 +466,7 @@ onMounted(() => {
         <v-window-item value="two">
           <v-tabs v-model="subTab" fixed-tabs color="secondary">
             <v-tab value="two-one"
-              >ລະຫັດວິສາຫະກິດບໍ່ຖືກຕ້ອງ
+              >ລະຫັດລູກຄ້າບໍ່ຖືກຕ້ອງ
               <v-chip
                 class="ml-2"
                 size="x-small"
@@ -486,7 +486,7 @@ onMounted(() => {
               </v-chip></v-tab
             >
             <v-tab value="two-three"
-              >ລະຫັດວິສາຫະກິດ ແລະ ລະຫັດ ຂສລ ບໍ່ຖືກຕອ້ງ
+              >ລະຫັດລູກຄ້າ ແລະ ລະຫັດ ຂສລ ບໍ່ຖືກຕອ້ງ
               <v-chip
                 class="ml-2"
                 size="x-small"
@@ -571,12 +571,10 @@ onMounted(() => {
                 <template v-slot:header.LCIC_code>
                   <th style="color: #0d47a1">ລະຫັດ ຂສລ</th>
                 </template>
-                <template v-slot:header.com_enterprise_code>
-                  <th style="color: #0d47a1">ລະຫັດວິສາຫະກິດ</th>
-                </template>
                 <template v-slot:header.bank_customer_ID>
                   <th style="color: #0d47a1">ລະຫັດລູກຄ້າ</th>
                 </template>
+               
                 <template v-slot:header.branch_id_code>
                   <th style="color: #0d47a1">ລະຫັດສາຂາ</th>
                 </template>
@@ -587,7 +585,7 @@ onMounted(() => {
                   <th style="color: #0d47a1">ລະຫັດຫຼັກຊັບ</th>
                 </template>
                 <template v-slot:header.datamatch>
-                  <th style="color: #0d47a1">ລະຫັດວິສາຫະກິດໃນຖານຂໍ້ມູນ ຂສລ</th>
+                  <th style="color: #0d47a1">ລະຫັດລູກຄ້າໃນຖານຂໍ້ມູນ ຂສລ</th>
                 </template>
                 <template v-slot:header.collateral_status>
                   <th style="color: #0d47a1">ສະຖານະ</th>
@@ -595,12 +593,12 @@ onMounted(() => {
                 <template v-slot:item.id="{ item, index }">
                   {{ (request.page - 1) * request.page_size + index + 1 }}
                 </template>
-                <template v-slot:item.com_enterprise_code="{ item }">
-                  <v-chip v-if="item.com_enterprise_code === ''" color="error"
+                <template v-slot:item.bank_customer_ID="{ item }">
+                  <v-chip v-if="item.bank_customer_ID === ''" color="error"
                     >ບໍ່ມີ</v-chip
                   >
                   <v-chip v-else color="warning"
-                    >ບໍຖືກ ({{ item.com_enterprise_code }})</v-chip
+                    >ບໍຖືກ ({{ item.bank_customer_ID }})</v-chip
                   >
                 </template>
                 <template v-slot:item.datamatch="{ item }">
@@ -702,12 +700,10 @@ onMounted(() => {
                 <template v-slot:header.LCIC_code>
                   <th style="color: #0d47a1">ລະຫັດ ຂສລ</th>
                 </template>
-                <template v-slot:header.com_enterprise_code>
-                  <th style="color: #0d47a1">ລະຫັດວິສາຫະກິດ</th>
-                </template>
                 <template v-slot:header.bank_customer_ID>
                   <th style="color: #0d47a1">ລະຫັດລູກຄ້າ</th>
                 </template>
+             
                 <template v-slot:header.branch_id_code>
                   <th style="color: #0d47a1">ລະຫັດສາຂາ</th>
                 </template>
@@ -765,7 +761,7 @@ onMounted(() => {
 
             <v-window-item value="two-three">
               <h3 style="color: dodgerblue">
-                # ຂໍ້ມູນທີ່ມີ LCIC_code ແລະ com_enterprise_code_error ຜິດ ຫຼື
+                # ຂໍ້ມູນທີ່ມີ LCIC_code ແລະ bank_customer_ID_error ຜິດ ຫຼື
                 ບໍ່ມີ
               </h3>
               <p>
@@ -785,12 +781,10 @@ onMounted(() => {
                 <template v-slot:header.LCIC_code>
                   <th style="color: #0d47a1">ລະຫັດ ຂສລ</th>
                 </template>
-                <template v-slot:header.com_enterprise_code>
-                  <th style="color: #0d47a1">ລະຫັດວິສາຫະກິດ</th>
-                </template>
                 <template v-slot:header.bank_customer_ID>
                   <th style="color: #0d47a1">ລະຫັດລູກຄ້າ</th>
                 </template>
+              
                 <template v-slot:header.branch_id_code>
                   <th style="color: #0d47a1">ລະຫັດສາຂາ</th>
                 </template>
@@ -815,30 +809,30 @@ onMounted(() => {
                     {{ item.LCIC_code || "ບໍ່ມີ" }}
                   </v-chip>
                 </template>
-                <template v-slot:item.com_enterprise_code="{ item }">
+                <template v-slot:item.bank_customer_ID="{ item }">
                   <v-chip
                     :color="
-                      item.com_enterprise_code === '' ? 'error' : 'warning'
+                      item.bank_customer_ID === '' ? 'error' : 'warning'
                     "
                     size="small"
                   >
-                    {{ item.com_enterprise_code || "ບໍ່ມີ" }}
+                    {{ item.bank_customer_ID || "ບໍ່ມີ" }}
                   </v-chip>
                 </template>
                 <template v-slot:item.collateral_status="{ item }">
                   <v-chip color="error" size="small">{{
                     item.collateral_status === "11"
-                      ? "LCIC_code ແລະ com_enterprise_code ບໍຖືກ"
+                      ? "LCIC_code ແລະ bank_customer_ID ບໍຖືກ"
                       : item.collateral_status === "33"
-                      ? "LCIC_code ແລະ com_enterprise_code ວ່າງ"
+                      ? "LCIC_code ແລະ bank_customer_ID ວ່າງ"
                       : item.collateral_status === "44"
                       ? "LCIC_code"
                       : item.collateral_status === "55"
-                      ? "LCIC_code ແລະ com_enterprise_code ບໍ່ແມັດກັນ"
+                      ? "LCIC_code ແລະ bank_customer_ID ບໍ່ແມັດກັນ"
                       : item.collateral_status === "30"
-                      ? "LCIC_code ບໍ່ຖືກ ແລະ com_enterprise_code ວ່າງ"
+                      ? "LCIC_code ບໍ່ຖືກ ແລະ bank_customer_ID ວ່າງ"
                       : item.collateral_status === "03"
-                      ? "LCIC_code ວ່າງ ແລະ com_enterprise_code ບໍ່ຖືກ"
+                      ? "LCIC_code ວ່າງ ແລະ bank_customer_ID ບໍ່ຖືກ"
                       : item.collateral_status
                   }}</v-chip>
                 </template>
@@ -861,7 +855,7 @@ onMounted(() => {
             <v-window-item value="two-five">
               <h3 style="color: dodgerblue">
                 # ຂໍ້ມູນທີ່ມີ bnk_code, branch_id, customer_id, loan_id ແຕ່ມີ
-                LCIC_code ແລະ com_enterprise_code ບໍ່ຖືກ
+                LCIC_code ແລະ bank_customer_ID ບໍ່ຖືກ
               </h3>
               <p>
                 - ມີທັງໝົດ: <b>{{ Cdisputes.length }}</b> ລາຍການ
@@ -880,12 +874,10 @@ onMounted(() => {
                 <template v-slot:header.LCIC_code>
                   <th style="color: #0d47a1">ລະຫັດ ຂສລ</th>
                 </template>
-                <template v-slot:header.com_enterprise_code>
-                  <th style="color: #0d47a1">ລະຫັດວິສາຫະກິດ</th>
-                </template>
                 <template v-slot:header.bank_customer_ID>
                   <th style="color: #0d47a1">ລະຫັດລູກຄ້າ</th>
                 </template>
+                
                 <template v-slot:header.branch_id_code>
                   <th style="color: #0d47a1">ລະຫັດສາຂາ</th>
                 </template>
@@ -904,9 +896,9 @@ onMounted(() => {
                     item.LCIC_code
                   }}</v-chip>
                 </template>
-                <template v-slot:item.com_enterprise_code="{ item }">
+                <template v-slot:item.bank_customer_ID="{ item }">
                   <v-chip color="warning" size="small">{{
-                    item.com_enterprise_code
+                    item.bank_customer_ID
                   }}</v-chip>
                 </template>
                 <template v-slot:bottom>
@@ -945,12 +937,10 @@ onMounted(() => {
             <template v-slot:header.LCIC_code>
               <th style="color: #0d47a1">ລະຫັດ ຂສລ </th>
             </template>
-            <template v-slot:header.com_enterprise_code>
-              <th style="color: #0d47a1">ລະຫັດວິສາຫະກິດ</th>
-            </template>
             <template v-slot:header.bank_customer_ID>
               <th style="color: #0d47a1">ລະຫັດລູກຄ້າ</th>
             </template>
+            
             <template v-slot:header.branch_id_code>
               <th style="color: #0d47a1">ລະຫັດສາຂາ</th>
             </template>
@@ -966,9 +956,9 @@ onMounted(() => {
             <template v-slot:item.LCIC_code="{ item }">
               <v-chip color="success" size="small">{{ item.LCIC_code }}</v-chip>
             </template>
-            <template v-slot:item.com_enterprise_code="{ item }">
+            <template v-slot:item.bank_customer_ID="{ item }">
               <v-chip color="success" size="small">{{
-                item.com_enterprise_code
+                item.bank_customer_ID
               }}</v-chip>
             </template>
             <template v-slot:bottom>

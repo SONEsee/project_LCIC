@@ -1,5 +1,6 @@
 
 
+
 import { DuplicatesFalse } from './duplicates_batefile';
 import * as DataModel from './databases'
 import * as FileDataModel from './databasefile'
@@ -27,6 +28,8 @@ import * as DispustCallateralModel from './dispustcollateral'
 import * as AlertCallateralModel from './alertcollateral'
 import * as SearchIndividualModel from './individualsearch'
 import * as IndividualCollateral from './collateral_individual'
+import * as BorroworResponsModel from './borrower'
+import * as EnterpriseModel from './enterprise'
 export{
     DuplicatesFalse,
     DataModel,
@@ -54,6 +57,8 @@ export{
     DispustCallateralModel,
     AlertCallateralModel,
     SearchIndividualModel,
-    IndividualCollateral
+    IndividualCollateral,
+    BorroworResponsModel,
+    EnterpriseModel
 
 }
