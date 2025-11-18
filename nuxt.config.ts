@@ -38,18 +38,7 @@ export default defineNuxtConfig({
     server: {
       proxy: {
         '/media': {
-<<<<<<< HEAD
-<<<<<<< HEAD
           target: process.env.STRAPI_URL ,
-=======
-          target: process.env.STRAPI_URL || 'http://192.168.45.52:8000',
->>>>>>> 02ee04c9848d98613f7acc41ffe2ee335a9b0b98
-=======
-          target: process.env.STRAPI_URL || 'http://192.168.45.53:5000',
-=======
-          target: process.env.STRAPI_URL || 'http://192.168.45.55:8000',
->>>>>>> bce9cd3e0ae9275d1342a0121578f5a2db4df7c9
->>>>>>> 85ae843cd5976c38f39cd76bbdce725dff707cc1
           changeOrigin: true,
         }
       }
@@ -119,36 +108,11 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      STRAPI_URL: process.env.STRAPI_URL || "http://localhost:8000/",
       strapi: {
-<<<<<<< HEAD
-<<<<<<< HEAD
         url: process.env.STRAPI_URL ,
-=======
-        url: process.env.STRAPI_URL || "http://192.168.45.53:5000/",
-      },
-     
-      apiBase: process.env.STRAPI_URL || "http://192.168.45.53:5000",
-=======
-        url: process.env.STRAPI_URL || "http://192.168.45.55:8000/",
->>>>>>> 85ae843cd5976c38f39cd76bbdce725dff707cc1
       },
      
       apiBase: process.env.STRAPI_URL,
-=======
-        url: process.env.STRAPI_URL || "http://192.168.45.52:8000/",
-      },
-     
-<<<<<<< HEAD
-      apiBase: process.env.STRAPI_URL || "http://192.168.45.52:8000",
-=======
-      apiBase: process.env.STRAPI_URL || "http://192.168.45.55:8000",
-<<<<<<< HEAD
->>>>>>> origin/tooktik
->>>>>>> 02ee04c9848d98613f7acc41ffe2ee335a9b0b98
-=======
->>>>>>> bce9cd3e0ae9275d1342a0121578f5a2db4df7c9
->>>>>>> 85ae843cd5976c38f39cd76bbdce725dff707cc1
     },
   },
   
@@ -156,18 +120,7 @@ export default defineNuxtConfig({
   nitro: {
     devProxy: {
       '/media': {
-<<<<<<< HEAD
-<<<<<<< HEAD
         target: process.env.STRAPI_URL ,
-=======
-        target: process.env.STRAPI_URL || 'http://192.168.45.52:8000',
->>>>>>> 02ee04c9848d98613f7acc41ffe2ee335a9b0b98
-=======
-        target: process.env.STRAPI_URL || 'http://192.168.45.53:5000',
-=======
-        target: process.env.STRAPI_URL || 'http://192.168.45.55:8000',
->>>>>>> bce9cd3e0ae9275d1342a0121578f5a2db4df7c9
->>>>>>> 85ae843cd5976c38f39cd76bbdce725dff707cc1
         changeOrigin: true,
       }
     },
