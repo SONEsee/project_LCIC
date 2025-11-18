@@ -38,7 +38,11 @@ export default defineNuxtConfig({
     server: {
       proxy: {
         '/media': {
+<<<<<<< HEAD
           target: process.env.STRAPI_URL ,
+=======
+          target: process.env.STRAPI_URL || 'http://192.168.45.52:8000',
+>>>>>>> 02ee04c9848d98613f7acc41ffe2ee335a9b0b98
           changeOrigin: true,
         }
       }
@@ -108,11 +112,23 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
+      STRAPI_URL: process.env.STRAPI_URL || "http://localhost:8000/",
       strapi: {
+<<<<<<< HEAD
         url: process.env.STRAPI_URL ,
       },
      
       apiBase: process.env.STRAPI_URL,
+=======
+        url: process.env.STRAPI_URL || "http://192.168.45.52:8000/",
+      },
+     
+<<<<<<< HEAD
+      apiBase: process.env.STRAPI_URL || "http://192.168.45.52:8000",
+=======
+      apiBase: process.env.STRAPI_URL || "http://192.168.45.55:8000",
+>>>>>>> origin/tooktik
+>>>>>>> 02ee04c9848d98613f7acc41ffe2ee335a9b0b98
     },
   },
   
@@ -120,7 +136,11 @@ export default defineNuxtConfig({
   nitro: {
     devProxy: {
       '/media': {
+<<<<<<< HEAD
         target: process.env.STRAPI_URL ,
+=======
+        target: process.env.STRAPI_URL || 'http://192.168.45.52:8000',
+>>>>>>> 02ee04c9848d98613f7acc41ffe2ee335a9b0b98
         changeOrigin: true,
       }
     },
