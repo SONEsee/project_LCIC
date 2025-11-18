@@ -46,17 +46,17 @@ export const useCustomerMergeApi = () => {
         }, {} as Record<string, string>)
       ).toString()
       
-      return await fetchApi(`/api/customers/merged/${queryString ? '?' + queryString : ''}`)
+      return await fetchApi(`api/customers/merged/${queryString ? '?' + queryString : ''}`)
     },
 
     // NEW: Get merge statistics
     getMergeStatistics: async () => {
-      return await fetchApi('/api/customers/merged/statistics/')
+      return await fetchApi('api/customers/merged/statistics/')
     },
 
     // Get detailed merge information for a specific customer
     getCustomerMergeInfo: async (lcicId: string) => {
-      return await fetchApi(`/api/customer/${lcicId}/merge-info/`)
+      return await fetchApi(`api/customer/${lcicId}/merge-info/`)
     },
 
     // Search customers by LCIC ID, name, or identifier
@@ -75,7 +75,7 @@ export const useCustomerMergeApi = () => {
         }, {} as Record<string, string>)
       ).toString()
       
-      return await fetchApi(`/api/customers/search/?${queryString}`)
+      return await fetchApi(`api/customers/search/?${queryString}`)
     },
 
     // List all merge operations
@@ -95,7 +95,7 @@ export const useCustomerMergeApi = () => {
         }, {} as Record<string, string>)
       ).toString()
       
-      return await fetchApi(`/api/merges/history/${queryString ? '?' + queryString : ''}`)
+      return await fetchApi(`api/merges/history/${queryString ? '?' + queryString : ''}`)
     },
   }
 }

@@ -83,7 +83,7 @@ export const useCustomerUnmerge = () => {
 
     try {
       const response = await fetchApi(
-        `/api/customer-unmerge/list_grouped/?page=${page}&page_size=${pageSize}`,
+        `api/customer-unmerge/list_grouped/?page=${page}&page_size=${pageSize}`,
         { method: 'GET' }
       )
       
@@ -107,7 +107,7 @@ export const useCustomerUnmerge = () => {
         throw new Error('No customers selected for unmerge')
       }
 
-      const response = await fetchApi('/api/customer-unmerge/unmerge/', {
+      const response = await fetchApi('api/customer-unmerge/unmerge/', {
         method: 'POST',
         body: JSON.stringify(unmergeData),
       })
