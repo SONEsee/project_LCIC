@@ -540,7 +540,7 @@ const printReport = () => {
 }
 
 const goBack = () => {
-  router.push('/backend/reportutility')
+  router.push('/backend/search/utility_search')
 }
 
 const refreshSpecificReport = async (type: string) => {

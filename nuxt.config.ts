@@ -38,7 +38,11 @@ export default defineNuxtConfig({
     server: {
       proxy: {
         '/media': {
+<<<<<<< HEAD
           target: process.env.STRAPI_URL ,
+=======
+          target: process.env.STRAPI_URL || 'http://192.168.45.56:8000',
+>>>>>>> 41fe85c30db602749a65ebe1442c712ea08b73bb
           changeOrigin: true,
         }
       }
@@ -109,10 +113,17 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       strapi: {
+<<<<<<< HEAD
         url: process.env.STRAPI_URL ,
       },
      
       apiBase: process.env.STRAPI_URL,
+=======
+        url: process.env.STRAPI_URL || "http://192.168.45.56:8000/",
+      },
+     
+      apiBase: process.env.STRAPI_URL || "http://192.168.45.56:8000",
+>>>>>>> 41fe85c30db602749a65ebe1442c712ea08b73bb
     },
   },
   
@@ -120,7 +131,11 @@ export default defineNuxtConfig({
   nitro: {
     devProxy: {
       '/media': {
+<<<<<<< HEAD
         target: process.env.STRAPI_URL ,
+=======
+        target: process.env.STRAPI_URL || 'http://192.168.45.56:8000',
+>>>>>>> 41fe85c30db602749a65ebe1442c712ea08b73bb
         changeOrigin: true,
       }
     },
