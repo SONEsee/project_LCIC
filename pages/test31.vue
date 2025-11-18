@@ -5,16 +5,9 @@
         <h1>Register Bank Customers</h1>
         <p class="subtitle">Add customers manually or upload batch file</p>
       </div>
-      <div v-if="userData" class="user-info">
-        <div class="user-avatar">
-          <img v-if="userData.profile_image" :src="userData.profile_image" alt="Profile" />
-          <span v-else>{{ userData.nameE?.charAt(0) || 'U' }}</span>
-        </div>
-        <div class="user-details">
-          <div class="user-name">{{ userData.nameL || userData.nameE }}</div>
-          <div class="user-role">{{ userData.GID?.nameL || 'Member' }}</div>
-          <div class="user-bank">Bank Code: {{ userBankCode }}</div>
-        </div>
+      <div class="user-info">
+
+
       </div>
     </div>
 
@@ -49,113 +42,139 @@
         <div class="two-column-layout">
           <!-- LEFT SIDE: Customer Information -->
           <div class="left-panel">
-            <div class="form-section">
-              <h3>Basic Information</h3>
-              
-              <div class="form-group">
-                <label for="custype">Customer Type <span class="required">*</span></label>
-                <select id="custype" v-model="manualForm.Custype" required>
-                  <option value="">Select Type</option>
-                  <option value="IND">Individual</option>
-                  <option value="COR">Corporate</option>
-                </select>
-              </div>
+  <div class="form-section">
+    <h3>Basic Information</h3>
+    
+    <div class="form-group">
+      <label for="custype">Customer Type <span class="required">*</span></label>
+      <select id="custype" v-model="manualForm.custype" required>
+        <option value="">Select Type</option>
+        <option value="IND">Individual</option>
+        <option value="COR">Corporate</option>
+      </select>
+    </div>
 
-              <div class="form-group">
-                <label for="segment">Segment <span class="required">*</span></label>
-                <select id="segment" v-model="manualForm.segment" required>
-                  <option value="">Select Segment</option>
-                  <option value="A1">A1</option>
-                  <option value="A2">A2</option>
-                  <option value="A3">A3</option>
-                </select>
-              </div>
+    <div class="form-group">
+      <label for="segment">Segment <span class="required">*</span></label>
+      <select id="segment" v-model="manualForm.segment" required>
+        <option value="">Select Segment</option>
+        <option value="A1">A1</option>
+        <option value="A2">A2</option>
+        <option value="A3">A3</option>
+      </select>
+    </div>
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="bnk_code">Bank Code</label>
-                  <input 
-                    id="bnk_code" 
-                    v-model="userBankCode" 
-                    type="text" 
-                    readonly
-                    disabled
-                    class="readonly-input"
-                  />
-                </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="bnk_code">Bank Code</label>
+        <input 
+          id="bnk_code" 
+          v-model="userBankCode" 
+          type="text" 
+          readonly
+          disabled
+          class="readonly-input"
+        />
+      </div>
 
-                <div class="form-group">
-                  <label for="branch_id_code">Branch Code <span class="required">*</span></label>
-                  <input 
-                    id="branch_id_code" 
-                    v-model="manualForm.branch_id_code" 
-                    type="text" 
-                    required
-                    placeholder="e.g., 010"
-                  />
-                </div>
-              </div>
-            </div>
+      <div class="form-group">
+        <label for="bank_branch">Bank Branch</label>
+        <input 
+          id="bank_branch" 
+          v-model="manualForm.bank_branch" 
+          type="text"
+          placeholder="Head Office"
+        />
+      </div>
+    </div>
 
-            <div class="form-section">
-              <h3>Name Information</h3>
+    <div class="form-group">
+      <label for="customer_id">Customer ID</label>
+      <input 
+        id="customer_id" 
+        v-model="manualForm.customer_id" 
+        type="text"
+        placeholder="CUST001"
+        disabled
+        readonly
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="ind_name">First Name (English) <span class="required">*</span></label>
-                  <input 
-                    id="ind_name" 
-                    v-model="manualForm.ind_name" 
-                    type="text"
-                    placeholder="Khampaseuth"
-                    required
-                  />
-                </div>
+      />
+    </div>
+  </div>
 
-                <div class="form-group">
-                  <label for="ind_surname">Last Name (English) <span class="required">*</span></label>
-                  <input 
-                    id="ind_surname" 
-                    v-model="manualForm.ind_surname" 
-                    type="text"
-                    placeholder="Xanghomvilay"
-                    required
-                  />
-                </div>
-              </div>
+  <div class="form-section">
+    <h3>Name Information</h3>
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="ind_lao_name">First Name (Lao)</label>
-                  <input 
-                    id="ind_lao_name" 
-                    v-model="manualForm.ind_lao_name" 
-                    type="text"
-                    placeholder="ຄຳປະເສີດ"
-                  />
-                </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="ind_name">First Name (English) <span class="required">*</span></label>
+        <input 
+          id="ind_name" 
+          v-model="manualForm.ind_name" 
+          type="text"
+          placeholder="Khampaseuth"
+          required
+        />
+      </div>
 
-                <div class="form-group">
-                  <label for="ind_lao_surname">Last Name (Lao)</label>
-                  <input 
-                    id="ind_lao_surname" 
-                    v-model="manualForm.ind_lao_surname" 
-                    type="text"
-                    placeholder="ຊ່າງໂຮມວິໄລ"
-                  />
-                </div>
-              </div>
+      <div class="form-group">
+        <label for="ind_surname">Last Name (English) <span class="required">*</span></label>
+        <input 
+          id="ind_surname" 
+          v-model="manualForm.ind_surname" 
+          type="text"
+          placeholder="Xanghomvilay"
+          required
+        />
+      </div>
+    </div>
 
-              <div class="form-group">
-                <label for="ind_birth_date">Birth Date</label>
-                <input 
-                  id="ind_birth_date" 
-                  v-model="manualForm.ind_birth_date" 
-                  type="date"
-                />
-              </div>
-            </div>
-          </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="ind_lao_name">First Name (Lao)</label>
+        <input 
+          id="ind_lao_name" 
+          v-model="manualForm.ind_lao_name" 
+          type="text"
+          placeholder="ຄຳປະເສີດ"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="ind_lao_surname">Last Name (Lao)</label>
+        <input 
+          id="ind_lao_surname" 
+          v-model="manualForm.ind_lao_surname" 
+          type="text"
+          placeholder="ຊ່າງໂຮມວິໄລ"
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="ind_birth_date">Birth Date</label>
+      <input 
+        id="ind_birth_date" 
+        v-model="manualForm.ind_birth_date" 
+        type="date"
+      />
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Additional Information</h3>
+    
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea 
+        id="description" 
+        v-model="manualForm.description"
+        rows="3"
+        placeholder="Additional notes..."
+      ></textarea>
+    </div>
+  </div>
+</div>
 
           <!-- RIGHT SIDE: Verification Documents -->
           <div class="right-panel">
@@ -350,148 +369,178 @@
 
     <!-- Batch Upload -->
     <div v-if="activeTab === 'batch'" class="tab-content">
-      <div class="batch-upload-section">
-        <div class="upload-instructions">
-          <h3>📋 Batch Upload Instructions</h3>
-          <ol>
-            <li>Download the template file</li>
-            <li>Fill in customer information</li>
-            <li>Upload the JSON file</li>
-            <li>Attach verification documents for each customer</li>
-            <li>Submit all records</li>
-          </ol>
-          <button @click="downloadTemplate" class="btn-secondary">
-            <span class="icon">⬇️</span>
-            Download Template
-          </button>
+  <div class="batch-upload-section">
+    <div class="upload-instructions">
+      <h3>📋 Batch Upload Instructions</h3>
+      <ol>
+        <li>Download the template file</li>
+        <li>Fill in customer information (custype, segment, ind_name, ind_surname, and at least one ID)</li>
+        <li>Upload the JSON file to validate</li>
+        <li>Attach verification documents for each customer</li>
+        <li>Submit all records</li>
+      </ol>
+      <button @click="downloadTemplate" class="btn-secondary">
+        <span class="icon">⬇️</span>
+        Download Template
+      </button>
+    </div>
+
+    <!-- STEP 1: Upload JSON File -->
+    <div v-if="!batchValidatedData" class="file-upload-area large">
+      <input 
+        id="batch-file" 
+        type="file" 
+        ref="batchFileInput"
+        @change="handleBatchFileSelect"
+        accept=".json"
+      />
+      <label for="batch-file" class="file-upload-label">
+        <span class="icon">📁</span>
+        <span v-if="!batchFile">Choose Batch File (JSON)</span>
+        <span v-else class="file-name">{{ batchFile.name }}</span>
+      </label>
+      <p class="file-hint">Accepted format: JSON (Max 10MB)</p>
+    </div>
+
+    <button 
+      v-if="batchFile && !batchValidatedData" 
+      @click="processBatchFile" 
+      :disabled="isProcessing"
+      class="btn-primary"
+    >
+      {{ isProcessing ? 'Validating...' : 'Validate Batch File' }}
+    </button>
+
+    <!-- STEP 2: Attach Documents for Each Customer -->
+    <div v-if="batchValidatedData" class="batch-results">
+      <div class="results-summary">
+        <div class="summary-header">
+          <h3>✅ Validation Complete</h3>
+          <p class="summary-text">Attach verification documents for each customer</p>
         </div>
-
-        <div v-if="!batchResults" class="file-upload-area large">
-          <input 
-            id="batch-file" 
-            type="file" 
-            ref="batchFileInput"
-            @change="handleBatchFileSelect"
-            accept=".json"
-          />
-          <label for="batch-file" class="file-upload-label">
-            <span class="icon">📁</span>
-            <span v-if="!batchFile">Choose Batch File (JSON)</span>
-            <span v-else class="file-name">{{ batchFile.name }}</span>
-          </label>
-          <p class="file-hint">Accepted format: JSON (Max 10MB)</p>
-        </div>
-
-        <button 
-          v-if="batchFile && !batchResults" 
-          @click="processBatchFile" 
-          :disabled="isProcessing"
-          class="btn-primary"
-        >
-          {{ isProcessing ? 'Processing...' : 'Process Batch File' }}
-        </button>
-
-        <!-- Batch Results with Document Upload -->
-        <div v-if="batchResults" class="batch-results">
-          <div class="results-summary">
-            <div class="summary-header">
-              <h3>📊 Processing Complete</h3>
-              <p class="summary-text">Review customers and attach required documents</p>
-            </div>
-            <div class="summary-cards">
-              <div class="summary-card total">
-                <div class="card-value">{{ batchResults.total_processed }}</div>
-                <div class="card-label">Total Records</div>
-              </div>
-              <div class="summary-card matched">
-                <div class="card-value">{{ batchResults.matched }}</div>
-                <div class="card-label">Matched</div>
-              </div>
-              <div class="summary-card new">
-                <div class="card-value">{{ batchResults.new_records }}</div>
-                <div class="card-label">New Records</div>
-              </div>
-              <div class="summary-card documents">
-                <div class="card-value">
-                  {{ Object.keys(batchDocuments).length }} / {{ batchResults.details.length }}
-                </div>
-                <div class="card-label">Documents Attached</div>
-              </div>
-            </div>
+        <div class="summary-cards">
+          <div class="summary-card total">
+            <div class="card-value">{{ batchValidatedData.total_processed }}</div>
+            <div class="card-label">Total Records</div>
           </div>
-
-          <div class="customer-list">
-            <h4>Customer List - Attach Documents</h4>
-            
-            <div class="customer-cards">
-              <div 
-                v-for="(detail, index) in batchResults.details" 
-                :key="index"
-                class="customer-card"
-                :class="{ 'has-document': batchDocuments[index] }"
-              >
-                <div class="card-header">
-                  <div class="customer-info">
-                    <h5>{{ detail.customer_id || `Customer ${index + 1}` }}</h5>
-                    <div class="info-row">
-                      <span class="info-label">Bank Code:</span>
-                      <span class="info-value">{{ detail.bnk_code }}</span>
-                    </div>
-                    <div class="info-row">
-                      <span class="info-label">LCIC ID:</span>
-                      <code class="lcic-code">{{ detail.lcic_id }}</code>
-                    </div>
-                  </div>
-                  <div class="card-badges">
-                    <span :class="['status-badge', getStatusClass(detail.status)]">
-                      {{ detail.status }}
-                    </span>
-                    <span class="match-badge">{{ detail.match_percent }}% Match</span>
-                  </div>
-                </div>
-
-                <div class="card-body">
-                  <div class="document-upload-zone">
-                    <input 
-                      :id="`batch-doc-${index}`"
-                      type="file" 
-                      @change="(e) => handleBatchDocumentUpload(index, e)"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                    />
-                    <label :for="`batch-doc-${index}`" class="upload-zone-label">
-                      <div v-if="!batchDocuments[index]" class="upload-prompt">
-                        <span class="upload-icon">📎</span>
-                        <span class="upload-text">Click to attach document</span>
-                        <span class="upload-hint">PDF, JPG, PNG (Max 5MB)</span>
-                      </div>
-                      <div v-else class="upload-success">
-                        <span class="success-icon">✓</span>
-                        <span class="success-text">{{ batchDocuments[index].name }}</span>
-                        <span class="change-link">Click to change</span>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div class="summary-card matched">
+            <div class="card-value">{{ batchValidatedData.valid_count }}</div>
+            <div class="card-label">Valid</div>
           </div>
-
-          <div class="batch-actions">
-            <button @click="resetBatchUpload" class="btn-secondary">
-              <span class="icon">🔄</span>
-              Upload Another Batch
-            </button>
-            <button 
-              @click="finalizeBatchSubmit" 
-              :disabled="!allBatchDocumentsAttached || isSubmitting"
-              class="btn-primary"
-            >
-              {{ isSubmitting ? 'Submitting...' : `Submit All (${Object.keys(batchDocuments).length}/${batchResults.details.length})` }}
-            </button>
+          <div class="summary-card new">
+            <div class="card-value">{{ batchValidatedData.error_count }}</div>
+            <div class="card-label">Errors</div>
+          </div>
+          <div class="summary-card documents">
+            <div class="card-value">
+              {{ Object.keys(batchDocuments).length }} / {{ batchValidatedData.customers?.length || 0 }}
+            </div>
+            <div class="card-label">Documents Attached</div>
           </div>
         </div>
       </div>
+
+      <!-- Customer List with Document Upload -->
+      <div class="customer-list">
+        <h4>Customer List - Attach Documents</h4>
+        
+        <div class="customer-cards">
+          <div 
+            v-for="(customer, index) in batchValidatedData.customers" 
+            :key="index"
+            class="customer-card"
+            :class="{ 'has-document': batchDocuments[customer.index] }"
+          >
+            <div class="card-header">
+              <div class="customer-info">
+                <h5>{{ customer.customer_data.ind_name }} {{ customer.customer_data.ind_surname }}</h5>
+                <div class="info-row">
+                  <span class="info-label">Bank Code:</span>
+                  <span class="info-value">{{ customer.bnk_code }}</span>
+                </div>
+                
+                <!-- Show available document types -->
+                <div class="info-row">
+                  <span class="info-label">Has Documents:</span>
+                  <div class="doc-badges">
+                    <span v-if="customer.available_docs.includes('national_id')" class="doc-badge">
+                      🆔 National ID
+                    </span>
+                    <span v-if="customer.available_docs.includes('passport')" class="doc-badge">
+                      🛂 Passport
+                    </span>
+                    <span v-if="customer.available_docs.includes('familybook')" class="doc-badge">
+                      📕 Family Book
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Show ID numbers -->
+                <div v-if="customer.customer_data.ind_national_id" class="info-row">
+                  <span class="info-label">National ID:</span>
+                  <code class="id-code">{{ customer.customer_data.ind_national_id }}</code>
+                </div>
+                <div v-if="customer.customer_data.ind_passport" class="info-row">
+                  <span class="info-label">Passport:</span>
+                  <code class="id-code">{{ customer.customer_data.ind_passport }}</code>
+                </div>
+                <div v-if="customer.customer_data.ind_familybook" class="info-row">
+                  <span class="info-label">Family Book:</span>
+                  <code class="id-code">{{ customer.customer_data.ind_familybook }}</code>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="document-upload-zone">
+                <input 
+                  :id="`batch-doc-${customer.index}`"
+                  type="file" 
+                  @change="(e) => handleBatchDocumentUpload(customer.index, e)"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                />
+                <label :for="`batch-doc-${customer.index}`" class="upload-zone-label">
+                  <div v-if="!batchDocuments[customer.index]" class="upload-prompt">
+                    <span class="upload-icon">📎</span>
+                    <span class="upload-text">Click to attach verification document</span>
+                    <span class="upload-hint">PDF, JPG, PNG (Max 5MB)</span>
+                  </div>
+                  <div v-else class="upload-success">
+                    <span class="success-icon">✓</span>
+                    <span class="success-text">{{ batchDocuments[customer.index].name }}</span>
+                    <span class="change-link">Click to change</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Show validation errors if any -->
+      <div v-if="batchValidatedData.errors && batchValidatedData.errors.length > 0" class="validation-errors">
+        <h4>⚠️ Validation Errors</h4>
+        <ul>
+          <li v-for="(error, idx) in batchValidatedData.errors" :key="idx">{{ error }}</li>
+        </ul>
+      </div>
+
+      <div class="batch-actions">
+        <button @click="resetBatchUpload" class="btn-secondary">
+          <span class="icon">🔄</span>
+          Upload Another Batch
+        </button>
+        <button 
+          @click="finalizeBatchSubmit" 
+          :disabled="!allBatchDocumentsAttached || isSubmitting"
+          class="btn-primary"
+        >
+          {{ isSubmitting ? 'Submitting...' : `Submit All (${Object.keys(batchDocuments).length}/${batchValidatedData.customers?.length || 0})` }}
+        </button>
+      </div>
     </div>
+  </div>
+</div>
 
     <!-- Upload History -->
     <div v-if="activeTab === 'history'" class="tab-content">
@@ -600,7 +649,7 @@ definePageMeta({
 }); 
 
 // Composables
-const { registerManualCustomer, registerBatchCustomers, getMyCustomers, parseUploadedFile } = useCustomerRegistration();
+const { registerManualCustomer, validateBatchFile, finalizeBatchUpload, getMyCustomers, parseUploadedFile } = useCustomerRegistration();
 
 // User data
 const userData = ref<any>(null);
@@ -608,7 +657,6 @@ const userGID = ref<number>(0);
 const userBankCode = ref<string>('');
 const isMember = ref(false);
 
-// Initialize user data
 onMounted(() => {
   try {
     const userDataStr = localStorage.getItem('user_data');
@@ -616,11 +664,26 @@ onMounted(() => {
     if (userDataStr) {
       userData.value = JSON.parse(userDataStr);
       userGID.value = userData.value?.GID?.GID || 0;
-      userBankCode.value = userData.value?.bnk_code || userData.value?.bank_code || '';
+      
+      // ✅ FIXED: Get bank code from MID.id
+      userBankCode.value = userData.value?.MID?.id || '';
+      
       isMember.value = userGID.value >= 6 && userGID.value <= 7;
       
-      if (!isMember.value && userGID.value !== 0) {
-        console.warn('Admin users should use the confirm page');
+      // Auto-fill bnk_code in manual form
+      if (manualForm.value) {
+        manualForm.value.bnk_code = userBankCode.value;
+      }
+      
+      console.log('User initialized:', {
+        userBankCode: userBankCode.value,
+        bankName: userData.value?.MID?.code,
+        userGID: userGID.value,
+        isMember: isMember.value
+      });
+      
+      if (!userBankCode.value) {
+        console.error('❌ Bank code (MID.id) not found in user data');
       }
     }
   } catch (error) {
@@ -635,28 +698,40 @@ const isProcessing = ref(false);
 const isLoadingHistory = ref(false);
 
 // Manual Form State
-const manualForm = ref<CustomerRecord>({
-  Custype: '',
+
+const manualForm = ref({
+  // Required fields
+  custype: '',           // lowercase 'c'
   segment: '',
   bnk_code: '',
-  customer_ID: '',
-  branch_id_code: '',
+  bank_branch: '',       // not branch_id_code
+  customer_id: '',       // lowercase 'id'
+  
+  // National ID
   ind_national_id: '',
-  ind_national_id_date: null,
+  ind_national_id_date: '',
+  
+  // Passport
   ind_passport: '',
-  ind_passport_date: null,
+  ind_passport_date: '',
+  
+  // Family Book
   ind_familybook: '',
   ind_familybook_prov_code: '',
-  ind_familybook_date: null,
-  ind_birth_date: null,
+  ind_familybook_date: '',
+  
+  // Personal Info
+  ind_birth_date: '',
   ind_name: '',
   ind_surname: '',
   ind_lao_name: '',
   ind_lao_surname: '',
-  verify_document: ''
+
+  // Other
+  description: ''
 });
 
-// Document Types State
+// Document Types State (keep as is)
 interface DocumentType {
   enabled: boolean;
   file: File | null;
@@ -671,7 +746,7 @@ const documentTypes = ref<Record<string, DocumentType>>({
 // Batch Upload State
 const batchFile = ref<File | null>(null);
 const batchFileInput = ref<HTMLInputElement | null>(null);
-const batchResults = ref<RegisterResponse | null>(null);
+const batchValidatedData = ref<any>(null);  // CHANGED: Store validated customers
 const batchDocuments = ref<Record<number, File>>({});
 
 // History
@@ -681,7 +756,7 @@ const historyStats = ref<any>(null);
 // Notification
 const notification = ref<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
-// Computed
+// FIXED: Computed validation
 const hasAnyDocumentSelected = computed(() => {
   return Object.values(documentTypes.value).some(doc => doc.enabled);
 });
@@ -694,18 +769,35 @@ const hasAllRequiredDocuments = computed(() => {
 });
 
 const isManualFormValid = computed(() => {
-  return hasAnyDocumentSelected.value && 
-         hasAllRequiredDocuments.value &&
-         manualForm.value.Custype &&
-         manualForm.value.segment &&
-         manualForm.value.branch_id_code &&
-         manualForm.value.ind_name &&
-         manualForm.value.ind_surname;
+  const form = manualForm.value;
+  
+  // Check required fields
+  const hasRequired = form.custype && 
+                     form.segment && 
+                     form.ind_name && 
+                     form.ind_surname;
+  
+  // Check document requirements
+  const hasValidDocs = hasAnyDocumentSelected.value && 
+                       hasAllRequiredDocuments.value;
+  
+  console.log('Form Validation:', {
+    hasRequired,
+    hasValidDocs,
+    custype: form.custype,
+    segment: form.segment,
+    ind_name: form.ind_name,
+    ind_surname: form.ind_surname,
+    hasAnyDocumentSelected: hasAnyDocumentSelected.value,
+    hasAllRequiredDocuments: hasAllRequiredDocuments.value
+  });
+  
+  return hasRequired && hasValidDocs;
 });
 
 const allBatchDocumentsAttached = computed(() => {
-  if (!batchResults.value) return false;
-  const totalRecords = batchResults.value.details.length;
+  if (!batchValidatedData.value) return false;
+  const totalRecords = batchValidatedData.value.customers?.length || 0;
   const attachedCount = Object.keys(batchDocuments.value).length;
   return attachedCount === totalRecords;
 });
@@ -759,8 +851,10 @@ const handleDocumentUpload = (docType: string, event: Event) => {
 };
 
 const submitManualForm = async () => {
+  console.log('Submit attempt - isManualFormValid:', isManualFormValid.value);
+  
   if (!isManualFormValid.value) {
-    showNotification('Please complete all required fields and attach documents', 'error');
+    showNotification('Please complete all required fields and attach at least one document', 'error');
     return;
   }
 
@@ -768,33 +862,31 @@ const submitManualForm = async () => {
 
   try {
     const formData = { ...manualForm.value };
-    formData.bnk_code = userBankCode.value;
+    formData.bnk_code = userBankCode.value; // Auto-fill from user data
     
-    if (formData.ind_national_id_date) {
-      formData.ind_national_id_date = new Date(formData.ind_national_id_date).toISOString();
-    }
-    if (formData.ind_passport_date) {
-      formData.ind_passport_date = new Date(formData.ind_passport_date).toISOString();
-    }
-    if (formData.ind_familybook_date) {
-      formData.ind_familybook_date = new Date(formData.ind_familybook_date).toISOString();
-    }
-    if (formData.ind_birth_date) {
-      formData.ind_birth_date = new Date(formData.ind_birth_date).toISOString();
-    }
+    // Convert dates to YYYY-MM-DD format if they exist
+    const dateFields = ['ind_national_id_date', 'ind_passport_date', 'ind_familybook_date', 'ind_birth_date'];
+    dateFields.forEach(field => {
+      if (formData[field]) {
+        formData[field] = new Date(formData[field]).toISOString().split('T')[0];
+      }
+    });
 
+    // Collect enabled documents with their files
     const documents = Object.entries(documentTypes.value)
       .filter(([_, doc]) => doc.enabled && doc.file)
       .map(([type, doc]) => ({ type, file: doc.file! }));
     
+    console.log('Submitting with data:', { formData, documentCount: documents.length });
+    
     await registerManualCustomer(formData, documents);
     
-    showNotification('Customer registered successfully! Waiting for admin confirmation.', 'success');
+    showNotification('Customer registered successfully!', 'success');
     resetManualForm();
-    
     activeTab.value = 'history';
     await loadHistory();
   } catch (error: any) {
+    console.error('Submit error:', error);
     showNotification(error.message || 'Failed to register customer', 'error');
   } finally {
     isSubmitting.value = false;
@@ -803,31 +895,30 @@ const submitManualForm = async () => {
 
 const resetManualForm = () => {
   manualForm.value = {
-    Custype: '',
+    custype: '',
     segment: '',
     bnk_code: '',
-    customer_ID: '',
-    branch_id_code: '',
+    bank_branch: '',
+    customer_id: '',
     ind_national_id: '',
-    ind_national_id_date: null,
+    ind_national_id_date: '',
     ind_passport: '',
-    ind_passport_date: null,
+    ind_passport_date: '',
     ind_familybook: '',
     ind_familybook_prov_code: '',
-    ind_familybook_date: null,
-    ind_birth_date: null,
+    ind_familybook_date: '',
+    ind_birth_date: '',
     ind_name: '',
     ind_surname: '',
     ind_lao_name: '',
     ind_lao_surname: '',
-    verify_document: ''
+    description: ''
   };
   
   Object.keys(documentTypes.value).forEach(key => {
     documentTypes.value[key] = { enabled: false, file: null };
   });
 };
-
 const handleBatchFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
@@ -850,24 +941,28 @@ const handleBatchFileSelect = (event: Event) => {
 };
 
 const processBatchFile = async () => {
-  if (!batchFile.value) return;
-
+  if (!batchFile.value) return; 
+   // ADD THIS VALIDATION
+  if (!userBankCode.value) {
+    showNotification('Bank code not found. Please refresh and try again.', 'error');
+    console.error('userBankCode is empty:', userBankCode.value);
+    return;
+  }
+  console.log('Processing batch with bank code:', userBankCode.value); // DEBUG
   isProcessing.value = true;
 
   try {
-    const customers = await parseUploadedFile(batchFile.value);
+    const result = await validateBatchFile(batchFile.value, userBankCode.value);
     
-    if (!Array.isArray(customers) || customers.length === 0) {
-      throw new Error('Invalid file format or empty customer list');
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to validate batch file');
     }
     
-    const result = await registerBatchCustomers(customers, userBankCode.value, batchDocuments.value);
-    
-    batchResults.value = result;
-    showNotification(`Successfully processed ${result.total_processed} customers`, 'success');
+    batchValidatedData.value = result;
+    showNotification(`Validated ${result.valid_count} customers. Please attach documents.`, 'success');
   } catch (error: any) {
     showNotification(error.message || 'Failed to process batch file', 'error');
-    batchResults.value = null;
+    batchValidatedData.value = null;
   } finally {
     isProcessing.value = false;
   }
@@ -895,6 +990,7 @@ const handleBatchDocumentUpload = (index: number, event: Event) => {
   }
 };
 
+
 const finalizeBatchSubmit = async () => {
   if (!allBatchDocumentsAttached.value) {
     showNotification('Please attach documents for all customers before submitting', 'error');
@@ -904,7 +1000,10 @@ const finalizeBatchSubmit = async () => {
   isSubmitting.value = true;
 
   try {
-    showNotification('Batch submission completed! Waiting for admin confirmation.', 'success');
+    const customersData = batchValidatedData.value.customers;
+    const result = await finalizeBatchUpload(customersData, batchDocuments.value);
+    
+    showNotification(`Successfully registered ${result.created_count} customers!`, 'success');
     
     activeTab.value = 'history';
     await loadHistory();
@@ -917,9 +1016,10 @@ const finalizeBatchSubmit = async () => {
   }
 };
 
+// UPDATED: Reset batch upload
 const resetBatchUpload = () => {
   batchFile.value = null;
-  batchResults.value = null;
+  batchValidatedData.value = null;
   batchDocuments.value = {};
   if (batchFileInput.value) {
     batchFileInput.value.value = '';
@@ -2033,5 +2133,53 @@ tbody tr:hover {
     right: 1rem;
     min-width: auto;
   }
+}
+
+.doc-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.doc-badge {
+  background: #e6f7ff;
+  color: #1890ff;
+  padding: 0.25rem 0.625rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.id-code {
+  background: #f5f5f5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: #2d3748;
+}
+
+.validation-errors {
+  background: #fff5f5;
+  border: 2px solid #feb2b2;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.validation-errors h4 {
+  color: #c53030;
+  margin: 0 0 1rem 0;
+}
+
+.validation-errors ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.validation-errors li {
+  color: #742a2a;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
 }
 </style>
