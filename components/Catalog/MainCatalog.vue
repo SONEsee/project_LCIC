@@ -112,11 +112,26 @@
 
         <!-- Actions -->
         <template v-slot:item.actions="{ item }">
-          <v-btn icon size="small" color="blue" variant="tonal" @click="openEditDialog(item)">
-            <v-icon>mdi-pencil</v-icon>
+          <v-btn
+            icon
+            size="28"
+            density="compact"
+            variant="tonal"
+            color="blue"
+            @click="openEditDialog(item)"
+          >
+            <v-icon size="22">mdi-pencil</v-icon>
           </v-btn>
-          <v-btn icon size="small" color="red" variant="tonal" @click="openDeleteDialog(item)">
-            <v-icon>mdi-delete</v-icon>
+
+          <v-btn
+            icon
+            size="28"
+            density="compact"
+            variant="tonal"
+            color="red"
+            @click="openDeleteDialog(item)"
+          >
+            <v-icon size="22">mdi-delete</v-icon>
           </v-btn>
         </template>
 
@@ -229,7 +244,7 @@ const goToSubcatalog = () => {
   router.push('/subcatalog')
 }
 const config = useRuntimeConfig();
-const apiUrl = `${config.public.STRAPI_URL}api/maincatalog/`;
+const apiUrl = `${config.public.strapi.url}api/maincatalog/`;
 
 const catalogs = ref([]);
 const loading = ref(false);

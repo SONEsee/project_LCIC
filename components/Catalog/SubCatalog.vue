@@ -108,12 +108,26 @@
         </template>
 
         <template v-slot:item.actions="{ item }">
-          <v-btn icon size="small" color="blue" variant="tonal" @click="openEditDialog(item)">
-            <v-icon>mdi-pencil</v-icon>
+          <v-btn
+            icon
+            size="28"
+            density="compact"
+            variant="tonal"
+            color="blue"
+            @click="openEditDialog(item)"
+          >
+            <v-icon size="22">mdi-pencil</v-icon>
           </v-btn>
 
-          <v-btn icon size="small" color="red" variant="tonal" @click="openDeleteDialog(item)">
-            <v-icon>mdi-delete</v-icon>
+          <v-btn
+            icon
+            size="28"
+            density="compact"
+            variant="tonal"
+            color="red"
+            @click="openDeleteDialog(item)"
+          >
+            <v-icon size="22">mdi-delete</v-icon>
           </v-btn>
         </template>
 
@@ -246,7 +260,7 @@ const router = useRouter();
 const goToSubcatalog = () => router.push("/maincatalog");
 
 const config = useRuntimeConfig();
-const apiUrl = `${config.public.STRAPI_URL}api/subcatalog/`;
+const apiUrl = `${config.public.strapi.url}api/subcatalog/`;
 
 /* Data */
 const catalogs = ref([]);
@@ -455,38 +469,74 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Header card */
 .header-card {
   background: linear-gradient(135deg, #3f51b5, #283593);
   border-radius: 16px;
   color: white;
 }
 
+/* Icon */
 .icon-wrapper {
   background: rgba(255, 255, 255, 0.2);
   padding: 12px;
   border-radius: 12px;
 }
 
+/* Cards */
 .filter-card,
 .table-card {
   border-radius: 16px;
   border: 1px solid #e0e0e0;
 }
 
+/* ====== OLD THEAD STYLE (เปลี่ยนตรงนี้ให้เป็นแบบเก่า 100%) ====== */
+/* ปรับให้ใช้สีพื้นเดียว (ไม่ใช่ gradient), ตัวหนา, ขนาดฟอนต์เท่าเดิม, ขอบมุมบน */
 .modern-table.old-thead-style :deep(thead th) {
-  background-color: #3f51b5 !important;
+  background-color: #3f51b5 !important; /* สีหัวตารางแบบดั้งเดิม */
   color: #ffffff !important;
-  font-size: 15px;
-  font-weight: 700;
-  padding: 14px 18px;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.6px !important;
+  padding: 12px !important;
+  border-bottom: 2px solid rgba(0,0,0,0.08) !important;
+  vertical-align: middle !important;
 }
 
-.same-height {
-  height: 48px !important;
+/* มุมมนแบบหัวตารางเหมือนของเก่า */
+.modern-table.old-thead-style :deep(thead tr:first-child th:first-child) {
+  border-top-left-radius: 12px;
+  padding-left: 22px !important;
+}
+.modern-table.old-thead-style :deep(thead tr:first-child th:last-child) {
+  border-top-right-radius: 12px;
+  padding-right: 22px !important;
 }
 
+/* ถ้าอยากให้มีเส้นแบ่งชัดเจนระหว่างหัวกับเนื้อ */
+.modern-table.old-thead-style :deep(thead th) {
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.06);
+}
+
+/* tbody ปรับให้เข้ากัน (ฟอนต์, padding) */
+.modern-table :deep(tbody td) {
+  font-size: 12px !important;
+  color: #333 !important;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+
+/* Pagination item ปรับให้เข้ากับธีมเก่า */
+:deep(.v-pagination__item--is-active) {
+  color: #000000 !important;
+}
+
+/* Delete dialog header เก็บแบบเดิม */
 .delete-dialog-header {
   background: linear-gradient(135deg, #d32f2f, #c62828);
   color: white;
+}
+.same-height {
+  height: 48px !important; 
 }
 </style>
