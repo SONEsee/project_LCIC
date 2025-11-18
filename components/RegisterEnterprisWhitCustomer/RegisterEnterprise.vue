@@ -5,14 +5,29 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { useUserData } from "~/composables/useUserData";
+import { useEnterprisInfo } from "~/stores/enterpris_member";
+import { MemberStore } from "@/stores/memberinfo";
+const memberinfoStore = MemberStore();
+const rout = useRoute();
+const EnterpriseMap = rout.query.enterpris as string;
 
-// Composables
+const memberData = computed(() => {
+  const data = memberinfoStore.respons_data_query;
+  if (Array.isArray(data)) {
+    return data;
+  }
+  if (data && typeof data === "object") {
+    return [data];
+  }
+  return [];
+});
+const EnterprisStore = useEnterprisInfo();
+const request = EnterprisStore.form_insert_member_submit_data;
 const { user, userId, isAdmin, isLoggedIn } = useUserData();
 const route = useRoute();
 const router = useRouter();
 const config = useRuntimeConfig();
 
-// Page Meta
 definePageMeta({
   layout: "backend",
 });
@@ -25,7 +40,6 @@ useHead({
   ],
 });
 
-// Refs - Form Fields
 const files = ref<File[]>([]);
 const loading = ref(false);
 const EnterpriseID = ref("");
@@ -44,13 +58,11 @@ const investmentAmount = ref("");
 const investmentCurrency = ref("LAK");
 const representativeNationality = ref("LA");
 
-// Refs - Other
 const selectedVillage = ref(null);
 const selectedVillageName = ref("");
 const villages = ref([]);
 const title = ref("");
 
-// Data Arrays - Dropdowns
 const regisStrationOfficeTypes = [
   { id: "01", title: "ນະຄອນຫຼວງວຽງຈັນ" },
   { id: "10", title: "ວຽງຈັນ" },
@@ -132,10 +144,8 @@ const representativeNationalitys = [
   { id: "GB", title: "United Kingdom" },
 ];
 
-// Validation Rules
 const rules = [(v: string) => !!v || "Required."];
 
-// Computed Properties
 const isFormValid = computed(() => {
   return (
     EnterpriseID.value.trim() !== "" &&
@@ -148,12 +158,10 @@ const fullImagePath = computed(() => {
   return `${config.public.strapi.url}media/${route.query.image}?id=${route.query.id}`;
 });
 
-// Functions - Navigation
 const goback = () => {
   router.go(-1);
 };
 
-// Functions - Formatting
 const formatNumber = (): void => {
   const rawNumber = investmentAmount.value.replace(/,/g, "");
   if (!isNaN(Number(rawNumber)) && rawNumber !== "") {
@@ -161,7 +169,6 @@ const formatNumber = (): void => {
   }
 };
 
-// Functions - Display
 const displayLocation = (item: any) => {
   if (!item?.Province_Name || !item?.District_Name || !item?.Village_Name) {
     return "ກະລຸນາເລືອກບ້ານ";
@@ -169,7 +176,6 @@ const displayLocation = (item: any) => {
   return `ແຂວງ: ${item.Province_Name} - ເມືອງ: ${item.District_Name} - ບ້ານ: ${item.Village_Name}`;
 };
 
-// Functions - API Calls
 const fetchVillages = async () => {
   try {
     const response = await axios.get(
@@ -236,7 +242,26 @@ const checkEnterpriseCode = async (): Promise<boolean> => {
     return true;
   }
 };
-
+watch(
+  () => route.query.enterpris,
+  (newValue) => {
+    if (newValue) {
+      request.EnterpriseID = newValue as string;
+     
+    }
+  },
+  { immediate: true }
+);
+watch(
+  () => userId.value,
+  (newValue) => {
+    if (newValue) {
+      request.bank_id = newValue as string ;
+     
+    }
+  },
+  { immediate: true }
+);
 const uploadFiles = async () => {
   if (!files.value || files.value.length === 0) {
     return;
@@ -296,170 +321,18 @@ const updateCollateralStatus = async (id: number) => {
   }
 };
 
-// Functions - Form Submit
 const submit = async () => {
-  // Validation
-  if (!isFormValid.value) {
-    await Swal.fire({
-      title: "ແຈ້ງເຕືອນ!",
-      text: "ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ",
-      icon: "warning",
-      confirmButtonText: "OK",
-    });
-    return;
-  }
 
-  const result = await Swal.fire({
-    title: "ຢືນຢັນການບັນທຶກ?",
-    text: "ເຈົ້າຕ້ອງການບັນທຶກຂໍ້ມູນນີ້ແທ້ຫຼືບໍ?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "ບັນທຶກ",
-    cancelButtonText: "ຍົກເລີກ",
-  });
-
-  if (!result.isConfirmed) {
-    return;
-  }
-
-  loading.value = true;
-
-  try {
-    // Check if enterprise code exists
-    const exists = await checkEnterpriseCode();
-    if (exists) {
-      loading.value = false;
-      return;
-    }
-
-   
-    
-
-    // Upload files first
-    try {
-      await uploadFiles();
-    } catch (uploadError: any) {
-      throw new Error(`ການອັບໂຫຼດຟາຍລົ້ມເຫຼວ: ${uploadError.message}`);
-    }
-
-    // Format registration date
-    let regisDateFormatted = null;
-    if (regisDate.value) {
-      const dateObject = new Date(regisDate.value);
-      if (!isNaN(dateObject.getTime())) {
-        regisDateFormatted = dateObject.toISOString();
-      } else {
-        throw new Error("ຮູບແບບວັນທີບໍ່ຖືກຕ້ອງ");
-      }
-    }
-
-    // Format investment amount
-    const investmentAmountFormatted = investmentAmount.value
-      ? Number(investmentAmount.value.replace(/,/g, ""))
-      : 0;
-
-    // Get CSRF token
-    const csrfToken = Cookies.get("csrftoken");
-
-    // Create enterprise info
-    const response = await axios.post(
-      `${config.public.strapi.url}api/api/enterprise-info/`,
-      {
-        
-        enterpriseNameLao: enterpriseNameLao.value,
-        eneterpriseNameEnglish: eneterpriseNameEnglish.value,
-        enLegalStrature: enLegalStrature.value,
-        foreigninvestorFlag: foreigninvestorFlag.value,
-        investmentAmount: investmentAmountFormatted,
-        investmentCurrency: investmentCurrency.value,
-        representativeNationality: representativeNationality.value,
-        regisCertificateNumber: regisCertificateNumber.value,
-        regisDate: regisDateFormatted,
-        enLocation: enLocation.value,
-        regisStationOfficeCode: regisStationOfficeCode.value,
-        regisStrationOfficeType: regisStrationOfficeType.value,
-        EnterpriseID: EnterpriseID.value,
-        LCICID: LCICID.value,
-      },
-      {
-        headers: {
-          "X-CSRFToken": csrfToken || "",
-        },
-      }
-    );
-
-    // Check response status
-    if (response.status === 201 || response.status === 200) {
-      if (response.data.status && response.data.status !== "success") {
-        throw new Error(
-          response.data.message || "Backend returned error status"
-        );
-      }
-
-      // Update collateral status
-      try {
-        
-      } catch (statusError) {
-        console.error("Warning: Failed to update collateral status");
-      }
-
-      // Show success message
-      await Swal.fire({
-        title: "ສຳເລັດ!",
-        html: `
-          <p>ສ້າງຂໍ້ມູນວິສາຫະກິດສຳເລັດແລ້ວ!</p>
-          ${
-            response.data.data
-              ? `
-            <p><strong>Enterprise ID:</strong> ${
-              response.data.data.enterprise?.id || "N/A"
-            }</p>
-            <p><strong>LCIC Request:</strong> ${
-              response.data.data.lcic_reques || "N/A"
-            }</p>
-          `
-              : ""
-          }
-        `,
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-
-      // Go back after short delay
-      setTimeout(() => {
-        goback();
-      }, 500);
-    } else {
-      throw new Error(`Unexpected response status: ${response.status}`);
-    }
-  } catch (error: any) {
-    console.error("Error creating enterprise info:", error);
-
-    let errorMessage = "ລົ້ມເຫຼວໃນການສ້າງຂໍ້ມູນວິສາຫະກິດ";
-
-    if (error.response) {
-      errorMessage =
-        error.response.data?.message ||
-        error.response.data?.detail ||
-        JSON.stringify(error.response.data) ||
-        `Server error: ${error.response.status}`;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
-    await Swal.fire({
-      title: "ຜິດພາດ!",
-      text: errorMessage,
-      icon: "error",
-      confirmButtonText: "OK",
-    });
-  } finally {
-    loading.value = false;
-  }
+  await EnterprisStore.InsertEnterPrisMemberSubmit();
 };
-
-// Lifecycle Hooks
+const displayMemver = (item: any) => {
+  if (!item || !item.nameL || !item.bnk_code || !item.code) {
+    return "ທັງໝົດ";
+  }
+  return `${item.bnk_code} - ${item.code} - ${item.nameL}  `;
+};
 onMounted(() => {
+  memberinfoStore.getMemberInfo();
   fetchVillages();
   fetchLastLCICID();
 });
@@ -478,30 +351,23 @@ onMounted(() => {
         color="grey-lighten-5"
         border="dotted thin info lg"
       >
+     
         <v-form @submit.prevent="submit">
           <v-text-field
-            v-model="EnterpriseID"
+            v-model="request.EnterpriseID"
             :rules="rules"
             label="ລະຫັດວິສາຫະກິດ *"
             variant="outlined"
             hide-details="auto"
             density="compact"
             class="mb-3"
-          ></v-text-field>
-
-          <v-text-field
-            v-model="LCICID"
-            label="LCIC ID"
-            variant="outlined"
-            hide-details="auto"
-            density="compact"
-            class="mb-3"
             readonly
-            bg-color="grey-lighten-3"
           ></v-text-field>
 
+         
+
           <v-text-field
-            v-model="enterpriseNameLao"
+            v-model="request.enterpriseNameLao"
             :rules="rules"
             label="ຊື່ວິສາຫະກິດ (ພາສາລາວ) *"
             variant="outlined"
@@ -511,7 +377,7 @@ onMounted(() => {
           ></v-text-field>
 
           <v-text-field
-            v-model="eneterpriseNameEnglish"
+            v-model="request.eneterpriseNameEnglish"
             label="ຊື່ວິສາຫະກິດ (ພາສາອັງກິດ)"
             variant="outlined"
             hide-details="auto"
@@ -520,7 +386,7 @@ onMounted(() => {
           ></v-text-field>
 
           <v-text-field
-            v-model="regisCertificateNumber"
+            v-model="request.regisCertificateNumber"
             label="ເລກທີໃບທະບຽນ"
             variant="outlined"
             hide-details="auto"
@@ -529,7 +395,7 @@ onMounted(() => {
           ></v-text-field>
 
           <v-text-field
-            v-model="regisDate"
+            v-model="request.regisDate"
             label="ລົງວັນທີ"
             variant="outlined"
             hide-details="auto"
@@ -539,7 +405,7 @@ onMounted(() => {
           ></v-text-field>
 
           <v-autocomplete
-            v-model="enLocation"
+            v-model="request.enLocation"
             :items="villages"
             :item-title="displayLocation"
             item-value="id"
@@ -552,7 +418,7 @@ onMounted(() => {
           ></v-autocomplete>
 
           <v-autocomplete
-            v-model="regisStrationOfficeType"
+            v-model="request.regisStrationOfficeType"
             :items="regisStrationOfficeTypes"
             label="ແຂວງຂຶ້ນທະບຽນ"
             item-title="title"
@@ -565,7 +431,7 @@ onMounted(() => {
           ></v-autocomplete>
 
           <v-autocomplete
-            v-model="regisStationOfficeCode"
+            v-model="request.regisStationOfficeCode"
             :items="regisStationOfficeCodes"
             label="ຂັ້ນຫ້ອງການຂຶ້ນທະບຽນ"
             item-title="title"
@@ -577,7 +443,7 @@ onMounted(() => {
           ></v-autocomplete>
 
           <v-autocomplete
-            v-model="enLegalStrature"
+            v-model="request.enLegalStrature"
             :items="enLegalStratures"
             label="ຮູບແບບວິສາຫະກິດ"
             item-title="title"
@@ -589,7 +455,7 @@ onMounted(() => {
           ></v-autocomplete>
 
           <v-autocomplete
-            v-model="foreigninvestorFlag"
+            v-model="request.foreigninvestorFlag"
             :items="foreigninvestorFlags"
             label="ປະເພດການລົງທຶນ"
             item-title="title"
@@ -601,7 +467,7 @@ onMounted(() => {
           ></v-autocomplete>
 
           <v-text-field
-            v-model="investmentAmount"
+            v-model="request.investmentAmount"
             label="ທຶນຈົດທະບຽນ"
             @input="formatNumber"
             variant="outlined"
@@ -611,7 +477,7 @@ onMounted(() => {
           ></v-text-field>
 
           <v-autocomplete
-            v-model="investmentCurrency"
+            v-model="request.investmentCurrency"
             :items="investmentCurrencys"
             label="ສະກຸນເງິນ"
             item-title="title"
@@ -623,7 +489,7 @@ onMounted(() => {
           ></v-autocomplete>
 
           <v-autocomplete
-            v-model="representativeNationality"
+            v-model="request.representativeNationality"
             :items="representativeNationalitys"
             label="ສັນຊາດເຈົ້າຂອງ"
             item-title="title"
@@ -633,10 +499,43 @@ onMounted(() => {
             density="compact"
             class="mb-4"
           ></v-autocomplete>
+          <v-autocomplete
+            v-model="request.bank_id"
+            :items="memberData"
+            label="ສະມາຊິກທີ່ປ້ອນ"
+            :item-title="displayMemver"
+            item-value="bnk_code"
+            variant="outlined"
+            hide-details="auto"
+            density="compact"
+            class="mb-4"
+           
+            readonly
+          >
+            <template v-slot:item="{ item, props }">
+              <v-list-item
+                v-bind="props"
+                :title="`${item.raw.bnk_code} - ${item.raw.code} - ${item.raw.nameL}`"
+              >
+                <template v-slot:prepend>
+                  <v-avatar size="small" variant="flat" color="primary">
+                    <v-icon size="small">mdi-user</v-icon>
+                  </v-avatar>
+                </template>
+              </v-list-item>
+            </template>
+          </v-autocomplete>
+          <v-text-field
+            v-model="request.branch_id"
+            label="ສາຂາ"
+            variant="outlined"
+            hide-details="auto"
+            density="compact"
+            class="mb-3"
+          ></v-text-field>
 
           <v-btn
             :loading="loading"
-            :disabled="!isFormValid"
             class="bg-green text-white"
             text="ບັນທຶກ"
             type="submit"
@@ -659,7 +558,7 @@ onMounted(() => {
         border="dotted thin info lg"
       >
         <GloBalUploadImageFile
-          v-model="files"
+          v-model="request.file"
           label="ເລືອກຮູບເອກະສານຢັ້ງຢືນ"
           :max-size="2 * 1024 * 1024"
         />

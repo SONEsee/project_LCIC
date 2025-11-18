@@ -379,11 +379,7 @@ onMounted(async () => {
                   >
                     <strong :loading="individualStore.reques_query.isLoading"
                       >ບໍ່ພົບລະຫັດ ຂສລ ນີ້
-                      <b
-                        style="color: blue"
-                        @click="goPath(`/backend/register_lcic`)"
-                        >ກົດທີ່ນິ້ເພືອອອກລະຫັດ ຂສລ ໃໝ່</b
-                      ></strong
+                     </strong
                     >
                   </p>
 
@@ -478,6 +474,7 @@ onMounted(async () => {
                     @click="performSearch"
                     class="search-btn"
                     elevation="2"
+                    :disabled="individualStore.from_insert_logserch.CatalogID ===null  && !searchLcicID || individualStore.from_insert_logserch.CatalogID ===''"
                   >
                     <v-icon left>mdi-magnify</v-icon>
                     ຄົ້ນຫາ
@@ -488,6 +485,7 @@ onMounted(async () => {
                     @click="clearSearch"
                     class="clear-btn"
                     variant="outlined"
+                    
                   >
                     <v-icon left>mdi-refresh</v-icon>
                     ລ້າງຂໍ້ມູນ

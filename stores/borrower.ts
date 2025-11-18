@@ -62,10 +62,10 @@ export const BorrowerStore = defineStore("borrower", {
       token: localStorage.getItem("access_token"),
       isLoading: false,
       respons_data_reques: null as BorroworResponsModel.Result | null,
-    //   type_search_response:null as BorroworResponsModel.TypeSearchRespons[] | null,
+      //   type_search_response:null as BorroworResponsModel.TypeSearchRespons[] | null,
       respons_list_file_insdividual_loan:
         null as BorroworResponsModel.BorroworRespons | null,
-  
+
       respons_data_reques_period:
         null as BorroworResponsModel.PerliodIndividualFileListRespons | null,
       reques_query: {
@@ -170,22 +170,22 @@ export const BorrowerStore = defineStore("borrower", {
     //     this.reques_query.isLoading = false;
     //   }
     // },
+    
     async getListIndividualLoan() {
       this.isLoading = true;
       this.reques_query.isLoading = true;
       try {
-        const res =
-          await axios.get<BorroworResponsModel.BorroworRespons>(
-            `/api/api/borrwor-files/?`,
-            {
-              params: {
-                ...this.loan_query.query,
-              },
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+        const res = await axios.get<BorroworResponsModel.BorroworRespons>(
+          `/api/api/borrwor-files/?`,
+          {
+            params: {
+              ...this.loan_query.query,
+            },
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
         if (res.status === 200) {
           this.respons_list_file_insdividual_loan = res.data;
         }
@@ -364,7 +364,7 @@ export const BorrowerStore = defineStore("borrower", {
     //     const res = await axios.get<BorroworResponsModel.SearchIndividualRespons>(`/api/catalog-cats/`);
     //     if (res.status === 200 || res.status === 201) {
     //       this.type_search_response = res.data.typeserch || [];
-          
+
     //     }
     //   } catch (error) {
     //     await Swal.fire({
@@ -376,127 +376,117 @@ export const BorrowerStore = defineStore("borrower", {
     //     this.isLoading = false;
     //   }
     // },
-    
-async confirmUploadLoan(bid: string) {
-  this.isLoading = true;
-  try {
-    
-    const formData = new FormData();
-    formData.append('BID', bid);
-    
-    console.log('Sending BID:', bid); 
-    
-    const res = await axios.post(
-      `/api/api/borrower/confirm/`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }
-    );
-    
-    if (res.status === 200) {
-      await Swal.fire({
-        icon: "success",
-        title: "ສຳເລັດ",
-        text: "ທ່ານສຳເລັດການຢືນຢັນແລ້ວ",
-        timer: 1000,
-        showConfirmButton: false
-      });
-    }
-  } catch (error: any) {
-    console.error('Error:', error.response?.data);
-    
-    await Swal.fire({
-      icon: "error",
-      title: "ຜິດພາດ",
-      text: error.response?.data?.message || "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ ກະລຸນາລອງໃໝ່"
-    });
-  } finally {
-    this.isLoading = false;
-  }
-},
-async UnloadLoan(fid: string) {
-  this.isLoading = true;
-  try {
-    
-    const formData = new FormData();
-    formData.append('FID', fid);
-    
-    console.log('Sending FID:', fid); 
-    
-    const res = await axios.post(
-      `/api/api/rollback_reconfirm/`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }
-    );
-    
-    if (res.status === 200) {
-      await Swal.fire({
-        icon: "success",
-        title: "ສຳເລັດ",
-        text: "ທ່ານສຳເລັດການຢືນຢັນແລ້ວ",
-        timer: 1000,
-        showConfirmButton: false
-      });
-    }
-  } catch (error: any) {
-    console.error('Error:', error.response?.data);
-    
-    await Swal.fire({
-      icon: "error",
-      title: "ຜິດພາດ",
-      text: error.response?.data?.message || "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ ກະລຸນາລອງໃໝ່"
-    });
-  } finally {
-    this.isLoading = false;
-  }
-},
 
+    async confirmUploadLoan(bid: string) {
+      this.isLoading = true;
+      try {
+        const formData = new FormData();
+        formData.append("BID", bid);
 
-async RejectUploadLoan(id:string) {
-  this.isLoading = true;
-  try {
-    
-    
-  
-    
-    const res = await axios.post(
-      `/api/api/reject_individual_loan/${id}/`,
-      
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+        console.log("Sending BID:", bid);
+
+        const res = await axios.post(`/api/api/borrower/confirm/`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        if (res.status === 200) {
+          await Swal.fire({
+            icon: "success",
+            title: "ສຳເລັດ",
+            text: "ທ່ານສຳເລັດການຢືນຢັນແລ້ວ",
+            timer: 1000,
+            showConfirmButton: false,
+          });
         }
+      } catch (error: any) {
+        console.error("Error:", error.response?.data);
+
+        await Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text:
+            error.response?.data?.message ||
+            "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ ກະລຸນາລອງໃໝ່",
+        });
+      } finally {
+        this.isLoading = false;
       }
-    );
-    
-    if (res.status === 200) {
-      await Swal.fire({
-        icon: "success",
-        title: "ສຳເລັດ",
-        text: "ທ່ານສຳເລັດການ Reject ແລ້ວ",
-        timer: 1000,
-        showConfirmButton: false
-      });
-    }
-  } catch (error: any) {
-    console.error('Error:', error.response?.data);
-    
-    await Swal.fire({
-      icon: "error",
-      title: "ຜິດພາດ",
-      text: error.response?.data?.message || "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ ກະລຸນາລອງໃໝ່"
-    });
-  } finally {
-    this.isLoading = false;
-  }
-},
+    },
+    async UnloadLoan(fid: string) {
+      this.isLoading = true;
+      try {
+        const formData = new FormData();
+        formData.append("FID", fid);
+
+        console.log("Sending FID:", fid);
+
+        const res = await axios.post(`/api/api/rollback_reconfirm/`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        if (res.status === 200) {
+          await Swal.fire({
+            icon: "success",
+            title: "ສຳເລັດ",
+            text: "ທ່ານສຳເລັດການຢືນຢັນແລ້ວ",
+            timer: 1000,
+            showConfirmButton: false,
+          });
+        }
+      } catch (error: any) {
+        console.error("Error:", error.response?.data);
+
+        await Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text:
+            error.response?.data?.message ||
+            "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ ກະລຸນາລອງໃໝ່",
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async RejectUploadLoan(id: string) {
+      this.isLoading = true;
+      try {
+        const res = await axios.post(
+          `/api/api/borrower/reject/${id}/`,
+
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        if (res.status === 200) {
+          await Swal.fire({
+            icon: "success",
+            title: "ສຳເລັດ",
+            text: "ທ່ານສຳເລັດການ Reject ແລ້ວ",
+            timer: 1000,
+            showConfirmButton: false,
+          });
+        }
+      } catch (error: any) {
+        console.error("Error:", error.response?.data);
+
+        await Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text:
+            error.response?.data?.message ||
+            "ເກີດຂໍ້ຜິດພາດທີ່ບໍ່ຄາດຄິດ ກະລຸນາລອງໃໝ່",
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    },
   },
- 
 });

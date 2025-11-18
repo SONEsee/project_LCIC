@@ -765,11 +765,12 @@ onMounted(async () => {
             v-if="item.statussubmit === '1'"
             style="font-size: small"
             size="small"
-            ><strong>ສຳເລັດການໂຫຼດ</strong></v-chip
+            ><strong>ລໍຖ້າກວດສອບ</strong></v-chip
           >
         </template>
         <template v-slot:item.fileSize="{ item }">
-          {{ item.fileSize }}
+          {{ (Number(item.fileSize) / (1024 * 1024)).toFixed(4)
+}} MB
         </template>
         <template v-slot:item.fileName="{ item }" style="font-size: small">
           {{ item.fileName.slice(0, 20)
@@ -815,7 +816,7 @@ onMounted(async () => {
             class="ml-2"
             color="red-lighten-4"
             flat
-            @click="RejectInsertData(`n-${item.BID}`)"
+            @click="RejectInsertData(`${item.BID}`)"
             v-if="item.statussubmit === '1'"
             :disabled="isConfirmButtonDisabled(item)"
           >
@@ -837,11 +838,19 @@ onMounted(async () => {
 
         <template v-slot:item.percentage="{ item }">
           <div class="d-flex align-center">
-            <v-progress-linear
+            <v-progress-linear v-if="item.statussubmit==='2'"
               :model-value="item.percentage || 0"
               height="8"
               rounded
-              color="primary"
+              color="error"
+              class="mr-2"
+              style="min-width: 60px"
+            ></v-progress-linear>
+            <v-progress-linear v-else
+              :model-value="item.percentage || 0"
+              height="8"
+              rounded
+              color="success"
               class="mr-2"
               style="min-width: 60px"
             ></v-progress-linear>

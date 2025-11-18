@@ -29,6 +29,7 @@ import * as AlertCallateralModel from './alertcollateral'
 import * as SearchIndividualModel from './individualsearch'
 import * as IndividualCollateral from './collateral_individual'
 import * as BorroworResponsModel from './borrower'
+import * as EnterpriseModel from './enterprise'
 export{
     DuplicatesFalse,
     DataModel,
@@ -57,6 +58,7 @@ export{
     AlertCallateralModel,
     SearchIndividualModel,
     IndividualCollateral,
-    BorroworResponsModel
+    BorroworResponsModel,
+    EnterpriseModel
 
 }
