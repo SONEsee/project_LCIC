@@ -1,4 +1,5 @@
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
+import axios from "./helpers/axios";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -37,7 +38,7 @@ export default defineNuxtConfig({
     server: {
       proxy: {
         '/media': {
-          target: process.env.STRAPI_URL || 'http://192.168.45.55:8000',
+          target: process.env.STRAPI_URL ,
           changeOrigin: true,
         }
       }
@@ -108,10 +109,10 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       strapi: {
-        url: process.env.STRAPI_URL || "http://192.168.45.55:8000/",
+        url: process.env.STRAPI_URL ,
       },
      
-      apiBase: process.env.STRAPI_URL || "http://192.168.45.554:35729",
+      apiBase: process.env.STRAPI_URL,
     },
   },
   
@@ -119,7 +120,7 @@ export default defineNuxtConfig({
   nitro: {
     devProxy: {
       '/media': {
-        target: process.env.STRAPI_URL || 'http://192.168.45.55:8000',
+        target: process.env.STRAPI_URL ,
         changeOrigin: true,
       }
     },
