@@ -28,14 +28,11 @@ import * as DispustCallateralModel from './dispustcollateral'
 import * as AlertCallateralModel from './alertcollateral'
 import * as SearchIndividualModel from './individualsearch'
 import * as IndividualCollateral from './collateral_individual'
-<<<<<<< HEAD
 import * as telecomModel from './telecom'
 import * as billtelecomModel from './telecom'
 
-=======
 import * as BorroworResponsModel from './borrower'
 import * as EnterpriseModel from './enterprise'
->>>>>>> bce9cd3e0ae9275d1342a0121578f5a2db4df7c9
 export{
     DuplicatesFalse,
     DataModel,
@@ -64,12 +61,9 @@ export{
     AlertCallateralModel,
     SearchIndividualModel,
     IndividualCollateral,
-<<<<<<< HEAD
     telecomModel,
     billtelecomModel,
-=======
     BorroworResponsModel,
     EnterpriseModel
->>>>>>> bce9cd3e0ae9275d1342a0121578f5a2db4df7c9
 
 }
