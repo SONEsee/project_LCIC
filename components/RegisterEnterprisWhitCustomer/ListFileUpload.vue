@@ -395,6 +395,9 @@ onMounted(async () => {
         <v-chip color="success" size="small" v-else-if="item.status === '0'">
           <strong>ສຳເລັດການກວດສອບ</strong>
         </v-chip>
+        <v-chip color="info" size="small" v-else-if="item.status === '4'">
+          <strong>{{ item.decaption }}</strong>
+        </v-chip>
         <v-chip v-if="item.status === '3'" color="error">
             ຖືກ Reject
           </v-chip>
