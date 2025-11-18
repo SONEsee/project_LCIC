@@ -68,12 +68,7 @@ async function onSelectionChange(value: number) {
 async function onPagechage(value: number) {
   (reques.page = value), await enterpriseStore.GetEnterpriseList();
 }
-// const displayLocatoin = computed(() => {
-//   if (!EnterpriseData.value) {
-//     return "ບໍ່ມີຂໍ້ມູນສະຖານທີ່";
-//   }
-//   const EnterprisIDLocation = EnterpriseData.value;
-// });
+
 onMounted(() => {
   enterpriseStore.GetEnterpriseList();
   fetchVillages();
@@ -89,7 +84,7 @@ onMounted(() => {
     <v-sheet
       :elevation="4"
       rounded
-      color="brown-lighten-5"
+      color="grey-lighten-5"
       class="pa-4 text-no-wrap mb-2"
     >
       <strong
@@ -102,14 +97,14 @@ onMounted(() => {
     <v-sheet
       :elevation="4"
       rounded
-      color="brown-lighten-5"
+      color="grey-lighten-5"
       class="pa-4 text-no-wrap mb-2"
     >
       <v-data-table
         :items="EnterpriseData"
         :items-per-page="reques.limit"
         :headers="header"
-        class="bg-brown-lighten-5"
+        class="bg-grey-lighten-5"
       >
         <template v-slot:header.index="{ column }">
           <h4 style="color: blue">

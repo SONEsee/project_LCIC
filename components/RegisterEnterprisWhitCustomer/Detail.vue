@@ -263,6 +263,55 @@ onMounted(() => {
 
     <v-row v-else dense>
       <v-col cols="12" md="6">
+        <v-card elevation="2" class="rounded-lg" height="100%">
+          <v-card-title class="text-primary pa-4">
+            <v-icon start size="small">mdi-file-image</v-icon>
+            ເອກະສານອ້າງອີງ
+          </v-card-title>
+
+          <v-card-text class="pa-4">
+            <div
+              v-if="enterprisData.length > 0 && enterprisData[0]?.image"
+              class="document-preview"
+            >
+              <v-img :src="enterprisData[0].image" class="rounded-lg" cover>
+                <template v-slot:placeholder>
+                  <div class="d-flex align-center justify-center fill-height">
+                    <v-progress-circular
+                      color="primary"
+                      indeterminate
+                    ></v-progress-circular>
+                  </div>
+                </template>
+              </v-img>
+
+              <div class="mt-3 text-center">
+                <v-btn
+                  variant="outlined"
+                  color="primary"
+                  size="small"
+                  prepend-icon="mdi-magnify-plus"
+                  @click="() => {}"
+                >
+                  ຂະຫຍາຍ
+                </v-btn>
+              </div>
+            </div>
+
+            <v-alert
+              v-else
+              type="info"
+              variant="tonal"
+              icon="mdi-information"
+              class="ma-0"
+            >
+              ບໍ່ມີເອກະສານອ້າງອີງ
+            </v-alert>
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" md="6">
         <v-card elevation="2" class="rounded-lg">
           <v-card-title class="text-primary">
             <v-icon start size="small">mdi-office-building</v-icon>
@@ -464,7 +513,7 @@ onMounted(() => {
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
-                  v-if="userId === '01'"
+                    v-if="userId === '01'"
                     v-model="enterprisStore.form_reject.reason"
                     label="ເຫດຜົນຂອງການ Reject"
                     variant="solo"
@@ -474,61 +523,19 @@ onMounted(() => {
                   ></v-text-field>
                 </v-col>
               </v-row>
-
-
-              
-              <v-btn color="primary" class="mr-4" @click="Approve" v-if="userId === '01'">ບັນທືກ</v-btn>
-              <v-btn color="error" @click="reject" v-if="userId === '01'">Reject</v-btn>
-            </v-form>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="6">
-        <v-card elevation="2" class="rounded-lg" height="100%">
-          <v-card-title class="text-primary pa-4">
-            <v-icon start size="small">mdi-file-image</v-icon>
-            ເອກະສານອ້າງອີງ
-          </v-card-title>
-
-          <v-card-text class="pa-4">
-            <div
-              v-if="enterprisData.length > 0 && enterprisData[0]?.image"
-              class="document-preview"
-            >
-              <v-img :src="enterprisData[0].image" class="rounded-lg" cover>
-                <template v-slot:placeholder>
-                  <div class="d-flex align-center justify-center fill-height">
-                    <v-progress-circular
-                      color="primary"
-                      indeterminate
-                    ></v-progress-circular>
-                  </div>
-                </template>
-              </v-img>
-
-              <div class="mt-3 text-center">
+              <div class="w-100 d-flex justify-center">
                 <v-btn
-                  variant="outlined"
                   color="primary"
-                  size="small"
-                  prepend-icon="mdi-magnify-plus"
-                  @click="() => {}"
+                  class="mr-4"
+                  @click="Approve"
+                  v-if="userId === '01'"
+                  >ບັນທືກ</v-btn
                 >
-                  ຂະຫຍາຍ
-                </v-btn>
+                <v-btn color="error" @click="reject" v-if="userId === '01'"
+                  >Reject</v-btn
+                >
               </div>
-            </div>
-
-            <v-alert
-              v-else
-              type="info"
-              variant="tonal"
-              icon="mdi-information"
-              class="ma-0"
-            >
-              ບໍ່ມີເອກະສານອ້າງອີງ
-            </v-alert>
+            </v-form>
           </v-card-text>
         </v-card>
       </v-col>

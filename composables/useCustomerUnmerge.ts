@@ -36,7 +36,7 @@ interface UnmergeRequest {
 
 export const useCustomerUnmerge = () => {
   const config = useRuntimeConfig()
-  const baseURL = config.public.apiBase || 'http://192.168.45.56:8000/api'
+  const baseURL = config.public.apiBase || 'http://192.168.45.55:8000/api'
 
   const loading = ref(false)
   const error = ref<string | null>(null)

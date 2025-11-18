@@ -28,6 +28,9 @@ import * as DispustCallateralModel from './dispustcollateral'
 import * as AlertCallateralModel from './alertcollateral'
 import * as SearchIndividualModel from './individualsearch'
 import * as IndividualCollateral from './collateral_individual'
+import * as telecomModel from './telecom'
+import * as billtelecomModel from './telecom'
+
 import * as BorroworResponsModel from './borrower'
 import * as EnterpriseModel from './enterprise'
 export{
@@ -58,6 +61,8 @@ export{
     AlertCallateralModel,
     SearchIndividualModel,
     IndividualCollateral,
+    telecomModel,
+    billtelecomModel,
     BorroworResponsModel,
     EnterpriseModel
 
