@@ -189,6 +189,43 @@ export const useCustomerRegistration = () => {
   };
 
   /**
+ * Update customer segment
+ */
+const updateCustomerSegment = async (indSysId: number, segment: string): Promise<any> => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  try {
+    const response = await $fetch<any>(
+      `${baseURL}api/register/customer/update-segment/`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: {
+          ind_sys_id: indSysId,
+          segment: segment
+        }
+      }
+    );
+
+    console.log('Update segment response:', response);
+    return response;
+
+  } catch (error: any) {
+    console.error('❌ Update segment error:', error);
+    throw new Error(
+      error?.data?.error || 
+      error?.message || 
+      'Failed to update segment'
+    );
+  }
+};
+  /**
    * Get uploaded customers (for member - own data only)
    */
   const getMyCustomers = async (): Promise<any[]> => {
@@ -208,7 +245,7 @@ export const useCustomerRegistration = () => {
       if (response.success && Array.isArray(response.data)) {
         return response.data.map((item: any) => ({
           ind_sys_id: item.ind_sys_id,
-          customer_id: item.customer_id || item.ind_national_id,
+          customer_id: item.customer_id,
           bnk_code: item.bnk_code,
           lcic_id: item.lcic_id || `LCIC-${item.bnk_code}-${item.ind_sys_id}`,
           status: item.status || 'pending',
@@ -359,7 +396,43 @@ export const useCustomerRegistration = () => {
       throw enhancedError;
     }
   };
+/**
+ * Update customer ID for confirmed record (one time only)
+ */
+const updateCustomerID = async (indSysId: number, newCustomerId: string): Promise<any> => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error('Authentication required');
+  }
 
+  try {
+    const response = await $fetch<any>(
+      `${baseURL}api/register/customer/update-id/`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: {
+          ind_sys_id: indSysId,
+          new_customer_id: newCustomerId
+        }
+      }
+    );
+
+    console.log('Update customer ID response:', response);
+    return response;
+
+  } catch (error: any) {
+    console.error('❌ Update customer ID error:', error);
+    throw new Error(
+      error?.data?.error || 
+      error?.message || 
+      'Failed to update customer ID'
+    );
+  }
+};
   /**
    * Parse JSON file to array
    */
@@ -394,6 +467,8 @@ export const useCustomerRegistration = () => {
     finalizeBatchUpload,    // NEW - Step 2
     getAllCustomers,      // ADD THIS
     confirmCustomers,     // ADD THIS
+    updateCustomerID,
+    updateCustomerSegment,
     getMyCustomers,
     parseUploadedFile
   };

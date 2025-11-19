@@ -19,15 +19,11 @@
           <v-btn color="primary" size="large" class="mr-2" prepend-icon="mdi-plus" @click="openAddDialog">
             ເພີ່ມໂຕປ່ຽນຍ່ອຍ
           </v-btn>
-          <v-btn
-            color="#3D5AFE"
-            size="large"
-            prepend-icon="mdi-plus"
-            @click="goToSubcatalog"
-          >
+          <v-btn color="#3D5AFE" size="large" prepend-icon="mdi-plus" @click="goToSubcatalog">
             ເພີ່ມໂຕປ່ຽນຫຼັກ
           </v-btn>
         </v-col>
+
       </v-row>
     </v-card-text>
   </v-card>
@@ -52,7 +48,7 @@
           <v-text-field
             class="same-height"
             v-model="filterName"
-            label="ຄົ້ນຫາຕາມຊື່ (ລາວ ຫຼື ອັງກິດ)"
+            label="ຄົ້ນຫາຕາມຊື່"
             clearable
             prepend-inner-icon="mdi-alphabetical"
             variant="outlined"
@@ -90,43 +86,29 @@
         </template>
 
         <template v-slot:item.no="{ item }">
-          <div style="width: 60px; text-align: center;">
+          <div style="width: 60px; text-align:center;">
             {{ item.no }}
           </div>
         </template>
 
         <template v-slot:item.cat_status="{ item }">
-          <v-chip size="small" :color="item.cat_status ? 'green' : 'red'" variant="tonal">
+          <v-chip :color="item.cat_status ? 'green' : 'red'" size="small" variant="tonal">
             {{ item.cat_status ? "Active" : "Inactive" }}
           </v-chip>
         </template>
 
         <template v-slot:item.cat_is_default="{ item }">
-          <v-chip size="small" :color="item.cat_is_default ? 'blue' : 'grey'" variant="tonal">
+          <v-chip :color="item.cat_is_default ? 'blue' : 'grey'" size="small" variant="tonal">
             {{ item.cat_is_default ? "Default" : "Normal" }}
           </v-chip>
         </template>
 
         <template v-slot:item.actions="{ item }">
-          <v-btn
-            icon
-            size="28"
-            density="compact"
-            variant="tonal"
-            color="blue"
-            @click="openEditDialog(item)"
-          >
+          <v-btn icon size="28" color="blue" variant="tonal" density="compact" @click="openEditDialog(item)">
             <v-icon size="22">mdi-pencil</v-icon>
           </v-btn>
 
-          <v-btn
-            icon
-            size="28"
-            density="compact"
-            variant="tonal"
-            color="red"
-            @click="openDeleteDialog(item)"
-          >
+          <v-btn icon size="28" color="red" variant="tonal" density="compact" @click="openDeleteDialog(item)">
             <v-icon size="22">mdi-delete</v-icon>
           </v-btn>
         </template>
@@ -134,10 +116,11 @@
         <template v-slot:loading>
           <v-skeleton-loader type="table-row@5" />
         </template>
+
       </v-data-table>
 
       <!-- Pagination -->
-      <v-divider></v-divider>
+      <v-divider />
       <div class="pa-4" v-if="totalCatalogs > 0">
         <v-row class="align-center">
           <v-col cols="12" md="4">
@@ -161,8 +144,15 @@
               />
             </div>
 
-            <v-pagination v-model="currentPage" :length="totalPages" :total-visible="6" size="small" rounded="circle" />
+            <v-pagination
+              v-model="currentPage"
+              :length="totalPages"
+              :total-visible="6"
+              size="small"
+              rounded="circle"
+            />
           </v-col>
+
         </v-row>
       </div>
     </v-card-text>
@@ -179,19 +169,19 @@
       <v-card-text>
         <v-form>
 
-          <!-- FIXED v-select -->
-          <v-select
-            v-model="form.ct_type"
-            :items="typeOptions"
-            item-title="title"
-            item-value="value"
-            label="ເລືອກ Type"
-            dense
-            outlined
-            prepend-inner-icon="mdi-menu-down"
-            :disabled="editingCatalog !== null"
-            required
-          />
+        <v-autocomplete
+          v-model="form.ct_type"
+          :items="typeOptions"
+          item-title="title"
+          item-value="value"
+          label="ເລືອກ Type"
+          dense
+          outlined
+          clearable
+          prepend-inner-icon="mdi-magnify"
+          :disabled="editingCatalog !== null"
+          required
+        />
 
           <v-text-field v-model="form.cat_name" label="ຊື່ອັງກິດ" dense outlined required />
           <v-text-field v-model="form.cat_lao_name" label="ຊື່ລາວ" dense outlined required />
@@ -199,7 +189,6 @@
           <v-text-field v-model="form.cat_sort_order" type="number" label="Sort Order" dense outlined />
           <v-text-field v-model="form.cat_group" type="number" label="Group" dense outlined />
 
-          <!-- Switch int fix -->
           <v-switch
             v-model="form.cat_is_default"
             :true-value="1"
@@ -220,18 +209,17 @@
       </v-card-text>
 
       <v-card-actions class="justify-end">
-        <v-btn color="grey" variant="text" @click="closeFormDialog">ຍົກເລີກ</v-btn>
+        <v-btn variant="text" @click="showFormDialog = false">ຍົກເລີກ</v-btn>
         <v-btn color="primary" :loading="saving" @click="saveCatalog">
           {{ editingCatalog ? "ບັນທຶກ" : "ເພີ່ມໃໝ່" }}
         </v-btn>
       </v-card-actions>
-
     </v-card>
   </v-dialog>
 
-  <!-- Delete -->
+  <!-- Delete Dialog -->
   <v-dialog v-model="showDeleteDialog" max-width="450" persistent>
-    <v-card elevation="8" class="delete-dialog-card">
+    <v-card elevation="8">
 
       <v-card-title class="delete-dialog-header pa-4">
         <v-icon class="mr-2" color="white">mdi-alert</v-icon>
@@ -242,8 +230,8 @@
         ຈະລົບ <b>{{ catalogToDelete?.cat_name }}</b> ແທ້ບໍ?
       </v-card-text>
 
-      <v-card-actions class="pa-4 pt-0 justify-end">
-        <v-btn color="grey" variant="text" @click="showDeleteDialog = false">ຍົກເລີກ</v-btn>
+      <v-card-actions class="justify-end pa-4 pt-0">
+        <v-btn variant="text" @click="showDeleteDialog = false">ຍົກເລີກ</v-btn>
         <v-btn color="red" variant="flat" :loading="deleting" @click="confirmDelete">ລົບ</v-btn>
       </v-card-actions>
 
@@ -256,17 +244,21 @@
 import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 
+/* Router */
 const router = useRouter();
 const goToSubcatalog = () => router.push("/maincatalog");
 
+/* Config */
 const config = useRuntimeConfig();
-const apiUrl = `${config.public.strapi.url}api/subcatalog/`;
+let BASE_URL = config.public.strapi.url;
+if (!BASE_URL.endsWith("/")) BASE_URL += "/";
+
+const apiUrl = `${BASE_URL}api/subcatalog/`;
+const mainApiUrl = `${BASE_URL}api/maincatalog/`;
 
 /* Data */
 const catalogs = ref([]);
 const loading = ref(false);
-
-/* Type Options */
 const typeOptions = ref([]);
 
 /* Filters */
@@ -278,11 +270,10 @@ const showFormDialog = ref(false);
 const showDeleteDialog = ref(false);
 const saving = ref(false);
 const deleting = ref(false);
-
 const editingCatalog = ref(null);
 const catalogToDelete = ref(null);
 
-/* Form Model */
+/* Form model */
 const form = ref({
   ct_type: "",
   cat_name: "",
@@ -297,15 +288,18 @@ const form = ref({
 /* Load type list */
 const fetchTypeOptions = async () => {
   try {
-    const res = await axios.get(`${config.public.STRAPI_URL}api/maincatalog/`);
-    const data = res.data.results || res.data.data || res.data;
+    const res = await axios.get(mainApiUrl);
 
-    typeOptions.value = data.map((item) => ({
-      title: `${item.cat_name} (${item.cat_type})`,
-      value: item.cat_type,
+    let data = res.data.results ?? res.data.data ?? res.data;
+    data = Array.isArray(data) ? data : [];
+
+    typeOptions.value = data.map((d) => ({
+      title: `${d.cat_name} (${d.cat_type})`,
+      value: d.cat_type,
     }));
+
   } catch (e) {
-    console.error("TYPE LOAD ERROR:", e);
+    console.error("TYPE ERROR:", e);
   }
 };
 
@@ -339,22 +333,35 @@ const paginatedCatalogs = computed(() => {
   }));
 });
 
+const paginationStart = computed(() =>
+  totalCatalogs.value === 0 ? 0 : (currentPage.value - 1) * itemsPerPage.value + 1
+);
+
+const paginationEnd = computed(() =>
+  Math.min(currentPage.value * itemsPerPage.value, totalCatalogs.value)
+);
+
 /* Normalize */
 const normalize = (txt) =>
   txt?.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || "";
 
-/* Fetch */
+/* Fetch catalog list */
 const fetchCatalogs = async () => {
   loading.value = true;
+
   try {
     const res = await axios.get(apiUrl);
-    let data = res.data.results || res.data.data || res.data;
 
+    let data = res.data.results ?? res.data.data ?? res.data;
+    data = Array.isArray(data) ? data : [];
+
+    // Filter by Type
     if (filterType.value) {
       const f = normalize(filterType.value);
       data = data.filter((d) => normalize(d.ct_type).includes(f));
     }
 
+    // Filter by Name
     if (filterName.value) {
       const f = normalize(filterName.value);
       data = data.filter(
@@ -364,19 +371,23 @@ const fetchCatalogs = async () => {
       );
     }
 
-    catalogs.value = Array.isArray(data) ? data : [data];
+    catalogs.value = data;
   } catch (e) {
     console.error("FETCH ERROR:", e);
-  } finally {
-    loading.value = false;
   }
+
+  loading.value = false;
 };
 
-const applyFilters = () => fetchCatalogs();
+const applyFilters = () => {
+  currentPage.value = 1;
+  fetchCatalogs();
+};
 
-/* Add */
+/* Add catalog */
 const openAddDialog = () => {
   editingCatalog.value = null;
+
   form.value = {
     ct_type: "",
     cat_name: "",
@@ -387,10 +398,11 @@ const openAddDialog = () => {
     cat_group: 0,
     cat_status: 1,
   };
+
   showFormDialog.value = true;
 };
 
-/* Edit */
+/* Edit catalog */
 const openEditDialog = (item) => {
   editingCatalog.value = item;
 
@@ -408,9 +420,10 @@ const openEditDialog = (item) => {
   showFormDialog.value = true;
 };
 
-/* Save */
+/* Save catalog */
 const saveCatalog = async () => {
   saving.value = true;
+
   try {
     const payload = {
       ct_type: form.value.ct_type,
@@ -431,11 +444,12 @@ const saveCatalog = async () => {
 
     showFormDialog.value = false;
     fetchCatalogs();
+
   } catch (e) {
     console.error("SAVE ERROR:", e.response?.data || e);
-  } finally {
-    saving.value = false;
   }
+
+  saving.value = false;
 };
 
 /* Delete */
@@ -446,20 +460,21 @@ const openDeleteDialog = (item) => {
 
 const confirmDelete = async () => {
   deleting.value = true;
+
   try {
     await axios.delete(`${apiUrl}${catalogToDelete.value.cat_sys_id}/`);
+
     catalogs.value = catalogs.value.filter(
       (d) => d.cat_sys_id !== catalogToDelete.value.cat_sys_id
     );
+
     showDeleteDialog.value = false;
   } catch (e) {
     console.error("DELETE ERROR:", e);
-  } finally {
-    deleting.value = false;
   }
-};
 
-const closeFormDialog = () => (showFormDialog.value = false);
+  deleting.value = false;
+};
 
 /* Init */
 onMounted(() => {

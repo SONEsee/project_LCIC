@@ -46,9 +46,9 @@
     <!-- Manual Input Form -->
     <div v-if="activeTab === 'manual'" class="tab-content">
       <form @submit.prevent="submitManualForm" class="manual-form">
-        <div class="two-column-layout">
-          <!-- LEFT SIDE: Customer Information -->
-          <div class="left-panel">
+        <div class="three-column-layout">
+          <!-- COLUMN 1: Basic Information -->
+          <div class="column-panel">
             <div class="form-section">
               <h3>ຂໍ້ມູນພື້ນຖານ</h3>
               
@@ -71,28 +71,26 @@
                 </select>
               </div>
 
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="bnk_code">ລະຫັດທະນາຄານ</label>
-                  <input 
-                    id="bnk_code" 
-                    v-model="userBankCode" 
-                    type="text" 
-                    readonly
-                    disabled
-                    class="readonly-input"
-                  />
-                </div>
+              <div class="form-group">
+                <label for="bnk_code">ລະຫັດທະນາຄານ</label>
+                <input 
+                  id="bnk_code" 
+                  v-model="userBankCode" 
+                  type="text" 
+                  readonly
+                  disabled
+                  class="readonly-input"
+                />
+              </div>
 
-                <div class="form-group">
-                  <label for="bank_branch">ສາຂາທະນາຄານ</label>
-                  <input 
-                    id="bank_branch" 
-                    v-model="manualForm.bank_branch" 
-                    type="text"
-                    placeholder="ສໍານັກງານໃຫຍ່"
-                  />
-                </div>
+              <div class="form-group">
+                <label for="bank_branch">ສາຂາທະນາຄານ</label>
+                <input 
+                  id="bank_branch" 
+                  v-model="manualForm.bank_branch" 
+                  type="text"
+                  placeholder="ສໍານັກງານໃຫຍ່"
+                />
               </div>
 
               <div class="form-group">
@@ -108,83 +106,10 @@
                 />
               </div>
             </div>
-
-            <div class="form-section">
-              <h3>ຂໍ້ມູນຊື່</h3>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="ind_name">ຊື່ (ພາສາອັງກິດ) <span class="required">*</span></label>
-                  <input 
-                    id="ind_name" 
-                    v-model="manualForm.ind_name" 
-                    type="text"
-                    placeholder="Khampaseuth"
-                    required
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label for="ind_surname">ນາມສະກຸນ (ພາສາອັງກິດ) <span class="required">*</span></label>
-                  <input 
-                    id="ind_surname" 
-                    v-model="manualForm.ind_surname" 
-                    type="text"
-                    placeholder="Xanghomvilay"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="ind_lao_name">ຊື່ (ພາສາລາວ)</label>
-                  <input 
-                    id="ind_lao_name" 
-                    v-model="manualForm.ind_lao_name" 
-                    type="text"
-                    placeholder="ຄຳປະເສີດ"
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label for="ind_lao_surname">ນາມສະກຸນ (ພາສາລາວ)</label>
-                  <input 
-                    id="ind_lao_surname" 
-                    v-model="manualForm.ind_lao_surname" 
-                    type="text"
-                    placeholder="ຊ່າງໂຮມວິໄລ"
-                  />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="ind_birth_date">ວັນເດືອນປີເກີດ</label>
-                <input 
-                  id="ind_birth_date" 
-                  v-model="manualForm.ind_birth_date" 
-                  type="date"
-                />
-              </div>
-            </div>
-
-            <div class="form-section">
-              <h3>ຂໍ້ມູນເພີ່ມເຕີມ</h3>
-              
-              <div class="form-group">
-                <label for="description">ລາຍລະອຽດ</label>
-                <textarea 
-                  id="description" 
-                  v-model="manualForm.description"
-                  rows="3"
-                  placeholder="ບັນທຶກເພີ່ມເຕີມ..."
-                ></textarea>
-              </div>
-            </div>
           </div>
 
-          <!-- RIGHT SIDE: Verification Documents -->
-          <div class="right-panel">
+          <!-- COLUMN 2: Verification Documents -->
+          <div class="column-panel">
             <div class="form-section">
               <h3>ເອກະສານຢັ້ງຢືນ <span class="required">*</span></h3>
               <p class="section-hint">ເລືອກປະເພດເອກະສານຢ່າງໜ້ອຍ 1 ປະເພດ ແລະ ແນບໄຟລ໌</p>
@@ -354,6 +279,64 @@
 
               <div v-if="!hasAnyDocumentSelected" class="validation-hint error">
                 ກະລຸນາເລືອກປະເພດເອກະສານຢ່າງໜ້ອຍ 1 ປະເພດ
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUMN 3: Name Information -->
+          <div class="column-panel">
+            <div class="form-section">
+              <h3>ຂໍ້ມູນຊື່</h3>
+
+              <div class="form-group">
+                <label for="ind_name">ຊື່ (ພາສາອັງກິດ) <span class="required">*</span></label>
+                <input 
+                  id="ind_name" 
+                  v-model="manualForm.ind_name" 
+                  type="text"
+                  placeholder="Khampaseuth"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="ind_surname">ນາມສະກຸນ (ພາສາອັງກິດ) <span class="required">*</span></label>
+                <input 
+                  id="ind_surname" 
+                  v-model="manualForm.ind_surname" 
+                  type="text"
+                  placeholder="Xanghomvilay"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="ind_lao_name">ຊື່ (ພາສາລາວ)</label>
+                <input 
+                  id="ind_lao_name" 
+                  v-model="manualForm.ind_lao_name" 
+                  type="text"
+                  placeholder="ຄຳປະເສີດ"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="ind_lao_surname">ນາມສະກຸນ (ພາສາລາວ)</label>
+                <input 
+                  id="ind_lao_surname" 
+                  v-model="manualForm.ind_lao_surname" 
+                  type="text"
+                  placeholder="ຊ່າງໂຮມວິໄລ"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="ind_birth_date">ວັນເດືອນປີເກີດ</label>
+                <input 
+                  id="ind_birth_date" 
+                  v-model="manualForm.ind_birth_date" 
+                  type="date"
+                />
               </div>
             </div>
           </div>
@@ -743,7 +726,7 @@ const isSubmitting = ref(false);
 const isProcessing = ref(false);
 const isLoadingHistory = ref(false);
 
-// Manual Form State
+// Manual Form State (removed description field)
 const manualForm = ref({
   custype: '',
   segment: '',
@@ -761,8 +744,7 @@ const manualForm = ref({
   ind_name: '',
   ind_surname: '',
   ind_lao_name: '',
-  ind_lao_surname: '',
-  description: ''
+  ind_lao_surname: ''
 });
 
 interface DocumentType {
@@ -928,8 +910,7 @@ const resetManualForm = () => {
     ind_name: '',
     ind_surname: '',
     ind_lao_name: '',
-    ind_lao_surname: '',
-    description: ''
+    ind_lao_surname: ''
   };
   
   Object.keys(documentTypes.value).forEach(key => {
@@ -1047,8 +1028,7 @@ const downloadTemplate = () => {
       bank_branch: "Head Office",
       ind_birth_date: "1984-01-22",
       ind_lao_name: "ຄຳປະເສີດ",
-      ind_lao_surname: "ຊ່າງໂຮມວິໄລ",
-      description: null
+      ind_lao_surname: "ຊ່າງໂຮມວິໄລ"
     }
   ];
   
@@ -1070,14 +1050,9 @@ const loadHistory = async () => {
   
   try {
     const response = await getMyCustomers();
-
-    // DEBUG: Log raw response
     console.log('📥 Raw API Response:', response);
-    console.log('📥 First record:', response[0]);
     
-    // NORMALIZE - Check BOTH 'confirmed' and 'is_confirmed' fields
     uploadHistory.value = response.map((record: any) => {
-      // Backend might return 'confirmed' (boolean) OR 'is_confirmed' (string 't'/'f')
       const isConfirmedValue = record.confirmed !== undefined 
         ? record.confirmed 
         : (record.is_confirmed === true || record.is_confirmed === 't' || record.is_confirmed === 1);
@@ -1087,9 +1062,6 @@ const loadHistory = async () => {
         is_confirmed: isConfirmedValue
       };
     });
-    
-    // DEBUG: Log normalized
-    console.log('✅ Normalized first record:', uploadHistory.value[0]);
     
     applyHistoryFilters();
     showNotification('ໂຫຼດຂໍ້ມູນສຳເລັດ', 'success');
@@ -1104,12 +1076,6 @@ const loadHistory = async () => {
 const applyHistoryFilters = () => {
   let result = [...uploadHistory.value];
   
-  // DEBUG: Log before filtering
-  console.log('🔍 Before filters:', {
-    total: result.length,
-    first_record: result[0]
-  });
-
   if (historyFilters.value.status) {
     result = result.filter(r => r.status?.toLowerCase() === historyFilters.value.status.toLowerCase());
   }
@@ -1146,20 +1112,13 @@ const applyHistoryFilters = () => {
   }
   
   filteredHistory.value = result;
-  // DEBUG: Log after filtering
-  console.log('✅ After filters:', {
-    total: filteredHistory.value.length,
-    records: filteredHistory.value
-  });
   
   historyStats.value = {
-      total: result.length,
-      pending: result.filter(r => !r.is_confirmed).length,
-      confirmed: result.filter(r => r.is_confirmed).length
-    };
+    total: result.length,
+    pending: result.filter(r => !r.is_confirmed).length,
+    confirmed: result.filter(r => r.is_confirmed).length
+  };
 };
-  // DEBUG: Log stats
-  console.log('📊 Stats:', historyStats.value);
 
 const resetHistoryFilters = () => {
   historyFilters.value = {
@@ -1392,12 +1351,17 @@ watch(filteredHistory, (newVal) => {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Two Column Layout */
-.two-column-layout {
+/* Three Column Layout */
+.three-column-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
   margin-bottom: 2rem;
+}
+
+.column-panel {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Form Sections */
@@ -1406,7 +1370,7 @@ watch(filteredHistory, (newVal) => {
   padding: 1.5rem;
   border-radius: 10px;
   border: 1px solid #e2e8f0;
-  margin-bottom: 1.5rem;
+  height: 100%;
 }
 
 .form-section h3 {
@@ -1465,12 +1429,6 @@ watch(filteredHistory, (newVal) => {
   background: #edf2f7;
   color: #718096;
   cursor: not-allowed;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
 }
 
 /* Document Groups */
@@ -2383,8 +2341,8 @@ code {
 }
 
 /* Responsive */
-@media (max-width: 1200px) {
-  .two-column-layout {
+@media (max-width: 1400px) {
+  .three-column-layout {
     grid-template-columns: 1fr;
   }
 }
@@ -2405,10 +2363,6 @@ code {
 
   .tab-navigation {
     flex-direction: column;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
   }
 
   .summary-cards,
