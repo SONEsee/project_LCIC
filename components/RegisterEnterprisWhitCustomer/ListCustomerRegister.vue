@@ -171,7 +171,7 @@ onMounted(() => {
               </v-list-item>
             </template>
           </v-autocomplete>
-          <v-btn color="primary" v-if="userId !== '01'">ພູກລະຫັດລູກຄ້າ</v-btn>
+          <v-btn color="primary" v-if="userId !== '01'" @click="goPath(`/backend/register_lcic/customerjoinlcic`)">ພູກລະຫັດລູກຄ້າ</v-btn>
         </div>
       </v-card-title>
 
