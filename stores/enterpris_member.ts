@@ -6,6 +6,34 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
   state() {
     return {
       token: localStorage.getItem("access_token"),
+      form_company_info_customer_mact_lcic: {
+        segment: "",
+        bnk_code: "",
+        branchcode: "",
+        customerid: "",
+        com_enterprise_code: "",
+        enterprise_code: "",
+        com_registration_date: "",
+        com_registration_place_issue: "",
+        com_name: "",
+        com_lao_name: "",
+        com_tax_no: "",
+        com_category: "",
+        com_regulatory_capital: "",
+        com_regulatory_capital_unit: "",
+        com_insert_date: "",
+        com_update_date: "",
+        mm_action_date: "",
+        mm_log: "",
+        mm_comment: "",
+        mm_by: "",
+        blk_sys_id: "",
+        mm_status: "1",
+        is_manual: "",
+        com_lao_name_code: "",
+        LCIC_code: "",
+        status: "1",
+      },
       form_insert_member_submit_data: {
         EnterpriseID: "",
         enterpriseNameLao: "",
@@ -25,6 +53,11 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
         branch_id: "",
         enLocation: null as number | any,
       },
+
+      respons_data_list_customer:
+        null as EnterpriseModel.ListRegisterCustomerRespons | null,
+      respons_data_detail_companymapping:
+        null as EnterpriseModel.DataDetail | null,
       respons_data_list_file:
         null as EnterpriseModel.ListFileRegisterEnterpriseRespons | null,
       respon_data_check_enterprise:
@@ -62,6 +95,14 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
           EnterpriseID: "",
         },
         isLoading: false,
+      },
+      filter_customer_register: {
+        query: {
+          page_size: 20,
+          page: 1,
+          bnk_code: "",
+          bnk_code_filter: "",
+        },
       },
       isLoading: false,
     };
@@ -252,6 +293,36 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
         this.isLoading = false;
       }
     },
+    async GetdataListRegisCustomer() {
+      this.isLoading = true;
+      try {
+        const res =
+          await axios.get<EnterpriseModel.ListRegisterCustomerRespons>(
+            "api/api/register/list/",
+            {
+              params: {
+                ...this.filter_customer_register.query,
+              },
+              headers: {
+                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${this.token}`,
+              },
+            }
+          );
+        if (res.status === 200) {
+          this.respons_data_list_customer = res.data;
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text: "ບໍ່ສາມາດໄດ້ຮັບຂໍ້ມູນໄດ້, ກະລຸນາລອງໃໝ່ອີກຄັ້ງ",
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
     async CheckEnterpriseID() {
       this.isLoading = true;
       try {
@@ -282,6 +353,24 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
           timer: 2000,
           showConfirmButton: false,
         });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async SeachEnterpris() {
+      this.isLoading = true;
+      try {
+        const formData = new FormData();
+        formData.append("EnterpriseID", this.check_enterprise.EnterpriseID);
+        const req = await axios.post<EnterpriseModel.CheckEnterpriseRespons>(
+          `/api/check-enterprise/`,
+          formData
+        );
+        if (req.status === 200) {
+          this.respon_data_check_enterprise = req.data;
+        }
+      } catch (error) {
+        console.log("ບໍມີຂໍ້ມູນ Enterpise ນີ້");
       } finally {
         this.isLoading = false;
       }
@@ -442,6 +531,105 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
           icon: "error",
           title: "ຜິດພາດ",
           text: "ບໍ່ສາມາດໄດ້ຮັບຂໍ້ມູນໄດ້, ກະລຸນາລອງໃໝ່ອີກຄັ້ງ",
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async CreateMactCustomer() {
+      this.isLoading = true;
+      try {
+        const notification = await Swal.fire({
+          icon: "question",
+          title: "ຢືນຢັນ",
+          text: "ທ່ານຕ້ອງການທີ່ຈະບັນທຶກຂໍ້ມູນແທ້ຫຼືບໍ່?",
+          showCancelButton: true,
+          cancelButtonText: "ຍົກເລີກ",
+          confirmButtonText: "ຢືນຢັນ",
+        });
+
+        if (notification.isConfirmed) {
+          const payload = {
+            segment: this.form_company_info_customer_mact_lcic.segment,
+            bnk_code: this.form_company_info_customer_mact_lcic.bnk_code,
+            branchcode: this.form_company_info_customer_mact_lcic.branchcode,
+            customerid: this.form_company_info_customer_mact_lcic.customerid,
+            enterprise_code:
+              this.form_company_info_customer_mact_lcic.enterprise_code,
+            com_enterprise_code:
+              this.form_company_info_customer_mact_lcic.enterprise_code,
+            LCIC_code: this.form_company_info_customer_mact_lcic.LCIC_code,
+            com_name: this.form_company_info_customer_mact_lcic.com_name,
+            com_lao_name:
+              this.form_company_info_customer_mact_lcic.com_lao_name,
+            com_tax_no: this.form_company_info_customer_mact_lcic.com_tax_no,
+            com_registration_date:
+              this.form_company_info_customer_mact_lcic.com_registration_date,
+            com_registration_place_issue:
+              this.form_company_info_customer_mact_lcic
+                .com_registration_place_issue,
+            com_category:
+              this.form_company_info_customer_mact_lcic.com_category,
+            com_regulatory_capital:
+              this.form_company_info_customer_mact_lcic.com_regulatory_capital?.replace(
+                /,/g,
+                ""
+              ),
+            com_regulatory_capital_unit:
+              this.form_company_info_customer_mact_lcic
+                .com_regulatory_capital_unit,
+            mm_status: this.form_company_info_customer_mact_lcic.mm_status,
+            status: this.form_company_info_customer_mact_lcic.status,
+            mm_comment: this.form_company_info_customer_mact_lcic.mm_comment,
+            mm_by: this.form_company_info_customer_mact_lcic.mm_by,
+            com_lao_name_code:
+              this.form_company_info_customer_mact_lcic.com_lao_name_code,
+          };
+
+          const req = await axios.post(`/api/api/company/create/`, payload);
+
+          if (req.data.success) {
+            await Swal.fire({
+              icon: "success",
+              title: "ສຳເລັດ",
+              text: req.data.message || "ບັນທຶກຂໍ້ມູນສຳເລັດ",
+              timer: 2000,
+              showConfirmButton: false,
+            });
+            return req.data;
+          }
+        }
+      } catch (error: any) {
+        const errorMessage =
+          error.response?.data?.message || "ບໍ່ສາມາດບັນທຶກໄດ້ ເກີດຂໍ້ຜິດພາດ";
+        await Swal.fire({
+          icon: "warning",
+          title: "ຜິດພາດ",
+          text: errorMessage,
+          confirmButtonText: "ຕົກລົງ",
+        });
+        throw error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async GetDetailDataCompanyMaping(id: string) {
+      this.isLoading = true;
+      try {
+        const res =
+          await axios.get<EnterpriseModel.ListRegisterCustomerDetailRespons>(
+            `api/api/company/info/${id}`
+          );
+        if (res.status === 200) {
+          this.respons_data_detail_companymapping = res.data.data;
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "ຜິດພາດ",
+          text: "ບໍ່ສາມາດດືງຂໍ້ມູນໄດ້",
+          timer: 3000,
+          showConfirmButton: false,
         });
       } finally {
         this.isLoading = false;

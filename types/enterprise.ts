@@ -132,3 +132,78 @@ export interface Pagination {
     has_next:     boolean;
     has_previous: boolean;
 }
+
+
+
+export interface ListRegisterCustomerRespons {
+    success:     boolean;
+    data:        ListRegisterCustomer;
+    pagination:  Pagination;
+    permissions: Permissions;
+}
+
+export interface ListRegisterCustomer {
+    id:           number;
+    InsertDate:   Date;
+    UpdateDate:   null;
+    EnterpriseID: string;
+    customerID:   string;
+    LCIC_code:    string;
+    bnk_code:     string;
+    branch:       string;
+    status:       number;
+    user_insert:  null;
+    user_update:  null;
+}
+
+export interface Pagination {
+    current_page: number;
+    total_pages:  number;
+    total_items:  number;
+    page_size:    number;
+    has_next:     boolean;
+    has_previous: boolean;
+}
+
+export interface Permissions {
+    is_admin:      boolean;
+    user_bnk_code: string;
+    filtered_by:   string;
+}
+
+export interface ListRegisterCustomerDetailRespons {
+    success: boolean;
+    data:    DataDetail;
+}
+
+export interface DataDetail {
+    com_sys_id:                   number;
+    segment:                      string;
+    mm_com_sys_id:                null;
+    bnk_code:                     string;
+    branchcode:                   string;
+    customerid:                   string;
+    com_enterprise_code:          null;
+    com_registration_date:        string;
+    com_registration_place_issue: string;
+    com_name:                     string;
+    com_lao_name:                 string;
+    com_tax_no:                   string;
+    com_category:                 string;
+    com_regulatory_capital:       string;
+    com_regulatory_capital_unit:  string;
+    com_insert_date:              null;
+    com_update_date:              null;
+    mm_action_date:               null;
+    mm_log:                       null;
+    mm_comment:                   string;
+    mm_by:                        string;
+    blk_sys_id:                   null;
+    mm_status:                    string;
+    is_manual:                    null;
+    com_lao_name_code:            string;
+    LCIC_code:                    string;
+    enterprise_code:              string;
+    status:                       string;
+    id_file:                      string;
+}
