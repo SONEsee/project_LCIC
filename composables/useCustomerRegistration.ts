@@ -1,21 +1,13 @@
 // composables/useCustomerRegistration.ts
 
-import type { CustomerRecord, RegisterResponse, UploadedCustomer, FilterOptions } from '~/types/customer';
-
 export const useCustomerRegistration = () => {
   const config = useRuntimeConfig();
   const baseURL = config.public.strapi?.url;
 
-  /**
-   * Get authentication token from localStorage
-   */
   const getAuthToken = (): string | null => {
     try {
-      if (typeof window === 'undefined') {
-        return null;
-      }
-      const token = localStorage.getItem('access_token');
-      return token ? token : null;
+      if (typeof window === 'undefined') return null;
+      return localStorage.getItem('access_token');
     } catch (error) {
       console.error('Failed to get auth token:', error);
       return null;
@@ -24,30 +16,60 @@ export const useCustomerRegistration = () => {
 
   /**
    * Register single customer manually with documents
+   * FIXED: Matches backend API expectations exactly
    */
   const registerManualCustomer = async (
-    customerData: CustomerRecord,
+    customerData: any,
     documents: { type: string; file: File }[]
   ): Promise<any> => {
     const token = getAuthToken();
-    
     if (!token) {
       throw new Error('Authentication required');
     }
 
     const formData = new FormData();
     
-    // Add customer data fields
-    Object.keys(customerData).forEach(key => {
-      const value = customerData[key as keyof CustomerRecord];
+    // CRITICAL: Add all fields exactly as backend expects (all lowercase)
+    const fieldsMap = {
+      'custype': customerData.custype,
+      'segment': customerData.segment,
+      'bnk_code': customerData.bnk_code,
+      'bank_branch': customerData.bank_branch,
+      'customer_id': customerData.customer_id,
+      'ind_national_id': customerData.ind_national_id,
+      'ind_national_id_date': customerData.ind_national_id_date,
+      'ind_passport': customerData.ind_passport,
+      'ind_passport_date': customerData.ind_passport_date,
+      'ind_familybook': customerData.ind_familybook,
+      'ind_familybook_prov_code': customerData.ind_familybook_prov_code,
+      'ind_familybook_date': customerData.ind_familybook_date,
+      'ind_birth_date': customerData.ind_birth_date,
+      'ind_name': customerData.ind_name,
+      'ind_surname': customerData.ind_surname,
+      'ind_lao_name': customerData.ind_lao_name,
+      'ind_lao_surname': customerData.ind_lao_surname,
+      'description': customerData.description
+    };
+
+    // Add only non-empty values
+    Object.entries(fieldsMap).forEach(([key, value]) => {
       if (value !== null && value !== undefined && value !== '') {
         formData.append(key, value.toString());
       }
     });
 
-    // Add documents
-    documents.forEach((doc, index) => {
-      formData.append(`document_${doc.type}`, doc.file);
+    // Add documents with exact backend field names
+    documents.forEach((doc) => {
+      if (doc.file) {
+        formData.append(`document_${doc.type}`, doc.file, doc.file.name);
+      }
+    });
+
+    // Debug log
+    console.log('Sending to API:', {
+      url: `${baseURL}api/register/customer/manual/`,
+      fields: Object.fromEntries(formData.entries()).toString(),
+      documentCount: documents.length
     });
 
     try {
@@ -55,49 +77,56 @@ export const useCustomerRegistration = () => {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
+          // Don't set Content-Type - let browser handle multipart/form-data boundary
         },
         body: formData
       });
 
+      console.log('API Response:', response);
       return response;
+      
     } catch (error: any) {
-      console.error('❌ Failed to register customer:', error);
-      throw new Error(error.data?.error || error.message || 'Failed to register customer');
+      console.error('❌ API Error:', error);
+      
+      // Extract meaningful error message
+      let errorMessage = 'Failed to register customer';
+      
+      if (error.data) {
+        if (error.data.error) {
+          errorMessage = error.data.error;
+        } else if (error.data.errors) {
+          // Handle validation errors
+          const errors = error.data.errors;
+          errorMessage = Object.entries(errors)
+            .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+            .join('; ');
+        } else if (error.data.message) {
+          errorMessage = error.data.message;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      throw new Error(errorMessage);
     }
   };
 
   /**
-   * Register customers in batch
-   * Note: Backend currently supports single document for all customers
-   * Will need backend update for per-customer documents
+   * STEP 1: Upload and validate batch JSON file
+   * Returns validated customer list for document attachment
    */
-  const registerBatchCustomers = async (
-    customers: CustomerRecord[],
-    bnkCode: string,
-    documents?: Record<number, File>
-  ): Promise<RegisterResponse> => {
+  const validateBatchFile = async (
+    file: File,
+    bnkCode: string
+  ): Promise<any> => {
     const token = getAuthToken();
-    
     if (!token) {
       throw new Error('Authentication required');
     }
 
-    // Create JSON blob for customer data
-    const jsonBlob = new Blob([JSON.stringify(customers)], { type: 'application/json' });
-    const jsonFile = new File([jsonBlob], 'customers.json', { type: 'application/json' });
-
     const formData = new FormData();
-    formData.append('json_file', jsonFile);
+    formData.append('json_file', file);
     formData.append('bnk_code', bnkCode);
-
-    // For now, attach first document if available
-    // Backend needs update to support multiple documents per customer
-    if (documents && Object.keys(documents).length > 0) {
-      const firstDoc = documents[0];
-      if (firstDoc) {
-        formData.append('document_file', firstDoc);
-      }
-    }
 
     try {
       const response = await $fetch<any>(`${baseURL}api/register/customer/batch/`, {
@@ -108,33 +137,62 @@ export const useCustomerRegistration = () => {
         body: formData
       });
 
-      // Transform response to expected format
-      return {
-        total_processed: response.count || 0,
-        matched: 0,
-        new_records: response.count || 0,
-        duplicates_skipped: 0,
-        details: customers.map((customer, index) => ({
-          customer_id: customer.customer_ID || `Customer ${index + 1}`,
-          bnk_code: bnkCode,
-          lcic_id: `LCIC-${bnkCode}-${Date.now()}-${index}`,
-          status: 'NEW RECORD',
-          match_percent: 0,
-          action: 'INSERTED'
-        }))
-      };
+      console.log('Batch validation response:', response);
+      return response;
+      
     } catch (error: any) {
-      console.error('❌ Failed to register batch customers:', error);
-      throw new Error(error.data?.error || error.message || 'Failed to register customers');
+      console.error('❌ Batch validation error:', error);
+      const errorMessage = error.data?.error || error.data?.message || error.message || 'Failed to validate batch file';
+      throw new Error(errorMessage);
+    }
+  };
+
+  /**
+   * STEP 2: Submit all customers with their documents
+   */
+  const finalizeBatchUpload = async (
+    customersData: any[],
+    documents: Record<number, File>
+  ): Promise<any> => {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    const formData = new FormData();
+    
+    // Add customer data as JSON string
+    formData.append('customers_data', JSON.stringify(customersData));
+    
+    // Add each document file with index
+    Object.entries(documents).forEach(([index, file]) => {
+      formData.append(`document_${index}`, file, file.name);
+    });
+
+    try {
+      const response = await $fetch<any>(`${baseURL}api/register/customer/batch/finalize/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      console.log('Batch finalize response:', response);
+      return response;
+      
+    } catch (error: any) {
+      console.error('❌ Batch finalize error:', error);
+      const errorMessage = error.data?.error || error.data?.message || error.message || 'Failed to submit batch';
+      throw new Error(errorMessage);
     }
   };
 
   /**
    * Get uploaded customers (for member - own data only)
    */
-  const getMyCustomers = async (): Promise<UploadedCustomer[]> => {
+  const getMyCustomers = async (): Promise<any[]> => {
     const token = getAuthToken();
-    
     if (!token) {
       throw new Error('Authentication required');
     }
@@ -147,7 +205,6 @@ export const useCustomerRegistration = () => {
         }
       });
 
-      // Handle response format from Django backend
       if (response.success && Array.isArray(response.data)) {
         return response.data.map((item: any) => ({
           ind_sys_id: item.ind_sys_id,
@@ -174,78 +231,76 @@ export const useCustomerRegistration = () => {
   /**
    * Get all uploaded customers (for admin)
    */
-  const getAllCustomers = async (filters?: FilterOptions): Promise<UploadedCustomer[]> => {
+  const getAllCustomers = async (): Promise<any[]> => {
     const token = getAuthToken();
-    
     if (!token) {
       throw new Error('Authentication required');
     }
 
     try {
-      const queryParams = new URLSearchParams();
-      
-      if (filters?.bnk_code) queryParams.append('bnk_code', filters.bnk_code);
-      if (filters?.status) queryParams.append('status', filters.status);
-      if (filters?.date_from) queryParams.append('date_from', filters.date_from);
-      if (filters?.date_to) queryParams.append('date_to', filters.date_to);
-      if (filters?.confirmed !== undefined) queryParams.append('confirmed', filters.confirmed.toString());
-      if (filters?.search) queryParams.append('search', filters.search);
-
-      const url = `${baseURL}api/register/customer/all-uploads/${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-
-      const response = await $fetch<any>(url, {
+      const response = await $fetch<any>(`${baseURL}api/register/customer/all-uploads/`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      // Handle various response formats
+      console.log('Get all customers response:', response);
+
+      // Handle different response formats
+      let customerList = [];
+      
       if (Array.isArray(response)) {
-        return response;
-      } else if (response && Array.isArray(response.results)) {
-        return response.results;
-      } else if (response && Array.isArray(response.data)) {
-        return response.data;
+        customerList = response;
+      } else if (response.success && Array.isArray(response.data)) {
+        customerList = response.data;
+      } else if (response.results && Array.isArray(response.results)) {
+        customerList = response.results;
       } else {
-        console.warn('Unexpected API response format:', response);
+        console.warn('Unexpected response format:', response);
         return [];
       }
+      // Transform to consistent format
+      return customerList.map((item: any) => ({
+        ind_sys_id: item.ind_sys_id,
+        customer_id: item.customer_id || item.ind_national_id,
+        bnk_code: item.bnk_code,
+        bank_branch: item.bank_branch,
+        lcic_id: item.lcic_id || `TEMP-${item.ind_sys_id}`,
+        status: item.status || 'pending',
+        match_percent: item.match_percent || 0,
+        uploaded_at: item.insert_date || item.uploaded_at,
+        uploaded_by: item.insert_by || item.uploaded_by,
+        document_file: item.document_file,
+        confirmed: item.is_confirmed || false,
+        confirmed_at: item.confirmed_at,
+        confirmed_by: item.confirmed_by,
+        
+        // Personal info
+        ind_name: item.ind_name,
+        ind_surname: item.ind_surname,
+        ind_lao_name: item.ind_lao_name,
+        ind_lao_surname: item.ind_lao_surname,
+        ind_national_id: item.ind_national_id,
+        ind_passport: item.ind_passport,
+        ind_familybook: item.ind_familybook,
+        ind_birth_date: item.ind_birth_date,
+        
+        // Computed fields for display
+        full_name_en: `${item.ind_name || ''} ${item.ind_surname || ''}`.trim(),
+        full_name_la: `${item.ind_lao_name || ''} ${item.ind_lao_surname || ''}`.trim(),
+        
+        // Keep original for detail view
+        ...item
+      }));
+
     } catch (error: any) {
-      console.error('Failed to fetch customers:', error);
-      throw new Error(error.data?.message || 'Failed to load customers');
+      console.error('❌ Failed to fetch all customers:', error);
+      throw new Error(error.data?.error || error.data?.message || 'Failed to load customers');
     }
   };
-
   /**
-   * Upload document for a customer
-   */
-  const uploadDocument = async (customerId: number, file: File): Promise<void> => {
-    const token = getAuthToken();
-    
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
-    const formData = new FormData();
-    formData.append('document', file);
-
-    try {
-      await $fetch(`${baseURL}api/register/customer/${customerId}/upload-document/`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-    } catch (error: any) {
-      console.error('❌ Failed to upload document:', error);
-      throw new Error(error.data?.error || 'Failed to upload document');
-    }
-  };
-
-  /**
-   * Confirm customers (admin only)
+   * Confirm customers with matching logic
    */
   const confirmCustomers = async (ids: number[]): Promise<any> => {
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -260,30 +315,45 @@ export const useCustomerRegistration = () => {
       throw new Error('No valid customer IDs provided');
     }
 
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
     try {
-      const response = await $fetch(
-        `${config.public.apiBase}/api/register/customer/confirm/`, 
+      console.log('Confirming customers:', validIds);
+
+      const response = await $fetch<any>(
+        `${baseURL}api/register/customer/confirm/`,
         {
           method: 'POST',
-          body: { ids: validIds },
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${useCookie('access_token').value}`
-          }
+            'Authorization': `Bearer ${token}`
+          },
+          body: { ids: validIds }
         }
       );
+
+      console.log('Confirmation response:', response);
+
+      // Show matching summary
+      if (response.success && response.details) {
+        console.log(`✅ Matched: ${response.matched}, New: ${response.new_records}`);
+      }
 
       return response;
 
     } catch (error: any) {
+      console.error('❌ Confirmation error:', error);
+      
       const enhancedError = new Error(
         error?.data?.error || 
         error?.message || 
         'Failed to confirm customers'
       );
       
-      (enhancedError as any).status = error?.status;
-      (enhancedError as any).statusCode = error?.statusCode;
+      (enhancedError as any).status = error?.status || error?.statusCode;
       (enhancedError as any).data = error?.data;
       
       throw enhancedError;
@@ -291,9 +361,9 @@ export const useCustomerRegistration = () => {
   };
 
   /**
-   * Parse JSON file to CustomerRecord array
+   * Parse JSON file to array
    */
-  const parseUploadedFile = async (file: File): Promise<CustomerRecord[]> => {
+  const parseUploadedFile = async (file: File): Promise<any[]> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       
@@ -303,13 +373,13 @@ export const useCustomerRegistration = () => {
           const data = JSON.parse(content);
           
           if (!Array.isArray(data)) {
-            reject(new Error('File must contain an array of customer records'));
+            reject(new Error('File must contain an array'));
             return;
           }
           
           resolve(data);
         } catch (error) {
-          reject(new Error('Invalid file format. Please upload a valid JSON file.'));
+          reject(new Error('Invalid JSON file'));
         }
       };
       
@@ -320,11 +390,11 @@ export const useCustomerRegistration = () => {
 
   return {
     registerManualCustomer,
-    registerBatchCustomers,
+    validateBatchFile,      // NEW - Step 1
+    finalizeBatchUpload,    // NEW - Step 2
+    getAllCustomers,      // ADD THIS
+    confirmCustomers,     // ADD THIS
     getMyCustomers,
-    getAllCustomers,
-    uploadDocument,
-    confirmCustomers,
     parseUploadedFile
   };
 };

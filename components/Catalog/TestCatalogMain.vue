@@ -1,0 +1,3 @@
+<template>
+    souly
+</template>

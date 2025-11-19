@@ -1,7 +1,7 @@
 // composables/useMatchingApi.ts
 export const useMatchingApi = () => {
   const config = useRuntimeConfig()
-  const baseURL = config.public.apiBase || 'http://192.168.45.55:8000/api'
+  const baseURL = config.public.apiBase || config.public.strapi.url
 
   // Helper function for API calls with error handling
   const fetchApi = async (endpoint: string, options: any = {}) => {
@@ -26,7 +26,7 @@ export const useMatchingApi = () => {
   return {
     // Statistics
     getStatistics: async () => {
-      return await fetchApi('/api/statistics/')
+      return await fetchApi('api/statistics/')
     },
 
     // Find matching candidates (POST)
@@ -35,7 +35,7 @@ export const useMatchingApi = () => {
       min_score?: number
       save?: boolean
     }) => {
-      return await fetchApi('/api/find-candidates/', {
+      return await fetchApi('api/find-candidates/', {
         method: 'POST',
         body: params,
       })
@@ -58,7 +58,7 @@ export const useMatchingApi = () => {
         }, {} as Record<string, string>)
       ).toString()
       
-      return await fetchApi(`/api/candidates/${queryString ? '?' + queryString : ''}`)
+      return await fetchApi(`api/candidates/${queryString ? '?' + queryString : ''}`)
     },
 
     // Review candidate (approve or reject)
@@ -68,7 +68,7 @@ export const useMatchingApi = () => {
       notes?: string
       merge_reason?: string
     }) => {
-      return await fetchApi('/api/review/', {
+      return await fetchApi('api/review/', {
         method: 'POST',
         body: data,
       })
@@ -90,7 +90,7 @@ export const useMatchingApi = () => {
         }, {} as Record<string, string>)
       ).toString()
       
-      return await fetchApi(`/api/merged-customers/${queryString ? '?' + queryString : ''}`)
+      return await fetchApi(`api/merged-customers/${queryString ? '?' + queryString : ''}`)
     },
 
     // Get customer details
@@ -115,7 +115,7 @@ export const useMatchingApi = () => {
         }, {} as Record<string, string>)
       ).toString()
       
-      return await fetchApi(`/api/approved-matches/${queryString ? '?' + queryString : ''}`)
+      return await fetchApi(`api/approved-matches/${queryString ? '?' + queryString : ''}`)
     },
 
     // Manual merge
@@ -124,7 +124,7 @@ export const useMatchingApi = () => {
       master_record_id?: number
       reason: string
     }) => {
-      return await fetchApi('/api/merge/', {
+      return await fetchApi('api/merge/', {
         method: 'POST',
         body: data,
       })
@@ -135,7 +135,7 @@ export const useMatchingApi = () => {
       ind_sys_id: number
       reason: string
     }) => {
-      return await fetchApi('/api/unmerge/', {
+      return await fetchApi('api/unmerge/', {
         method: 'POST',
         body: data,
       })
