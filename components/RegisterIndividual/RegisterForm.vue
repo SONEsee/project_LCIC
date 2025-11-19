@@ -6,7 +6,7 @@
         <p class="subtitle">ກວດສອບ ແລະ ຢືນຢັນການລົງທະບຽນລູກຄ້າ</p>
       </div>
       <div class="header-actions">
-        <button @click="navigateTo('/register-customer')" class="btn-register">
+        <button @click="navigateTo('/register/register-customer')" class="btn-register">
           <span class="icon">📝</span>
           ລົງທະບຽນລູກຄ້າ
         </button>
