@@ -1,229 +1,242 @@
 <template>
-  <div class="sidebar-manager">
+  <div class="matrix-manager">
     <!-- Header -->
     <div class="header">
-      <h2>ຈັດການສິດເຂົ້ານໍາໃຊ້</h2>
+      <div class="header-left">
+        <div class="header-icon">
+          <v-icon icon="mdi-security" size="28" color="#6366f1"></v-icon>
+        </div>
+        <div>
+          <h2>ຈັດການສິດເຂົ້າເຖິງເມນູ</h2>
+          <p class="subtitle">ກຳນົດສິດການເຂົ້າເຖິງເມນູສຳລັບແຕ່ລະບົດບາດ</p>
+        </div>
+      </div>
       <div class="header-actions">
-        <button @click="openCreateModal('sidebar_item')" class="btn-primary">
-          <v-icon icon="mdi-plus" size="18"></v-icon>
-          <span>ເພີ່ມເມນູຫຼັກ</span>
+        <button @click="saveAllChanges" class="btn-save" :disabled="!hasChanges || saving">
+          <v-icon v-if="!saving" icon="mdi-content-save" size="18"></v-icon>
+          <div v-else class="btn-spinner"></div>
+          <span>{{ saving ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກການປ່ຽນແປງ' }}</span>
         </button>
-        <button @click="openCreateModal('sidebar_sub_item')" class="btn-primary btn-success">
-          <v-icon icon="mdi-plus" size="18"></v-icon>
-          <span>ເພີ່ມເມນູຍ່ອຍ</span>
+        <button @click="refreshData" class="btn-refresh" :disabled="loading">
+          <v-icon icon="mdi-refresh" size="18"></v-icon>
         </button>
       </div>
     </div>
 
-    <!-- Role Filter -->
-    <div class="filter-section">
-      <div class="filter-card">
-        <div class="filter-header">
-          <v-icon icon="mdi-filter" size="20" color="#6366f1"></v-icon>
-          <span>ກັ່ນຕອງຕາມບົດບາດ</span>
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);">
+          <v-icon icon="mdi-menu" size="24" color="#6366f1"></v-icon>
         </div>
-        <select v-model="selectedRole" class="role-select">
-          <option value="">ທັງໝົດ</option>
-          <option v-for="role in roles" :key="role.id" :value="role.id">
-            {{ role.name }}
-          </option>
-        </select>
+        <div class="stat-info">
+          <span class="stat-value">{{ sidebarItems.length }}</span>
+          <span class="stat-label">ເມນູຫຼັກ</span>
+        </div>
       </div>
-    </div>
-
-    <!-- Hierarchical Menu View -->
-    <div class="content">
-      <div class="menu-tree">
-        <div 
-          v-for="(item, index) in filteredMainItems" 
-          :key="item.id"
-          class="menu-item-wrapper"
-        >
-          <!-- Main Menu Item -->
-          <div class="menu-item main-item">
-            <div class="item-left">
-              <div class="drag-handle">
-                <v-icon icon="mdi-drag-vertical" size="18" color="#94a3b8"></v-icon>
-              </div>
-              <div class="item-icon" :style="{ background: getIconColor(index) }">
-                <v-icon :icon="item.icon || 'mdi-menu'" size="22" color="#ffffff"></v-icon>
-              </div>
-              <div class="item-info">
-                <span class="item-title">{{ item.title || item.name }}</span>
-                <span class="item-route">{{ item.route || item.url }}</span>
-              </div>
-            </div>
-            
-            <div class="item-right">
-              <span class="item-badge">{{ item.order }}</span>
-              <div :class="['status-badge', item.is_active ? 'active' : 'inactive']">
-                <div class="status-dot"></div>
-                {{ item.is_active ? 'ເປີດ' : 'ປິດ' }}
-              </div>
-              <div class="item-roles">
-                <v-icon icon="mdi-account-group" size="16" color="#64748b"></v-icon>
-                <span>{{ getRoleNames(item.roles) }}</span>
-              </div>
-              <div class="item-actions">
-                <button 
-                  @click="moveItem(index, 'up', 'sidebar_item')" 
-                  :disabled="index === 0"
-                  class="action-btn"
-                  title="ຍ້າຍຂື້ນ"
-                >
-                  <v-icon icon="mdi-chevron-up" size="18"></v-icon>
-                </button>
-                <button 
-                  @click="moveItem(index, 'down', 'sidebar_item')" 
-                  :disabled="index === filteredMainItems.length - 1"
-                  class="action-btn"
-                  title="ຍ້າຍລົງ"
-                >
-                  <v-icon icon="mdi-chevron-down" size="18"></v-icon>
-                </button>
-                <button @click="editItem(item, 'sidebar_item')" class="action-btn edit" title="ແກ້ໄຂ">
-                  <v-icon icon="mdi-pencil-outline" size="18"></v-icon>
-                </button>
-                <button @click="deleteItem(item.id, 'sidebar_item')" class="action-btn delete" title="ລຶບ">
-                  <v-icon icon="mdi-delete-outline" size="18"></v-icon>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sub Menu Items -->
-          <div v-if="getFilteredSubItems(item.id).length > 0" class="sub-items-container">
-            <div 
-              v-for="(subItem, subIndex) in getFilteredSubItems(item.id)" 
-              :key="subItem.id"
-              class="menu-item sub-item"
-            >
-              <div class="item-left">
-                <div class="sub-connector"></div>
-                <div class="item-icon sub-icon" :style="{ background: getIconColor(index, true) }">
-                  <v-icon :icon="subItem.icon || 'mdi-circle-small'" size="18" color="#ffffff"></v-icon>
-                </div>
-                <div class="item-info">
-                  <span class="item-title">{{ subItem.title || subItem.name }}</span>
-                  <span class="item-route">{{ subItem.route || subItem.url }}</span>
-                </div>
-              </div>
-              
-              <div class="item-right">
-                <span class="item-badge sub-badge">{{ subItem.order }}</span>
-                <div :class="['status-badge', subItem.is_active ? 'active' : 'inactive']">
-                  <div class="status-dot"></div>
-                  {{ subItem.is_active ? 'ເປີດ' : 'ປິດ' }}
-                </div>
-                <div class="item-roles">
-                  <v-icon icon="mdi-account-group" size="14" color="#64748b"></v-icon>
-                  <span>{{ getRoleNames(subItem.roles) }}</span>
-                </div>
-                <div class="item-actions">
-                  <button 
-                    @click="moveSubItem(item.id, subIndex, 'up')" 
-                    :disabled="subIndex === 0"
-                    class="action-btn"
-                    title="ຍ້າຍຂື້ນ"
-                  >
-                    <v-icon icon="mdi-chevron-up" size="16"></v-icon>
-                  </button>
-                  <button 
-                    @click="moveSubItem(item.id, subIndex, 'down')" 
-                    :disabled="subIndex === getFilteredSubItems(item.id).length - 1"
-                    class="action-btn"
-                    title="ຍ້າຍລົງ"
-                  >
-                    <v-icon icon="mdi-chevron-down" size="16"></v-icon>
-                  </button>
-                  <button @click="editItem(subItem, 'sidebar_sub_item')" class="action-btn edit" title="ແກ້ໄຂ">
-                    <v-icon icon="mdi-pencil-outline" size="16"></v-icon>
-                  </button>
-                  <button @click="deleteItem(subItem.id, 'sidebar_sub_item')" class="action-btn delete" title="ລຶບ">
-                    <v-icon icon="mdi-delete-outline" size="16"></v-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+          <v-icon icon="mdi-file-tree" size="24" color="#f59e0b"></v-icon>
         </div>
-
-        <div v-if="filteredMainItems.length === 0" class="empty-state">
-          <v-icon icon="mdi-file-tree-outline" size="64" color="#cbd5e1"></v-icon>
-          <p>ບໍ່ມີຂໍ້ມູນສະແດງ</p>
+        <div class="stat-info">
+          <span class="stat-value">{{ sidebarSubItems.length }}</span>
+          <span class="stat-label">ເມນູຍ່ອຍ</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);">
+          <v-icon icon="mdi-account-group" size="24" color="#10b981"></v-icon>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ roles.length }}</span>
+          <span class="stat-label">ບົດບາດ</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);">
+          <v-icon icon="mdi-pencil" size="24" color="#f97316"></v-icon>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ changeCount }}</span>
+          <span class="stat-label">ການປ່ຽນແປງ</span>
         </div>
       </div>
     </div>
 
-    <!-- Enhanced Create/Edit Modal -->
-    <div v-if="showCreateModal" class="modal-overlay" @click.self="closeModal">
+    <!-- Matrix Table -->
+    <div class="matrix-container" v-if="!loading">
+      <div class="matrix-scroll">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th class="menu-column sticky-col">
+                <div class="th-content">
+                  <v-icon icon="mdi-menu" size="20" color="#64748b"></v-icon>
+                  <span>ເມນູ</span>
+                </div>
+              </th>
+              <th class="action-column">
+                <div class="th-content">
+                  <v-icon icon="mdi-cog" size="18" color="#64748b"></v-icon>
+                </div>
+              </th>
+              <th v-for="role in roles" :key="role.id" class="role-column">
+                <div class="th-content">
+                  <div class="role-icon" :style="{ background: getRoleColor(role.id) }">
+                    <v-icon icon="mdi-account" size="18" color="#ffffff"></v-icon>
+                  </div>
+                  <div class="role-info">
+                    <span class="role-name">{{ role.name }}</span>
+                    <span class="role-count">{{ getRoleAccessCount(role.id) }} items</span>
+                  </div>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Loop through Main Items -->
+            <template v-for="item in sidebarItems" :key="`main-${item.id}`">
+              <!-- Main Menu Item -->
+              <tr class="main-row">
+                <td class="menu-cell sticky-col">
+                  <div class="menu-item-info">
+                    <div class="menu-icon" :style="{ background: getMenuColor(item.id) }">
+                      <v-icon :icon="item.icon || 'mdi-menu'" size="22" color="#ffffff"></v-icon>
+                    </div>
+                    <div class="menu-details">
+                      <span class="menu-title">{{ item.title || item.name }}</span>
+                      <span class="menu-route">{{ item.route || item.url }}</span>
+                    </div>
+                    <div v-if="!item.is_active" class="inactive-badge">
+                      <v-icon icon="mdi-eye-off" size="14"></v-icon>
+                    </div>
+                  </div>
+                </td>
+                <td class="action-cell">
+                  <div class="action-buttons">
+                    <button @click="editItem(item, 'sidebar_item')" class="action-btn edit-btn" title="ແກ້ໄຂ">
+                      <v-icon icon="mdi-pencil-outline" size="16"></v-icon>
+                    </button>
+                    <button @click="deleteItem(item.id, 'sidebar_item')" class="action-btn delete-btn" title="ລຶບ">
+                      <v-icon icon="mdi-delete-outline" size="16"></v-icon>
+                    </button>
+                  </div>
+                </td>
+                <td v-for="role in roles" :key="`${item.id}-${role.id}`" class="checkbox-cell">
+                  <label class="checkbox-wrapper" :class="{ 'has-change': hasItemChange(item.id, role.id, 'main') }">
+                    <input 
+                      type="checkbox"
+                      :checked="isItemAssigned(item.id, role.id, 'main')"
+                      @change="togglePermission(item.id, role.id, 'main', $event)"
+                      class="checkbox-input"
+                    />
+                    <span class="checkbox-custom"></span>
+                  </label>
+                </td>
+              </tr>
+
+              <!-- Sub Items for this Main Item -->
+              <tr v-for="subItem in getSubItemsForParent(item.id)" :key="`sub-${subItem.id}`" class="sub-row">
+                <td class="menu-cell sticky-col">
+                  <div class="menu-item-info sub-menu">
+                    <div class="sub-connector"></div>
+                    <div class="menu-icon sub-icon" :style="{ background: getMenuColor(item.id, true) }">
+                      <v-icon :icon="subItem.icon || 'mdi-circle-small'" size="18" color="#ffffff"></v-icon>
+                    </div>
+                    <div class="menu-details">
+                      <span class="menu-title">{{ subItem.title || subItem.name }}</span>
+                      <span class="menu-route">{{ subItem.route || subItem.url }}</span>
+                    </div>
+                    <div v-if="!subItem.is_active" class="inactive-badge">
+                      <v-icon icon="mdi-eye-off" size="12"></v-icon>
+                    </div>
+                  </div>
+                </td>
+                <td class="action-cell">
+                  <div class="action-buttons">
+                    <button @click="editItem(subItem, 'sidebar_sub_item')" class="action-btn edit-btn" title="ແກ້ໄຂ">
+                      <v-icon icon="mdi-pencil-outline" size="14"></v-icon>
+                    </button>
+                    <button @click="deleteItem(subItem.id, 'sidebar_sub_item')" class="action-btn delete-btn" title="ລຶບ">
+                      <v-icon icon="mdi-delete-outline" size="14"></v-icon>
+                    </button>
+                  </div>
+                </td>
+                <td v-for="role in roles" :key="`${subItem.id}-${role.id}`" class="checkbox-cell">
+                  <label class="checkbox-wrapper" :class="{ 'has-change': hasItemChange(subItem.id, role.id, 'sub') }">
+                    <input 
+                      type="checkbox"
+                      :checked="isItemAssigned(subItem.id, role.id, 'sub')"
+                      @change="togglePermission(subItem.id, role.id, 'sub', $event)"
+                      class="checkbox-input"
+                    />
+                    <span class="checkbox-custom"></span>
+                  </label>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>ກຳລັງໂຫຼດຂໍ້ມູນ...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div v-if="!loading && sidebarItems.length === 0" class="empty-state">
+      <v-icon icon="mdi-file-tree-outline" size="64" color="#cbd5e1"></v-icon>
+      <p>ບໍ່ມີຂໍ້ມູນເມນູ</p>
+    </div>
+
+    <!-- Edit Modal -->
+    <div v-if="showEditModal" class="modal-overlay" @click.self="closeEditModal">
       <div class="modal enhanced-modal">
         <div class="modal-header">
           <div class="modal-title-section">
             <div class="modal-icon">
-              <v-icon :icon="editingItem ? 'mdi-pencil' : 'mdi-plus-circle'" size="24" color="#6366f1"></v-icon>
+              <v-icon icon="mdi-pencil" size="24" color="#6366f1"></v-icon>
             </div>
             <div>
-              <h3>{{ editingItem ? 'ແກ້ໄຂ' : 'ສ້າງ' }} {{ modalType === 'sidebar_item' ? 'ເມນູຫຼັກ' : 'ເມນູຍ່ອຍ' }}</h3>
-              <p class="modal-subtitle">{{ editingItem ? 'ອັບເດດຂໍ້ມູນເມນູ' : 'ເພີ່ມເມນູໃໝ່ເຂົ້າລະບົບ' }}</p>
+              <h3>ແກ້ໄຂ {{ editModalType === 'sidebar_item' ? 'ເມນູຫຼັກ' : 'ເມນູຍ່ອຍ' }}</h3>
+              <p class="modal-subtitle">ອັບເດດຂໍ້ມູນເມນູ</p>
             </div>
           </div>
-          <button @click="closeModal" class="btn-close">
+          <button @click="closeEditModal" class="btn-close">
             <v-icon icon="mdi-close" size="20"></v-icon>
           </button>
         </div>
 
         <div class="modal-body">
-          <div class="form-row">
-            <div class="form-group">
-              <label>ປະເພດ <span class="required">*</span></label>
-              <select v-model="modalType" class="form-control" :disabled="editingItem">
-                <option value="sidebar_item">ເມນູຫຼັກ</option>
-                <option value="sidebar_sub_item">ເມນູຍ່ອຍ</option>
-              </select>
-            </div>
-
-            <div v-if="modalType === 'sidebar_sub_item'" class="form-group">
-              <label>ແມ່ເມນູ <span class="required">*</span></label>
-              <select v-model="formData.parent" class="form-control" required>
-                <option value="">-- ເລືອກແມ່ເມນູ --</option>
-                <option v-for="item in sidebarItems" :key="item.id" :value="item.id">
-                  {{ item.title || item.name }}
-                </option>
-              </select>
-            </div>
-          </div>
-
           <div class="form-group">
             <label>ຊື່ເມນູ <span class="required">*</span></label>
             <input 
-              v-model="formData.name" 
+              v-model="editFormData.name" 
               type="text" 
               class="form-control" 
               placeholder="ປ້ອນຊື່ເມນູ"
               required 
-              @input="validateName"
             />
-            <span v-if="formErrors.name" class="error-message">{{ formErrors.name }}</span>
           </div>
 
           <div class="form-group">
-            <label>ໄອຄອນ (MDI Icon) <span class="required">*</span></label>
+            <label>ໄອຄອນ (MDI Icon)</label>
             <div class="icon-input-group">
-              <div class="icon-preview" :class="{ 'icon-preview-error': formErrors.icon }">
+              <div class="icon-preview">
                 <v-icon 
-                  :icon="formData.icon || 'mdi-help-circle'" 
+                  :icon="editFormData.icon || 'mdi-help-circle'" 
                   size="28" 
-                  :color="formData.icon && formData.icon.startsWith('mdi-') ? '#6366f1' : '#cbd5e1'"
+                  :color="editFormData.icon && editFormData.icon.startsWith('mdi-') ? '#6366f1' : '#cbd5e1'"
                 ></v-icon>
               </div>
               <input 
-                v-model="formData.icon" 
+                v-model="editFormData.icon" 
                 type="text" 
                 class="form-control icon-input" 
-                placeholder="mdi-home"
-                required
-                @input="validateIcon"
+                placeholder="mdi-home (ປ່ອຍຫວ່າງໄດ້)"
               />
               <a 
                 href="https://pictogrammers.com/library/mdi/" 
@@ -232,106 +245,82 @@
                 title="ຄົ້ນຫາໄອຄອນ"
               >
                 <v-icon icon="mdi-magnify" size="18"></v-icon>
-                <span>ຄົ້ນຫາ</span>
               </a>
             </div>
-            <span v-if="formErrors.icon" class="error-message">{{ formErrors.icon }}</span>
-            <span class="helper-text">
-              <v-icon icon="mdi-information-outline" size="14"></v-icon>
-              ຄລິກປຸ່ມຄົ້ນຫາເພື່ອເບິ່ງໄອຄອນທັງໝົດ
-            </span>
           </div>
 
           <div class="form-group">
-            <label>ເສັ້ນທາງ/URL <span class="required">*</span></label>
+            <label>ເສັ້ນທາງ/URL</label>
             <input 
-              v-model="formData.url" 
+              v-model="editFormData.url" 
               type="text" 
               class="form-control" 
-              placeholder="/dashboard"
-              required
-              @input="validateUrl"
+              placeholder="/dashboard (ປ່ອຍຫວ່າງໄດ້)"
             />
-            <span v-if="formErrors.url" class="error-message">{{ formErrors.url }}</span>
-            <span class="helper-text">
-              <v-icon icon="mdi-information-outline" size="14"></v-icon>
-              ເສັ້ນທາງຕ້ອງເລີ່ມດ້ວຍ /
-            </span>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>ລຳດັບ <span class="required">*</span></label>
-              <input 
-                v-model.number="formData.order" 
-                type="number" 
-                class="form-control" 
-                min="0"
-                placeholder="0"
-                required 
-              />
-            </div>
-
-            <div class="form-group">
-              <label>ສະຖານະ</label>
-              <div class="switch-container">
-                <label class="switch-label">
-                  <input v-model="formData.is_active" type="checkbox" class="switch-input" />
-                  <span class="switch-slider"></span>
-                </label>
-                <span class="switch-text">{{ formData.is_active ? 'ເປີດໃຊ້ງານ' : 'ປິດໃຊ້ງານ' }}</span>
-              </div>
-            </div>
           </div>
 
           <div class="form-group">
-            <label>ມອບສິດໃຫ້ບົດບາດ</label>
-            <div class="role-checkboxes">
-              <label v-for="role in roles" :key="role.id" class="checkbox-label">
-                <input 
-                  type="checkbox" 
-                  :value="role.id" 
-                  v-model="formData.selectedRoles"
-                />
-                <span>{{ role.name }}</span>
+            <label>ສະຖານະ</label>
+            <div class="switch-container">
+              <label class="switch-label">
+                <input v-model="editFormData.is_active" type="checkbox" class="switch-input" />
+                <span class="switch-slider"></span>
               </label>
+              <span class="switch-text">{{ editFormData.is_active ? 'ເປີດໃຊ້ງານ' : 'ປິດໃຊ້ງານ' }}</span>
             </div>
-            <span class="helper-text">
-              <v-icon icon="mdi-information-outline" size="14"></v-icon>
-              ເລືອກບົດບາດທີ່ສາມາດເຂົ້າເຖິງເມນູນີ້ໄດ້
-            </span>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button @click="closeModal" class="btn-secondary">
+          <button @click="closeEditModal" class="btn-secondary">
             <v-icon icon="mdi-close" size="18"></v-icon>
             <span>ຍົກເລີກ</span>
           </button>
-          <button @click="saveItem" class="btn-primary" :disabled="!canSubmit || saving">
-            <v-icon v-if="!saving" :icon="editingItem ? 'mdi-content-save' : 'mdi-plus'" size="18"></v-icon>
+          <button @click="saveEditItem" class="btn-primary" :disabled="!editFormData.name || editSaving">
+            <v-icon v-if="!editSaving" icon="mdi-content-save" size="18"></v-icon>
             <div v-else class="btn-spinner"></div>
-            <span>{{ saving ? 'ກຳລັງບັນທຶກ...' : (editingItem ? 'ອັບເດດ' : 'ສ້າງ') }}</span>
+            <span>{{ editSaving ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກ' }}</span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Loading Overlay -->
-    <div v-if="loading" class="loading-overlay">
-      <div class="spinner"></div>
-    </div>
-
     <!-- Toast Notification -->
-    <div v-if="toast.show" :class="['toast', toast.type]">
-      <v-icon :icon="toast.type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'" size="20"></v-icon>
-      <span>{{ toast.message }}</span>
-    </div>
+    <Transition name="toast">
+      <div v-if="toast.show" :class="['toast', toast.type]">
+        <v-icon :icon="getToastIcon(toast.type)" size="20"></v-icon>
+        <span>{{ toast.message }}</span>
+      </div>
+    </Transition>
+
+    <!-- Changes Panel -->
+    <Transition name="slide-up">
+      <div v-if="hasChanges" class="changes-panel">
+        <div class="changes-header">
+          <div class="changes-info">
+            <v-icon icon="mdi-alert-circle" size="20" color="#f59e0b"></v-icon>
+            <span>ມີການປ່ຽນແປງ {{ changeCount }} ລາຍການທີ່ຍັງບໍ່ທັນບັນທຶກ</span>
+          </div>
+          <div class="changes-actions">
+            <button @click="discardChanges" class="btn-discard">
+              <v-icon icon="mdi-close" size="16"></v-icon>
+              <span>ຍົກເລີກ</span>
+            </button>
+            <button @click="saveAllChanges" class="btn-save-changes" :disabled="saving">
+              <v-icon v-if="!saving" icon="mdi-content-save" size="16"></v-icon>
+              <div v-else class="btn-spinner small"></div>
+              <span>{{ saving ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກທັງໝົດ' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
+
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import { refreshSidebar } from '~/components/backendComponents/sidebar/sidebarItems'
+import { ref, computed, onMounted } from 'vue';
+import { refreshSidebar } from '~/components/backendComponents/sidebar/sidebarItems';
 
 definePageMeta({
   middleware: "auth",
@@ -344,7 +333,19 @@ interface Role {
   description?: string;
 }
 
-interface SubItem {
+interface SidebarItem {
+  id: number;
+  name?: string;
+  title?: string;
+  url?: string;
+  route?: string;
+  icon: string;
+  order: number;
+  roles: Role[] | number[];
+  is_active: boolean;
+}
+
+interface SidebarSubItem {
   id: number;
   name?: string;
   title?: string;
@@ -357,343 +358,306 @@ interface SubItem {
   is_active: boolean;
 }
 
-interface SidebarItem {
-  id: number;
-  name?: string;
-  title?: string;
-  url?: string;
-  route?: string;
-  icon: string;
-  order: number;
-  roles: Role[] | number[];
-  sub_items?: SubItem[];
-  is_active: boolean;
+interface PermissionChange {
+  itemId: number;
+  roleId: number;
+  type: 'main' | 'sub';
+  checked: boolean;
 }
 
 const config = useRuntimeConfig();
 const sidebarItems = ref<SidebarItem[]>([]);
-const sidebarSubItems = ref<SubItem[]>([]);
+const sidebarSubItems = ref<SidebarSubItem[]>([]);
 const roles = ref<Role[]>([]);
-const selectedRole = ref('');
-const showCreateModal = ref(false);
-const modalType = ref<'sidebar_item' | 'sidebar_sub_item'>('sidebar_item');
-const editingItem = ref<any>(null);
-const formData = ref({
+const loading = ref(false);
+const saving = ref(false);
+const pendingChanges = ref<Map<string, PermissionChange>>(new Map());
+
+// Edit modal states
+const showEditModal = ref(false);
+const editModalType = ref<'sidebar_item' | 'sidebar_sub_item'>('sidebar_item');
+const editingItemId = ref<number | null>(null);
+const editSaving = ref(false);
+const editFormData = ref({
   name: '',
   icon: '',
   url: '',
-  order: 0,
-  parent: '',
-  is_active: true,
-  selectedRoles: [] as number[]
+  is_active: true
 });
-const formErrors = ref({
-  name: '',
-  icon: '',
-  url: ''
-});
-const loading = ref(false);
-const saving = ref(false);
+
 const toast = ref({
   show: false,
   message: '',
   type: 'success'
 });
 
-// Color palette for icons
-const iconColors = [
-  '#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', 
-  '#10b981', '#3b82f6', '#06b6d4', '#f43f5e',
-];
+const roleColors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#06b6d4'];
+const menuColors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#06b6d4', '#f43f5e'];
 
-const getIconColor = (index: number, isSub: boolean = false) => {
-  const color = iconColors[index % iconColors.length];
+const getRoleColor = (roleId: number) => {
+  return roleColors[roleId % roleColors.length];
+};
+
+const getMenuColor = (itemId: number, isSub: boolean = false) => {
+  const color = menuColors[itemId % menuColors.length];
   return isSub ? `${color}dd` : color;
 };
 
-const filteredMainItems = computed(() => {
-  if (!selectedRole.value) return sidebarItems.value;
-  const roleId = parseInt(selectedRole.value as string);
-  return sidebarItems.value.filter(item => hasRole(item.roles, roleId));
-});
+const hasChanges = computed(() => pendingChanges.value.size > 0);
+const changeCount = computed(() => pendingChanges.value.size);
 
-const getFilteredSubItems = (parentId: number) => {
-  const subItems = sidebarSubItems.value.filter(item => item.parent === parentId);
-  if (!selectedRole.value) return subItems;
-  const roleId = parseInt(selectedRole.value as string);
-  return subItems.filter(item => hasRole(item.roles, roleId));
+// Get sub items for a specific parent
+const getSubItemsForParent = (parentId: number) => {
+  return sidebarSubItems.value
+    .filter(item => item.parent === parentId)
+    .sort((a, b) => a.order - b.order);
 };
 
-const getRoleNames = (roles: Role[] | number[]): string => {
-  if (!roles || roles.length === 0) return '-';
-  if (typeof roles[0] === 'object') {
-    return roles.slice(0, 2).map((r: any) => r.name).join(', ') + 
-           (roles.length > 2 ? ` +${roles.length - 2}` : '');
+const getRoleAccessCount = (roleId: number) => {
+  let count = 0;
+  sidebarItems.value.forEach(item => {
+    if (isItemAssigned(item.id, roleId, 'main')) count++;
+  });
+  sidebarSubItems.value.forEach(item => {
+    if (isItemAssigned(item.id, roleId, 'sub')) count++;
+  });
+  return count;
+};
+
+const isItemAssigned = (itemId: number, roleId: number, type: 'main' | 'sub'): boolean => {
+  const changeKey = `${itemId}-${roleId}-${type}`;
+  if (pendingChanges.value.has(changeKey)) {
+    return pendingChanges.value.get(changeKey)!.checked;
   }
-  return '-';
-};
 
-const hasRole = (itemRoles: Role[] | number[], roleId: number): boolean => {
-  if (!itemRoles || itemRoles.length === 0) return false;
-  if (typeof itemRoles[0] === 'object') {
-    return itemRoles.some((r: any) => r.id === roleId);
+  const items = type === 'main' ? sidebarItems.value : sidebarSubItems.value;
+  const item = items.find(i => i.id === itemId);
+  
+  if (!item || !item.roles) return false;
+  
+  if (typeof item.roles[0] === 'object') {
+    return item.roles.some((r: any) => r.id === roleId);
   }
-  return itemRoles.includes(roleId);
+  return item.roles.includes(roleId);
 };
 
-// Form validation
-const validateName = () => {
-  if (!formData.value.name.trim()) {
-    formErrors.value.name = 'ກະລຸນາປ້ອນຊື່ເມນູ';
-    return false;
-  } else if (formData.value.name.length < 2) {
-    formErrors.value.name = 'ຊື່ເມນູຕ້ອງມີຢ່າງໜ້ອຍ 2 ຕົວອັກສອນ';
-    return false;
+const hasItemChange = (itemId: number, roleId: number, type: 'main' | 'sub'): boolean => {
+  return pendingChanges.value.has(`${itemId}-${roleId}-${type}`);
+};
+
+const togglePermission = (itemId: number, roleId: number, type: 'main' | 'sub', event: Event) => {
+  const checked = (event.target as HTMLInputElement).checked;
+  const changeKey = `${itemId}-${roleId}-${type}`;
+  
+  const items = type === 'main' ? sidebarItems.value : sidebarSubItems.value;
+  const item = items.find(i => i.id === itemId);
+  
+  if (!item) return;
+  
+  const currentlyAssigned = typeof item.roles[0] === 'object' 
+    ? item.roles.some((r: any) => r.id === roleId)
+    : item.roles.includes(roleId);
+  
+  if (checked === currentlyAssigned) {
+    pendingChanges.value.delete(changeKey);
   } else {
-    formErrors.value.name = '';
-    return true;
+    pendingChanges.value.set(changeKey, { itemId, roleId, type, checked });
   }
 };
 
-const validateIcon = () => {
-  if (!formData.value.icon.trim()) {
-    formErrors.value.icon = 'ກະລຸນາປ້ອນໄອຄອນ';
-    return false;
-  } else if (!formData.value.icon.startsWith('mdi-')) {
-    formErrors.value.icon = 'ໄອຄອນຕ້ອງເລີ່ມດ້ວຍ mdi-';
-    return false;
-  } else {
-    formErrors.value.icon = '';
-    return true;
-  }
-};
-
-const validateUrl = () => {
-  if (!formData.value.url.trim()) {
-    formErrors.value.url = 'ກະລຸນາປ້ອນເສັ້ນທາງ';
-    return false;
-  } else if (!formData.value.url.startsWith('/')) {
-    formErrors.value.url = 'ເສັ້ນທາງຕ້ອງເລີ່ມດ້ວຍ /';
-    return false;
-  } else {
-    formErrors.value.url = '';
-    return true;
-  }
-};
-
-// Fixed validation check
-const canSubmit = computed(() => {
-  const hasName = formData.value.name.trim().length >= 2;
-  const hasIcon = formData.value.icon.trim() && formData.value.icon.startsWith('mdi-');
-  const hasUrl = formData.value.url.trim() && formData.value.url.startsWith('/');
-  const hasParent = modalType.value === 'sidebar_item' || formData.value.parent;
+const saveAllChanges = async () => {
+  if (!hasChanges.value || saving.value) return;
   
-  return hasName && hasIcon && hasUrl && hasParent;
-});
-
-onMounted(() => {
-  loadData();
-});
-
-const loadData = async () => {
-  loading.value = true;
-  try {
-    const [itemsRes, subItemsRes, rolesRes] = await Promise.all([
-      fetch(`${config.public.strapi.url}api/sidebar-items/`),
-      fetch(`${config.public.strapi.url}api/sidebar-sub-items/`),
-      fetch(`${config.public.strapi.url}api/roles/`)
-    ]);
-    
-    sidebarItems.value = await itemsRes.json();
-    sidebarSubItems.value = await subItemsRes.json();
-    roles.value = await rolesRes.json();
-    
-    if (roles.value.length > 0 && !selectedRole.value) {
-      selectedRole.value = roles.value[0].id.toString();
-    }
-  } catch (error) {
-    showToast('ໂຫຼດຂໍ້ມູນບໍ່ສຳເລັດ', 'error');
-  } finally {
-    loading.value = false;
-  }
-};
-
-const moveItem = async (index: number, direction: 'up' | 'down', itemType: 'sidebar_item' | 'sidebar_sub_item') => {
-  const items = itemType === 'sidebar_item' ? sidebarItems.value : sidebarSubItems.value;
-  const newIndex = direction === 'up' ? index - 1 : index + 1;
-  
-  if (newIndex < 0 || newIndex >= items.length) return;
-
-  const temp = items[index];
-  items[index] = items[newIndex];
-  items[newIndex] = temp;
-
-  const itemsOrder = items.map((item, idx) => ({
-    id: item.id,
-    order: idx
-  }));
-
-  try {
-    const response = await fetch(`${config.public.strapi.url}api/reorder/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        item_type: itemType,
-        items_order: itemsOrder
-      })
-    });
-
-    if (!response.ok) throw new Error('Failed to reorder');
-    
-    showToast('ອັບເດດລຳດັບສຳເລັດ', 'success');
-    await loadData();
-    await triggerSidebarRefresh();
-  } catch (error) {
-    showToast('ອັບເດດລຳດັບບໍ່ສຳເລັດ', 'error');
-    const tempRevert = items[index];
-    items[index] = items[newIndex];
-    items[newIndex] = tempRevert;
-  }
-};
-
-const moveSubItem = async (parentId: number, subIndex: number, direction: 'up' | 'down') => {
-  const subItems = getFilteredSubItems(parentId);
-  const newIndex = direction === 'up' ? subIndex - 1 : subIndex + 1;
-  
-  if (newIndex < 0 || newIndex >= subItems.length) return;
-
-  const allSubItems = sidebarSubItems.value.filter(item => item.parent === parentId);
-  const currentItem = subItems[subIndex];
-  const targetItem = subItems[newIndex];
-  
-  const currentGlobalIndex = allSubItems.findIndex(item => item.id === currentItem.id);
-  const targetGlobalIndex = allSubItems.findIndex(item => item.id === targetItem.id);
-  
-  const temp = allSubItems[currentGlobalIndex];
-  allSubItems[currentGlobalIndex] = allSubItems[targetGlobalIndex];
-  allSubItems[targetGlobalIndex] = temp;
-
-  const itemsOrder = allSubItems.map((item, idx) => ({
-    id: item.id,
-    order: idx
-  }));
-
-  try {
-    const response = await fetch(`${config.public.strapi.url}api/reorder/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        item_type: 'sidebar_sub_item',
-        items_order: itemsOrder
-      })
-    });
-
-    if (!response.ok) throw new Error('Failed to reorder');
-    
-    showToast('ອັບເດດລຳດັບສຳເລັດ', 'success');
-    await loadData();
-    await triggerSidebarRefresh();
-  } catch (error) {
-    showToast('ອັບເດດລຳດັບບໍ່ສຳເລັດ', 'error');
-  }
-};
-
-const openCreateModal = (type: 'sidebar_item' | 'sidebar_sub_item') => {
-  modalType.value = type;
-  formData.value = {
-    name: '',
-    icon: '',
-    url: '',
-    order: 0,
-    parent: '',
-    is_active: true,
-    selectedRoles: []
-  };
-  formErrors.value = { name: '', icon: '', url: '' };
-  showCreateModal.value = true;
-};
-
-const editItem = (item: any, type: 'sidebar_item' | 'sidebar_sub_item') => {
-  editingItem.value = item;
-  modalType.value = type;
-  
-  const roleIds = typeof item.roles[0] === 'object' 
-    ? item.roles.map((r: any) => r.id)
-    : item.roles;
-  
-  formData.value = {
-    name: item.title || item.name,
-    icon: item.icon || '',
-    url: item.route || item.url || '',
-    order: item.order,
-    parent: item.parent || '',
-    is_active: item.is_active,
-    selectedRoles: roleIds
-  };
-  formErrors.value = { name: '', icon: '', url: '' };
-  showCreateModal.value = true;
-};
-
-const saveItem = async () => {
-  // Validate all fields
-  const nameValid = validateName();
-  const iconValid = validateIcon();
-  const urlValid = validateUrl();
-  
-  if (!nameValid || !iconValid || !urlValid) {
-    showToast('ກະລຸນາກວດສອບຂໍ້ມູນໃຫ້ຖືກຕ້ອງ', 'error');
-    return;
-  }
-
-  // Check parent for sub-items
-  if (modalType.value === 'sidebar_sub_item' && !formData.value.parent) {
-    showToast('ກະລຸນາເລືອກແມ່ເມນູ', 'error');
-    return;
-  }
-
-  const data = {
-    item_type: modalType.value,
-    title: formData.value.name,
-    icon: formData.value.icon,
-    route: formData.value.url,
-    order: formData.value.order,
-    parent: formData.value.parent,
-    is_active: formData.value.is_active,
-    roles: formData.value.selectedRoles
-  };
-
   saving.value = true;
+  
   try {
-    let response;
-    if (editingItem.value) {
-      response = await fetch(`${config.public.strapi.url}api/create_sidebar/${editingItem.value.id}/`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+    // Group changes by role
+    const roleChanges = new Map<number, { 
+      addItems: number[], 
+      removeItems: number[],
+      addSubItems: number[],
+      removeSubItems: number[]
+    }>();
+    
+    // Initialize with current state for each role
+    roles.value.forEach(role => {
+      const currentItems: number[] = [];
+      const currentSubItems: number[] = [];
+      
+      // Get current assignments
+      sidebarItems.value.forEach(item => {
+        if (typeof item.roles[0] === 'object') {
+          if (item.roles.some((r: any) => r.id === role.id)) {
+            currentItems.push(item.id);
+          }
+        } else if (item.roles.includes(role.id)) {
+          currentItems.push(item.id);
+        }
       });
-    } else {
-      response = await fetch(`${config.public.strapi.url}api/create_sidebar/`, {
+      
+      sidebarSubItems.value.forEach(item => {
+        if (typeof item.roles[0] === 'object') {
+          if (item.roles.some((r: any) => r.id === role.id)) {
+            currentSubItems.push(item.id);
+          }
+        } else if (item.roles.includes(role.id)) {
+          currentSubItems.push(item.id);
+        }
+      });
+      
+      roleChanges.set(role.id, {
+        addItems: [...currentItems],
+        removeItems: [],
+        addSubItems: [...currentSubItems],
+        removeSubItems: []
+      });
+    });
+    
+    // Apply pending changes
+    pendingChanges.value.forEach(change => {
+      const roleData = roleChanges.get(change.roleId);
+      if (!roleData) return;
+      
+      if (change.type === 'main') {
+        if (change.checked) {
+          // Add if not already there
+          if (!roleData.addItems.includes(change.itemId)) {
+            roleData.addItems.push(change.itemId);
+          }
+        } else {
+          // Remove from add list
+          roleData.addItems = roleData.addItems.filter(id => id !== change.itemId);
+        }
+      } else {
+        if (change.checked) {
+          // Add if not already there
+          if (!roleData.addSubItems.includes(change.itemId)) {
+            roleData.addSubItems.push(change.itemId);
+          }
+        } else {
+          // Remove from add list
+          roleData.addSubItems = roleData.addSubItems.filter(id => id !== change.itemId);
+        }
+      }
+    });
+    
+    // Send updates to backend
+    const updatePromises = Array.from(roleChanges.entries()).map(([roleId, data]) => {
+      return fetch(`${config.public.strapi.url}api/assign-role/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+          role_id: roleId,
+          sidebar_items: data.addItems,
+          sidebar_sub_items: data.addSubItems
+        })
       });
-    }
-
-    if (!response.ok) throw new Error('Failed to save');
+    });
     
-    showToast(editingItem.value ? 'ອັບເດດສຳເລັດ' : 'ສ້າງສຳເລັດ', 'success');
-    await loadData();
-    await triggerSidebarRefresh();
-    closeModal();
+    const results = await Promise.all(updatePromises);
+    const allSuccess = results.every(r => r.ok);
+    
+    if (allSuccess) {
+      showToast('ບັນທຶກການປ່ຽນແປງສຳເລັດ', 'success');
+      pendingChanges.value.clear();
+      await loadData();
+      await triggerSidebarRefresh();
+    } else {
+      showToast('ບາງການປ່ຽນແປງບັນທຶກບໍ່ສຳເລັດ', 'error');
+    }
   } catch (error) {
-    showToast('ບັນທຶກບໍ່ສຳເລັດ', 'error');
+    console.error('Save error:', error);
+    showToast('ເກີດຂໍ້ຜິດພາດໃນການບັນທຶກ', 'error');
   } finally {
     saving.value = false;
   }
 };
 
+const discardChanges = () => {
+  if (confirm('ທ່ານຕ້ອງການຍົກເລີກການປ່ຽນແປງທັງໝົດບໍ່?')) {
+    pendingChanges.value.clear();
+    showToast('ຍົກເລີກການປ່ຽນແປງແລ້ວ', 'info');
+  }
+};
+
+const editItem = (item: any, type: 'sidebar_item' | 'sidebar_sub_item') => {
+  editingItemId.value = item.id;
+  editModalType.value = type;
+  editFormData.value = {
+    name: item.title || item.name || '',
+    icon: item.icon || '',
+    url: item.route || item.url || '',
+    is_active: item.is_active ?? true
+  };
+  showEditModal.value = true;
+};
+
+const closeEditModal = () => {
+  showEditModal.value = false;
+  editingItemId.value = null;
+  editFormData.value = {
+    name: '',
+    icon: '',
+    url: '',
+    is_active: true
+  };
+};
+
+const saveEditItem = async () => {
+  if (!editFormData.value.name || !editingItemId.value) return;
+  
+  editSaving.value = true;
+  
+  try {
+    // ✅ NEW: Get current item to preserve roles
+    const items = editModalType.value === 'sidebar_item' ? sidebarItems.value : sidebarSubItems.value;
+    const currentItem = items.find(i => i.id === editingItemId.value);
+    
+    if (!currentItem) {
+      throw new Error('Item not found');
+    }
+
+    // ✅ NEW: Preserve existing role assignments
+    const existingRoleIds = typeof currentItem.roles[0] === 'object'
+      ? currentItem.roles.map((r: any) => r.id)
+      : currentItem.roles;
+
+    const data = {
+      item_type: editModalType.value,
+      title: editFormData.value.name,
+      icon: editFormData.value.icon || null,
+      route: editFormData.value.url || null,
+      is_active: editFormData.value.is_active,
+      roles: existingRoleIds // ✅ NEW: Preserve roles
+    };
+
+    const response = await fetch(
+      `${config.public.strapi.url}api/create_sidebar/${editingItemId.value}/`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }
+    );
+
+    if (!response.ok) throw new Error('Failed to update');
+    
+    showToast('ອັບເດດສຳເລັດ', 'success');
+    await loadData();
+    await triggerSidebarRefresh();
+    closeEditModal();
+  } catch (error) {
+    console.error('Edit error:', error);
+    showToast('ອັບເດດບໍ່ສຳເລັດ', 'error');
+  } finally {
+    editSaving.value = false;
+  }
+};
+// ✅ NEW FUNCTION
 const deleteItem = async (id: number, itemType: 'sidebar_item' | 'sidebar_sub_item') => {
-  if (!confirm('ທ່ານຕ້ອງການລຶບລາຍການນີ້ບໍ່?')) return;
+  const itemName = itemType === 'sidebar_item' ? 'ເມນູຫຼັກ' : 'ເມນູຍ່ອຍ';
+  
+  if (!confirm(`ທ່ານຕ້ອງການລຶບ${itemName}ນີ້ບໍ່?`)) return;
 
   try {
     const response = await fetch(
@@ -704,108 +668,95 @@ const deleteItem = async (id: number, itemType: 'sidebar_item' | 'sidebar_sub_it
     if (!response.ok) throw new Error('Failed to delete');
     
     showToast('ລຶບສຳເລັດ', 'success');
+    
+    // Clear pending changes
+    const keysToDelete: string[] = [];
+    pendingChanges.value.forEach((change, key) => {
+      if (change.itemId === id && (
+        (itemType === 'sidebar_item' && change.type === 'main') ||
+        (itemType === 'sidebar_sub_item' && change.type === 'sub')
+      )) {
+        keysToDelete.push(key);
+      }
+    });
+    keysToDelete.forEach(key => pendingChanges.value.delete(key));
+    
     await loadData();
     await triggerSidebarRefresh();
   } catch (error) {
+    console.error('Delete error:', error);
     showToast('ລຶບບໍ່ສຳເລັດ', 'error');
   }
 };
 
-// Trigger sidebar refresh in other components
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const [itemsRes, subItemsRes, rolesRes] = await Promise.all([
+      fetch(`${config.public.strapi.url}api/sidebar-items/`),
+      fetch(`${config.public.strapi.url}api/sidebar-sub-items/`),
+      fetch(`${config.public.strapi.url}api/roles/`)
+    ]);
+    
+    const items = await itemsRes.json();
+    const subItems = await subItemsRes.json();
+    
+    // Sort by order
+    sidebarItems.value = items.sort((a: SidebarItem, b: SidebarItem) => a.order - b.order);
+    sidebarSubItems.value = subItems.sort((a: SidebarSubItem, b: SidebarSubItem) => a.order - b.order);
+    roles.value = await rolesRes.json();
+  } catch (error) {
+    console.error('Load error:', error);
+    showToast('ໂຫຼດຂໍ້ມູນບໍ່ສຳເລັດ', 'error');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const refreshData = async () => {
+  if (hasChanges.value) {
+    if (!confirm('ມີການປ່ຽນແປງທີ່ຍັງບໍ່ທັນບັນທຶກ. ທ່ານຕ້ອງການໂຫຼດຂໍ້ມູນໃໝ່ບໍ່?')) {
+      return;
+    }
+    pendingChanges.value.clear();
+  }
+  await loadData();
+  showToast('ໂຫຼດຂໍ້ມູນໃໝ່ສຳເລັດ', 'success');
+};
+
 const triggerSidebarRefresh = async () => {
   try {
     await refreshSidebar();
-    console.log('🔄 Sidebar refreshed in all components');
+    console.log('🔄 Sidebar refreshed');
   } catch (error) {
     console.error('Failed to refresh sidebar:', error);
   }
 };
 
-const closeModal = () => {
-  showCreateModal.value = false;
-  editingItem.value = null;
-  formData.value = {
-    name: '',
-    icon: '',
-    url: '',
-    order: 0,
-    parent: '',
-    is_active: true,
-    selectedRoles: []
-  };
-  formErrors.value = { name: '', icon: '', url: '' };
+const getToastIcon = (type: string) => {
+  switch (type) {
+    case 'success': return 'mdi-check-circle';
+    case 'error': return 'mdi-alert-circle';
+    case 'info': return 'mdi-information';
+    default: return 'mdi-information';
+  }
 };
 
-const showToast = (message: string, type: 'success' | 'error') => {
+const showToast = (message: string, type: 'success' | 'error' | 'info') => {
   toast.value = { show: true, message, type };
   setTimeout(() => {
     toast.value.show = false;
   }, 3000);
 };
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <style scoped>
-/* Previous styles remain the same... */
-
-.switch-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
-}
-
-.switch-label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  position: relative;
-}
-
-.switch-input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.switch-slider {
-  position: relative;
-  width: 48px;
-  height: 26px;
-  background: #cbd5e1;
-  border-radius: 13px;
-  transition: all 0.3s;
-  cursor: pointer;
-}
-
-.switch-slider::before {
-  content: '';
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: white;
-  top: 3px;
-  left: 3px;
-  transition: all 0.3s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.switch-input:checked + .switch-slider {
-  background: #10b981;
-}
-
-.switch-input:checked + .switch-slider::before {
-  transform: translateX(22px);
-}
-
-.switch-text {
-  font-size: 14px;
-  font-weight: 500;
-  color: #334155;
-}
-.sidebar-manager {
-  max-width: 1400px;
+.matrix-manager {
+  max-width: 1600px;
   margin: 0 auto;
   padding: 24px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -818,14 +769,41 @@ const showToast = (message: string, type: 'success' | 'error') => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  background: white;
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-icon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header h2 {
   margin: 0;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   color: #0f172a;
   letter-spacing: -0.5px;
+}
+
+.subtitle {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #64748b;
 }
 
 .header-actions {
@@ -833,284 +811,224 @@ const showToast = (message: string, type: 'success' | 'error') => {
   gap: 12px;
 }
 
-.btn-primary {
-  padding: 10px 18px;
-  background: #6366f1;
-  color: white;
+.btn-save, .btn-refresh {
+  padding: 10px 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(99, 102, 241, 0.3);
 }
 
-.btn-primary:hover:not(:disabled) {
+.btn-save {
+  background: #6366f1;
+  color: white;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.btn-save:hover:not(:disabled) {
   background: #4f46e5;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
-.btn-primary:disabled {
+.btn-save:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.btn-primary.btn-success {
-  background: #10b981;
-  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3);
-}
-
-.btn-primary.btn-success:hover {
-  background: #059669;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-}
-
-.filter-section {
-  margin-bottom: 24px;
-}
-
-.filter-card {
+.btn-refresh {
   background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  color: #64748b;
   border: 1px solid #e2e8f0;
-}
-
-.filter-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  font-weight: 600;
-  color: #475569;
-  font-size: 14px;
-}
-
-.role-select {
-  width: 100%;
-  max-width: 300px;
   padding: 10px 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #1e293b;
-  background: white;
-  cursor: pointer;
-  transition: all 0.2s;
 }
 
-.role-select:hover {
-  border-color: #94a3b8;
-}
-
-.role-select:focus {
-  outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.content {
-  min-height: 400px;
-}
-
-.menu-tree {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.menu-item-wrapper {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s;
-}
-
-.menu-item-wrapper:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+.btn-refresh:hover:not(:disabled) {
+  background: #f8fafc;
   border-color: #cbd5e1;
 }
 
-.menu-item {
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
   transition: all 0.2s;
 }
 
-.main-item {
-  background: #ffffff;
-  border-bottom: 1px solid #f1f5f9;
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.sub-items-container {
-  background: #f8fafc;
-}
-
-.sub-item {
-  background: #f8fafc;
-  padding: 12px 20px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.sub-item:hover {
-  background: #f1f5f9;
-}
-
-.item-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-  min-width: 0;
-}
-
-.drag-handle {
-  cursor: grab;
-  opacity: 0.4;
-  transition: opacity 0.2s;
-}
-
-.menu-item:hover .drag-handle {
-  opacity: 1;
-}
-
-.item-icon {
-  width: 42px;
-  height: 42px;
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.sub-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-}
-
-.sub-connector {
-  width: 24px;
-  height: 2px;
-  background: linear-gradient(to right, #cbd5e1 0%, transparent 100%);
   flex-shrink: 0;
 }
 
-.item-info {
+.stat-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  flex: 1;
 }
 
-.item-title {
-  font-weight: 600;
-  color: #1e293b;
-  font-size: 15px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
 }
 
-.sub-item .item-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: #475569;
-}
-
-.item-route {
-  font-size: 12px;
-  color: #94a3b8;
-  font-family: 'Monaco', 'Menlo', monospace;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.item-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.item-badge {
-  font-size: 12px;
-  font-weight: 600;
+.stat-label {
+  font-size: 13px;
   color: #64748b;
-  background: #f1f5f9;
-  padding: 4px 10px;
-  border-radius: 6px;
-  min-width: 32px;
+  margin-top: 4px;
+}
+
+.matrix-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.matrix-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.matrix-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.matrix-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: white;
+}
+
+.matrix-table th {
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 2px solid #e2e8f0;
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #334155;
+  font-size: 13px;
+}
+
+.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 11;
+  background: white;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.menu-column {
+  min-width: 350px;
+  max-width: 350px;
+}
+
+.action-column {
+  min-width: 100px;  /* ✅ Wider for 2 buttons */
+  width: 100px;
   text-align: center;
 }
 
-.sub-badge {
+.role-column {
+  min-width: 160px;
+  text-align: center;
+}
+
+.th-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.menu-column .th-content {
+  justify-content: flex-start;
+}
+
+.role-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.role-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.role-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.role-count {
   font-size: 11px;
-  padding: 3px 8px;
+  color: #94a3b8;
+  margin-top: 2px;
 }
 
-.status-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 5px 12px;
-  border-radius: 20px;
+.main-row {
+  background: white;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.status-badge.active {
-  background: #d1fae5;
-  color: #065f46;
+.main-row:hover {
+  background: #fafbfc;
 }
 
-.status-badge.inactive {
-  background: #fee2e2;
-  color: #991b1b;
+.sub-row {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.item-roles {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #64748b;
+.sub-row:hover {
   background: #f1f5f9;
-  padding: 5px 10px;
-  border-radius: 6px;
-  max-width: 150px;
 }
 
-.item-roles span {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.menu-cell {
+  padding: 12px 16px;
 }
 
-.item-actions {
-  display: flex;
-  gap: 4px;
+.action-cell {
+  padding: 12px;
+  text-align: center;
 }
 
 .action-btn {
@@ -1121,33 +1039,212 @@ const showToast = (message: string, type: 'success' | 'error') => {
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   color: #64748b;
 }
 
-.action-btn:hover:not(:disabled) {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-  color: #475569;
-}
-
-.action-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.action-btn.edit:hover:not(:disabled) {
+.action-btn:hover {
   background: #eff6ff;
   border-color: #3b82f6;
   color: #3b82f6;
 }
 
-.action-btn.delete:hover:not(:disabled) {
+.action-buttons {  /* ✅ NEW */
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+.action-btn.edit-btn:hover {  /* ✅ Specific for edit */
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.action-btn.delete-btn:hover {  /* ✅ NEW for delete */
   background: #fef2f2;
   border-color: #ef4444;
   color: #ef4444;
+}
+
+.menu-item-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sub-menu {
+  padding-left: 12px;
+}
+
+.sub-connector {
+  width: 24px;
+  height: 2px;
+  background: linear-gradient(to right, #cbd5e1 0%, transparent 100%);
+  flex-shrink: 0;
+}
+
+.menu-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sub-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.menu-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.menu-title {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub-row .menu-title {
+  font-weight: 500;
+  font-size: 13px;
+  color: #475569;
+}
+
+.menu-route {
+  font-size: 12px;
+  color: #94a3b8;
+  font-family: 'Monaco', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inactive-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #ef4444;
+  background: #fee2e2;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.checkbox-cell {
+  text-align: center;
+  padding: 12px;
+}
+
+.checkbox-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.checkbox-wrapper:hover {
+  background: #f1f5f9;
+}
+
+.checkbox-wrapper.has-change::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  background: #f59e0b;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px white;
+}
+
+.checkbox-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkbox-custom {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  background: white;
+}
+
+.checkbox-input:checked + .checkbox-custom {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.checkbox-input:checked + .checkbox-custom::after {
+  content: '';
+  width: 10px;
+  height: 6px;
+  border: 2px solid white;
+  border-top: none;
+  border-right: none;
+  transform: rotate(-45deg) translateY(-1px);
+}
+
+.checkbox-wrapper:hover .checkbox-custom {
+  border-color: #94a3b8;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 20px;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  margin-top: 16px;
+  color: #64748b;
+  font-size: 14px;
 }
 
 .empty-state {
@@ -1155,9 +1252,9 @@ const showToast = (message: string, type: 'success' | 'error') => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
+  padding: 120px 20px;
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   border: 2px dashed #e2e8f0;
 }
 
@@ -1167,7 +1264,7 @@ const showToast = (message: string, type: 'success' | 'error') => {
   font-size: 14px;
 }
 
-/* Enhanced Modal Styles */
+/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1192,7 +1289,7 @@ const showToast = (message: string, type: 'success' | 'error') => {
   background: white;
   border-radius: 16px;
   width: 90%;
-  max-width: 700px;
+  max-width: 600px;
   max-height: 90vh;
   overflow: hidden;
   display: flex;
@@ -1277,12 +1374,6 @@ const showToast = (message: string, type: 'success' | 'error') => {
   overflow-y: auto;
 }
 
-.form-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-}
-
 .form-group {
   margin-bottom: 20px;
 }
@@ -1339,11 +1430,6 @@ const showToast = (message: string, type: 'success' | 'error') => {
   flex-shrink: 0;
 }
 
-.icon-preview-error {
-  border-color: #fca5a5;
-  background: #fef2f2;
-}
-
 .icon-input {
   flex: 1;
 }
@@ -1370,60 +1456,18 @@ const showToast = (message: string, type: 'success' | 'error') => {
   transform: translateY(-1px);
 }
 
-.error-message {
-  display: block;
-  margin-top: 6px;
-  font-size: 12px;
-  color: #ef4444;
-  font-weight: 500;
-}
-
-.helper-text {
+.switch-container {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 6px;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.role-checkboxes {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 12px;
-  padding: 16px;
-  background: #f8fafc;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
-
-.checkbox-label:hover {
-  background: white;
-}
-
-.checkbox-label input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: #6366f1;
+  padding: 8px 0;
 }
 
 .switch-label {
   display: flex;
   align-items: center;
-  gap: 12px;
   cursor: pointer;
-  padding: 8px 0;
+  position: relative;
 }
 
 .switch-input {
@@ -1440,6 +1484,7 @@ const showToast = (message: string, type: 'success' | 'error') => {
   background: #cbd5e1;
   border-radius: 13px;
   transition: all 0.3s;
+  cursor: pointer;
 }
 
 .switch-slider::before {
@@ -1478,24 +1523,122 @@ const showToast = (message: string, type: 'success' | 'error') => {
   background: #f8fafc;
 }
 
-.btn-secondary {
+.btn-secondary, .btn-primary {
   padding: 10px 20px;
-  background: white;
-  color: #475569;
-  border: 1px solid #cbd5e1;
+  border: none;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-secondary {
+  background: white;
+  color: #475569;
+  border: 1px solid #cbd5e1;
 }
 
 .btn-secondary:hover {
   background: #f8fafc;
   border-color: #94a3b8;
+}
+
+.btn-primary {
+  background: #6366f1;
+  color: white;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #4f46e5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.changes-panel {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e2e8f0;
+  padding: 20px 24px;
+  z-index: 100;
+  max-width: 600px;
+  width: calc(100% - 48px);
+}
+
+.changes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.changes-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.changes-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-discard, .btn-save-changes {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-discard {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-discard:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.btn-save-changes {
+  background: #10b981;
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-save-changes:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-save-changes:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-spinner {
@@ -1507,31 +1650,9 @@ const showToast = (message: string, type: 'success' | 'error') => {
   animation: spin 0.6s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
-
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #e2e8f0;
-  border-top-color: #6366f1;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.btn-spinner.small {
+  width: 14px;
+  height: 14px;
 }
 
 .toast {
@@ -1544,7 +1665,6 @@ const showToast = (message: string, type: 'success' | 'error') => {
   font-weight: 600;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   z-index: 3000;
-  animation: slideIn 0.3s ease;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1561,14 +1681,84 @@ const showToast = (message: string, type: 'success' | 'error') => {
   color: white;
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
+.toast.info {
+  background: #3b82f6;
+  color: white;
+}
+
+.toast-enter-active, .toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from {
+  transform: translateX(400px);
+  opacity: 0;
+}
+
+.toast-leave-to {
+  transform: translateX(400px);
+  opacity: 0;
+}
+
+.slide-up-enter-active, .slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from {
+  transform: translate(-50%, 100px);
+  opacity: 0;
+}
+
+.slide-up-leave-to {
+  transform: translate(-50%, 100px);
+  opacity: 0;
+}
+
+@media (max-width: 768px) {
+  .matrix-manager {
+    padding: 16px;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .btn-save, .btn-refresh {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .menu-column {
+    min-width: 280px;
+  }
+
+  .changes-panel {
+    bottom: 16px;
+    width: calc(100% - 32px);
+  }
+
+  .changes-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .changes-actions {
+    width: 100%;
+  }
+
+  .btn-discard, .btn-save-changes {
+    flex: 1;
+    justify-content: center;
   }
 }
 </style>
