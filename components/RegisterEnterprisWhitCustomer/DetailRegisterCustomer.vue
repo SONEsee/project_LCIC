@@ -131,7 +131,7 @@ const submit = async () => {
   goPreviousPath()
 };
 
-// ========== ໂຫຼດຂໍ້ມູນເມື່ອເປີດໜ້າ ==========
+
 onMounted(() => {
   if (id) {
     EnterprisStore.GetDetailDataCompanyMaping(id);
@@ -224,7 +224,7 @@ onMounted(() => {
           </v-col>
         </v-row>
 
-        <!-- Row 3 -->
+       
         <v-row>
           <v-col cols="4">
             <v-text-field
@@ -262,7 +262,7 @@ onMounted(() => {
           </v-col>
         </v-row>
 
-        <!-- Row 4 -->
+  
         <v-row>
           <v-col cols="4">
             <v-autocomplete

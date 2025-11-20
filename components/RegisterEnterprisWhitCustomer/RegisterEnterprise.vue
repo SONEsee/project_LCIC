@@ -361,7 +361,7 @@ onMounted(() => {
             hide-details="auto"
             density="compact"
             class="mb-3"
-            readonly
+           
           ></v-text-field>
 
          

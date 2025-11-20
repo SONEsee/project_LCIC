@@ -182,9 +182,7 @@ onMounted(async () => {
           <v-col cols="12" sm="7" class="text-end">
             <v-btn
               color="primary"
-              :disabled="
-                enterprisStore.respon_data_check_enterprise?.exists !== false
-              "
+             
               @click="
                 goPath(
                   `/backend/register_lcic/?enterpris=${enterprisStore.check_enterprise.EnterpriseID}`
