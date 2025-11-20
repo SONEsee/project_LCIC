@@ -9,6 +9,7 @@ const rout = useRoute();
 const lcicID = rout.query.lcic_id as string;
 const TypeID = rout.query.typesearch as string;
 const { userId } = useUserData();
+const router = useRouter(); 
 
 // const dataFee = computed(() => {
 //   const data = feestore.response_data_fee;
@@ -71,14 +72,16 @@ const confirmInsert = async () => {
       
       if (success) {
         sessionStorage.setItem("lcic_id", lcicID);
+        sessionStorage.setItem("from_detail_page", "true");
         
+        // ⭐ แก้ไขตรงนี้ - ใช้ router แทน useRouter()
         setTimeout(() => {
-          goPath("/scoring/reports/scoring_report");
+          router.replace("/scoring/reports/scoring_report");
         }, 500);
       }
     }
   } catch (error) {
-    // Handle error silently or show user-friendly message
+    console.error("Error in confirmInsert:", error); // ⭐ เพิ่ม console.error
   }
 };
 

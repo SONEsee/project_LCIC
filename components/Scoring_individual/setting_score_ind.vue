@@ -31,7 +31,9 @@ const attrForm = ref({
   att_type: '',
   att_name: '',
   att_code: '',
-  att_value: 0
+  att_value: 0,
+  att_group_id: '',
+  att_desc: ''
 });
 
 onMounted(() => {
@@ -231,7 +233,9 @@ const openAttrModal = (attr: any = null, defaultType: string = '') => {
       att_type: attr.att_type,
       att_name: attr.att_name,
       att_code: attr.att_code,
-      att_value: attr.att_value
+      att_value: attr.att_value,
+      att_group_id: attr.att_group_id || '',
+      att_desc: attr.att_desc || ''
     };
   } else {
     editingAttr.value = null;
@@ -239,7 +243,9 @@ const openAttrModal = (attr: any = null, defaultType: string = '') => {
       att_type: defaultType,
       att_name: '',
       att_code: '',
-      att_value: 0
+      att_value: 0,
+      att_group_id: '',
+      att_desc: ''
     };
   }
   showAttrModal.value = true;
@@ -331,20 +337,17 @@ const getAttributesByType = (attType: string) => {
                   <div class="main-details">
                     <span class="detail-divider">•</span>
                     <span class="detail-chip type-chip">
-                      <span >Type:</span>
-                      <!-- <v-icon size="14" class="mr-1">mdi-code-tags</v-icon> -->
+                      <span >ປະເພດ:</span>
                       <strong class="mr-1 ml-1">{{ type.att_type }}</strong>
                     </span>
                     <span class="detail-divider">•</span>
                     <span class="detail-chip weight-chip">
-                      <span >Weight:</span>
+                      <span >ນ້ຳໜັກ:</span>
                       <v-icon size="14" class="mr-1 ml-1">mdi-weight</v-icon>
-                      <strong class="weight-value">{{ type.att_weight }}</strong>
+                      <strong class="weight-value">{{ type.att_weight }} %</strong>
                     </span>
                     <span class="detail-chip desc-chip">
-                    <span >Detail:</span>
-                    <!-- <span class="detail-chip desc-chip"> -->
-                      <!-- <v-icon size="14" class="mr-1">mdi-text</v-icon> -->
+                    <span >ລາຍລະອຽດ:</span>
                        <strong class="mr-1 ml-1">{{ type.att_type_desc }}</strong>
                     </span>
                   </div>
@@ -411,11 +414,17 @@ const getAttributesByType = (attType: string) => {
                       <div class="item-content">
                         <div class="item-title"><v-icon class="meta-label">mdi-text </v-icon> {{ attr.att_name }}</div>
                         <div class="item-meta">
-                          <span class="meta-label">code:</span>
+                          <span class="meta-label">ລະຫັດ:</span>
                           <span class="meta-value code-value">{{ attr.att_code }}</span>
                           <span class="meta-separator">|</span>
-                          <span class="meta-label">value:</span>
+                          <span class="meta-label">ຄ່າ:</span>
                           <span class="meta-value value-badge">{{ attr.att_value }}</span>
+                          <span class="meta-separator">|</span>
+                          <span class="meta-label">ກຸ່ມ:</span>
+                          <span class="meta-value group-badge">{{ attr.att_group_id || '-' }}</span>
+                          <span class="meta-separator">|</span>
+                          <span class="meta-label">ຄຳອະທິບາຍ:</span>
+                          <span class="meta-value desc-value">{{ attr.att_desc || '-' }}</span>
                         </div>
                       </div>
                     </div>
@@ -565,6 +574,7 @@ const getAttributesByType = (attType: string) => {
             placeholder="ເຊັ່ນ: ລາຍໄດ້ປະຈຳ"
             variant="outlined"
             density="comfortable"
+            prepend-inner-icon="mdi-text"
             class="modern-input"
           ></v-text-field>
 
@@ -574,6 +584,7 @@ const getAttributesByType = (attType: string) => {
             placeholder="ເຊັ່ນ: INCOME_REGULAR"
             variant="outlined"
             density="comfortable"
+            prepend-inner-icon="mdi-code-tags"
             class="modern-input"
           ></v-text-field>
 
@@ -583,8 +594,34 @@ const getAttributesByType = (attType: string) => {
             type="number"
             variant="outlined"
             density="comfortable"
+            prepend-inner-icon="mdi-numeric"
             class="modern-input"
           ></v-text-field>
+
+          <v-text-field
+            v-model="attrForm.att_group_id"
+            label="ລະຫັດກຸ່ມ (Group ID)"
+            placeholder="ເຊັ່ນ: G01"
+            variant="outlined"
+            density="comfortable"
+            prepend-inner-icon="mdi-group"
+            class="modern-input"
+            hint="ສູງສຸດ 5 ຕົວອັກສອນ (ບໍ່ບັງຄັບ)"
+            persistent-hint
+          ></v-text-field>
+
+          <v-textarea
+            v-model="attrForm.att_desc"
+            label="ຄຳອະທິບາຍ (Description)"
+            placeholder="ເຊັ່ນ: ລາຍໄດ້ປະຈຳຈາກເງິນເດືອນ"
+            variant="outlined"
+            density="comfortable"
+            prepend-inner-icon="mdi-text-box-outline"
+            class="modern-input"
+            rows="3"
+            hint="ບໍ່ບັງຄັບ"
+            persistent-hint
+          ></v-textarea>
         </div>
 
         <div class="modal-footer">
@@ -628,6 +665,14 @@ const getAttributesByType = (attType: string) => {
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   color: #15803d;
   border: 1px solid #bbf7d0;
+}
+
+.group-badge {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #fcd34d;
 }
 
 .modern-container {
@@ -951,6 +996,17 @@ const getAttributesByType = (attType: string) => {
   background: rgba(72, 99, 187, 0.1);
   padding: 2px 8px;
   border-radius: 4px;
+}
+
+.desc-value {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .meta-separator {

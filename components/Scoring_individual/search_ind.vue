@@ -4,11 +4,12 @@ import { useUserData } from "~/composables/useUserData";
 import Swal from "sweetalert2";
 import { MemberStore } from "@/stores/memberinfo";
 import { useMemberInfo } from "@/composables/memberInfo";
+
 const { mapMemberInfo, getMemberName, getMemberDetails, getMemberCode } =
   useMemberInfo();
 const individualStore = IndividualStore();
 const { user, userId, isAdmin, isLoggedIn, userid } = useUserData();
-const hasSearched = ref(false); // เพิ่มบรรทัดนี้
+const hasSearched = ref(false);
 const isSearching = ref(false);
 const memberStore = MemberStore();
 const saerchCustomerID = ref("");
@@ -17,12 +18,26 @@ const lcicSearchInput = ref("");
 const customerSearchInput = ref("");
 const showDebug = ref(true);
 const categories = ref<any[]>([]);
+
 interface Category {
   cat_sys_id: string;
   cat_name: string;
 }
+
 const bankDataMessage = ref("");
 const showBankMessage = ref(false);
+const lcicNotFound = ref(false);
+
+const isSearchDisabled = computed(() => {
+  // Disable เฉพาะเมื่อ:
+  // 1. ไม่มี CatalogID หรือ
+  // 2. มีการค้นหา LCIC แล้วและไม่พบ (lcicNotFound = true)
+  const noCatalog = !individualStore.from_insert_logserch.CatalogID;
+  const searchedButNotFound = lcicNotFound.value && lcicSearchInput.value;
+  
+  return noCatalog || searchedButNotFound;
+});
+
 const TypeSearch = computed(() => {
   const data = individualStore.type_search_response;
   if (Array.isArray(data)) {
@@ -58,13 +73,13 @@ const onCustomerSelect = (lcicId: string) => {
       saerchCustomerID.value = selectedItem.customerid;
       customerSearchInput.value = selectedItem.customerid;
 
-     
       displayedLcicName.value = `${selectedItem.ind_lao_name || ""} ${
         selectedItem.ind_lao_surname || ""
       } ${selectedItem.ind_name || ""} ${
         selectedItem.ind_surname || ""
       }`.trim();
       showLcicName.value = true;
+      lcicNotFound.value = false;
     }
 
     showBankMessage.value = false;
@@ -111,7 +126,6 @@ const performAPISearch = async () => {
   try {
     individualStore.reques_query.query.customerid = "";
     individualStore.reques_query.query.lcic_id = "";
-    
 
     if (lcicSearchInput.value) {
       individualStore.reques_query.query.lcic_id = lcicSearchInput.value;
@@ -180,6 +194,17 @@ const performSearch = async () => {
     });
     return;
   }
+  
+  // ⭐ เพิ่มการเช็คว่าพบ LCIC หรือไม่
+  if (lcicNotFound.value) {
+    Swal.fire({
+      icon: "warning",
+      text: "ບໍ່ພົບລະຫັດ ຂສລ ນີ້ ກະລຸນາກວດສອບອີກຄັ້ງ",
+      title: "ແຈ້ງເຕືອນ",
+    });
+    return;
+  }
+  
   goPath(
     `/scoring/detail_scoring/?customer_id=${saerchCustomerID.value}&&lcic_id=${searchLcicID.value}&&typesearch=${individualStore.from_insert_logserch.CatalogID}`
   );
@@ -199,7 +224,9 @@ const clearSearch = () => {
   displayedLcicName.value = "";
   
   hasSearched.value = false;
-  isSearching.value = false; // ✅ เพิ่มบรรทัดนี้
+  isSearching.value = false;
+  lcicNotFound.value = false;
+  individualStore.from_insert_logserch.CatalogID = "";
 
   individualStore.reques_query.query.customerid = "";
   individualStore.reques_query.query.lcic_id = "";
@@ -232,10 +259,11 @@ watch(lcicSearchInput, (newValue) => {
   bankDataMessage.value = "";
   showLcicName.value = false;
   displayedLcicName.value = "";
+  lcicNotFound.value = false;
 
   if (newValue && newValue.length > 0) {
     hasSearched.value = true;
-    isSearching.value = true; // ✅ เริ่มค้นหา - ซ่อนข้อความ error ทันที
+    isSearching.value = true;
     
     debounceSearch(async () => {
       const originalBnkCode = individualStore.reques_query.query.bnk_code;
@@ -261,6 +289,7 @@ watch(lcicSearchInput, (newValue) => {
           matchedItem.ind_surname || ""
         }`.trim();
         showLcicName.value = true;
+        lcicNotFound.value = false;
 
         if (matchedItem.customerid) {
           saerchCustomerID.value = matchedItem.customerid;
@@ -278,20 +307,27 @@ watch(lcicSearchInput, (newValue) => {
             anyMatch.ind_lao_surname || ""
           } ${anyMatch.ind_name || ""} ${anyMatch.ind_surname || ""}`.trim();
           showLcicName.value = true;
+          lcicNotFound.value = false;
 
           if (anyMatch.bnk_code !== userId.value) {
             saerchCustomerID.value = "";
             customerSearchInput.value = "";
             showBankMessage.value = true;
           }
+        } else {
+          // ⭐ เพิ่มส่วนนี้ - เมื่อไม่พบข้อมูลเลย
+          lcicNotFound.value = true;
+          showLcicName.value = false;
+          displayedLcicName.value = "";
         }
       }
       
-      isSearching.value = false; // ✅ ค้นหาเสร็จแล้ว
+      isSearching.value = false;
     }, 500);
   } else {
     hasSearched.value = false;
-    isSearching.value = false; // ✅ ไม่มีการค้นหา
+    isSearching.value = false;
+    lcicNotFound.value = false;
     
     saerchCustomerID.value = "";
     customerSearchInput.value = "";
@@ -325,6 +361,7 @@ const displayCustomer = (item: any) => {
     return "";
   return `${item.ind_lao_name} ${item.ind_lao_surname} ${item.ind_name} ${item.ind_surname}`;
 };
+
 onMounted(async () => {
   const config = useRuntimeConfig();
   const token = localStorage.getItem("access_token");
@@ -339,10 +376,12 @@ onMounted(async () => {
 
   if (response.ok) {
     const data = await response.json();
-    categories.value = data;
+    // ⭐ เพิ่ม filter ตรงนี้
+    categories.value = data.filter((item: any) => item.ct_type === "LPR");
   } else {
     console.error("Failed to fetch categories:", response.statusText);
   }
+  
   memberStore.getMemberInfo();
   individualStore.getTypeSearch();
   individualStore.reques_query.query.bnk_code = userId.value;
@@ -350,6 +389,7 @@ onMounted(async () => {
 </script>
 
 <template>
+  <!-- Template ไม่เปลี่ยนแปลง -->
   <div class="search-container">
     <div class="header-section">
       <div class="header-content">
@@ -390,24 +430,14 @@ onMounted(async () => {
                     color="primary"
                     rounded
                   ></v-text-field>
-                    <v-fade-transition>
+                  
+                  <v-fade-transition>
                     <p
                       class="ml-2 error-message"
-                      v-if="hasSearched && 
-                            !isSearching &&
-                            displayedLcicName === '' && 
-                            searchLcicID !== '' && 
-                            !individualStore.reques_query.isLoading"
+                      v-if="lcicNotFound && lcicSearchInput && !isSearching && !individualStore.reques_query.isLoading"
                     >
-                      <strong>
-                        ບໍ່ພົບລະຫັດ ຂສລ ນີ້
-                        <!-- <b
-                          class="register-link"
-                          @click="goPath('/backend/register_lcic')"
-                        >
-                          ກົດທີ່ນີ້ເພື່ອອອກລະຫັດ ຂສລ ໃໝ່
-                        </b> -->
-                      </strong>
+                      <v-icon size="16" color="error" class="mr-1">mdi-alert-circle</v-icon>
+                      <strong>ບໍ່ພົບລະຫັດ ຂສລ ນີ້</strong>
                     </p>
                   </v-fade-transition>
 
@@ -510,6 +540,7 @@ onMounted(async () => {
                     @click="performSearch"
                     class="search-btn modern-btn"
                     elevation="0"
+                    :disabled="!!isSearchDisabled"
                   >
                     <v-icon left class="mr-2">mdi-database-search</v-icon>
                     <span class="btn-text">ຄົ້ນຫາ</span>
@@ -536,6 +567,45 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+/* CSS เดิมทั้งหมด + เพิ่ม icon ใน error message */
+.error-message {
+  display: flex;
+  align-items: center;
+  color: #f50b0b;
+  font-size: 14px;
+  font-weight: 500;
+  animation: fadeInSlide 0.3s ease-out, shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Disabled Button State */
+.search-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.search-btn:disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
 /* Container & Background */
 .error-message {
   color: #f50b0b;

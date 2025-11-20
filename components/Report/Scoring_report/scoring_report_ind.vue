@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from "axios";
 import { useUserUID } from '~/composables/useUserUID';
@@ -7,8 +7,8 @@ import { useUserUID } from '~/composables/useUserUID';
 const router = useRouter();
 const config = useRuntimeConfig();
 
-// ⭐ Config API URL (ใช้ config จาก Nuxt)
-const apiCreditScoreURL = `${config.public.strapi.url}api/credit-score/calculate/`;
+// ⭐ Config API URL
+const apiCreditScoreURL = `${config.public.strapi.url}api/credit-score-ind/calculate/`;
 
 // ข้อมูลพื้นฐาน
 const lcicID = ref("");
@@ -19,9 +19,8 @@ const loading = ref(false);
 const error = ref("");
 const { userData, UID } = useUserUID();
 const showScoreFactors = ref(false);
-const showPaymentDialog = ref(false);
 
-// ⭐ เพิ่ม scoreBreakdown ไว้ด้านบน
+// ⭐ เพิ่ม scoreBreakdown
 const scoreBreakdown = ref<any>({});
 
 // ข้อมูลส่วนตัว
@@ -41,9 +40,8 @@ const personalInfo = ref({
   address: ""
 });
 
-// ⭐ คะแนนเงื่อนไข - ใช้ชื่อตรงกับ API
+// ⭐ คะแนนเงื่อนไข - ใช้ชื่อตรงกับ Backend
 const conditionalScores = ref({
-  gender: 0,
   province: 0,
   marital_status: 0,
   age: 0,
@@ -52,13 +50,13 @@ const conditionalScores = ref({
   loan_term: 0,
   credit_line: 0,
   inquiries: 0,
-  overdue_days: 0,
+  overdue_class: 0,  // ⭐ แก้จาก overdue_days เป็น overdue_class
   collateral_type: 0,
   collateral_value: 0,
   outstanding_balance: 0
 });
 
-// ⭐ คะแนนสินเชื่อ
+// คะแนนสินเชื่อ
 const creditScore = ref(0);
 
 // ข้อมูลสินเชื่อ
@@ -89,47 +87,14 @@ const scoreLevel = computed(() => {
   return 'Poor: ອ່ອນ';
 });
 
-// ⭐ ฟังก์ชันล้างข้อมูล session
-const clearSessionData = () => {
-  sessionStorage.removeItem("lcic_id");
-  sessionStorage.removeItem("scoring_data");
-  sessionStorage.removeItem("from_detail_page");
-};
-
-// ⭐ แก้ไขฟังก์ชัน goBack
+// ฟังก์ชันกลับหน้าก่อนหน้า
 const goBack = () => {
-  // Clear session ก่อนกลับ
-  clearSessionData();
-  
-  // กลับไปหน้า scoring_individual โดยตรง
-  router.push("/scoring/scoring_individual");
+  goPath("/scoring/scoring_individual");
 };
 
 // ฟังก์ชันพิมพ์
 const printReport = () => {
   window.print();
-};
-
-// ⭐ ฟังก์ชันสำหรับจัดการเมื่อคลิกปุ่ม Show Details
-const handleToggleScoreFactors = () => {
-  if (!showScoreFactors.value) {
-    // ถ้ายังไม่เปิด -> แสดง dialog แจ้งเตือนการชำระเงิน
-    showPaymentDialog.value = true;
-  } else {
-    // ถ้าเปิดอยู่แล้ว -> ซ่อน
-    showScoreFactors.value = false;
-  }
-};
-
-// ⭐ ฟังก์ชันยืนยันการชำระเงิน
-const confirmPayment = () => {
-  showPaymentDialog.value = false;
-  showScoreFactors.value = true;
-};
-
-// ⭐ ฟังก์ชันยกเลิก
-const cancelPayment = () => {
-  showPaymentDialog.value = false;
 };
 
 // ⭐ ฟังก์ชันเรียก API
@@ -189,11 +154,10 @@ const mapApiDataToFrontend = (apiData: any) => {
   // ⭐ แยกออกมาต่างหาก - ไม่ใช่ property ของ personalInfo
   scoreBreakdown.value = apiData.score_breakdown || {};
   
-  // ⭐ 2. คะแนนเงื่อนไข
+  // ⭐ 2. คะแนนเงื่อนไข - ตรงกับ Backend
   const individualScores = apiData.final_score_calculation?.calculation_details?.individual_scores || {};
   
   conditionalScores.value = {
-    gender: individualScores.gender || 0,
     province: individualScores.province || 0,
     marital_status: individualScores.marital_status || 0,
     age: individualScores.age || 0,
@@ -202,7 +166,7 @@ const mapApiDataToFrontend = (apiData: any) => {
     loan_term: individualScores.loan_term || 0,
     credit_line: individualScores.credit_line || 0,
     inquiries: individualScores.inquiries || 0,
-    overdue_days: individualScores.overdue_days || 0,
+    overdue_class: individualScores.overdue_class || 0,  // ⭐ แก้ชื่อให้ตรงกับ Backend
     collateral_type: individualScores.collateral_type || 0,
     collateral_value: individualScores.collateral_value || 0,
     outstanding_balance: individualScores.outstanding_balance || 0
@@ -280,10 +244,6 @@ const formatNumber = (num: number): string => {
 
 // โหลดข้อมูลจาก sessionStorage และเรียก API
 onMounted(async () => {
-  // ⭐ ลบส่วน history manipulation ทั้งหมด
-  // Clear from_detail_page flag
-  sessionStorage.removeItem("from_detail_page");
-  
   const storedLcicID = sessionStorage.getItem("lcic_id");
   
   if (!storedLcicID) {
@@ -336,16 +296,9 @@ onMounted(async () => {
   }
 });
 
-// ⭐ Clear session เมื่อออกจากหน้า
-onUnmounted(() => {
-  clearSessionData();
-  console.log("Session data cleared on component unmount");
-});
-
-// ฟังก์ชันแปลงชื่อ
+// ⭐ ฟังก์ชันแปลงชื่อ - เพิ่ม overdue_class
 function getScoreLabel(key: string): string {
   const labels: Record<string, string> = {
-    gender: 'ເພດ',
     province: 'ທີ່ຢູ່',
     marital_status: 'ສະຖານະພາບ',
     age: 'ອາຍຸ',
@@ -354,7 +307,7 @@ function getScoreLabel(key: string): string {
     loan_term: 'ໄລຍະການກູ້ຢືມ',
     credit_line: 'ວົງເງິນສິນເຊື່ອ',
     inquiries: 'ຈຳນວນສອບຖາມ',
-    overdue_days: 'ວັນທີຄ້າງຊຳລະ',
+    overdue_class: 'ວັນທີຄ້າງຊຳລະ',  // ⭐ แก้ชื่อ
     collateral_type: 'ປະເພດຫຼັກຊັບ',
     collateral_value: 'ມູນຄ່າຫຼັກຊັບທຽບຍອດເຫຼືອໜີ້',
     outstanding_balance: 'ຄະແນນຍອດເຫຼືອໜີ້'
@@ -362,7 +315,7 @@ function getScoreLabel(key: string): string {
   return labels[key] || key;
 }
 
-// ⭐ ฟังก์ชันดึง details และจัดการ collateral_type พิเศษ
+// ⭐ ฟังก์ชันดึง details - แบบ Simplified
 function getScoreDetails(key: string): { 
   weight: number; 
   formula: string;
@@ -370,6 +323,7 @@ function getScoreDetails(key: string): {
 } {
   const breakdown = scoreBreakdown.value[key];
   
+  // ถ้าไม่มีข้อมูล return ค่าว่าง
   if (!breakdown || !breakdown.details) {
     return { 
       weight: 0, 
@@ -384,57 +338,25 @@ function getScoreDetails(key: string): {
   
   const details = breakdown.details;
   
-  // ⭐ กรณี collateral_type - มีโครงสร้างพิเศษ
-  if (key === 'collateral_type' && details.collateral_types && details.collateral_types.length > 0) {
-    // ดึงข้อมูลจาก collateral_types array ตัวแรก
-    const firstCollateral = details.collateral_types[0];
-    
-    // รวม att_name ถ้ามีหลายตัว
-    const attNames = details.collateral_types
-      .map((col: any) => col.att_name)
-      .join(', ');
-    
-    // รวม formula
-    const formulas = details.collateral_types
-      .map((col: any) => col.formula)
-      .join(' + ');
-    
-    // รวม att_value
-    const totalAttValue = details.collateral_types
-      .reduce((sum: number, col: any) => sum + (col.att_value || 0), 0);
-    
-    return {
-      weight: firstCollateral.att_weight || 0,
-      formula: formulas || '-',
-      details: {
-        att_name: attNames,
-        att_value: totalAttValue,
-        att_weight: firstCollateral.att_weight || 0
-      }
-    };
+  // ⭐ ดึงข้อมูลโดยตรงจาก details (รองรับทุกกรณี)
+  const attValue = details.att_value || 0;
+  const attWeight = details.att_weight || 0;
+  const attName = details.att_name || details.selected_col_type || '-';
+  const strategy = details.strategy || '';
+  
+  // สร้าง formula
+  let formula = `${attValue}`;
+  if (strategy) {
+    formula += ` (${strategy})`;
   }
   
-  // ⭐ กรณี inquiries
-  if (key === 'inquiries' && breakdown.input_value !== undefined) {
-    return {
-      weight: details.att_weight || 0,
-      formula: details.formula || '-',
-      details: {
-        att_name: details.att_name || '-',
-        att_value: details.att_value || 0,
-        att_weight: details.att_weight || 0
-      }
-    };
-  }
-  
-  // ⭐ กรณีปกติ
   return {
-    weight: details.att_weight || 0,
-    formula: details.formula || '-',
+    weight: attWeight,
+    formula: formula,
     details: {
-      att_name: details.att_name || '-',
-      att_value: details.att_value || 0,
-      att_weight: details.att_weight || 0
+      att_name: attName,
+      att_value: attValue,
+      att_weight: attWeight
     }
   };
 }
@@ -620,394 +542,373 @@ function getScoreDetails(key: string): {
           </v-row>
         </v-card>
 
-        <!-- Score Factors - 5 Columns Dashboard Design -->
-        <v-card flat class="pa-2 mb-2 score-factors-section">
-        <div class="score-factors-header">
-            <h3 class="text-h6 mb-2 font-weight-bold section-title">
-            <v-icon>mdi-dot</v-icon>
-            SCORE FACTORS
-            </h3>
-            
-            <!-- ⭐ เพิ่มปุ่ม Toggle -->
-            <v-btn
-            size="small"
-            :color="showScoreFactors ? 'primary' : 'grey'"
-            variant="tonal"
-            @click="handleToggleScoreFactors"
-            class="no-print toggle-button"
-            >
-            <v-icon size="small" class="mr-1">
-                {{ showScoreFactors ? 'mdi-eye-off' : 'mdi-eye' }}
-            </v-icon>
-            {{ showScoreFactors ? 'Hide Details' : 'Show Details' }}
-            </v-btn>
-        </div>
+  <!-- Score Factors Section -->
+  <v-card flat class="pa-2 mb-2 score-factors-section">
+    <div class="score-factors-header">
+      <h3 class="text-h6 mb-2 font-weight-bold section-title">
+        <v-icon>mdi-dot</v-icon>
+        SCORE FACTORS
+      </h3>
+      
+      <v-btn
+        size="small"
+        :color="showScoreFactors ? 'primary' : 'grey'"
+        variant="tonal"
+        @click="showScoreFactors = !showScoreFactors"
+        class="no-print toggle-button"
+      >
+        <v-icon size="small" class="mr-1">
+          {{ showScoreFactors ? 'mdi-eye-off' : 'mdi-eye' }}
+        </v-icon>
+        {{ showScoreFactors ? 'Hide Details' : 'Show Details' }}
+      </v-btn>
+    </div>
 
-        <!-- ⭐ ใช้ v-show แทน v-if เพื่อให้ print ได้ -->
-        <v-expand-transition>
-            <div v-show="showScoreFactors" class="dashboard-grid-wrapper">
-
-        <!-- Dashboard Grid - 5 Columns -->
+    <v-expand-transition>
+      <div v-show="showScoreFactors" class="dashboard-grid-wrapper">
         <v-row dense class="dashboard-grid">
-            <!-- ========== GROUP 1: Amount Owned (35%) ========== -->
-            <v-col cols="12" lg="2-4" md="4" sm="6" class="pa-1">
-            <v-card class="dashboard-card group-1-dashboard" elevation="3">
-                <div class="dashboard-header">
-                <v-icon size="small">mdi-wallet</v-icon>
+
+          <!-- ========== GROUP 2: Payment History (31%) ========== -->
+          <v-col cols="12" lg="2-4" md="4" sm="6" class="pa-1">
+            <v-card class="dashboard-card group-2-dashboard" elevation="3">
+              <div class="dashboard-header">
+                <v-icon size="small">mdi-history</v-icon>
                 <div class="dashboard-header-text">
-                    <div class="dashboard-title">Amount Owned</div>
-                    <div class="dashboard-weight">35%</div>
+                  <div class="dashboard-title">Payment History</div>
+                  <div class="dashboard-weight">31%</div>
                 </div>
-                </div>
-                
-                <v-card-text class="pa-2">
-                <!-- Credit Line -->
-                <div class="dashboard-item mb-2">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('credit_line') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('credit_line').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
+              </div>
+              
+              <v-card-text class="pa-2">
+                <!-- Overdue Days -->
+                <div class="dashboard-item">
+                  <div class="dashboard-item-label">
+                    <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('overdue_class') }}
+                  </div>
+                  <div class="dashboard-item-attr ml-2">
+                    {{ getScoreDetails('overdue_class').details?.att_name || '-' }}
+                  </div>
+                  <div class="dashboard-metrics">
+                    <!-- ⭐ Value Chip -->
                     <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('credit_line').details?.att_value || 0 }}</span>
+                      <span class="metric-chip-label">V:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('overdue_class').details?.att_value || 0 }}</span>
                     </div>
+                    <!-- ⭐ Weight Chip -->
                     <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('credit_line').details?.att_weight || 0 }}%</span>
+                      <span class="metric-chip-label">W:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('overdue_class').details?.att_weight || 0 }}%</span>
                     </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.credit_line || 0 }}</span>
-                    </div>
-                    </div>
+                  </div>
                 </div>
                 
                 <v-divider class="my-1"></v-divider>
                 
-                <!-- Collateral Value -->
-                <div class="dashboard-item mb-2">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('collateral_value') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('collateral_value').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
+                <!-- Registration Year -->
+                <div class="dashboard-item">
+                  <div class="dashboard-item-label">
+                    <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('registration_year') }}
+                  </div>
+                  <div class="dashboard-item-attr ml-2">
+                    {{ getScoreDetails('registration_year').details?.att_name || '-' }}
+                  </div>
+                  <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('collateral_value').details?.att_value || 0 }}</span>
+                      <span class="metric-chip-label">V:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('registration_year').details?.att_value || 0 }}</span>
                     </div>
                     <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('collateral_value').details?.att_weight || 0 }}%</span>
+                      <span class="metric-chip-label">W:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('registration_year').details?.att_weight || 0 }}%</span>
                     </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.collateral_value || 0 }}</span>
+                  </div>
+                </div>
+              </v-card-text>
+            </v-card>
+          </v-col>
+
+          <!-- ========== GROUP 1: Amount Owned (30%) ========== -->
+          <v-col cols="12" lg="2-4" md="4" sm="6" class="pa-1">
+            <v-card class="dashboard-card group-1-dashboard" elevation="3">
+              <div class="dashboard-header">
+                <v-icon size="small">mdi-wallet</v-icon>
+                <div class="dashboard-header-text">
+                  <div class="dashboard-title">Amount Owned</div>
+                  <div class="dashboard-weight">30%</div>
+                </div>
+              </div>
+              
+              <v-card-text class="pa-2">
+                <!-- Credit Line -->
+                <div class="dashboard-item mb-2">
+                  <div class="dashboard-item-label">
+                    <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('credit_line') }}
+                  </div>
+                  <div class="dashboard-item-attr ml-2">
+                    {{ getScoreDetails('credit_line').details?.att_name || '-' }}
+                  </div>
+                  <div class="dashboard-metrics">
+                    <div class="metric-chip value-chip">
+                      <span class="metric-chip-label">V:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('credit_line').details?.att_value || 0 }}</span>
                     </div>
+                    <div class="metric-chip weight-chip">
+                      <span class="metric-chip-label">W:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('credit_line').details?.att_weight || 0 }}%</span>
                     </div>
+                  </div>
                 </div>
                 
                 <v-divider class="my-1"></v-divider>
                 
                 <!-- Outstanding Balance -->
                 <div class="dashboard-item">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('outstanding_balance') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('outstanding_balance').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
+                  <div class="dashboard-item-label">
+                    <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('outstanding_balance') }}
+                  </div>
+                  <div class="dashboard-item-attr ml-2">
+                    {{ getScoreDetails('outstanding_balance').details?.att_name || '-' }}
+                  </div>
+                  <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('outstanding_balance').details?.att_value || 0 }}</span>
+                      <span class="metric-chip-label">V:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('outstanding_balance').details?.att_value || 0 }}</span>
                     </div>
                     <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('outstanding_balance').details?.att_weight || 0 }}%</span>
+                      <span class="metric-chip-label">W:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('outstanding_balance').details?.att_weight || 0 }}%</span>
                     </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.outstanding_balance || 0 }}</span>
-                    </div>
-                    </div>
+                  </div>
                 </div>
-                </v-card-text>
+              </v-card-text>
             </v-card>
-            </v-col>
+          </v-col>
 
-            <!-- ========== GROUP 2: Payment History (30%) ========== -->
-            <v-col cols="12" lg="2-4" md="4" sm="6" class="pa-1">
-            <v-card class="dashboard-card group-2-dashboard" elevation="3">
-                <div class="dashboard-header">
-                <v-icon size="small">mdi-history</v-icon>
+          <!-- ========== GROUP 3: Inquiries & Purpose (15%) ========== -->
+          <v-col cols="12" lg="2-4" md="4" sm="6" class="pa-1">
+            <v-card class="dashboard-card group-3-dashboard" elevation="3">
+              <div class="dashboard-header">
+                <v-icon size="small">mdi-calendar-clock</v-icon>
                 <div class="dashboard-header-text">
-                    <div class="dashboard-title">Payment History</div>
-                    <div class="dashboard-weight">30%</div>
+                  <div class="dashboard-title">Inquiries & Purpose</div>
+                  <div class="dashboard-weight">15%</div>
                 </div>
+              </div>
+              
+              <v-card-text class="pa-2">
+                <!-- Inquiries -->
+                <div class="dashboard-item">
+                  <div class="dashboard-item-label">
+                    <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('inquiries') }}
+                  </div>
+                  <div class="dashboard-item-attr ml-2">
+                    {{ getScoreDetails('inquiries').details?.att_name || '-' }}
+                  </div>
+                  <div class="dashboard-metrics">
+                    <div class="metric-chip value-chip">
+                      <span class="metric-chip-label">V:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('inquiries').details?.att_value || 0 }}</span>
+                    </div>
+                    <div class="metric-chip weight-chip">
+                      <span class="metric-chip-label">W:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('inquiries').details?.att_weight || 0 }}%</span>
+                    </div>
+                  </div>
                 </div>
                 
-                <v-card-text class="pa-2">
+                <v-divider class="my-1"></v-divider>
+
                 <!-- Loan Purpose -->
                 <div class="dashboard-item mb-2">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('loan_purpose') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('loan_purpose').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
+                  <div class="dashboard-item-label">
+                    <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('loan_purpose') }}
+                  </div>
+                  <div class="dashboard-item-attr ml-2">
+                    {{ getScoreDetails('loan_purpose').details?.att_name || '-' }}
+                  </div>
+                  <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('loan_purpose').details?.att_value || 0 }}</span>
+                      <span class="metric-chip-label">V:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('loan_purpose').details?.att_value || 0 }}</span>
                     </div>
                     <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('loan_purpose').details?.att_weight || 0 }}%</span>
+                      <span class="metric-chip-label">W:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('loan_purpose').details?.att_weight || 0 }}%</span>
                     </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.loan_purpose || 0 }}</span>
-                    </div>
-                    </div>
+                  </div>
                 </div>
                 
                 <v-divider class="my-1"></v-divider>
                 
                 <!-- Loan Term -->
                 <div class="dashboard-item mb-2">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('loan_term') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('loan_term').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
+                  <div class="dashboard-item-label">
+                    <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('loan_term') }}
+                  </div>
+                  <div class="dashboard-item-attr ml-2">
+                    {{ getScoreDetails('loan_term').details?.att_name || '-' }}
+                  </div>
+                  <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('loan_term').details?.att_value || 0 }}</span>
+                      <span class="metric-chip-label">V:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('loan_term').details?.att_value || 0 }}</span>
                     </div>
                     <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('loan_term').details?.att_weight || 0 }}%</span>
+                      <span class="metric-chip-label">W:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('loan_term').details?.att_weight || 0 }}%</span>
                     </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.loan_term || 0 }}</span>
+                  </div>
+                </div>
+              </v-card-text>
+            </v-card>
+          </v-col>
+
+          <!-- ========== GROUP 4: Collateral (10%) ========== -->
+          <v-col cols="12" lg="2-4" md="6" sm="6" class="pa-1">
+            <v-card class="dashboard-card group-4-dashboard" elevation="3">
+              <div class="dashboard-header">
+                <v-icon size="small">mdi-magnify</v-icon>
+                <div class="dashboard-header-text">
+                  <div class="dashboard-title">Collateral</div>
+                  <div class="dashboard-weight">10%</div>
+                </div>
+              </div>
+              
+              <v-card-text class="pa-2">
+                <!-- Collateral Value -->
+                <div class="dashboard-item mb-2">
+                  <div class="dashboard-item-label">
+                    <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('collateral_value') }}
+                  </div>
+                  <div class="dashboard-item-attr ml-2">
+                    {{ getScoreDetails('collateral_value').details?.att_name || '-' }}
+                  </div>
+                  <div class="dashboard-metrics">
+                    <div class="metric-chip value-chip">
+                      <span class="metric-chip-label">V:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('collateral_value').details?.att_value || 0 }}</span>
                     </div>
+                    <div class="metric-chip weight-chip">
+                      <span class="metric-chip-label">W:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('collateral_value').details?.att_weight || 0 }}%</span>
                     </div>
+                  </div>
                 </div>
                 
                 <v-divider class="my-1"></v-divider>
                 
                 <!-- Collateral Type -->
                 <div class="dashboard-item mb-2">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('collateral_type') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('collateral_type').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
+                  <div class="dashboard-item-label">
+                    <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('collateral_type') }}
+                  </div>
+                  <div class="dashboard-item-attr ml-2">
+                    {{ getScoreDetails('collateral_type').details?.att_name || '-' }}
+                  </div>
+                  <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('collateral_type').details?.att_value || 0 }}</span>
+                      <span class="metric-chip-label">V:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('collateral_type').details?.att_value || 0 }}</span>
                     </div>
                     <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('collateral_type').details?.att_weight || 0 }}%</span>
+                      <span class="metric-chip-label">W:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('collateral_type').details?.att_weight || 0 }}%</span>
                     </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.collateral_type || 0 }}</span>
-                    </div>
-                    </div>
+                  </div>
                 </div>
-                
-                <v-divider class="my-1"></v-divider>
-                
-                <!-- Overdue Days -->
-                <div class="dashboard-item">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('overdue_days') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('overdue_days').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
-                    <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('overdue_days').details?.att_value || 0 }}</span>
-                    </div>
-                    <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('overdue_days').details?.att_weight || 0 }}%</span>
-                    </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.overdue_days || 0 }}</span>
-                    </div>
-                    </div>
-                </div>
-                </v-card-text>
+              </v-card-text>
             </v-card>
-            </v-col>
+          </v-col>
 
-            <!-- ========== GROUP 3: Length of Credit History (15%) ========== -->
-            <v-col cols="12" lg="2-4" md="4" sm="6" class="pa-1">
-            <v-card class="dashboard-card group-3-dashboard" elevation="3">
-                <div class="dashboard-header">
-                <v-icon size="small">mdi-calendar-clock</v-icon>
-                <div class="dashboard-header-text">
-                    <div class="dashboard-title">Length History</div>
-                    <div class="dashboard-weight">15%</div>
-                </div>
-                </div>
-                
-                <v-card-text class="pa-2">
-                <!-- Registration Year -->
-                <div class="dashboard-item">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('registration_year') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('registration_year').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
-                    <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('registration_year').details?.att_value || 0 }}</span>
-                    </div>
-                    <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('registration_year').details?.att_weight || 0 }}%</span>
-                    </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.registration_year || 0 }}</span>
-                    </div>
-                    </div>
-                </div>
-                </v-card-text>
-            </v-card>
-            </v-col>
-
-            <!-- ========== GROUP 4: New Inquiries (10%) ========== -->
-            <v-col cols="12" lg="2-4" md="6" sm="6" class="pa-1">
-            <v-card class="dashboard-card group-4-dashboard" elevation="3">
-                <div class="dashboard-header">
-                <v-icon size="small">mdi-magnify</v-icon>
-                <div class="dashboard-header-text">
-                    <div class="dashboard-title">New Inquiries</div>
-                    <div class="dashboard-weight">10%</div>
-                </div>
-                </div>
-                
-                <v-card-text class="pa-2">
-                <!-- Inquiries -->
-                <div class="dashboard-item">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('inquiries') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('inquiries').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
-                    <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('inquiries').details?.att_value || 0 }}</span>
-                    </div>
-                    <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('inquiries').details?.att_weight || 0 }}%</span>
-                    </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.inquiries || 0 }}</span>
-                    </div>
-                    </div>
-                </div>
-                </v-card-text>
-            </v-card>
-            </v-col>
-
-            <!-- ========== GROUP 5: Credit Mix (10%) ========== -->
-            <v-col cols="12" lg="2-4" md="6" sm="6" class="pa-1">
+          <!-- ========== GROUP 5: Personal Info (14%) ========== -->
+          <v-col cols="12" lg="2-4" md="6" sm="6" class="pa-1">
             <v-card class="dashboard-card group-5-dashboard" elevation="3">
-                <div class="dashboard-header">
+              <div class="dashboard-header">
                 <v-icon size="small">mdi-account-group</v-icon>
                 <div class="dashboard-header-text">
-                    <div class="dashboard-title">Credit Mix</div>
-                    <div class="dashboard-weight">10%</div>
+                  <div class="dashboard-title">Personal Info</div>
+                  <div class="dashboard-weight">14%</div>
                 </div>
-                </div>
-                
-                <v-card-text class="pa-2">
-                <!-- Gender -->
-                <div class="dashboard-item mb-2">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('gender') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('gender').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
-                    <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('gender').details?.att_value || 0 }}</span>
-                    </div>
-                    <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('gender').details?.att_weight || 0 }}%</span>
-                    </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.gender || 0 }}</span>
-                    </div>
-                    </div>
-                </div>
-                
-                <v-divider class="my-1"></v-divider>
-                
+              </div>
+              
+              <v-card-text class="pa-2">
                 <!-- Age -->
                 <div class="dashboard-item mb-2">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('age') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('age').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
+                  <div class="dashboard-item-label">
+                    <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('age') }}
+                  </div>
+                  <div class="dashboard-item-attr ml-2">
+                    {{ getScoreDetails('age').details?.att_name || '-' }}
+                  </div>
+                  <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('age').details?.att_value || 0 }}</span>
+                      <span class="metric-chip-label">V:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('age').details?.att_value || 0 }}</span>
                     </div>
                     <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('age').details?.att_weight || 0 }}%</span>
+                      <span class="metric-chip-label">W:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('age').details?.att_weight || 0 }}%</span>
                     </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.age || 0 }}</span>
-                    </div>
-                    </div>
+                  </div>
                 </div>
                 
                 <v-divider class="my-1"></v-divider>
                 
                 <!-- Marital Status -->
                 <div class="dashboard-item mb-2">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('marital_status') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('marital_status').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
+                  <div class="dashboard-item-label">
+                    <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('marital_status') }}
+                  </div>
+                  <div class="dashboard-item-attr ml-2">
+                    {{ getScoreDetails('marital_status').details?.att_name || '-' }}
+                  </div>
+                  <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('marital_status').details?.att_value || 0 }}</span>
+                      <span class="metric-chip-label">V:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('marital_status').details?.att_value || 0 }}</span>
                     </div>
                     <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('marital_status').details?.att_weight || 0 }}%</span>
+                      <span class="metric-chip-label">W:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('marital_status').details?.att_weight || 0 }}%</span>
                     </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.marital_status || 0 }}</span>
-                    </div>
-                    </div>
+                  </div>
                 </div>
                 
                 <v-divider class="my-1"></v-divider>
                 
                 <!-- Province -->
                 <div class="dashboard-item">
-                    <div class="dashboard-item-label"><v-icon  size="small">mdi-dot</v-icon>{{ getScoreLabel('province') }}</div>
-                    <div class="dashboard-item-attr ml-2">{{ getScoreDetails('province').details?.att_name || '-' }}</div>
-                    <div class="dashboard-metrics">
+                  <div class="dashboard-item-label">
+                    <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('province') }}
+                  </div>
+                  <div class="dashboard-item-attr ml-2">
+                    {{ getScoreDetails('province').details?.att_name || '-' }}
+                  </div>
+                  <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
-                        <span class="metric-chip-label">V:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('province').details?.att_value || 0 }}</span>
+                      <span class="metric-chip-label">V:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('province').details?.att_value || 0 }}</span>
                     </div>
                     <div class="metric-chip weight-chip">
-                        <span class="metric-chip-label">W:</span>
-                        <span class="metric-chip-value">{{ getScoreDetails('province').details?.att_weight || 0 }}%</span>
+                      <span class="metric-chip-label">W:</span>
+                      <span class="metric-chip-value">{{ getScoreDetails('province').details?.att_weight || 0 }}%</span>
                     </div>
-                    <div class="metric-chip score-chip">
-                        <span class="metric-chip-label">S:</span>
-                        <span class="metric-chip-value">{{ conditionalScores.province || 0 }}</span>
-                    </div>
-                    </div>
+                  </div>
                 </div>
-                </v-card-text>
+              </v-card-text>
             </v-card>
-            </v-col>
+          </v-col>
         </v-row>
-            <div class="mb-2 pa-2 text-body-2 font-weight-bold">
-                <p>1. Your Credit Line greater than outstanding amount.</p>
-                <p>2. You have 30-60 days overdue.</p>
-                <p>3. but your collateral value is larger than the outstanding loan.</p>
-            </div>
+        
+        <!-- Summary Notes -->
+        <div class="mb-2 pa-2 text-body-2 font-weight-bold">
+          <p>1. Your Credit Line greater than outstanding amount.</p>
+          <p>2. You have 30-60 days overdue.</p>
+          <p>3. but your collateral value is larger than the outstanding loan.</p>
         </div>
+      </div>
     </v-expand-transition>
-        </v-card>
+  </v-card>
 
         <!-- Financial Overview -->
         <v-card flat class="pa-2 mb-2">
@@ -1147,59 +1048,6 @@ function getScoreDetails(key: string): {
           <v-img src="" max-width="150" class="mx-auto" />
         </div>
       </v-card>
-      <!-- Payment Dialog -->
-    <v-dialog v-model="showPaymentDialog" max-width="500px">
-    <v-card>
-        <v-card-title class="text-h5 bg-warning pa-4">
-        <v-icon size="large" class="mr-2">mdi-alert-circle</v-icon>
-        ແຈ້ງເຕືອນການຊຳລະເງິນ
-        </v-card-title>
-        
-        <v-card-text class="pa-6">
-        <div class="text-center mb-4">
-            <v-icon size="80" color="warning">mdi-lock-outline</v-icon>
-        </div>
-        
-        <div class="text-h6 text-center mb-4">
-            ເນື້ອຫານີ້ຕ້ອງຊຳລະເງິນເພື່ອເບິ່ງລາຍລະອຽດ
-        </div>
-        
-        <v-alert type="info" variant="tonal" class="mb-4">
-            <div class="text-center">
-            <div class="text-h5 font-weight-bold mb-2">5,000 LAK</div>
-            <div class="text-body-2">ເພື່ອເບິ່ງລາຍລະອຽດ Score Factors ທັງໝົດ</div>
-            </div>
-        </v-alert>
-        
-        <div class="text-body-2 text-grey-darken-1">
-            <p class="mb-2">ທ່ານຈະໄດ້ຮັບ:</p>
-            <ul class="ml-4">
-            <li>ການຄຳນວນແບບລະອຽດ</li>
-            <li>ຄຳແນະນຳການປັບປຸງຄະແນນ</li>
-            </ul>
-        </div>
-        </v-card-text>
-        
-        <v-card-actions class="pa-4">
-        <v-spacer></v-spacer>
-        <v-btn
-            color="grey"
-            variant="text"
-            @click="cancelPayment"
-        >
-            ຍົກເລີກ
-        </v-btn>
-        <v-btn
-            color="success"
-            variant="flat"
-            @click="confirmPayment"
-            prepend-icon="mdi-check-circle"
-        >
-            ຢືນຢັນການຊຳລະເງິນ
-        </v-btn>
-        </v-card-actions>
-    </v-card>
-    </v-dialog>
     </v-container>
   </div>
 </template>
@@ -1354,12 +1202,6 @@ function getScoreDetails(key: string): {
 
 }
 
-.score-chip {
-  border: 1px solid #2931a5;
-  font-weight: 800;
-  padding: 3px 10px;
-}
-
 .metric-chip-label {
   font-weight: 700;
   font-size: 10px;
@@ -1370,9 +1212,6 @@ function getScoreDetails(key: string): {
   font-size: 12px;
 }
 
-.score-chip .metric-chip-value {
-  font-size: 12px;
-}
 /* เพิ่มใน section ที่ไม่ใช่ @media print */
 
 .score-factors-header {
@@ -2380,21 +2219,21 @@ table th, table td,
   }
 
   .dashboard-weight {
-    font-size: 8pt !important;
+    font-size: 10pt !important;
   }
 
   .dashboard-item {
-    padding: 2px 0 !important;
+    padding: 3px 0 !important;
   }
 
   .dashboard-item-label {
-    font-size: 6pt !important;
+    font-size: 7pt !important;
   }
 
   .dashboard-item-attr {
     font-size: 6pt !important;
     min-height: auto !important;
-    margin-bottom: 2px !important;
+    margin-bottom: 3px !important;
   }
 
   .dashboard-metrics {
@@ -2402,7 +2241,7 @@ table th, table td,
   }
 
   .metric-chip {
-    padding: 1px 2px !important;
+    padding: 2px 5px !important;
     font-size: 6pt !important;
   }
 
@@ -2415,10 +2254,6 @@ table th, table td,
   }
 
   .metric-chip-value {
-    font-size: 6pt !important;
-  }
-
-  .score-chip .metric-chip-value {
     font-size: 6pt !important;
   }
   

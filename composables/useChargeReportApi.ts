@@ -162,7 +162,7 @@ export const useChargeReportApi = () => {
     try {
       const params = buildQueryParams(filters)
       const response = await fetchWithAuth<ApiResponse<any>>(
-        `${baseURL}/api/charge_report_summary/?${params.toString()}`
+        `${baseURL}api/charge_report_summary/?${params.toString()}`
       )
       
       if (response.status === 'success') {
@@ -193,7 +193,7 @@ export const useChargeReportApi = () => {
     try {
       const params = buildQueryParams(filters)
       const response = await fetchWithAuth<ApiResponse<any[]>>(
-        `${baseURL}/api/charge_report_main/?${params.toString()}`
+        `${baseURL}api/charge_report_main/?${params.toString()}`
       )
       
       if (response.status === 'success') {
@@ -222,7 +222,7 @@ export const useChargeReportApi = () => {
     try {
       const params = buildQueryParams(filters)
       const response = await fetchWithAuth<ApiResponse<any[]>>(
-        `${baseURL}/api/charge_report_detail/?${params.toString()}`
+        `${baseURL}api/charge_report_detail/?${params.toString()}`
       )
       
       if (response.status === 'success') {
