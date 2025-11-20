@@ -218,7 +218,6 @@
                     @keyup.esc="cancelEdit"
                   >
                     <option value="A1">A1</option>
-                    <option value="A2">A2</option>
                     <option value="A3">A3</option>
                   </select>
                   <button @click="saveSegment(customer)" class="btn-save">✓</button>

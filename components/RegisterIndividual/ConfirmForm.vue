@@ -57,7 +57,6 @@
                 <select id="custype" v-model="manualForm.custype" required>
                   <option value="">ເລືອກປະເພດ</option>
                   <option value="IND">ບຸກຄົນ</option>
-                  <option value="COR">ນິຕິບຸກຄົນ</option>
                 </select>
               </div>
 
@@ -66,7 +65,6 @@
                 <select id="segment" v-model="manualForm.segment" required>
                   <option value="">ເລືອກກຸ່ມ</option>
                   <option value="A1">A1</option>
-                  <option value="A2">A2</option>
                   <option value="A3">A3</option>
                 </select>
               </div>
