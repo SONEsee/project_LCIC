@@ -634,7 +634,7 @@ const mapdatInfo1 = (memberinfo:string)=>{
       <v-col cols="12">
         <section class="pa-5" id="main-content">
           <div>
-            <v-btn class="button" to="../backend/searchuser">
+            <v-btn class="button" to="/backend/searchuser">
               <v-icon icon="mdi-arrow-left" style="font-size: 150%"></v-icon>
             </v-btn>
           </div>
