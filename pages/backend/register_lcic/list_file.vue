@@ -1,4 +1,4 @@
-<!-- <script setup lang="ts">
+<script setup lang="ts">
 definePageMeta({
     layout:"backend",
     middleware:["auth"]
@@ -6,7 +6,7 @@ definePageMeta({
 </script>
 <template>
     <RegisterEnterprisWhitCustomerListFileUpload/>
-</template> -->
+</template>
 
 
 
@@ -22,7 +22,7 @@ definePageMeta({
     </div>
 </template> -->
 
-<script lang="ts" setup>
+<!-- <script lang="ts" setup>
 import { ref, onMounted, computed, watch } from "vue";
 import { useUserData } from "~/composables/useUserData";
 
@@ -229,4 +229,4 @@ onMounted(() => {
      
     </v-window-item>
   </v-window>
-</template>
+</template> -->
