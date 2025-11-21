@@ -135,316 +135,340 @@ onMounted(async () => {
 </script>
 
 <template>
-  <v-sheet :elevation="3" rounded class="pa-4 mb-4">
-    <h4 style="color: blue">ກວດສອບ ແລະ ລົງທະບຽນລະຫັດ ຂສລ</h4>
-
-    <v-progress-linear
-      buffer-value="50"
-      color="cyan"
-      stream
-    ></v-progress-linear>
-
-    <br />
-    <v-row>
-      <v-col cols="12" lg="12">
-        <div class="mb-3">
-          <h4>
-            ກວດສອບລະຫັດ ຂສລ ຈາກລະຫັດວິສາຫະກິດ
-            <strong style="color: orange" class="text-caption"
-              >*ກະລຸນາກວດລະຫັດວິສາຫະກິດກອ່ນລົງທະບຽນ*</strong
-            >
-          </h4>
-        </div>
-        <v-row>
-          <v-col cols="12" sm="3">
-            <v-text-field
-              v-model="enterprisStore.check_enterprise.EnterpriseID"
-              density="compact"
-              label="ກະລຸນາປ້ອນລະຫັດວິສາຫະກິດ"
-              variant="solo"
-              hide-details
-              clearable
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" sm="2">
-            <v-btn
-              color="primary"
-              @click="submitCheckEnterprise"
-              :disabled="
-                enterprisStore.check_enterprise.EnterpriseID === '' ||
-                enterprisStore.check_enterprise.EnterpriseID === null
-              "
-            >
-              ກວດສອບ
-            </v-btn>
-           
-          </v-col>
-          <v-col cols="12" sm="7" class="text-end">
-            <v-btn
-              color="primary"
-             
-              @click="
-                goPath(
-                  `/backend/register_lcic/?enterpris=${enterprisStore.check_enterprise.EnterpriseID}`
-                )
-              "
-            >
-              ລົງທະບຽນອອກລະຫັດ ຂສລ
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-col>
-
-      <v-alert
-        type="warning"
-        density="compact"
-        class="text-caption"
-        v-if="enterprisStore.respon_data_check_enterprise?.exists === false"
+  <v-card :elevation="1" rounded="lg" class="pa-6 mb-6 bg-white">
+    <div class="d-flex align-center mb-4">
+      <v-icon color="blue-darken-2" size="26" class="mr-2"
+        >mdi-shield-search</v-icon
       >
-        ບໍ່ພົບລະຫັດວິສາຫະກິດນີ້:
-        {{ enterprisStore.check_enterprise.EnterpriseID }} ໃນລະບົບຂອງ ຂສລ
-      </v-alert>
-
-      <v-alert
-        type="success"
-        density="compact"
-        class="text-caption"
-        v-if="enterprisStore.respon_data_check_enterprise?.exists === true"
-      >
-        <div
-          class="d-flex justify-lg-space-between justify-center align-center"
-        >
-          <p>
-            ລະຫັດວິສາຫະກິດ: <strong>{{ datareturn[0]?.EnterpriseID }}</strong>
-          </p>
-          <p>
-            ລະຫັດ ຂສລ: <strong>{{ datareturn[0]?.EnterpriseID }}</strong>
-          </p>
-          <p>
-            ຊື່ວິສາຫະກິດ(ລາວ):
-            <strong>{{ datareturn[0]?.enterpriseNameLao }}</strong>
-          </p>
-          <p>
-            ຊື່ວິສາຫະກິດ(ອັງກິດ):
-            <strong>{{ datareturn[0]?.eneterpriseNameEnglish }}</strong>
-          </p>
-          <p>
-            ມື້ລົງທະບຽນ:
-            <strong>{{
-              dayjs(datareturn[0]?.regisDate).format("DD-MM-YYYY")
-            }}</strong>
-          </p>
-          <p>
-            ທືນຈົດທະບຽນ:
-            <strong
-              >{{
-                datareturn[0]?.investmentAmount?.toLocaleString("en-US") ?? "0"
-              }}
-              {{ datareturn[0]?.investmentCurrency ?? "-" }}</strong
-            >
-          </p>
-        </div>
-      </v-alert>
-    </v-row>
-  </v-sheet>
-
-  <v-sheet :elevation="3" rounded class="pa-4 mb-4">
-    <div
-      class="d-flex justify-lg-space-between justify-center align-center mb-4"
-    >
-      <h4 style="color: #01579b">
-        ລາຍການທັງໝົດ:
-        {{ enterprisStore.respons_data_list_file?.count || 0 }} ລາຍການ
+      <h4 class="text-h6 font-weight-regular text-blue-darken-2">
+        ກວດສອບ ແລະ ລົງທະບຽນລະຫັດ ຂສລ
       </h4>
+    </div>
+    <v-divider class="mb-5"></v-divider>
 
-      <div class="d-flex gap-2">
+    <v-row align="center" class="mb-4">
+      <v-col cols="12" md="6" class="py-0">
+        <div class="d-flex align-center">
+          <p class="text-subtitle-1 text-medium-emphasis mr-3">
+            ກວດສອບລະຫັດວິສາຫະກິດ:
+          </p>
+          <v-chip color="orange-darken-1" size="small" variant="tonal">
+            *ກວດສອບກ່ອນລົງທະບຽນ*
+          </v-chip>
+        </div>
+      </v-col>
+      <v-col cols="12" md="6" class="text-md-right py-0">
+        <v-btn
+          color="green-darken-1"
+          variant="tonal"
+          class="font-weight-bold"
+          @click="
+            goPath(
+              `/backend/register_lcic/?enterpris=${enterprisStore.check_enterprise.EnterpriseID}`
+            )
+          "
+        >
+          <v-icon left>mdi-file-edit-outline</v-icon>
+          ລົງທະບຽນອອກລະຫັດ ຂສລ
+        </v-btn>
+      </v-col>
+    </v-row>
+
+    <v-row align="center">
+      <v-col cols="12" sm="4" md="3" class="py-0">
         <v-text-field
-          v-if="userId !== '01'"
-          v-model="search"
-          append-inner-icon="mdi-magnify"
+          v-model="enterprisStore.check_enterprise.EnterpriseID"
           density="compact"
-          label="ຄົ້ນຫາຕາມ ຜູ້ບັນທືກ, ສາຂາ, ຊື່ຟາຍ"
-          variant="solo"
-          hide-details
-          single-line
-          style="width: 300px"
-        />
-
-        <v-autocomplete
-          v-if="userId === '01'"
-          v-model="selecMember"
-          width="400"
-          density="compact"
+          label="ປ້ອນລະຫັດວິສາຫະກິດ"
           variant="outlined"
           hide-details
-          :items="memberData"
-          :item-title="display"
-          item-value="bnk_code"
           clearable
-          single-line
-          label="ເລືອກສະມາຊິກ"
+          prepend-inner-icon="mdi-domain"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" sm="auto" class="py-0">
+        <v-btn
+          color="blue-darken-2"
+          variant="flat"
+          :loading="enterprisStore.isLoading"
+          @click="submitCheckEnterprise"
+          :disabled="!enterprisStore.check_enterprise.EnterpriseID"
         >
-          <template #item="{ item, props }">
-            <v-list-item
-              v-bind="props"
-              :title="`${item.raw.bnk_code} - ${item.raw.code} - ${item.raw.nameL}`"
-            >
-              <template #prepend>
-                <v-avatar size="small" color="primary">
-                  <v-icon>mdi-bank-circle-outline</v-icon>
-                </v-avatar>
-              </template>
-            </v-list-item>
+          <v-icon left>mdi-magnify</v-icon>
+          ກວດສອບ
+        </v-btn>
+      </v-col>
+    </v-row>
+
+    <v-row class="mt-4" v-if="enterprisStore.respon_data_check_enterprise">
+      <v-col cols="12">
+        <v-alert
+          :type="
+            enterprisStore.respon_data_check_enterprise?.exists
+              ? 'success'
+              : 'warning'
+          "
+          :icon="
+            enterprisStore.respon_data_check_enterprise?.exists
+              ? 'mdi-check-circle-outline'
+              : 'mdi-alert-circle-outline'
+          "
+          variant="tonal"
+          density="compact"
+        >
+          <template
+            v-if="enterprisStore.respon_data_check_enterprise?.exists === false"
+          >
+            <strong>ບໍ່ພົບ!</strong> ລະຫັດວິສາຫະກິດນີ້:
+            {{ enterprisStore.check_enterprise.EnterpriseID }} ໃນລະບົບ ຂສລ.
           </template>
-        </v-autocomplete>
+          <template v-else>
+            <div class="font-weight-bold mb-1">
+              ພົບລະຫັດວິສາຫະກິດໃນລະບົບ ຂສລ ແລ້ວ:
+            </div>
+            <v-row dense class="text-caption text-medium-emphasis">
+              <v-col cols="6" sm="3" class="py-0">
+                <p>
+                  <strong>ລະຫັດວິສາຫະກິດ:</strong>
+                  {{ datareturn[0]?.EnterpriseID }}
+                </p>
+              </v-col>
+              <v-col cols="6" sm="3" class="py-0">
+                <p>
+                  <strong>ລະຫັດ ຂສລ:</strong> {{ datareturn[0]?.EnterpriseID }}
+                </p>
+              </v-col>
+              <v-col cols="12" sm="6" md="3" class="py-0">
+                <p>
+                  <strong>ຊື່ (ລາວ):</strong>
+                  {{ datareturn[0]?.enterpriseNameLao }}
+                </p>
+              </v-col>
+              <v-col cols="12" sm="6" md="3" class="py-0">
+                <p>
+                  <strong>ທຶນຈົດທະບຽນ:</strong>
+                  <span class="font-weight-bold">
+                    {{
+                      datareturn[0]?.investmentAmount?.toLocaleString(
+                        "en-US"
+                      ) ?? "0"
+                    }}
+                    {{ datareturn[0]?.investmentCurrency ?? "-" }}
+                  </span>
+                </p>
+              </v-col>
+            </v-row>
+          </template>
+        </v-alert>
+      </v-col>
+    </v-row>
+  </v-card>
+
+  <v-card :elevation="1" rounded="lg" class="pa-4">
+    <v-card-title class="pa-2 pb-3">
+      <div class="d-flex align-center justify-space-between w-100">
+        <h5 class="text-h6 font-weight-regular text-blue-darken-2">
+          <v-icon class="mr-1" color="blue-darken-2">mdi-view-list</v-icon>
+          ລາຍການລົງທະບຽນທັງໝົດ
+          <span class="text-body-2 font-weight-light text-medium-emphasis ml-2">
+            ({{ enterprisStore.respons_data_list_file?.count || 0 }} ລາຍການ)
+          </span>
+        </h5>
+
+        <div class="d-flex align-center gap-2">
+          <v-text-field
+            v-model="search"
+            v-if="userId !== '01'"
+            append-inner-icon="mdi-magnify"
+            density="compact"
+            label="ຄົ້ນຫາ (LCIC, ຜູ້ບັນທຶກ...)"
+            variant="outlined"
+            hide-details
+            single-line
+            style="width: 250px"
+          />
+
+          <v-autocomplete
+            v-if="userId === '01'"
+            v-model="selecMember"
+            density="compact"
+            variant="outlined"
+            hide-details
+            clearable
+            single-line
+            label="ເລືອກສະມາຊິກ"
+            :items="memberData"
+            :item-title="display"
+            item-value="bnk_code"
+            style="width: 300px"
+          >
+            <template #item="{ item, props }">
+              <v-list-item
+                v-bind="props"
+                :title="`${item.raw.bnk_code} - ${item.raw.code} - ${item.raw.nameL}`"
+                prepend-icon="mdi-bank-circle-outline"
+              ></v-list-item>
+            </template>
+          </v-autocomplete>
+        </div>
       </div>
-    </div>
+    </v-card-title>
+
+    <v-divider class="mt-2 mb-4"></v-divider>
 
     <v-data-table
-    density="compact"
+      density="compact"
       :items="filteredEnterpriseData"
       :headers="header"
       :loading="!enterprisStore.respons_data_list_file"
     >
-      <template v-slot:header.index="{ column }">
-        <strong style="color: blue">{{ column.title }}</strong>
-      </template>
-      <template v-slot:header.bank_id="{ column }">
-        <strong style="color: blue">{{ column.title }}</strong>
-      </template>
-      <template v-slot:header.branch_id="{ column }">
-        <strong style="color: blue">{{ column.title }}</strong>
-      </template>
-      <template v-slot:header.image="{ column }">
-        <strong style="color: blue">{{ column.title }}</strong>
-      </template>
-      <template v-slot:header.user="{ column }">
-        <strong style="color: blue">{{ column.title }}</strong>
-      </template>
-      <template v-slot:header.insertdate="{ column }">
-        <strong style="color: blue">{{ column.title }}</strong>
-      </template>
-      <template v-slot:header.status="{ column }">
-        <strong style="color: blue">{{ column.title }}</strong>
-      </template>
-      <template v-slot:header.LCIC_reques="{ column }">
-        <strong style="color: blue">{{ column.title }}</strong>
-      </template>
-      <template v-slot:header.action="{ column }">
-        <strong style="color: blue">{{ column.title }}</strong>
-      </template>
-
-      <template v-slot:item.index="{ index }">
-        {{ (reques.page - 1) * reques.limit + index + 1 }}
+    <template v-slot:header.index="{column}">
+      <b style="color: blue;"><strong >
+        {{ column.title }}
+      </strong></b>
+    </template>
+      <template
+      
+        v-for="h in header"
+        #[`header.${(h).value}`]="{ column }"
+        :key="h.value"
+      >
+        <strong class="text-blue-darken-4 text-blue-darken-4">{{
+          column.title
+        }}</strong>
       </template>
 
       <template v-slot:item.bank_id="{ item }">
-        <v-chip size="small" color="primary">
+        <v-chip
+          size="small"
+          color="blue-grey-darken-1"
+          variant="text"
+          class="font-weight-medium"
+        >
           {{ mapMemberInfo(item.bank_id) }}
         </v-chip>
       </template>
-
-      <template v-slot:item.image="{ item }">
-        <div class="text-center">
-          <div class="image-preview-container">
-            <v-avatar>
-              <img
-                :src="item.image"
-                :alt="item.filename"
-                width="40"
-                class="thumbnail"
-              />
-            </v-avatar>
-            <div class="image-popup">
-              <img :src="item.image" :alt="item.filename" />
-            </div>
-          </div>
-          <p>
-            <v-chip variant="flat" size="small" color="green-lighten-4">
-              {{ item.filename?.slice(0, 10)
-              }}{{ item.filename?.length > 10 ? "..." : "" }}
-            </v-chip>
-          </p>
-        </div>
-      </template>
-
-      <template v-slot:item.user="{ item }">
-        <v-chip color="primary" size="small">
-          {{ item.user }}
+      <template v-slot:item.branch_id="{ item }">
+        <v-chip size="small" color="grey-darken-1" variant="text">
+          {{ item.branch_id }}
         </v-chip>
       </template>
-
-      <template v-slot:item.insertdate="{ item }">
-        <v-chip color="primary" size="small">
-          {{ dayjs(item.insertdate).format("DD/MM/YYYY HH:mm") }}
-        </v-chip>
-      </template>
-      <template v-slot:item.action="{ item }">
-        <v-btn
-          color="primary"
-          @click="
-            goPath(`/backend/register_lcic/detail/?enterprisfile=${item.id}`)
-          "
-          >ລາຍລະອຽດ</v-btn
-        >
+      <template v-slot:item.index="{ item, index }">
+        {{ (reques.page-1) * reques.limit + index + 1 }}
       </template>
 
       <template v-slot:item.status="{ item }">
-        <v-chip color="warning" size="small" v-if="item.status === '1'">
-          <strong>ລໍຖ້າກວດສອບ</strong>
+        <v-chip
+          :color="
+            item.status === '1'
+              ? 'orange'
+              : item.status === '0'
+              ? 'green'
+              : item.status === '3'
+              ? 'red'
+              : 'blue-grey'
+          "
+          size="small"
+          variant="tonal"
+          class="font-weight-medium"
+        >
+          <v-icon left size="16" class="mr-1">
+            {{
+              item.status === "1"
+                ? "mdi-timer-sand-full"
+                : item.status === "0"
+                ? "mdi-check-bold"
+                : item.status === "3"
+                ? "mdi-alert-octagon-outline"
+                : "mdi-information-outline"
+            }}
+          </v-icon>
+          {{
+            item.status === "1"
+              ? "ລໍຖ້າກວດສອບ"
+              : item.status === "0"
+              ? "ສຳເລັດ"
+              : item.status === "3"
+              ? "ຖືກ Reject"
+              : item.decaption
+          }}
         </v-chip>
-        <v-chip color="success" size="small" v-else-if="item.status === '0'">
-          <strong>ສຳເລັດການກວດສອບ</strong>
-        </v-chip>
-        <v-chip color="info" size="small" v-else-if="item.status === '4'">
-          <strong>{{ item.decaption }}</strong>
-        </v-chip>
-        <v-chip v-if="item.status === '3'" color="error"> ຖືກ Reject </v-chip>
       </template>
 
       <template v-slot:item.LCIC_reques="{ item }">
-        <div class="lcic-code-container">
+        <div class="d-flex align-center">
           <v-chip
             v-if="item.LCIC_reques"
-            color="success"
-            variant="elevated"
-            size="small"
-          >
-            <v-icon size="16" class="mr-1">mdi-shield-check</v-icon>
-            <strong>{{ item.LCIC_reques }}</strong>
-            <v-tooltip text="ກົດເພື່ອກ໊ອບປີ້" location="top">
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  icon
-                  size="x-small"
-                  variant="text"
-                  class="ml-1"
-                  @click.stop="copyCode(item.LCIC_reques)"
-                >
-                  <v-icon size="16">mdi-content-copy</v-icon>
-                </v-btn>
-              </template>
-            </v-tooltip>
-          </v-chip>
-          <v-chip
-            v-else-if="item.status === '3'"
-            color="error"
+            color="indigo"
             variant="tonal"
             size="small"
+            class="font-weight-bold"
           >
-            {{ item.decaption }}
+            <v-icon size="16" class="mr-1">mdi-lock-check</v-icon>
+            {{ item.LCIC_reques }}
+            <v-btn
+              icon
+              size="x-small"
+              variant="text"
+              class="ml-1"
+              color="indigo"
+              @click.stop="copyCode(item.LCIC_reques)"
+            >
+              <v-icon size="16">mdi-content-copy</v-icon>
+            </v-btn>
           </v-chip>
           <v-chip
             v-else
-            color="warning"
-            variant="tonal"
+            color="grey"
+            variant="text"
             size="small"
-            prepend-icon="mdi-clock-alert-outline"
+            prepend-icon="mdi-dots-horizontal-circle-outline"
+            class="text-medium-emphasis"
           >
-            ລໍຖ້າການອອກລະຫັດ ຂສລ
+            ລໍຖ້າການອອກລະຫັດ
           </v-chip>
         </div>
+      </template>
+
+      <template v-slot:item.action="{ item }">
+        <v-btn
+          color="blue-darken-2"
+          variant="outlined"
+          size="small"
+          @click="
+            goPath(`/backend/register_lcic/detail/?enterprisfile=${item.id}`)
+          "
+        >
+          <v-icon size="16" left>mdi-file-eye-outline</v-icon>
+          ລາຍລະອຽດ
+        </v-btn>
+      </template>
+
+      <template v-slot:item.image="{ item }">
+        <div class="text-center py-2">
+          <div class="image-preview-container">
+            <v-avatar size="small" color="grey-lighten-3">
+              <img :src="item.image"  class="thumbnail " size="small"  width="20"/>
+            </v-avatar>
+            <div class="image-popup">
+              <img :src="item.image"  />
+            </div>
+          </div>
+          <!-- <v-chip
+            variant="text"
+            size="x-small"
+            class="mt-1 text-medium-emphasis"
+          >
+            {{ item.filename?.slice(0, 10)
+            }}{{ item.filename?.length > 10 ? "..." : "" }}
+          </v-chip> -->
+        </div>
+      </template>
+
+      <template v-slot:item.insertdate="{ item }">
+        <span class="text-caption text-medium-emphasis">
+          {{ dayjs(item.insertdate).format("DD/MM/YYYY") }}
+        </span>
       </template>
 
       <template v-slot:bottom>
@@ -457,7 +481,7 @@ onMounted(async () => {
         />
       </template>
     </v-data-table>
-  </v-sheet>
+  </v-card>
 </template>
 
 <style scoped>
