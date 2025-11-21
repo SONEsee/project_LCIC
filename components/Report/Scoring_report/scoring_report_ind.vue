@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import axios from "axios";
 import { useUserUID } from '~/composables/useUserUID';
 
@@ -19,6 +19,7 @@ const loading = ref(false);
 const error = ref("");
 const { userData, UID } = useUserUID();
 const showScoreFactors = ref(false);
+const showPaymentDialog = ref(false);
 
 // ⭐ เพิ่ม scoreBreakdown
 const scoreBreakdown = ref<any>({});
@@ -87,9 +88,20 @@ const scoreLevel = computed(() => {
   return 'Poor: ອ່ອນ';
 });
 
-// ฟังก์ชันกลับหน้าก่อนหน้า
+// ⭐ เพิ่มฟังก์ชันล้างข้อมูล session (เพิ่มก่อน goBack)
+const clearSessionData = () => {
+  sessionStorage.removeItem("lcic_id");
+  sessionStorage.removeItem("scoring_data");
+  sessionStorage.removeItem("from_detail_page");
+};
+
+// ⭐ แก้ไขฟังก์ชัน goBack
 const goBack = () => {
-  goPath("/scoring/scoring_individual");
+  // Clear session ก่อนกลับ
+  clearSessionData();
+  
+  // ⭐ ใช้ replace แทน push - ลบหน้า Report ออกจากประวัติ
+  router.replace("/scoring/scoring_individual");
 };
 
 // ฟังก์ชันพิมพ์
@@ -244,6 +256,7 @@ const formatNumber = (num: number): string => {
 
 // โหลดข้อมูลจาก sessionStorage และเรียก API
 onMounted(async () => {
+  sessionStorage.removeItem("from_detail_page");
   const storedLcicID = sessionStorage.getItem("lcic_id");
   
   if (!storedLcicID) {
@@ -296,6 +309,11 @@ onMounted(async () => {
   }
 });
 
+// ⭐ เพิ่ม onUnmounted (เพิ่มหลัง onMounted)
+onUnmounted(() => {
+  clearSessionData();
+});
+
 // ⭐ ฟังก์ชันแปลงชื่อ - เพิ่ม overdue_class
 function getScoreLabel(key: string): string {
   const labels: Record<string, string> = {
@@ -314,6 +332,28 @@ function getScoreLabel(key: string): string {
   };
   return labels[key] || key;
 }
+
+// ⭐ ฟังก์ชันสำหรับจัดการเมื่อคลิกปุ่ม Show Details
+const handleToggleScoreFactors = () => {
+  if (!showScoreFactors.value) {
+    // ถ้ายังไม่เปิด -> แสดง dialog แจ้งเตือนการชำระเงิน
+    showPaymentDialog.value = true;
+  } else {
+    // ถ้าเปิดอยู่แล้ว -> ซ่อน
+    showScoreFactors.value = false;
+  }
+};
+
+// ⭐ ฟังก์ชันยืนยันการชำระเงิน
+const confirmPayment = () => {
+  showPaymentDialog.value = false;
+  showScoreFactors.value = true;
+};
+
+// ⭐ ฟังก์ชันยกเลิก
+const cancelPayment = () => {
+  showPaymentDialog.value = false;
+};
 
 // ⭐ ฟังก์ชันดึง details - แบบ Simplified
 function getScoreDetails(key: string): { 
@@ -544,25 +584,26 @@ function getScoreDetails(key: string): {
 
   <!-- Score Factors Section -->
   <v-card flat class="pa-2 mb-2 score-factors-section">
-    <div class="score-factors-header">
-      <h3 class="text-h6 mb-2 font-weight-bold section-title">
-        <v-icon>mdi-dot</v-icon>
-        SCORE FACTORS
-      </h3>
-      
-      <v-btn
-        size="small"
-        :color="showScoreFactors ? 'primary' : 'grey'"
-        variant="tonal"
-        @click="showScoreFactors = !showScoreFactors"
-        class="no-print toggle-button"
-      >
-        <v-icon size="small" class="mr-1">
-          {{ showScoreFactors ? 'mdi-eye-off' : 'mdi-eye' }}
-        </v-icon>
-        {{ showScoreFactors ? 'Hide Details' : 'Show Details' }}
-      </v-btn>
-    </div>
+        <div class="score-factors-header">
+            <h3 class="text-h6 mb-2 font-weight-bold section-title">
+            <v-icon>mdi-dot</v-icon>
+            SCORE FACTORS
+            </h3>
+            
+            <!-- ⭐ เพิ่มปุ่ม Toggle -->
+            <v-btn
+            size="small"
+            :color="showScoreFactors ? 'primary' : 'grey'"
+            variant="tonal"
+            @click="handleToggleScoreFactors"
+            class="no-print toggle-button"
+            >
+            <v-icon size="small" class="mr-1">
+                {{ showScoreFactors ? 'mdi-eye-off' : 'mdi-eye' }}
+            </v-icon>
+            {{ showScoreFactors ? 'Hide Details' : 'Show Details' }}
+            </v-btn>
+        </div>
 
     <v-expand-transition>
       <div v-show="showScoreFactors" class="dashboard-grid-wrapper">
@@ -1048,6 +1089,59 @@ function getScoreDetails(key: string): {
           <v-img src="" max-width="150" class="mx-auto" />
         </div>
       </v-card>
+            <!-- Payment Dialog -->
+      <v-dialog v-model="showPaymentDialog" max-width="500px">
+      <v-card>
+          <v-card-title class="text-h5 bg-warning pa-4">
+          <v-icon size="large" class="mr-2">mdi-alert-circle</v-icon>
+          ແຈ້ງເຕືອນການຊຳລະເງິນ
+          </v-card-title>
+          
+          <v-card-text class="pa-6">
+          <div class="text-center mb-4">
+              <v-icon size="80" color="warning">mdi-lock-outline</v-icon>
+          </div>
+          
+          <div class="text-h6 text-center mb-4">
+              ເນື້ອຫານີ້ຕ້ອງຊຳລະເງິນເພື່ອເບິ່ງລາຍລະອຽດ
+          </div>
+          
+          <v-alert type="info" variant="tonal" class="mb-4">
+              <div class="text-center">
+              <div class="text-h5 font-weight-bold mb-2">5,000 LAK</div>
+              <div class="text-body-2">ເພື່ອເບິ່ງລາຍລະອຽດ Score Factors ທັງໝົດ</div>
+              </div>
+          </v-alert>
+          
+          <div class="text-body-2 text-grey-darken-1">
+              <p class="mb-2">ທ່ານຈະໄດ້ຮັບ:</p>
+              <ul class="ml-4">
+              <li>ການຄຳນວນແບບລະອຽດ</li>
+              <li>ຄຳແນະນຳການປັບປຸງຄະແນນ</li>
+              </ul>
+          </div>
+          </v-card-text>
+          
+          <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn
+              color="grey"
+              variant="text"
+              @click="cancelPayment"
+          >
+              ຍົກເລີກ
+          </v-btn>
+          <v-btn
+              color="success"
+              variant="flat"
+              @click="confirmPayment"
+              prepend-icon="mdi-check-circle"
+          >
+              ຢືນຢັນການຊຳລະເງິນ
+          </v-btn>
+          </v-card-actions>
+      </v-card>
+      </v-dialog>
     </v-container>
   </div>
 </template>
@@ -1663,19 +1757,27 @@ table th, table td,
    🖨️ ส่วนที่ 2: CSS สำหรับการพิมพ์ (PRINT)
    ============================================ */
 @media print {
-  .no-print {
-    display: none !important;
+  /* ⭐ ลบ border/background ทั้งหมดที่อาจรั่วออกมา */
+  * {
+    box-shadow: none !important;
   }
   
-  .report-wrapper {
-    background: white;
-    padding: 0;
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    border: none !important;
+    font-size: 9pt !important;
+    line-height: 1.3 !important;
   }
-  
-  .report-container {
-    box-shadow: none;
-    max-width: 100%;
-    margin: 0;
+
+  .v-application,
+  .v-main,
+  .v-main__wrap,
+  .v-application__wrap {
+    background: white !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   @page {
@@ -1683,11 +1785,24 @@ table th, table td,
     margin: 10mm;
   }
 
-  body {
-    margin: 0;
-    padding: 0;
-    font-size: 9pt !important;
-    line-height: 1.3 !important;
+  .no-print {
+    display: none !important;
+  }
+  
+  .report-wrapper {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  .report-container {
+    box-shadow: none !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border: none !important;
+    background: white !important;
   }
 
   /* ========== PRINT: BOX LAYOUT ========== */
@@ -2081,6 +2196,8 @@ table th, table td,
     box-shadow: none !important;
     padding: 4px !important;
     margin-bottom: 3px !important;
+    border: none !important;
+    background: white !important;
   }
 
   .pa-3 {
@@ -2211,15 +2328,14 @@ table th, table td,
 
   .dashboard-header {
     padding: 4px 6px !important;
-
   }
 
   .dashboard-title {
-    font-size: 8pt !important;
+    font-size: 6pt !important;
   }
 
   .dashboard-weight {
-    font-size: 10pt !important;
+    font-size: 7pt !important;
   }
 
   .dashboard-item {
@@ -2227,11 +2343,11 @@ table th, table td,
   }
 
   .dashboard-item-label {
-    font-size: 7pt !important;
+    font-size: 6pt !important;
   }
 
   .dashboard-item-attr {
-    font-size: 6pt !important;
+    font-size: 7pt !important;
     min-height: auto !important;
     margin-bottom: 3px !important;
   }
@@ -2256,6 +2372,5 @@ table th, table td,
   .metric-chip-value {
     font-size: 6pt !important;
   }
-  
 }
 </style>

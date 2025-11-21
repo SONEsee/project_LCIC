@@ -76,7 +76,7 @@ const confirmInsert = async () => {
         
         // ⭐ แก้ไขตรงนี้ - ใช้ router แทน useRouter()
         setTimeout(() => {
-          router.replace("/scoring/reports/scoring_report");
+          router.replace("/scoring/reports/scoring_report_ind");
         }, 500);
       }
     }
