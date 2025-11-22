@@ -322,11 +322,7 @@ onMounted(async () => {
       :headers="header"
       :loading="!enterprisStore.respons_data_list_file"
     >
-    <template v-slot:header.index="{column}">
-      <b style="color: blue;"><strong >
-        {{ column.title }}
-      </strong></b>
-    </template>
+
       <template
       
         v-for="h in header"
@@ -350,7 +346,7 @@ onMounted(async () => {
       </template>
       <template v-slot:item.branch_id="{ item }">
         <v-chip size="small" color="grey-darken-1" variant="text">
-          {{ item.branch_id }}
+          {{ item.branch_id ?? 'ບໍ່ໄດ້ລະບຸ' }}
         </v-chip>
       </template>
       <template v-slot:item.index="{ item, index }">
@@ -446,22 +442,17 @@ onMounted(async () => {
 
       <template v-slot:item.image="{ item }">
         <div class="text-center py-2">
-          <div class="image-preview-container">
-            <v-avatar size="small" color="grey-lighten-3">
-              <img :src="item.image"  class="thumbnail " size="small"  width="20"/>
+          <div class="image-preview-container" >
+            <v-avatar size="small" color="grey-lighten-3" v-if="item.image">
+              <img :src="item.image"  class="thumbnail " size="small"  width="20"  />
+              
             </v-avatar>
+            <p v-else>ບໍ່ໄດ້ແນບຟາຍ</p>
             <div class="image-popup">
               <img :src="item.image"  />
             </div>
           </div>
-          <!-- <v-chip
-            variant="text"
-            size="x-small"
-            class="mt-1 text-medium-emphasis"
-          >
-            {{ item.filename?.slice(0, 10)
-            }}{{ item.filename?.length > 10 ? "..." : "" }}
-          </v-chip> -->
+          
         </div>
       </template>
 

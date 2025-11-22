@@ -342,7 +342,11 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
           formData.append("EnterpriseID", this.check_enterprise.EnterpriseID);
           const req = await axios.post<EnterpriseModel.CheckEnterpriseRespons>(
             `/api/check-enterprise/`,
-            formData
+            formData,{
+               headers:{
+                 Authorization: `Bearer ${this.token}`,
+               }
+            }
           );
           if (req.status === 200) {
             this.respon_data_check_enterprise = req.data;
