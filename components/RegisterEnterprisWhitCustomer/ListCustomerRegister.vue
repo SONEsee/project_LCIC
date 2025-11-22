@@ -65,9 +65,14 @@ const headers = computed(() => {
 
 const getStatusConfig = (status: number) => {
   const statusMap: any = {
-    0: { text: "ລໍຖ້າອະນຸມັດ", color: "warning", icon: "mdi-clock-outline" },
-    1: { text: "ອະນຸມັດແລ້ວ", color: "success", icon: "mdi-check-circle" },
+    1: { text: "ລໍຖ້າອະນຸມັດ", color: "warning", icon: "mdi-clock-outline" },
+    0: { text: "ອະນຸມັດແລ້ວ", color: "success", icon: "mdi-check-circle" },
     2: { text: "ປະຕິເສດ", color: "error", icon: "mdi-close-circle" },
+    3: {
+      text: "ລໍຖ້າລົງທະບຽນ",
+      color: "orange-darken-4",
+      icon: "mdi-clock-alert-outline",
+    },
   };
   return (
     statusMap[status] || {
@@ -171,7 +176,12 @@ onMounted(() => {
               </v-list-item>
             </template>
           </v-autocomplete>
-          <v-btn color="primary" v-if="userId !== '01'" @click="goPath(`/backend/register_lcic/customerjoinlcic`)">ພູກລະຫັດລູກຄ້າ</v-btn>
+          <v-btn
+            color="primary"
+            v-if="userId !== '01'"
+            @click="goPath(`/backend/register_lcic/customerjoinlcic`)"
+            >ພູກລະຫັດລູກຄ້າ</v-btn
+          >
         </div>
       </v-card-title>
 
@@ -213,11 +223,27 @@ onMounted(() => {
               </span>
             </div>
           </template>
-
+          <!-- <pre>
+  {{ dataCustomerList }}
+</pre> -->
           <template v-slot:item.customerID="{ item }">
-            <v-chip color="cyan-lighten-4" variant="flat" size="small">
-              <v-icon start size="small">mdi-account</v-icon>
+            <v-chip
+              color="cyan-lighten-4"
+              variant="flat"
+              size="small"
+              v-if="item.status === 0"
+            >
+              <v-icon size="small">mdi-account</v-icon>
               {{ item.customerID }}
+            </v-chip>
+            <v-chip
+              color="orange-darken-4"
+              variant="flat"
+              size="small"
+              v-if="item.status === 3"
+            >
+              
+              <strong >ລໍຖ້າລົງທະບຽນ</strong>
             </v-chip>
           </template>
 
@@ -265,17 +291,28 @@ onMounted(() => {
 
           <template v-slot:item.actions="{ item }">
             <div class="justify-center">
-              <v-btn variant="tonal" color="primary"
-              @click="
-                    goPath(
-                      `/backend/register_lcic/detailcustomer/?id_file=${item.id}`
-                    )
-                  "
-                ><v-icon
-                  size="small"
-                  
-                  >mdi-eye</v-icon
-                >ລາຍລະອຽດ</v-btn
+              
+              <v-btn
+              v-if="item.status !== 3"
+                variant="tonal"
+                color="primary"
+                @click="
+                  goPath(
+                    `/backend/register_lcic/detailcustomer/?id_file=${item.id}`
+                  )
+                "
+                ><v-icon size="small">mdi-eye</v-icon>ລາຍລະອຽດ</v-btn
+              >
+              <v-btn
+              v-if="item.status === 3"
+                variant="tonal"
+                color="warning"
+                @click="
+                  goPath(
+                    `/backend/register_lcic/customerjoinlcic/?id_file=${item.EnterpriseID}`
+                  )
+                "
+                ><v-icon size="small">mdi-eye</v-icon>ລົງທະບຽນ</v-btn
               >
             </div>
           </template>

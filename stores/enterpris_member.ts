@@ -382,6 +382,24 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
         this.isLoading = false;
       }
     },
+    async SeachEnterprisList() {
+      this.isLoading = true;
+      try {
+        const formData = new FormData();
+        formData.append("EnterpriseID", this.check_enterprise.EnterpriseID);
+        const req = await axios.post<EnterpriseModel.CheckEnterpriseRespons>(
+          `/api/check-enterprise_list/`,
+          formData
+        );
+        if (req.status === 200) {
+          this.respon_data_check_enterprise = req.data;
+        }
+      } catch (error) {
+        console.log("ບໍມີຂໍ້ມູນ Enterpise ນີ້");
+      } finally {
+        this.isLoading = false;
+      }
+    },
 
     async Approve() {
       this.isLoading = true;
