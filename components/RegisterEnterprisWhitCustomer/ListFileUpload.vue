@@ -317,6 +317,7 @@ onMounted(async () => {
     <v-divider class="mt-2 mb-4"></v-divider>
 
     <v-data-table
+    :items-per-page="reques.limit"
       density="compact"
       :items="filteredEnterpriseData"
       :headers="header"

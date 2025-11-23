@@ -527,7 +527,7 @@ onMounted(() => {
               <pre>{{ enterprisData }}</pre> -->
               <div
                 class="w-100 d-flex justify-center"
-                v-if="enterprisData[0].status === '1'"
+                v-if="enterprisData[0]?.status === '1'"
               >
                 <v-btn
                   color="primary"
