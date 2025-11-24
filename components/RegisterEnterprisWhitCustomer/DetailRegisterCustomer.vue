@@ -199,6 +199,8 @@ onMounted(() => {
               hide-details
             />
           </v-col>
+
+          
           <v-col cols="4">
             <v-autocomplete
               :model-value="detail.com_category"
