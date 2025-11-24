@@ -10,8 +10,8 @@
               <v-icon size="32" color="white">mdi-cash-multiple</v-icon>
             </div>
             <div>
-              <h2 class="text-h4 font-weight-bold mb-1">ການຈັດການຄ່າທຳນຽມ</h2>
-              <p class="text-subtitle-2 text-grey-darken-1 mb-0">
+              <h2 class="text-h5 font-weight-bold mb-1">ການຈັດການຄ່າທຳນຽມ</h2>
+              <p class="text-subtitle-2  mb-0">
                 Manage all fees and charges in the system
               </p>
             </div>

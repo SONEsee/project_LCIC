@@ -53,6 +53,9 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
         branch_id: "",
         enLocation: null as number | any,
       },
+      form_inset_data: {
+        register_id: "",
+      },
 
       respons_data_list_customer:
         null as EnterpriseModel.ListRegisterCustomerRespons | null,
@@ -339,7 +342,11 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
           formData.append("EnterpriseID", this.check_enterprise.EnterpriseID);
           const req = await axios.post<EnterpriseModel.CheckEnterpriseRespons>(
             `/api/check-enterprise/`,
-            formData
+            formData,{
+               headers:{
+                 Authorization: `Bearer ${this.token}`,
+               }
+            }
           );
           if (req.status === 200) {
             this.respon_data_check_enterprise = req.data;
@@ -364,6 +371,24 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
         formData.append("EnterpriseID", this.check_enterprise.EnterpriseID);
         const req = await axios.post<EnterpriseModel.CheckEnterpriseRespons>(
           `/api/check-enterprise/`,
+          formData
+        );
+        if (req.status === 200) {
+          this.respon_data_check_enterprise = req.data;
+        }
+      } catch (error) {
+        console.log("ບໍມີຂໍ້ມູນ Enterpise ນີ້");
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async SeachEnterprisList() {
+      this.isLoading = true;
+      try {
+        const formData = new FormData();
+        formData.append("EnterpriseID", this.check_enterprise.EnterpriseID);
+        const req = await axios.post<EnterpriseModel.CheckEnterpriseRespons>(
+          `/api/check-enterprise_list/`,
           formData
         );
         if (req.status === 200) {
@@ -635,5 +660,37 @@ export const useEnterprisInfo = defineStore("enterpris_member", {
         this.isLoading = false;
       }
     },
+    async CreatInser(){
+      this.isLoading = true
+      try {
+        const notificaton = await Swal.fire({
+          icon:"warning",
+          title:"ຢືນຢັນ",
+          text:"ທ່ານຕອ້ງການຢື້ນນີ້ແທ້ບໍ",
+          showConfirmButton:true,
+          showCancelButton:true,
+          confirmButtonText:"ຕົກລົງ",
+          cancelButtonText:"ຍົກເລີກ"
+
+        });if(notificaton.isConfirmed){
+          const dataForm = new FormData()
+          dataForm .append("register_id", this.form_inset_data.register_id)
+          const req = await axios.post(`/api/api/approve-enterprise-mapping/`,dataForm);
+          if(req.status === 200){
+            Swal.fire({
+              icon:"success",
+          title:"ສຳເລັດ",
+          text:"ຢັງຢືນສຳເລັດ",
+          showConfirmButton:true,
+          showCancelButton:true,
+            })
+          }
+        }
+      } catch (error) {
+        console.log("error")
+      }finally{
+        this.isLoading= false
+      }
+    }
   },
 });

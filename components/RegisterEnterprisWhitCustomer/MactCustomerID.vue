@@ -165,16 +165,16 @@ watch(datareturn, async (newData) => {
 watch(enterpreise, async (newValue) => {
   if (newValue && newValue.trim() !== "") {
     reques.EnterpriseID = newValue;
-    await EnterprisStore.SeachEnterpris();
+    await EnterprisStore.SeachEnterprisList();
   }
 });
 
 watch(
-  () => route.query.enterpris,
+  () => route.query.id_file,
   (newValue) => {
     if (newValue) {
       request.com_enterprise_code = newValue as string;
-      request.enterprise_code = newValue as string; // ✅ ອັບເດດ enterprise_code
+      request.enterprise_code = newValue as string; 
       enterpreise.value = newValue as string;
     }
   },

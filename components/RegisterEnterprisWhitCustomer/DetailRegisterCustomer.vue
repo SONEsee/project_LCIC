@@ -124,35 +124,14 @@ watch(
   { immediate: true }
 );
 
-// ========== ສົ່ງຟອມ ==========
+
 const submit = async () => {
-  if (!enterpreise.value?.trim()) {
-    Swal.fire({ icon: "warning", title: "ກະລຸນາປ້ອນລະຫັດວິສາຫະກິດ" });
-    return;
-  }
-  if (!request.bnk_code?.trim()) {
-    Swal.fire({ icon: "warning", title: "ກະລຸນາເລືອກສະມາຊິກ" });
-    return;
-  }
-
-  loading.value = true;
-  try {
-    request.enterprise_code = enterpreise.value;
-    request.com_enterprise_code = enterpreise.value;
-    request.mm_status = request.mm_status || "P";
-    request.status = request.status || "1";
-
-    await EnterprisStore.CreateMactCustomer();
-    router.go(-1);
-  } catch (err: any) {
-    console.error(err);
-    Swal.fire({ icon: "error", title: "ເກີດຂໍ້ຜິດພາດ", text: err.message || "ບໍ່ສາມາດບັນທຶກໄດ້" });
-  } finally {
-    loading.value = false;
-  }
+    EnterprisStore.form_inset_data.register_id = id
+  await EnterprisStore.CreatInser()
+  goPreviousPath()
 };
 
-// ========== ໂຫຼດຂໍ້ມູນເມື່ອເປີດໜ້າ ==========
+
 onMounted(() => {
   if (id) {
     EnterprisStore.GetDetailDataCompanyMaping(id);
@@ -169,7 +148,7 @@ onMounted(() => {
   </v-sheet>
 
   <v-sheet class="flex-wrap mx-auto px-4 mt-4" elevation="4" rounded>
-    <v-form @submit.prevent="submit">
+    <v-form >
       <v-col cols="12">
         <!-- Row 1 -->
         <v-row>
@@ -220,6 +199,8 @@ onMounted(() => {
               hide-details
             />
           </v-col>
+
+          
           <v-col cols="4">
             <v-autocomplete
               :model-value="detail.com_category"
@@ -245,7 +226,7 @@ onMounted(() => {
           </v-col>
         </v-row>
 
-        <!-- Row 3 -->
+       
         <v-row>
           <v-col cols="4">
             <v-text-field
@@ -283,7 +264,7 @@ onMounted(() => {
           </v-col>
         </v-row>
 
-        <!-- Row 4 -->
+  
         <v-row>
           <v-col cols="4">
             <v-autocomplete
@@ -399,7 +380,7 @@ onMounted(() => {
               color="green"
               variant="flat"
               size="large"
-              type="submit"
+              @click="submit"
               :loading="loading"
             >
               ບັນທຶກ
@@ -410,6 +391,9 @@ onMounted(() => {
     </v-form>
   </v-sheet>
 </template>
+
+
+
 
 <style scoped>
 .v-btn { text-transform: none; }

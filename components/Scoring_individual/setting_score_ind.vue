@@ -31,7 +31,9 @@ const attrForm = ref({
   att_type: '',
   att_name: '',
   att_code: '',
-  att_value: 0
+  att_value: 0,
+  att_group_id: '',
+  att_desc: ''
 });
 
 onMounted(() => {
@@ -60,9 +62,74 @@ const fetchAllData = async () => {
   }
 };
 
+// ⭐ ฟังก์ชันคำนวณคะແนนรวมของ att_weight
+const getTotalAttWeight = (excludeId?: number) => {
+  return attTypes.value
+    .filter(type => excludeId ? type.id_desc !== excludeId : true)
+    .reduce((sum, type) => sum + (type.att_weight || 0), 0);
+};
+
+// ⭐ ฟังก์ชันคำนวณคะแนนรวมของ group 5 โดยจัดกลุ่มตาม att_type
+const getTotalAttValueGroup5ByType = (excludeId?: number) => {
+  // กรองเฉพาะ group_id = "5" และไม่รวม item ที่กำลังแก้ไข
+  const group5Items = attributes.value.filter(attr => 
+    attr.att_group_id === "5" &&
+    (excludeId ? attr.att_id !== excludeId : true)
+  );
+  
+  // จัดกลุ่มตาม att_type (แต่ละ att_type เอาค่าเดียว)
+  const groupedByType: Record<string, number> = {};
+  
+  group5Items.forEach(attr => {
+    const type = attr.att_type;
+    // เก็บค่าเดียวต่อ att_type (ถ้ามีหลายตัวจะเอาตัวแรก)
+    if (!groupedByType[type]) {
+      groupedByType[type] = attr.att_value || 0;
+    }
+  });
+  
+  // รวมคะแนนทั้งหมด
+  const total = Object.values(groupedByType).reduce((sum, value) => sum + value, 0);
+  
+  return total;
+};
+
 // ============ Attribute Type CRUD ============
 const handleSaveType = async () => {
   try {
+    const currentWeight = typeForm.value.att_weight;
+    const excludeId = editingType.value ? editingType.value.id_desc : undefined;
+    const totalWeight = getTotalAttWeight(excludeId);
+    const newTotal = totalWeight + currentWeight;
+
+    // ⭐ ตรวจสอบว่าคะแนนรวมเกิน 100 หรือไม่
+    if (newTotal > 100) {
+      // ⭐ ปิด modal ก่อน
+      showTypeModal.value = false;
+      
+      // ⭐ แสดง Alert ตรงกลางหน้าจอ
+      await Swal.fire({
+        icon: 'warning',
+        title: 'ຄະແນນເກີນກຳນົດ!',
+        html: `
+          <p>ຄະແນນນ້ຳໜັກລວມຂອງປະເພດຫຼັກຕ້ອງບໍ່ເກີນ 100</p>
+          <br>
+          <div style="text-align: left; padding: 10px; background: #f3f4f6; border-radius: 8px;">
+            <p><strong>ຄະແນນລວມປະຈຸບັນ:</strong> ${totalWeight.toFixed(2)}</p>
+            <p><strong>ຄະແນນທີ່ຕ້ອງການເພີ່ມ:</strong> ${currentWeight.toFixed(2)}</p>
+            <p style="color: #dc2626;"><strong>ຄະແນນລວມໃໝ່:</strong> ${newTotal.toFixed(2)}</p>
+            <p style="color: #059669;"><strong>ຄະແນນທີ່ເຫຼືອ:</strong> ${(100 - totalWeight).toFixed(2)}</p>
+          </div>
+          <br>
+          <p style="color: #dc2626; font-weight: bold;">ກະລຸນາຫຼຸດຄະແນນບາງປະເພດກ່ອນເພີ່ມ ຫຼື ລຶບປະເພດອອກ</p>
+        `,
+        confirmButtonText: 'ເຂົ້າໃຈແລ້ວ',
+        confirmButtonColor: '#2931a5'
+      });
+      
+      return;
+    }
+
     if (editingType.value) {
       await axios.put(`${apiAttTypes}${editingType.value.id_desc}/`, typeForm.value);
       Swal.fire({
@@ -134,6 +201,45 @@ const handleDeleteType = async (id: number) => {
 // ============ Attribute CRUD ============
 const handleSaveAttr = async () => {
   try {
+    const currentValue = attrForm.value.att_value;
+    const attType = attrForm.value.att_type;
+    const groupId = attrForm.value.att_group_id || '';
+    const excludeId = editingAttr.value ? editingAttr.value.att_id : undefined;
+    
+    // ⭐ คำนวณคะแนนรวมของ group 5 โดยจัดกลุ่มตาม att_type
+    const totalValueGroup5 = getTotalAttValueGroup5ByType(excludeId);
+    const newTotal = totalValueGroup5 + currentValue;
+
+    // ⭐ ตรวจสอบว่าคะแนนรวมเกิน 1000 หรือไม่
+    if (newTotal > 1000) {
+      // ⭐ ปิด modal ก่อน
+      showAttrModal.value = false;
+      
+      // ⭐ แสดง Alert ตรงกลางหน้าจอ (ไม่มีรายละเอียด)
+      await Swal.fire({
+        icon: 'warning',
+        title: 'ຄະແນນເກີນກຳນົດ!',
+        html: `
+          <p>ຄະແນນລວມຂອງລາຍການຍ່ອຍ ຈາກທຸກປະເພດຕ້ອງບໍ່ເກີນ 1000</p>
+          <br>
+          <div style="text-align: left; padding: 10px; background: #f3f4f6; border-radius: 8px;">
+            <p><strong>ປະເພດທີ່ກຳລັງເພີ່ມ:</strong> ${attType}</p>
+            <p><strong>ຄະແນນລວມປະຈຸບັນ (ກຸ່ມ 5 ທຸກປະເພດ):</strong> ${totalValueGroup5.toFixed(2)}</p>
+            <p><strong>ຄະແນນທີ່ຕ້ອງການເພີ່ມ:</strong> ${currentValue.toFixed(2)}</p>
+            <p style="color: #dc2626;"><strong>ຄະແນນລວມໃໝ່:</strong> ${newTotal.toFixed(2)}</p>
+            <p style="color: #059669;"><strong>ຄະແນນທີ່ເຫຼືອ:</strong> ${(1000 - totalValueGroup5).toFixed(2)}</p>
+          </div>
+          <br>
+          <p style="color: #dc2626; font-weight: bold;">ກະລຸນາຫຼຸດຄະແນນບາງລາຍການກ່ອນເພີ່ມ ຫຼື ລຶບລາຍການອອກ</p>
+          <p style="color: #f59e0b; font-size: 14px; margin-top: 10px;">* ບໍ່ສາມາດເພີ່ມລາຍການໃດໆໄດ້ເມື່ອຄະແນນກຸ່ມ 5 ເຕັມ 1000 ແລ້ວ</p>
+        `,
+        confirmButtonText: 'ເຂົ້າໃຈແລ້ວ',
+        confirmButtonColor: '#2931a5'
+      });
+      
+      return;
+    }
+
     if (editingAttr.value) {
       await axios.put(`${apiAttributes}${editingAttr.value.att_id}/`, attrForm.value);
       Swal.fire({
@@ -231,7 +337,9 @@ const openAttrModal = (attr: any = null, defaultType: string = '') => {
       att_type: attr.att_type,
       att_name: attr.att_name,
       att_code: attr.att_code,
-      att_value: attr.att_value
+      att_value: attr.att_value,
+      att_group_id: attr.att_group_id || '',
+      att_desc: attr.att_desc || ''
     };
   } else {
     editingAttr.value = null;
@@ -239,7 +347,9 @@ const openAttrModal = (attr: any = null, defaultType: string = '') => {
       att_type: defaultType,
       att_name: '',
       att_code: '',
-      att_value: 0
+      att_value: 0,
+      att_group_id: '',
+      att_desc: ''
     };
   }
   showAttrModal.value = true;
@@ -284,17 +394,39 @@ const getAttributesByType = (attType: string) => {
             <p class="header-subtitle">ຈັດການຄະແນນປະເພດຫຼັກ ແລະ ລາຍການຍ່ອຍ</p>
           </div>
         </div>
-        <v-tooltip text="ເພີ່ມປະເພດຫຼັກໃໝ່" location="bottom">
-          <template v-slot:activator="{ props }">
-            <v-btn
-              v-bind="props"
-              class="add-main-btn"
-              icon="mdi-plus-circle"
-              size="large"
-              @click="openTypeModal()"
-            ></v-btn>
-          </template>
-        </v-tooltip>
+        
+        <!-- ⭐ เพิ่มส่วนแสดงคะแนนรวม -->
+        <div class="header-right">
+          <div class="score-display-container">
+            <v-chip class="score-chip main-type-score" size="large">
+              <div class="score-content">
+                <span class="score-label">ນ້ຳໜັກປະເພດຫຼັກ:</span>
+                <span class="score-value">{{ getTotalAttWeight().toFixed(0) }}%/100%</span>
+              </div>
+            </v-chip>
+            
+            <v-chip class="score-chip attribute-score" size="large">
+              <div class="score-content">
+                <span class="score-label">ຄະແນນປະເພດຍ່ອຍ:</span>
+                <span class="score-value">{{ getTotalAttValueGroup5ByType().toFixed(0) }}/1000</span>
+              </div>
+            </v-chip>
+          </div>
+
+          <v-tooltip text="ເພີ່ມປະເພດຫຼັກໃໝ່" location="bottom">
+            <template v-slot:activator="{ props }">
+              <v-btn
+                v-bind="props"
+                class="add-main-btn"
+                prepend-icon="mdi-plus-circle"
+                size="large"
+                @click="openTypeModal()"
+              >
+                ເພີ່ມປະເພດຫຼັກ
+              </v-btn>
+            </template>
+          </v-tooltip>
+        </div>
       </div>
 
       <!-- Content Area -->
@@ -331,20 +463,17 @@ const getAttributesByType = (attType: string) => {
                   <div class="main-details">
                     <span class="detail-divider">•</span>
                     <span class="detail-chip type-chip">
-                      <span >Type:</span>
-                      <!-- <v-icon size="14" class="mr-1">mdi-code-tags</v-icon> -->
+                      <span >ປະເພດ:</span>
                       <strong class="mr-1 ml-1">{{ type.att_type }}</strong>
                     </span>
                     <span class="detail-divider">•</span>
                     <span class="detail-chip weight-chip">
-                      <span >Weight:</span>
+                      <span >ນ້ຳໜັກ:</span>
                       <v-icon size="14" class="mr-1 ml-1">mdi-weight</v-icon>
-                      <strong class="weight-value">{{ type.att_weight }}</strong>
+                      <strong class="weight-value">{{ type.att_weight }} %</strong>
                     </span>
                     <span class="detail-chip desc-chip">
-                    <span >Detail:</span>
-                    <!-- <span class="detail-chip desc-chip"> -->
-                      <!-- <v-icon size="14" class="mr-1">mdi-text</v-icon> -->
+                    <span >ລາຍລະອຽດ:</span>
                        <strong class="mr-1 ml-1">{{ type.att_type_desc }}</strong>
                     </span>
                   </div>
@@ -411,11 +540,17 @@ const getAttributesByType = (attType: string) => {
                       <div class="item-content">
                         <div class="item-title"><v-icon class="meta-label">mdi-text </v-icon> {{ attr.att_name }}</div>
                         <div class="item-meta">
-                          <span class="meta-label">code:</span>
+                          <span class="meta-label">ລະຫັດ:</span>
                           <span class="meta-value code-value">{{ attr.att_code }}</span>
                           <span class="meta-separator">|</span>
-                          <span class="meta-label">value:</span>
+                          <span class="meta-label">ຄ່າ:</span>
                           <span class="meta-value value-badge">{{ attr.att_value }}</span>
+                          <span class="meta-separator">|</span>
+                          <span class="meta-label">ກຸ່ມ:</span>
+                          <span class="meta-value group-badge">{{ attr.att_group_id || '-' }}</span>
+                          <span class="meta-separator">|</span>
+                          <span class="meta-label">ຄຳອະທິບາຍ:</span>
+                          <span class="meta-value desc-value">{{ attr.att_desc || '-' }}</span>
                         </div>
                       </div>
                     </div>
@@ -565,6 +700,7 @@ const getAttributesByType = (attType: string) => {
             placeholder="ເຊັ່ນ: ລາຍໄດ້ປະຈຳ"
             variant="outlined"
             density="comfortable"
+            prepend-inner-icon="mdi-text"
             class="modern-input"
           ></v-text-field>
 
@@ -574,6 +710,7 @@ const getAttributesByType = (attType: string) => {
             placeholder="ເຊັ່ນ: INCOME_REGULAR"
             variant="outlined"
             density="comfortable"
+            prepend-inner-icon="mdi-code-tags"
             class="modern-input"
           ></v-text-field>
 
@@ -583,8 +720,34 @@ const getAttributesByType = (attType: string) => {
             type="number"
             variant="outlined"
             density="comfortable"
+            prepend-inner-icon="mdi-numeric"
             class="modern-input"
           ></v-text-field>
+
+          <v-text-field
+            v-model="attrForm.att_group_id"
+            label="ລະຫັດກຸ່ມ (Group ID)"
+            placeholder="ເຊັ່ນ: G01"
+            variant="outlined"
+            density="comfortable"
+            prepend-inner-icon="mdi-group"
+            class="modern-input"
+            hint="ສູງສຸດ 5 ຕົວອັກສອນ (ບໍ່ບັງຄັບ)"
+            persistent-hint
+          ></v-text-field>
+
+          <v-textarea
+            v-model="attrForm.att_desc"
+            label="ຄຳອະທິບາຍ (Description)"
+            placeholder="ເຊັ່ນ: ລາຍໄດ້ປະຈຳຈາກເງິນເດືອນ"
+            variant="outlined"
+            density="comfortable"
+            prepend-inner-icon="mdi-text-box-outline"
+            class="modern-input"
+            rows="3"
+            hint="ບໍ່ບັງຄັບ"
+            persistent-hint
+          ></v-textarea>
         </div>
 
         <div class="modal-footer">
@@ -628,6 +791,14 @@ const getAttributesByType = (attType: string) => {
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   color: #15803d;
   border: 1px solid #bbf7d0;
+}
+
+.group-badge {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #fcd34d;
 }
 
 .modern-container {
@@ -953,6 +1124,17 @@ const getAttributesByType = (attType: string) => {
   border-radius: 4px;
 }
 
+.desc-value {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .meta-separator {
   color: #cbd5e0;
   font-size: 14px;
@@ -1146,6 +1328,45 @@ const getAttributesByType = (attType: string) => {
     width: 100%;
     justify-content: flex-end;
   }
+    .page-header {
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .header-left {
+    width: 100%;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .score-display-container {
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .score-chip {
+    width: 100%;
+  }
+
+  .score-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .score-label {
+    font-size: 12px;
+  }
+
+  .score-value {
+    font-size: 14px;
+  }
 }
 
 /* Tooltips */
@@ -1176,4 +1397,62 @@ const getAttributesByType = (attType: string) => {
   opacity: 0;
   transform: translateY(-10px);
 }
+/* ⭐ เพิ่ม styles ใหม่ */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.score-display-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.score-chip {
+  padding: 4px 12px !important;
+  height: auto !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.score-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.main-type-score {
+  border-left: 4px solid #3b82f6 !important;
+}
+
+.attribute-score {
+  border-left: 4px solid #10b981 !important;
+}
+
+.score-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.score-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.score-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  font-family: 'Courier New', monospace;
+}
+
 </style>
