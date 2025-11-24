@@ -523,7 +523,12 @@ onMounted(() => {
                   ></v-text-field>
                 </v-col>
               </v-row>
-              <div class="w-100 d-flex justify-center">
+              <!-- <pre> {{ currentData }}</pre>
+              <pre>{{ enterprisData }}</pre> -->
+              <div
+                class="w-100 d-flex justify-center"
+                v-if="enterprisData[0]?.status === '1'"
+              >
                 <v-btn
                   color="primary"
                   class="mr-4"
@@ -534,6 +539,24 @@ onMounted(() => {
                 <v-btn color="error" @click="reject" v-if="userId === '01'"
                   >Reject</v-btn
                 >
+              </div>
+              <div
+                class="w-100 d-flex justify-center"
+                v-if="enterprisData[0]?.status === '3'"
+              >
+                <v-alert type="error"> ຖືກ Reject ແລ້ວ </v-alert>
+              </div>
+              <div
+                class="w-100 d-flex justify-center"
+                v-if="enterprisData[0]?.status === '0'"
+              >
+                <v-alert type="success"> ຖືກບັນທືກສຳເລັດແລ້ວ </v-alert>
+              </div>
+              <div
+                class="w-100 d-flex justify-center"
+                v-if="enterprisData[0]?.status === '4'"
+              >
+                <v-alert type="success"> ຖືກ Merg ສຳເລັດແລ້ວ </v-alert>
               </div>
             </v-form>
           </v-card-text>
