@@ -29,9 +29,6 @@ const showBankMessage = ref(false);
 const lcicNotFound = ref(false);
 
 const isSearchDisabled = computed(() => {
-  // Disable เฉพาะเมื่อ:
-  // 1. ไม่มี CatalogID หรือ
-  // 2. มีการค้นหา LCIC แล้วและไม่พบ (lcicNotFound = true)
   const noCatalog = !individualStore.from_insert_logserch.CatalogID;
   const searchedButNotFound = lcicNotFound.value && lcicSearchInput.value;
   
@@ -195,7 +192,6 @@ const performSearch = async () => {
     return;
   }
   
-  // ⭐ เพิ่มการเช็คว่าพบ LCIC หรือไม่
   if (lcicNotFound.value) {
     Swal.fire({
       icon: "warning",
@@ -315,7 +311,6 @@ watch(lcicSearchInput, (newValue) => {
             showBankMessage.value = true;
           }
         } else {
-          // ⭐ เพิ่มส่วนนี้ - เมื่อไม่พบข้อมูลเลย
           lcicNotFound.value = true;
           showLcicName.value = false;
           displayedLcicName.value = "";
@@ -362,7 +357,19 @@ const displayCustomer = (item: any) => {
   return `${item.ind_lao_name} ${item.ind_lao_surname} ${item.ind_name} ${item.ind_surname}`;
 };
 
+// ⭐ แก้ไข onMounted
 onMounted(async () => {
+  // ⭐ เพิ่มส่วนนี้ - Clear session เมื่อกลับมาหน้า Search
+  const fromDetail = sessionStorage.getItem("from_detail_page");
+  if (!fromDetail) {
+    // ถ้าไม่ได้มาจากปุ่ม Back ปกติ ให้ clear
+    sessionStorage.removeItem('lcic_id');
+    sessionStorage.removeItem('scoring_data');
+  }
+  // ลบ flag ทิ้ง
+  sessionStorage.removeItem("from_detail_page");
+  
+  // ... โค้ดเดิม ...
   const config = useRuntimeConfig();
   const token = localStorage.getItem("access_token");
 
@@ -376,7 +383,6 @@ onMounted(async () => {
 
   if (response.ok) {
     const data = await response.json();
-    // ⭐ เพิ่ม filter ตรงนี้
     categories.value = data.filter((item: any) => item.ct_type === "LPR");
   } else {
     console.error("Failed to fetch categories:", response.statusText);

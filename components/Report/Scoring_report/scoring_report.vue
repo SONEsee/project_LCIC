@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import axios from "axios";
 import { useUserUID } from '~/composables/useUserUID';
 
@@ -94,15 +94,16 @@ const clearSessionData = () => {
   sessionStorage.removeItem("lcic_id");
   sessionStorage.removeItem("scoring_data");
   sessionStorage.removeItem("from_detail_page");
+  console.log("✅ Session data cleared");
 };
 
-// ⭐ แก้ไขฟังก์ชัน goBack
+// ⭐ แก้ไขฟังก์ชัน goBack - ใช้ replace แทน push
 const goBack = () => {
   // Clear session ก่อนกลับ
   clearSessionData();
   
-  // กลับไปหน้า scoring_individual โดยตรง
-  router.push("/scoring/scoring_individual");
+  // ⭐ ใช้ replace แทน push - ลบหน้า Report ออกจากประวัติ
+  router.replace("/scoring/scoring_individual");
 };
 
 // ฟังก์ชันพิมพ์
@@ -278,9 +279,15 @@ const formatNumber = (num: number): string => {
   return new Intl.NumberFormat('en-US').format(num);
 };
 
+// ⭐ Clear session เมื่อออกจากหน้า (Browser Back/Forward)
+onBeforeRouteLeave((to, from, next) => {
+  clearSessionData();
+  console.log("🗑️ Session data cleared on route leave");
+  next();
+});
+
 // โหลดข้อมูลจาก sessionStorage และเรียก API
 onMounted(async () => {
-  // ⭐ ลบส่วน history manipulation ทั้งหมด
   // Clear from_detail_page flag
   sessionStorage.removeItem("from_detail_page");
   
@@ -339,7 +346,7 @@ onMounted(async () => {
 // ⭐ Clear session เมื่อออกจากหน้า
 onUnmounted(() => {
   clearSessionData();
-  console.log("Session data cleared on component unmount");
+  console.log("🗑️ Session data cleared on component unmount");
 });
 
 // ฟังก์ชันแปลงชื่อ
