@@ -12,6 +12,18 @@
         </div>
       </div>
       <div class="header-actions">
+        <button @click="openCreateModal('role')" class="btn-add-role">
+          <v-icon icon="mdi-account-plus" size="18"></v-icon>
+          <span>ບົດບາດ</span>
+        </button>
+        <button @click="openCreateModal('main')" class="btn-add">
+          <v-icon icon="mdi-plus" size="18"></v-icon>
+          <span>ເມນູຫຼັກ</span>
+        </button>
+        <button @click="openCreateModal('sub')" class="btn-add">
+          <v-icon icon="mdi-plus" size="18"></v-icon>
+          <span>ເມນູຍ່ອຍ</span>
+        </button>
         <button @click="saveAllChanges" class="btn-save" :disabled="!hasChanges || saving">
           <v-icon v-if="!saving" icon="mdi-content-save" size="18"></v-icon>
           <div v-else class="btn-spinner"></div>
@@ -192,17 +204,17 @@
       <p>ບໍ່ມີຂໍ້ມູນເມນູ</p>
     </div>
 
-    <!-- Edit Modal -->
+    <!-- Edit/Create Modal for Menu Items -->
     <div v-if="showEditModal" class="modal-overlay" @click.self="closeEditModal">
       <div class="modal enhanced-modal">
         <div class="modal-header">
           <div class="modal-title-section">
             <div class="modal-icon">
-              <v-icon icon="mdi-pencil" size="24" color="#6366f1"></v-icon>
+              <v-icon :icon="editingItemId ? 'mdi-pencil' : 'mdi-plus'" size="24" color="#6366f1"></v-icon>
             </div>
             <div>
-              <h3>ແກ້ໄຂ {{ editModalType === 'sidebar_item' ? 'ເມນູຫຼັກ' : 'ເມນູຍ່ອຍ' }}</h3>
-              <p class="modal-subtitle">ອັບເດດຂໍ້ມູນເມນູ</p>
+              <h3>{{ editingItemId ? 'ແກ້ໄຂ' : 'ເພີ່ມ' }} {{ editModalType === 'sidebar_item' ? 'ເມນູຫຼັກ' : 'ເມນູຍ່ອຍ' }}</h3>
+              <p class="modal-subtitle">{{ editingItemId ? 'ອັບເດດຂໍ້ມູນເມນູ' : 'ສ້າງເມນູໃໝ່' }}</p>
             </div>
           </div>
           <button @click="closeEditModal" class="btn-close">
@@ -259,6 +271,28 @@
             />
           </div>
 
+          <!-- Parent selection for sub-items -->
+          <div v-if="editModalType === 'sidebar_sub_item'" class="form-group">
+            <label>ເມນູຫຼັກ <span class="required">*</span></label>
+            <select v-model="editFormData.parent" class="form-control" required>
+              <option value="">-- ເລືອກເມນູຫຼັກ --</option>
+              <option v-for="item in sidebarItems" :key="item.id" :value="item.id">
+                {{ item.title || item.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>ລຳດັບ</label>
+            <input 
+              v-model.number="editFormData.order" 
+              type="number" 
+              min="0"
+              class="form-control" 
+              placeholder="0"
+            />
+          </div>
+
           <div class="form-group">
             <label>ສະຖານະ</label>
             <div class="switch-container">
@@ -276,10 +310,65 @@
             <v-icon icon="mdi-close" size="18"></v-icon>
             <span>ຍົກເລີກ</span>
           </button>
-          <button @click="saveEditItem" class="btn-primary" :disabled="!editFormData.name || editSaving">
+          <button @click="saveEditItem" class="btn-primary" :disabled="!isFormValid || editSaving">
             <v-icon v-if="!editSaving" icon="mdi-content-save" size="18"></v-icon>
             <div v-else class="btn-spinner"></div>
             <span>{{ editSaving ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກ' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Role Creation Modal -->
+    <div v-if="showRoleModal" class="modal-overlay" @click.self="closeRoleModal">
+      <div class="modal enhanced-modal">
+        <div class="modal-header">
+          <div class="modal-title-section">
+            <div class="modal-icon">
+              <v-icon icon="mdi-account-plus" size="24" color="#6366f1"></v-icon>
+            </div>
+            <div>
+              <h3>ເພີ່ມບົດບາດໃໝ່</h3>
+              <p class="modal-subtitle">ສ້າງບົດບາດສຳລັບຜູ້ໃຊ້</p>
+            </div>
+          </div>
+          <button @click="closeRoleModal" class="btn-close">
+            <v-icon icon="mdi-close" size="20"></v-icon>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label>ຊື່ບົດບາດ <span class="required">*</span></label>
+            <input 
+              v-model="roleFormData.name" 
+              type="text" 
+              class="form-control" 
+              placeholder="ເຊັ່ນ: Admin, User, Manager"
+              required 
+            />
+          </div>
+
+          <div class="form-group">
+            <label>ລາຍລະອຽດ</label>
+            <textarea 
+              v-model="roleFormData.description" 
+              class="form-control" 
+              rows="3"
+              placeholder="ອະທິບາຍບົດບາດ (ປ່ອຍຫວ່າງໄດ້)"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button @click="closeRoleModal" class="btn-secondary">
+            <v-icon icon="mdi-close" size="18"></v-icon>
+            <span>ຍົກເລີກ</span>
+          </button>
+          <button @click="saveRole" class="btn-primary" :disabled="!roleFormData.name || roleSaving">
+            <v-icon v-if="!roleSaving" icon="mdi-content-save" size="18"></v-icon>
+            <div v-else class="btn-spinner"></div>
+            <span>{{ roleSaving ? 'ກຳລັງບັນທຶກ...' : 'ບັນທຶກ' }}</span>
           </button>
         </div>
       </div>
@@ -382,7 +471,17 @@ const editFormData = ref({
   name: '',
   icon: '',
   url: '',
+  parent: '',
+  order: 0,
   is_active: true
+});
+
+// Role modal states
+const showRoleModal = ref(false);
+const roleSaving = ref(false);
+const roleFormData = ref({
+  name: '',
+  description: ''
 });
 
 const toast = ref({
@@ -405,6 +504,12 @@ const getMenuColor = (itemId: number, isSub: boolean = false) => {
 
 const hasChanges = computed(() => pendingChanges.value.size > 0);
 const changeCount = computed(() => pendingChanges.value.size);
+
+const isFormValid = computed(() => {
+  if (!editFormData.value.name) return false;
+  if (editModalType.value === 'sidebar_sub_item' && !editFormData.value.parent) return false;
+  return true;
+});
 
 // Get sub items for a specific parent
 const getSubItemsForParent = (parentId: number) => {
@@ -465,6 +570,180 @@ const togglePermission = (itemId: number, roleId: number, type: 'main' | 'sub', 
   }
 };
 
+const openCreateModal = (type: 'main' | 'sub' | 'role') => {
+  if (type === 'role') {
+    roleFormData.value = { name: '', description: '' };
+    showRoleModal.value = true;
+  } else {
+    editingItemId.value = null;
+    editModalType.value = type === 'main' ? 'sidebar_item' : 'sidebar_sub_item';
+    editFormData.value = {
+      name: '',
+      icon: '',
+      url: '',
+      parent: '',
+      order: 0,
+      is_active: true
+    };
+    showEditModal.value = true;
+  }
+};
+
+const editItem = (item: any, type: 'sidebar_item' | 'sidebar_sub_item') => {
+  editingItemId.value = item.id;
+  editModalType.value = type;
+  editFormData.value = {
+    name: item.title || item.name || '',
+    icon: item.icon || '',
+    url: item.route || item.url || '',
+    parent: type === 'sidebar_sub_item' ? String(item.parent || '') : '',
+    order: item.order || 0,
+    is_active: item.is_active ?? true
+  };
+  showEditModal.value = true;
+};
+
+const closeEditModal = () => {
+  showEditModal.value = false;
+  editingItemId.value = null;
+  editFormData.value = {
+    name: '',
+    icon: '',
+    url: '',
+    parent: '',
+    order: 0,
+    is_active: true
+  };
+};
+
+const closeRoleModal = () => {
+  showRoleModal.value = false;
+  roleFormData.value = {
+    name: '',
+    description: ''
+  };
+};
+
+const saveEditItem = async () => {
+  if (!isFormValid.value) return;
+  
+  editSaving.value = true;
+  
+  try {
+    const data: any = {
+      item_type: editModalType.value,
+      title: editFormData.value.name,
+      icon: editFormData.value.icon || null,
+      route: editFormData.value.url || null,
+      order: editFormData.value.order,
+      is_active: editFormData.value.is_active
+    };
+
+    // Add parent for sub-items
+    if (editModalType.value === 'sidebar_sub_item') {
+      data.parent = parseInt(editFormData.value.parent);
+    }
+
+    // For update, preserve existing roles
+    if (editingItemId.value) {
+      const items = editModalType.value === 'sidebar_item' ? sidebarItems.value : sidebarSubItems.value;
+      const currentItem = items.find(i => i.id === editingItemId.value);
+      
+      if (currentItem) {
+        const existingRoleIds = typeof currentItem.roles[0] === 'object'
+          ? currentItem.roles.map((r: any) => r.id)
+          : currentItem.roles;
+        data.roles = existingRoleIds;
+      }
+    }
+
+    const url = editingItemId.value
+      ? `${config.public.strapi.url}api/create_sidebar/${editingItemId.value}/`
+      : `${config.public.strapi.url}api/create_sidebar/`;
+
+    const response = await fetch(url, {
+      method: editingItemId.value ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) throw new Error('Failed to save');
+    
+    showToast(editingItemId.value ? 'ອັບເດດສຳເລັດ' : 'ສ້າງສຳເລັດ', 'success');
+    await loadData();
+    await triggerSidebarRefresh();
+    closeEditModal();
+  } catch (error) {
+    console.error('Save error:', error);
+    showToast('ບັນທຶກບໍ່ສຳເລັດ', 'error');
+  } finally {
+    editSaving.value = false;
+  }
+};
+
+const saveRole = async () => {
+  if (!roleFormData.value.name) return;
+  
+  roleSaving.value = true;
+  
+  try {
+    const response = await fetch(`${config.public.strapi.url}api/roles/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: roleFormData.value.name,
+        description: roleFormData.value.description || null
+      })
+    });
+
+    if (!response.ok) throw new Error('Failed to create role');
+    
+    showToast('ສ້າງບົດບາດສຳເລັດ', 'success');
+    await loadData();
+    closeRoleModal();
+  } catch (error) {
+    console.error('Role creation error:', error);
+    showToast('ສ້າງບົດບາດບໍ່ສຳເລັດ', 'error');
+  } finally {
+    roleSaving.value = false;
+  }
+};
+
+const deleteItem = async (id: number, itemType: 'sidebar_item' | 'sidebar_sub_item') => {
+  const itemName = itemType === 'sidebar_item' ? 'ເມນູຫຼັກ' : 'ເມນູຍ່ອຍ';
+  
+  if (!confirm(`ທ່ານຕ້ອງການລຶບ${itemName}ນີ້ບໍ່?`)) return;
+
+  try {
+    const response = await fetch(
+      `${config.public.strapi.url}api/create_sidebar/${id}/?item_type=${itemType}`,
+      { method: 'DELETE' }
+    );
+
+    if (!response.ok) throw new Error('Failed to delete');
+    
+    showToast('ລຶບສຳເລັດ', 'success');
+    
+    // Clear pending changes for deleted item
+    const keysToDelete: string[] = [];
+    pendingChanges.value.forEach((change, key) => {
+      if (change.itemId === id && (
+        (itemType === 'sidebar_item' && change.type === 'main') ||
+        (itemType === 'sidebar_sub_item' && change.type === 'sub')
+      )) {
+        keysToDelete.push(key);
+      }
+    });
+    keysToDelete.forEach(key => pendingChanges.value.delete(key));
+    
+    await loadData();
+    await triggerSidebarRefresh();
+  } catch (error) {
+    console.error('Delete error:', error);
+    showToast('ລຶບບໍ່ສຳເລັດ', 'error');
+  }
+};
+
 const saveAllChanges = async () => {
   if (!hasChanges.value || saving.value) return;
   
@@ -520,22 +799,18 @@ const saveAllChanges = async () => {
       
       if (change.type === 'main') {
         if (change.checked) {
-          // Add if not already there
           if (!roleData.addItems.includes(change.itemId)) {
             roleData.addItems.push(change.itemId);
           }
         } else {
-          // Remove from add list
           roleData.addItems = roleData.addItems.filter(id => id !== change.itemId);
         }
       } else {
         if (change.checked) {
-          // Add if not already there
           if (!roleData.addSubItems.includes(change.itemId)) {
             roleData.addSubItems.push(change.itemId);
           }
         } else {
-          // Remove from add list
           roleData.addSubItems = roleData.addSubItems.filter(id => id !== change.itemId);
         }
       }
@@ -577,115 +852,6 @@ const discardChanges = () => {
   if (confirm('ທ່ານຕ້ອງການຍົກເລີກການປ່ຽນແປງທັງໝົດບໍ່?')) {
     pendingChanges.value.clear();
     showToast('ຍົກເລີກການປ່ຽນແປງແລ້ວ', 'info');
-  }
-};
-
-const editItem = (item: any, type: 'sidebar_item' | 'sidebar_sub_item') => {
-  editingItemId.value = item.id;
-  editModalType.value = type;
-  editFormData.value = {
-    name: item.title || item.name || '',
-    icon: item.icon || '',
-    url: item.route || item.url || '',
-    is_active: item.is_active ?? true
-  };
-  showEditModal.value = true;
-};
-
-const closeEditModal = () => {
-  showEditModal.value = false;
-  editingItemId.value = null;
-  editFormData.value = {
-    name: '',
-    icon: '',
-    url: '',
-    is_active: true
-  };
-};
-
-const saveEditItem = async () => {
-  if (!editFormData.value.name || !editingItemId.value) return;
-  
-  editSaving.value = true;
-  
-  try {
-    // ✅ NEW: Get current item to preserve roles
-    const items = editModalType.value === 'sidebar_item' ? sidebarItems.value : sidebarSubItems.value;
-    const currentItem = items.find(i => i.id === editingItemId.value);
-    
-    if (!currentItem) {
-      throw new Error('Item not found');
-    }
-
-    // ✅ NEW: Preserve existing role assignments
-    const existingRoleIds = typeof currentItem.roles[0] === 'object'
-      ? currentItem.roles.map((r: any) => r.id)
-      : currentItem.roles;
-
-    const data = {
-      item_type: editModalType.value,
-      title: editFormData.value.name,
-      icon: editFormData.value.icon || null,
-      route: editFormData.value.url || null,
-      is_active: editFormData.value.is_active,
-      roles: existingRoleIds // ✅ NEW: Preserve roles
-    };
-
-    const response = await fetch(
-      `${config.public.strapi.url}api/create_sidebar/${editingItemId.value}/`,
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      }
-    );
-
-    if (!response.ok) throw new Error('Failed to update');
-    
-    showToast('ອັບເດດສຳເລັດ', 'success');
-    await loadData();
-    await triggerSidebarRefresh();
-    closeEditModal();
-  } catch (error) {
-    console.error('Edit error:', error);
-    showToast('ອັບເດດບໍ່ສຳເລັດ', 'error');
-  } finally {
-    editSaving.value = false;
-  }
-};
-// ✅ NEW FUNCTION
-const deleteItem = async (id: number, itemType: 'sidebar_item' | 'sidebar_sub_item') => {
-  const itemName = itemType === 'sidebar_item' ? 'ເມນູຫຼັກ' : 'ເມນູຍ່ອຍ';
-  
-  if (!confirm(`ທ່ານຕ້ອງການລຶບ${itemName}ນີ້ບໍ່?`)) return;
-
-  try {
-    const response = await fetch(
-      `${config.public.strapi.url}api/create_sidebar/${id}/?item_type=${itemType}`,
-      { method: 'DELETE' }
-    );
-
-    if (!response.ok) throw new Error('Failed to delete');
-    
-    showToast('ລຶບສຳເລັດ', 'success');
-    
-    // Clear pending changes
-    const keysToDelete: string[] = [];
-    pendingChanges.value.forEach((change, key) => {
-      if (change.itemId === id && (
-        (itemType === 'sidebar_item' && change.type === 'main') ||
-        (itemType === 'sidebar_sub_item' && change.type === 'sub')
-      )) {
-        keysToDelete.push(key);
-      }
-    });
-    keysToDelete.forEach(key => pendingChanges.value.delete(key));
-    
-    await loadData();
-    await triggerSidebarRefresh();
-  } catch (error) {
-    console.error('Delete error:', error);
-    showToast('ລຶບບໍ່ສຳເລັດ', 'error');
   }
 };
 
@@ -809,9 +975,10 @@ onMounted(() => {
 .header-actions {
   display: flex;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
-.btn-save, .btn-refresh {
+.btn-save, .btn-refresh, .btn-add, .btn-add-role {
   padding: 10px 20px;
   border: none;
   border-radius: 10px;
@@ -822,6 +989,28 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   transition: all 0.2s ease;
+}
+
+.btn-add {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-add:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-add-role {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.btn-add-role:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
 }
 
 .btn-save {
@@ -955,7 +1144,7 @@ onMounted(() => {
 }
 
 .action-column {
-  min-width: 100px;  /* ✅ Wider for 2 buttons */
+  min-width: 100px;
   width: 100px;
   text-align: center;
 }
@@ -1031,6 +1220,13 @@ onMounted(() => {
   text-align: center;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+
 .action-btn {
   width: 32px;
   height: 32px;
@@ -1045,25 +1241,13 @@ onMounted(() => {
   color: #64748b;
 }
 
-.action-btn:hover {
+.action-btn.edit-btn:hover {
   background: #eff6ff;
   border-color: #3b82f6;
   color: #3b82f6;
 }
 
-.action-buttons {  /* ✅ NEW */
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  align-items: center;
-}
-.action-btn.edit-btn:hover {  /* ✅ Specific for edit */
-  background: #eff6ff;
-  border-color: #3b82f6;
-  color: #3b82f6;
-}
-
-.action-btn.delete-btn:hover {  /* ✅ NEW for delete */
+.action-btn.delete-btn:hover {
   background: #fef2f2;
   border-color: #ef4444;
   color: #ef4444;
@@ -1411,6 +1595,15 @@ onMounted(() => {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
+select.form-control {
+  cursor: pointer;
+}
+
+textarea.form-control {
+  resize: vertical;
+  font-family: inherit;
+}
+
 .icon-input-group {
   display: flex;
   gap: 8px;
@@ -1727,11 +1920,17 @@ onMounted(() => {
 
   .header-actions {
     width: 100%;
+    justify-content: flex-start;
   }
 
-  .btn-save, .btn-refresh {
+  .btn-save, .btn-refresh, .btn-add, .btn-add-role {
     flex: 1;
     justify-content: center;
+    min-width: 0;
+  }
+
+  .btn-save span, .btn-add span, .btn-add-role span {
+    display: none;
   }
 
   .stats-grid {
