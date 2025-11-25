@@ -39,7 +39,7 @@
           <input v-model="filters.bnk_code" type="text" placeholder="ເຊັ່ນ: 01" @input="applyFilters" />
         </div>
 
-        <div class="filter-group">
+        <!-- <div class="filter-group">
           <label>ສະຖານະ</label>
           <select v-model="filters.status" @change="applyFilters">
             <option value="">ທັງໝົດ</option>
@@ -47,7 +47,7 @@
             <option value="NEW RECORD">ບັນທຶກໃໝ່</option>
             <option value="pending">ລໍຖ້າ</option>
           </select>
-        </div>
+        </div> -->
 
         <div class="filter-group">
           <label>ການຢືນຢັນ</label>
@@ -157,7 +157,6 @@
               <th>LCIC ID</th>
               <th>ຊື່</th>
               <th>ກຸ່ມ</th>
-              <th>ສະຖານະ</th>
               <th>ວັນທີສົ່ງ</th>
               <th>ຢືນຢັນ</th>
               <th>ການດຳເນີນການ</th>
@@ -191,11 +190,11 @@
                 <span class="segment-badge">{{ customer.segment || '-' }}</span>
               </td>
 
-              <td>
+              <!-- <td>
                 <span :class="['status-badge', getStatusClass(customer.status)]">
                   {{ customer.status || 'ລໍຖ້າ' }}
                 </span>
-              </td>
+              </td> -->
               <td>{{ formatDate(customer.uploaded_at || customer.insert_date) }}</td>
               <td>
                 <span v-if="customer.confirmed" class="confirmed-badge">✓ ແລ້ວ</span>
@@ -300,12 +299,12 @@
                 </div>
               </div>
 
-              <div class="info-row">
+              <!-- <div class="info-row">
                 <span class="label">ສະຖານະ:</span>
                 <span :class="['status-badge', getStatusClass(selectedDetail.status)]">
                   {{ selectedDetail.status || 'ລໍຖ້າ' }}
                 </span>
-              </div>
+              </div> -->
             </div>
 
             <div class="info-block">

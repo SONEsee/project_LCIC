@@ -4,7 +4,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 
 const config = useRuntimeConfig();
-const apiMembers = `${config.public.strapi.url}api/member_list/`;
+const apiMembers = `${config.public.strapi.url}api/members-with-count/`;
 const apiProductsByBankType = `${config.public.strapi.url}api/products-by-bank-type/`;
 const apiToggleAccess = `${config.public.strapi.url}api/toggle-product-access/`;
 
@@ -16,16 +16,30 @@ const loadingProducts = ref(false);
 const searchQuery = ref("");
 const selectedMember = ref<any>(null);
 const processingProducts = ref<Record<string, boolean>>({});
+const imageErrors = ref<Record<string, boolean>>({});
 
 onMounted(() => {
   fetchMembers();
 });
+
+// เพิ่ม function จัดการ error
+const handleImageError = (bnkCode: string) => {
+  imageErrors.value[bnkCode] = true;
+};
 
 const fetchMembers = async () => {
   loading.value = true;
   try {
     const response = await axios.get(apiMembers);
     members.value = response.data;
+    
+    // Debug logs
+    console.log('✅ Members loaded:', members.value.length);
+    if (members.value.length > 0) {
+      console.log('✅ First member:', members.value[0]);
+      console.log('✅ Has active_products_count?', 'active_products_count' in members.value[0]);
+      console.log('✅ Value:', members.value[0].active_products_count);
+    }
   } catch (error) {
     console.error('Error fetching members:', error);
     Swal.fire({
@@ -49,8 +63,17 @@ const fetchProductsByBankType = async (bnkCode: string) => {
     console.log('API Response:', response.data);
     console.log('Products:', response.data.products);
     console.log('Total Products:', response.data.products?.length);
+    console.log('Member mImage:', response.data.member?.mImage);
     
     products.value = response.data.products || [];
+    
+    // Update selected member with mImage from API response
+    if (response.data.member && response.data.member.mImage) {
+      selectedMember.value = {
+        ...selectedMember.value,
+        mImage: response.data.member.mImage
+      };
+    }
   } catch (error) {
     console.error('Error fetching products:', error);
     Swal.fire({
@@ -65,28 +88,40 @@ const fetchProductsByBankType = async (bnkCode: string) => {
 };
 
 // Filter members by search
+// Filter members by search
 const filteredMembers = computed(() => {
   if (!searchQuery.value) return members.value;
   
-  const query = searchQuery.value.toLowerCase();
+  const query = searchQuery.value.toLowerCase().trim();
+  
   return members.value.filter(member => 
-    member.nameL?.toLowerCase().includes(query) ||
-    member.nameE?.toLowerCase().includes(query) ||
-    member.bnk_code?.toLowerCase().includes(query)
+    member.nameL?.toLowerCase().includes(query) ||  // ชื่อลาว - contains
+    member.nameE?.toLowerCase().includes(query) ||  // ชื่ออังกฤษ - contains
+    member.bnk_code?.toLowerCase() === query        // รหัสธนาคาร - exact match ✅
   );
 });
 
-// Get member's active products count from products array
+// ✅ Get member's active products count (FIXED)
 const getActiveProductCount = (bnkCode: string) => {
-  if (!selectedMember.value || selectedMember.value.bnk_code !== bnkCode) {
-    return 0;
+  // ວິທີທີ່ 1: ໃຊ້ຂໍ້ມູນຈາກ API (active_products_count ທີ່ Backend ນັບໃຫ້ແລ້ວ)
+  const member = members.value.find(m => m.bnk_code === bnkCode);
+  if (member && typeof member.active_products_count === 'number') {
+    return member.active_products_count;  // ← ສະແດງທັນທີ!
   }
-  return products.value.filter(p => p.has_access && p.is_active).length;
+  
+  // ວິທີທີ່ 2: ຖ້າເປັນ member ທີ່ຖືກເລືອກ ໃຫ້ນັບຈາກ products array
+  if (selectedMember.value && selectedMember.value.bnk_code === bnkCode) {
+    return products.value.filter(p => p.has_access && p.is_active).length;
+  }
+  
+  // Default: return 0
+  return 0;
 };
 
-// Select member (for split view)
+// เคลียร์ error เมื่อเลือก member ใหม่
 const selectMember = async (member: any) => {
   selectedMember.value = member;
+  imageErrors.value[member.bnk_code] = false; // reset error state
   await fetchProductsByBankType(member.bnk_code);
 };
 
@@ -95,6 +130,27 @@ const clearSelection = () => {
   selectedMember.value = null;
   products.value = [];
   processingProducts.value = {};
+};
+
+// ✅ Get member image URL (FIXED - no double slashes)
+const getMemberImageUrl = (member: any) => {
+  if (!member || !member.mImage) return null;
+  
+  // ຖ້າເປັນ full URL ແລ້ວ ໃຊ້ຕົງໆ
+  if (member.mImage.startsWith('http://') || member.mImage.startsWith('https://')) {
+    return member.mImage;
+  }
+  
+  // ລຶບ / ທ້າຍສຸດອອກຈາກ base URL
+  const baseUrl = config.public.strapi.url.replace(/\/$/, '');
+  
+  // ຖ້າ mImage ເລີ່ມດ້ວຍ / ແລ້ວ ໃຫ້ເຊື່ອມຕົງໆ
+  if (member.mImage.startsWith('/')) {
+    return `${baseUrl}${member.mImage}`;
+  }
+  
+  // ຖ້າບໍ່ເລີ່ມດ້ວຍ / ໃຫ້ເພີ່ມ / ເຂົ້າໄປ
+  return `${baseUrl}/${member.mImage}`;
 };
 
 // Toggle product access with optimistic UI
@@ -143,6 +199,16 @@ const toggleProduct = async (product: any) => {
       product.is_active = true;
       if (response.data.data) {
         product.access_id = response.data.data.access_id;
+      }
+    }
+    
+    // ✅ Update member's active_products_count in members list
+    const memberIndex = members.value.findIndex(m => m.bnk_code === bnkCode);
+    if (memberIndex !== -1) {
+      if (response.data.action === 'deleted') {
+        members.value[memberIndex].active_products_count = Math.max(0, (members.value[memberIndex].active_products_count || 0) - 1);
+      } else {
+        members.value[memberIndex].active_products_count = (members.value[memberIndex].active_products_count || 0) + 1;
       }
     }
     
@@ -226,8 +292,6 @@ const stats = computed(() => {
   
   return {
     total: members.value.length,
-    active: Math.floor(members.value.length * 0.7), // Placeholder
-    inactive: Math.floor(members.value.length * 0.3), // Placeholder
     totalProducts: products.value.length,
     activeProducts: activeProducts,
     inactiveProducts: inactiveProducts
@@ -269,13 +333,6 @@ const stats = computed(() => {
         <div class="stat-content">
           <span class="stat-number">{{ stats.total }}</span>
           <span class="stat-text">ສະມາຊິກທັງໝົດ</span>
-        </div>
-      </div>
-      <div class="stat-item">
-        <v-icon color="#10b981">mdi-check-circle</v-icon>
-        <div class="stat-content">
-          <span class="stat-number">{{ stats.active }}</span>
-          <span class="stat-text">ມີສິດໃຊ້ງານ</span>
         </div>
       </div>
       <div class="stat-item" v-if="selectedMember">
@@ -335,9 +392,16 @@ const stats = computed(() => {
               :class="{ 'member-selected': selectedMember?.bnk_code === member.bnk_code }"
               @click="selectMember(member)"
             >
-              <div class="member-item-avatar">
-                <v-icon size="32" color="#2563eb">mdi-account-circle</v-icon>
-              </div>
+                <div class="member-item-avatar">
+                    <img 
+                    v-if="getMemberImageUrl(member) && !imageErrors[member.bnk_code]" 
+                    :src="getMemberImageUrl(member)" 
+                    :alt="member.nameL || member.nameE"
+                    class="member-avatar-image"
+                    @error="handleImageError(member.bnk_code)"
+                    />
+                    <v-icon v-else size="32" color="#2563eb">mdi-account-circle</v-icon>
+                </div>
               
               <div class="member-item-info">
                 <div class="member-item-name">{{ member.nameL || member.nameE }}</div>
@@ -389,15 +453,22 @@ const stats = computed(() => {
         <template v-else>
           <div class="panel-header">
             <div class="selected-member-header">
-              <div class="selected-avatar">
-                <v-icon size="48" color="#2563eb">mdi-account-circle</v-icon>
-              </div>
+             <div class="selected-avatar">
+                    <img 
+                    v-if="getMemberImageUrl(selectedMember) && !imageErrors[selectedMember.bnk_code]" 
+                    :src="getMemberImageUrl(selectedMember)" 
+                    :alt="selectedMember.nameL || selectedMember.nameE"
+                    class="selected-avatar-image"
+                    @error="handleImageError(selectedMember.bnk_code)"
+                    />
+                    <v-icon v-else size="48" color="#2563eb">mdi-account-circle</v-icon>
+                </div>
               <div class="selected-info">
                 <h2 class="selected-name">{{ selectedMember.nameL || selectedMember.nameE }}</h2>
                 <p class="selected-code">
-                  ລະຫັດ: {{ selectedMember.bnk_code }}
+                  ລະຫັດທະນາຄານ: {{ selectedMember.bnk_code }}
                   <v-chip size="x-small" class="ml-2" :color="selectedMember.bnk_type === 1 ? 'blue' : 'purple'" v-if="selectedMember.bnk_type">
-                    {{ selectedMember.bnk_type === 1 ? 'ທະນາຄານພາທິດ' : 'ສະຖາບັນການເງິນ' }}
+                    {{ selectedMember.bnk_type === 1 ? 'ທະນາຄານ' : 'ສະຖາບັນການເງິນ' }}
                   </v-chip>
                 </p>
               </div>
@@ -576,7 +647,7 @@ const stats = computed(() => {
 
 /* Top Header */
 .top-header {
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  background: linear-gradient(135deg, #2931a5 0%, #2233a1 100%);
   border-radius: 20px;
   padding: 18px 20px;
   margin-bottom: 20px;
@@ -748,6 +819,14 @@ const stats = computed(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.member-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
 .member-item-info {
@@ -846,6 +925,14 @@ const stats = computed(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.selected-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
 }
 
 .selected-info {

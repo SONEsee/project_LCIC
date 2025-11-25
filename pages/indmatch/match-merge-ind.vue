@@ -18,7 +18,7 @@
         </div>
 
         <div v-show="activeTab === 'merge'" class="tab-panel">
-          <MatchIndividualMerge />
+          <MatchIndividualNewMerge />
         </div>
 
         <div v-show="activeTab === 'unmerge'" class="tab-panel">

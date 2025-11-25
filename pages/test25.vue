@@ -395,18 +395,27 @@ const selectedBankInfo = ref<any>(null)
 const bankList = ref<any[]>([])
 const isAdmin = ref(false)
 const userBankId = ref('')
+// helper to produce local YYYY-MM-DD for <input type="date">
+const formatToDateInput = (d: Date) => {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+const today = formatToDateInput(new Date())
 
 // ✅ FIX: Initialize filters with empty values, no defaults
 const filters = ref({
   month: '',
   year: '',
-  fromDate: '',
-  toDate: '',
+  fromDate: today,
+  toDate: today,
   status: '',
   limit: '100',
   bank: '',
   chg_code: ''
 })
+
 
 const availableYears = computed(() => {
   const currentYear = new Date().getFullYear()
@@ -572,8 +581,8 @@ const resetFilters = () => {
   filters.value = {
     month: '',
     year: '',
-    fromDate: '',
-    toDate: '',
+    fromDate: today,
+    toDate: today,
     status: '',
     chg_code: '',
     limit: '100',

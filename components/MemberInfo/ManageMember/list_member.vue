@@ -7,10 +7,10 @@
         <v-row class="align-center">
           <v-col cols="12" md="6" class="d-flex align-center">
             <div class="icon-wrapper mr-2">
-              <v-icon size="32" color="white">mdi-account-group</v-icon>
+              <v-icon size="28" color="white">mdi-account-group</v-icon>
             </div>
             <div>
-              <h2 class="text-h4 font-weight-bold mb-1">ການຈັດການສະມາຊິກ</h2>
+              <h2 class="text-h5 font-weight-bold mb-1">ການຈັດການສະມາຊິກ</h2>
               <p class="text-subtitle-2 text-grey-darken-1 mb-0">
                 Manage all members in the system
               </p>

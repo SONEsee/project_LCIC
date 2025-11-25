@@ -562,7 +562,7 @@ function getScoreDetails(key: string): {
             <div class="score-bar medium">Medium: ປານກາງ: 580-669</div>
             <div class="score-bar good">Good: ດີ: 670-739</div>
             <div class="score-bar very-good">Very good: ດີຫຼາຍ: 740-799</div>
-            <div class="score-bar extra">Extra: ພິເສດ: 800-850</div>
+            <div class="score-bar extra">Extra: ພິເສດ: 800-1000</div>
           </div>
         </v-card>
 
@@ -626,9 +626,9 @@ function getScoreDetails(key: string): {
                   <div class="dashboard-item-label">
                     <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('overdue_class') }}
                   </div>
-                  <div class="dashboard-item-attr ml-2">
+                  <!-- <div class="dashboard-item-attr ml-2">
                     {{ getScoreDetails('overdue_class').details?.att_name || '-' }}
-                  </div>
+                  </div> -->
                   <div class="dashboard-metrics">
                     <!-- ⭐ Value Chip -->
                     <div class="metric-chip value-chip">
@@ -650,9 +650,9 @@ function getScoreDetails(key: string): {
                   <div class="dashboard-item-label">
                     <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('registration_year') }}
                   </div>
-                  <div class="dashboard-item-attr ml-2">
+                  <!-- <div class="dashboard-item-attr ml-2">
                     {{ getScoreDetails('registration_year').details?.att_name || '-' }}
-                  </div>
+                  </div> -->
                   <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
                       <span class="metric-chip-label">V:</span>
@@ -685,9 +685,9 @@ function getScoreDetails(key: string): {
                   <div class="dashboard-item-label">
                     <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('credit_line') }}
                   </div>
-                  <div class="dashboard-item-attr ml-2">
+                  <!-- <div class="dashboard-item-attr ml-2">
                     {{ getScoreDetails('credit_line').details?.att_name || '-' }}
-                  </div>
+                  </div> -->
                   <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
                       <span class="metric-chip-label">V:</span>
@@ -707,9 +707,9 @@ function getScoreDetails(key: string): {
                   <div class="dashboard-item-label">
                     <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('outstanding_balance') }}
                   </div>
-                  <div class="dashboard-item-attr ml-2">
+                  <!-- <div class="dashboard-item-attr ml-2">
                     {{ getScoreDetails('outstanding_balance').details?.att_name || '-' }}
-                  </div>
+                  </div> -->
                   <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
                       <span class="metric-chip-label">V:</span>
@@ -742,9 +742,9 @@ function getScoreDetails(key: string): {
                   <div class="dashboard-item-label">
                     <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('inquiries') }}
                   </div>
-                  <div class="dashboard-item-attr ml-2">
+                  <!-- <div class="dashboard-item-attr ml-2">
                     {{ getScoreDetails('inquiries').details?.att_name || '-' }}
-                  </div>
+                  </div> -->
                   <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
                       <span class="metric-chip-label">V:</span>
@@ -764,9 +764,9 @@ function getScoreDetails(key: string): {
                   <div class="dashboard-item-label">
                     <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('loan_purpose') }}
                   </div>
-                  <div class="dashboard-item-attr ml-2">
+                  <!-- <div class="dashboard-item-attr ml-2">
                     {{ getScoreDetails('loan_purpose').details?.att_name || '-' }}
-                  </div>
+                  </div> -->
                   <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
                       <span class="metric-chip-label">V:</span>
@@ -786,9 +786,9 @@ function getScoreDetails(key: string): {
                   <div class="dashboard-item-label">
                     <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('loan_term') }}
                   </div>
-                  <div class="dashboard-item-attr ml-2">
+                  <!-- <div class="dashboard-item-attr ml-2">
                     {{ getScoreDetails('loan_term').details?.att_name || '-' }}
-                  </div>
+                  </div> -->
                   <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
                       <span class="metric-chip-label">V:</span>
@@ -821,9 +821,9 @@ function getScoreDetails(key: string): {
                   <div class="dashboard-item-label">
                     <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('collateral_value') }}
                   </div>
-                  <div class="dashboard-item-attr ml-2">
+                  <!-- <div class="dashboard-item-attr ml-2">
                     {{ getScoreDetails('collateral_value').details?.att_name || '-' }}
-                  </div>
+                  </div> -->
                   <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
                       <span class="metric-chip-label">V:</span>
@@ -843,9 +843,9 @@ function getScoreDetails(key: string): {
                   <div class="dashboard-item-label">
                     <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('collateral_type') }}
                   </div>
-                  <div class="dashboard-item-attr ml-2">
+                  <!-- <div class="dashboard-item-attr ml-2">
                     {{ getScoreDetails('collateral_type').details?.att_name || '-' }}
-                  </div>
+                  </div> -->
                   <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
                       <span class="metric-chip-label">V:</span>
@@ -878,9 +878,9 @@ function getScoreDetails(key: string): {
                   <div class="dashboard-item-label">
                     <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('age') }}
                   </div>
-                  <div class="dashboard-item-attr ml-2">
+                  <!-- <div class="dashboard-item-attr ml-2">
                     {{ getScoreDetails('age').details?.att_name || '-' }}
-                  </div>
+                  </div> -->
                   <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
                       <span class="metric-chip-label">V:</span>
@@ -900,9 +900,9 @@ function getScoreDetails(key: string): {
                   <div class="dashboard-item-label">
                     <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('marital_status') }}
                   </div>
-                  <div class="dashboard-item-attr ml-2">
+                  <!-- <div class="dashboard-item-attr ml-2">
                     {{ getScoreDetails('marital_status').details?.att_name || '-' }}
-                  </div>
+                  </div> -->
                   <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
                       <span class="metric-chip-label">V:</span>
@@ -922,9 +922,9 @@ function getScoreDetails(key: string): {
                   <div class="dashboard-item-label">
                     <v-icon size="small">mdi-dot</v-icon>{{ getScoreLabel('province') }}
                   </div>
-                  <div class="dashboard-item-attr ml-2">
+                  <!-- <div class="dashboard-item-attr ml-2">
                     {{ getScoreDetails('province').details?.att_name || '-' }}
-                  </div>
+                  </div> -->
                   <div class="dashboard-metrics">
                     <div class="metric-chip value-chip">
                       <span class="metric-chip-label">V:</span>
