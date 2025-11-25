@@ -30,9 +30,9 @@ import * as SearchIndividualModel from './individualsearch'
 import * as IndividualCollateral from './collateral_individual'
 import * as telecomModel from './telecom'
 import * as billtelecomModel from './telecom'
-
 import * as BorroworResponsModel from './borrower'
 import * as EnterpriseModel from './enterprise'
+import * as MergMactModel from './merg_mact'
 export{
     DuplicatesFalse,
     DataModel,
@@ -64,6 +64,7 @@ export{
     telecomModel,
     billtelecomModel,
     BorroworResponsModel,
-    EnterpriseModel
+    EnterpriseModel,
+    MergMactModel
 
 }
