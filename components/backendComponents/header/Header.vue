@@ -29,17 +29,25 @@ const profileImageUrl = computed(() => {
     return '';
   }
 
-  const imagePath = user.value.profile_image;
+  let imagePath = user.value.profile_image;
   
+  // ✅ ถ้าเป็น full URL ใช้เลย
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
     return imagePath;
   }
 
-  const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  // ✅ สร้าง base URL
   const baseUrl = config.public.strapi.url.endsWith('/') 
     ? config.public.strapi.url.slice(0, -1) 
     : config.public.strapi.url;
   
+  // ✅ Case 1: ถ้า imagePath มี /media/ อยู่แล้ว (เช่น /media/profile_images/meow.jpg)
+  if (imagePath.startsWith('/media/')) {
+    return `${baseUrl}${imagePath}`;
+  }
+  
+  // ✅ Case 2: ถ้า imagePath ไม่มี /media/ (เช่น profile_images/meow.jpg หรือ /profile_images/meow.jpg)
+  const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
   return `${baseUrl}/media${cleanPath}`;
 });
 
