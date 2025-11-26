@@ -260,7 +260,7 @@ const setupInactivityTimer = () => {
 
 // ✅ ฟังก์ชันไปหน้า User Profile
 const goToProfile = () => {
-  // router.push({ path: "/profile_edit" });
+  router.push({ path: "/profile_edit" });
 };
 
 onMounted(() => {

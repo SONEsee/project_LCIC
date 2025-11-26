@@ -9,6 +9,7 @@ const config = useRuntimeConfig();
 
 // ⭐ Config API URL
 const apiCreditScoreURL = `${config.public.strapi.url}api/credit-score-ind/calculate/`;
+const apiChargeScoreFactorsURL = `${config.public.strapi.url}api/charge-score-factors/`;
 
 // ข้อมูลพื้นฐาน
 const lcicID = ref("");
@@ -20,6 +21,9 @@ const error = ref("");
 const { userData, UID } = useUserUID();
 const showScoreFactors = ref(false);
 const showPaymentDialog = ref(false);
+// ⭐ เพิ่ม ref สำหรับเช็คว่า charge แล้วหรือยัง
+const hasChargedScoreFactors = ref(false);
+const isChargingScoreFactors = ref(false);
 
 // ⭐ เพิ่ม scoreBreakdown
 const scoreBreakdown = ref<any>({});
@@ -88,11 +92,18 @@ const scoreLevel = computed(() => {
   return 'Poor: ອ່ອນ';
 });
 
-// ⭐ เพิ่มฟังก์ชันล้างข้อมูล session (เพิ่มก่อน goBack)
+// ⭐ แก้ไข clearSessionData เพื่อลบข้อมูล charge ด้วย
 const clearSessionData = () => {
+  const storedLcicID = sessionStorage.getItem("lcic_id");
+  
   sessionStorage.removeItem("lcic_id");
   sessionStorage.removeItem("scoring_data");
   sessionStorage.removeItem("from_detail_page");
+  
+  // ⭐ ลบสถานะ charge ด้วย
+  if (storedLcicID) {
+    sessionStorage.removeItem(`score_factors_charged_${storedLcicID}`);
+  }
 };
 
 // ⭐ แก้ไขฟังก์ชัน goBack
@@ -140,6 +151,56 @@ const fetchCreditScore = async (lcic_id: string) => {
     throw err;
   } finally {
     loading.value = false;
+  }
+};
+
+// ⭐ ฟังก์ชันเรียก API เพื่อ charge - แบบง่าย
+const chargeScoreFactors = async () => {
+  isChargingScoreFactors.value = true;
+  
+  try {
+    console.log('Calling charge API...');
+    console.log('lcic_id:', lcicID.value);
+    console.log('user_uid:', UID.value);
+    console.log('bank_code:', userData.value?.MID?.id);
+    
+    const response = await axios.post(apiChargeScoreFactorsURL, {
+      lcic_id: lcicID.value,
+      user_uid: UID.value,
+      bank_code: userData.value?.MID?.id
+    });
+    
+    console.log('Response:', response.data);
+    
+    if (response.data && response.data.success) {
+      sessionStorage.setItem(`score_factors_charged_${lcicID.value}`, 'true');
+      hasChargedScoreFactors.value = true;
+      
+      console.log('Charge success!');
+      return true;
+    } else {
+      throw new Error(response.data.error || 'Failed to create charge');
+    }
+  } catch (err: any) {
+    console.error('Error:', err);
+    
+    let errorMessage = 'ເກີດຂໍ້ຜິດພາດໃນການຊຳລະເງິນ';
+    
+    if (err.response) {
+      console.error('Response error:', err.response.data);
+      errorMessage = err.response.data?.error || err.response.data?.message || errorMessage;
+    } else if (err.request) {
+      console.error('No response from server');
+      errorMessage = 'ບໍ່ສາມາດເຊື່ອມຕໍ່ກັບເຊີບເວີໄດ້';
+    } else {
+      console.error('Error:', err.message);
+      errorMessage = err.message || errorMessage;
+    }
+    
+    error.value = errorMessage;
+    return false;
+  } finally {
+    isChargingScoreFactors.value = false;
   }
 };
 
@@ -254,7 +315,7 @@ const formatNumber = (num: number): string => {
   return new Intl.NumberFormat('en-US').format(num);
 };
 
-// โหลดข้อมูลจาก sessionStorage และเรียก API
+// ⭐ แก้ไข onMounted - เช็คว่าเคย charge ไปแล้วหรือยัง
 onMounted(async () => {
   sessionStorage.removeItem("from_detail_page");
   const storedLcicID = sessionStorage.getItem("lcic_id");
@@ -267,6 +328,13 @@ onMounted(async () => {
   
   lcicID.value = storedLcicID;
   
+  // ⭐ เช็คว่าเคย charge score factors ไปแล้วหรือยัง (สำหรับ lcic_id นี้)
+  const scoreFactorsCharged = sessionStorage.getItem(`score_factors_charged_${storedLcicID}`);
+  if (scoreFactorsCharged === 'true') {
+    hasChargedScoreFactors.value = true;
+  }
+  
+  // ... rest of existing onMounted code
   const scoringDataStr = sessionStorage.getItem("scoring_data");
   if (scoringDataStr) {
     try {
@@ -333,21 +401,39 @@ function getScoreLabel(key: string): string {
   return labels[key] || key;
 }
 
-// ⭐ ฟังก์ชันสำหรับจัดการเมื่อคลิกปุ่ม Show Details
-const handleToggleScoreFactors = () => {
+// ⭐ แก้ไขฟังก์ชัน handleToggleScoreFactors
+const handleToggleScoreFactors = async () => {
   if (!showScoreFactors.value) {
-    // ถ้ายังไม่เปิด -> แสดง dialog แจ้งเตือนการชำระเงิน
-    showPaymentDialog.value = true;
+    // ถ้ายังไม่เปิด
+    
+    // ⭐ เช็คว่าเคย charge ไปแล้วหรือยัง
+    if (hasChargedScoreFactors.value) {
+      // เคย charge แล้ว → แสดง details เลย
+      showScoreFactors.value = true;
+    } else {
+      // ยังไม่เคย charge → แสดง payment dialog
+      showPaymentDialog.value = true;
+    }
   } else {
-    // ถ้าเปิดอยู่แล้ว -> ซ่อน
+    // ถ้าเปิดอยู่แล้ว → ซ่อน
     showScoreFactors.value = false;
   }
 };
 
-// ⭐ ฟังก์ชันยืนยันการชำระเงิน
-const confirmPayment = () => {
+// ⭐ แก้ไขฟังก์ชัน confirmPayment
+const confirmPayment = async () => {
   showPaymentDialog.value = false;
-  showScoreFactors.value = true;
+  
+  // เรียก API เพื่อ charge
+  const success = await chargeScoreFactors();
+  
+  if (success) {
+    // charge สำเร็จ → แสดง details
+    showScoreFactors.value = true;
+  } else {
+    // charge ไม่สำเร็จ → แสดง error (error.value ถูกตั้งค่าใน chargeScoreFactors แล้ว)
+    showScoreFactors.value = false;
+  }
 };
 
 // ⭐ ฟังก์ชันยกเลิก
@@ -558,7 +644,7 @@ function getScoreDetails(key: string): {
           </div>
 
           <div class="score-bar-container mb-2">
-            <div class="score-bar poor">Poor: ອ່ອນ: 350-579</div>
+            <div class="score-bar poor">Poor: ອ່ອນ: 300-579</div>
             <div class="score-bar medium">Medium: ປານກາງ: 580-669</div>
             <div class="score-bar good">Good: ດີ: 670-739</div>
             <div class="score-bar very-good">Very good: ດີຫຼາຍ: 740-799</div>
@@ -567,7 +653,7 @@ function getScoreDetails(key: string): {
         </v-card>
 
         <!-- เงื่อนไขการให้คะแนน -->
-        <v-card flat class="pa-3 conditional-scores-section text-black" color="#a3c0f7">
+        <v-card flat class="pa-3 conditional-scores-section text-black" style="background-color: #a3c0f7 !important; ">
           <h3 class="text-h6 mb-1 font-weight-bold section-title">
             <v-icon>mdi-dot</v-icon>
             ເງື່ອນໄຂການໃຫ້ຄະແນນ
@@ -590,19 +676,21 @@ function getScoreDetails(key: string): {
             SCORE FACTORS
             </h3>
             
-            <!-- ⭐ เพิ่มปุ่ม Toggle -->
-            <v-btn
+            <!-- ปุ่ม Toggle -->
+          <v-btn
             size="small"
             :color="showScoreFactors ? 'primary' : 'grey'"
             variant="tonal"
             @click="handleToggleScoreFactors"
+            :loading="isChargingScoreFactors"
+            :disabled="isChargingScoreFactors"
             class="no-print toggle-button"
-            >
+          >
             <v-icon size="small" class="mr-1">
-                {{ showScoreFactors ? 'mdi-eye-off' : 'mdi-eye' }}
+              {{ showScoreFactors ? 'mdi-eye-off' : 'mdi-eye' }}
             </v-icon>
             {{ showScoreFactors ? 'Hide Details' : 'Show Details' }}
-            </v-btn>
+          </v-btn>
         </div>
 
     <v-expand-transition>
@@ -1760,6 +1848,7 @@ table th, table td,
   /* ⭐ ลบ border/background ทั้งหมดที่อาจรั่วออกมา */
   * {
     box-shadow: none !important;
+    outline: none !important;
   }
   
   html, body {
@@ -1767,6 +1856,7 @@ table th, table td,
     padding: 0 !important;
     background: white !important;
     border: none !important;
+    outline: none !important;
     font-size: 9pt !important;
     line-height: 1.3 !important;
   }
@@ -1778,6 +1868,7 @@ table th, table td,
     background: white !important;
     border: none !important;
     box-shadow: none !important;
+    outline: none !important;
   }
 
   @page {

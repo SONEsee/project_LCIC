@@ -1,35 +1,37 @@
-
 <template>
-  <div class="user-edit-container">
+  <div class="profile-edit-container">
     <!-- Header -->
     <div class="header-section">
       <div class="d-flex align-center">
-        <v-icon color="white" large class="mr-2">mdi-account-edit</v-icon>
-        <span class="text-h5 font-weight-bold" style="color: white;">ແກ້ໄຂຂໍ້ມູນຜູ້ໃຊ້</span>
+        <v-icon color="white" large class="mr-2">mdi-account-circle</v-icon>
+        <span class="text-h5 font-weight-bold" style="color: white;">ແກ້ໄຂໂປຣໄຟລ໌ຂອງຂ້ອຍ</span>
       </div>
-      <v-btn color="orange darken-1" rounded class="text-white" @click="clearForm">
-        <v-icon left>mdi-broom</v-icon> ລ້າງຂໍ້ມູນ
-      </v-btn>
     </div>
 
-    <!-- Form Body with Image Preview -->
-    <div class="form-body">
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-section">
+      <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+      <p class="mt-4">ກຳລັງໂຫລດຂໍ້ມູນ...</p>
+    </div>
+
+    <!-- Form Body -->
+    <div v-else class="form-body">
       <v-row dense no-gutters>
         <!-- Left Side: Image Preview -->
-        <v-col cols="12" md="3" class="d-flex flex-column align-center justify-start pt-4">
-          <v-avatar size="150" class="mb-3">
+        <v-col cols="12" md="4" class="d-flex flex-column align-center justify-start pt-4">
+          <v-avatar size="180" class="mb-3 profile-avatar">
             <v-img 
               :src="imagePreview" 
               alt="Profile Image"
               cover
             >
               <template v-slot:placeholder>
-                <v-icon size="100" color="grey lighten-1">mdi-account-circle</v-icon>
+                <v-icon size="120" color="grey lighten-1">mdi-account-circle</v-icon>
               </template>
             </v-img>
           </v-avatar>
           <v-file-input
-            label="ຮູບໂປຣໄຟລ໌"
+            label="ປ່ຽນຮູບໂປຣໄຟລ໌"
             v-model="form.profile_image"
             accept="image/*"
             outlined
@@ -40,45 +42,84 @@
             @click:clear="clearImage"
             hide-details
             class="mt-2"
-            style="width: 100%; max-width: 200px;"
+            style="width: 100%; max-width: 250px;"
+            prepend-icon="mdi-camera"
           />
         </v-col>
 
         <!-- Right Side: Form Fields -->
-        <v-col cols="12" md="9">
+        <v-col cols="12" md="8">
           <v-form ref="formRef" v-model="formValid" lazy-validation>
             <v-row dense no-gutters>
-              <!-- Username -->
-              <v-col cols="6">
+              <!-- Username (Read-only) -->
+              <v-col cols="12" class="mb-2">
                 <v-text-field
                   label="ຊື່ຜູ້ໃຊ້"
                   v-model="form.username"
                   outlined
                   density="compact"
-                  color="blue lighten-2"
-                  clearable
-                  :rules="[v => !!v || 'ກະລຸນາປ້ອນຊື່ຜູ້ໃຊ້']"
+                  readonly
+                  prepend-inner-icon="mdi-account"
+                  color="grey"
+                  variant="outlined"
+                  bg-color="grey-lighten-4"
                 />
               </v-col>
 
-              <!-- Password -->
-              <v-col cols="6">
+              <!-- Bank Code (Read-only) -->
+              <v-col cols="6" class="mb-2">
+                <v-text-field
+                  label="ລະຫັດສະມາຊິກ"
+                  v-model="userBankCode"
+                  outlined
+                  density="compact"
+                  readonly
+                  prepend-inner-icon="mdi-bank"
+                  color="grey"
+                  bg-color="grey-lighten-4"
+                />
+              </v-col>
+
+              <!-- Branch ID (Read-only) -->
+              <v-col cols="6" class="mb-2">
+                <v-text-field
+                  label="ລະຫັດສາຂາ"
+                  v-model="form.branch_id"
+                  outlined
+                  density="compact"
+                  readonly
+                  prepend-inner-icon="mdi-office-building"
+                  color="grey"
+                  bg-color="grey-lighten-4"
+                />
+              </v-col>
+
+              <!-- Divider -->
+              <v-col cols="12" class="my-3">
+                <v-divider></v-divider>
+                <p class="text-center text-caption text-grey mt-2">ຂໍ້ມູນທີ່ສາມາດແກ້ໄຂໄດ້</p>
+              </v-col>
+
+              <!-- New Password (Editable) -->
+              <v-col cols="12" class="mb-2">
                 <v-text-field
                   v-model="form.password"
                   :type="showPassword ? 'text' : 'password'"
-                  label="ລະຫັດຜ່ານ"
+                  label="ລະຫັດຜ່ານໃໝ່"
                   outlined
                   density="compact"
                   color="blue lighten-2"
-                  placeholder="ບໍ່ປ້ອນ = ຮັກສາລະຫັດເກົ່າ"
+                  placeholder="ປ່ອຍວ່າງໄວ້ຖ້າບໍ່ຕ້ອງການປ່ຽນ"
                   clearable
+                  prepend-inner-icon="mdi-lock"
+                  :rules="passwordRules"
                 >
                   <template #append-inner>
                     <v-btn 
                       icon 
                       size="small"
                       @click="togglePassword" 
-                      :title="showPassword ? 'Hide password' : 'Show password'"
+                      :title="showPassword ? 'ເຊື່ອງລະຫັດ' : 'ສະແດງລະຫັດ'"
                     >
                       <v-icon size="small">{{ showPassword ? 'mdi-eye-off' : 'mdi-eye' }}</v-icon>
                     </v-btn>
@@ -86,51 +127,8 @@
                 </v-text-field>
               </v-col>
 
-              <!-- Select Member -->
-              <v-col cols="8">
-                <v-select
-                  v-model="form.bnk_code"
-                  :items="members"
-                  item-title="display_name"
-                  item-value="bnk_code"
-                  label="ເລືອກຊື່ສະມາຊິກ"
-                  clearable
-                  outlined
-                  density="compact"
-                  color="indigo lighten-2"
-                  @update:modelValue="updateMID"
-                />
-              </v-col>
-
-              <!-- Branch ID -->
-              <v-col cols="4">
-                <v-text-field
-                  label="ລະຫັດສາຂາ"
-                  v-model="form.branch_id"
-                  outlined
-                  density="compact"
-                  color="teal lighten-2"
-                  clearable
-                />
-              </v-col>
-
-              <!-- Select Group -->
-              <v-col cols="12">
-                <v-select
-                  v-model="form.GID"
-                  :items="groups"
-                  item-title="nameL"
-                  item-value="GID"
-                  label="ເລືອກໜ້າທີ່ຜູ້ນຳໃຊ້"
-                  clearable
-                  outlined
-                  density="compact"
-                  color="light-blue lighten-2"
-                />
-              </v-col>
-
-              <!-- Name Lao -->
-              <v-col cols="6">
+              <!-- Name Lao (Editable) -->
+              <v-col cols="6" class="mb-2">
                 <v-text-field
                   label="ຊື່ (ພາສາລາວ)"
                   v-model="form.nameL"
@@ -138,12 +136,13 @@
                   density="compact"
                   color="cyan lighten-2"
                   clearable
+                  prepend-inner-icon="mdi-pencil"
                   :rules="[v => !!v || 'ກະລຸນາປ້ອນຊື່']"
                 />
               </v-col>
 
-              <!-- Surname Lao -->
-              <v-col cols="6">
+              <!-- Surname Lao (Editable) -->
+              <v-col cols="6" class="mb-2">
                 <v-text-field
                   label="ນາມສະກຸນ (ພາສາລາວ)"
                   v-model="form.surnameL"
@@ -151,12 +150,13 @@
                   density="compact"
                   color="cyan lighten-2"
                   clearable
+                  prepend-inner-icon="mdi-pencil"
                   :rules="[v => !!v || 'ກະລຸນາປ້ອນນາມສະກຸນ']"
                 />
               </v-col>
 
-              <!-- Name English -->
-              <v-col cols="6">
+              <!-- Name English (Editable) -->
+              <v-col cols="6" class="mb-2">
                 <v-text-field
                   label="ຊື່ (ພາສາອັງກິດ)"
                   v-model="form.nameE"
@@ -164,11 +164,12 @@
                   density="compact"
                   color="light-blue lighten-2"
                   clearable
+                  prepend-inner-icon="mdi-pencil"
                 />
               </v-col>
 
-              <!-- Surname English -->
-              <v-col cols="6">
+              <!-- Surname English (Editable) -->
+              <v-col cols="6" class="mb-2">
                 <v-text-field
                   label="ນາມສະກຸນ (ພາສາອັງກິດ)"
                   v-model="form.surnameE"
@@ -176,25 +177,20 @@
                   density="compact"
                   color="light-blue lighten-2"
                   clearable
+                  prepend-inner-icon="mdi-pencil"
                 />
               </v-col>
 
-              <!-- Active Switch -->
-              <v-col cols="6">
-                <v-switch
-                  label="ອະນຸຍາດນຳໃຊ້"
-                  v-model="form.is_active"
-                  color="green"
-                />
-              </v-col>
-
-              <!-- Staff Switch -->
-              <v-col cols="6">
-                <v-switch
-                  label="ຜູ້ຮັບຜິດຊອບ"
-                  v-model="form.is_staff"
-                  color="purple"
-                />
+              <!-- Info Card -->
+              <v-col cols="12" class="mt-3">
+                <v-alert
+                  type="info"
+                  variant="tonal"
+                  density="compact"
+                  icon="mdi-information"
+                >
+                  <small>ຂໍ້ມູນອື່ນໆ ເຊັ່ນ: ຊື່ຜູ້ໃຊ້, ລະຫັດສະມາຊິກ, ໜ້າທີ່ ບໍ່ສາມາດແກ້ໄຂດ້ວຍຕົວເອງໄດ້</small>
+                </v-alert>
               </v-col>
             </v-row>
           </v-form>
@@ -203,63 +199,67 @@
     </div>
 
     <!-- Footer -->
-    <div class="footer-section">
-      <v-btn text color="grey darken-1" rounded @click="$emit('close')">ຍົກເລີກ</v-btn>
-      <v-btn color="blue darken-2" rounded :disabled="!formValid" @click="showConfirmDialog = true">
-        <v-icon left>mdi-content-save</v-icon> ອັບເດດຜູ້ໃຊ້
+    <div class="footer-section" v-if="!loading">
+      <v-btn 
+        color="blue darken-2" 
+        rounded 
+        size="large"
+        :disabled="!formValid || !hasChanges" 
+        @click="showConfirmDialog = true"
+        class="update-btn"
+      >
+        <v-icon left>mdi-content-save</v-icon> ອັບເດດໂປຣໄຟລ໌
       </v-btn>
     </div>
 
-    <!-- 🔔 Confirm Dialog (Only one popup) -->
-    <v-dialog v-model="showConfirmDialog" max-width="450" persistent>
-      <v-card class="confirm-dialog-card" elevation="8">
-        <!-- Header -->
+    <!-- Confirm Dialog -->
+    <v-dialog v-model="showConfirmDialog" max-width="500" persistent>
+      <v-card class="confirm-dialog-card" elevation="12">
         <v-card-title class="confirm-dialog-header pa-4">
           <div class="d-flex align-center">
             <div class="confirm-icon-wrapper">
-              <v-icon size="28" color="white">mdi-alert-circle-outline</v-icon>
+              <v-icon size="32" color="white">mdi-shield-check</v-icon>
             </div>
             <div class="ml-3">
-              <h2 class="text-h5 font-weight-bold text-white mb-1">ຢືນຢັນການອັບເດດຂໍ້ມູນ</h2>
+              <h2 class="text-h5 font-weight-bold text-white mb-1">ຢືນຢັນການອັບເດດ</h2>
               <p class="text-body-2 text-white opacity-90 mb-0">ກະລຸນາກວດສອບຂໍ້ມູນກ່ອນບັນທຶກ</p>
             </div>
           </div>
         </v-card-title>
 
-        <!-- Content -->
-        <v-card-text class="pa-4">
-          <div class="text-center mb-3">
-            <v-avatar size="100" class="mb-3">
+        <v-card-text class="pa-5">
+          <div class="text-center mb-4">
+            <v-avatar size="120" class="mb-3">
               <v-img 
                 v-if="imagePreview" 
                 :src="imagePreview" 
                 cover 
               />
-              <v-icon v-else size="100" color="grey">mdi-account-circle</v-icon>
+              <v-icon v-else size="120" color="grey">mdi-account-circle</v-icon>
             </v-avatar>
           </div>
 
-          <div class="user-confirm-box pa-3 mb-3">
+          <div class="user-confirm-box pa-4 mb-4">
             <v-row dense>
               <v-col cols="12" class="mb-2">
                 <div class="d-flex align-center">
                   <v-icon size="20" color="primary" class="mr-2">mdi-account</v-icon>
                   <span class="text-body-2 text-grey-darken-1 mr-2">ຊື່ຜູ້ໃຊ້:</span>
-                  <span class="font-weight-bold">{{ form.username || '-' }}</span>
+                  <span class="font-weight-bold">{{ form.username }}</span>
                 </div>
               </v-col>
-              <v-col cols="12" class="mb-2" v-if="form.bnk_code">
+              <v-col cols="12" class="mb-2">
                 <div class="d-flex align-center">
-                  <v-icon size="20" color="warning" class="mr-2">mdi-bank</v-icon>
-                  <span class="text-body-2 text-grey-darken-1 mr-2">ສະມາຊິກ:</span>
-                  <span class="font-weight-bold">{{ getMemberDisplay(form.bnk_code) }}</span>
+                  <v-icon size="20" color="success" class="mr-2">mdi-account-details</v-icon>
+                  <span class="text-body-2 text-grey-darken-1 mr-2">ຊື່-ນາມສະກຸນ (ລາວ):</span>
+                  <span class="font-weight-bold">{{ form.nameL }} {{ form.surnameL }}</span>
                 </div>
               </v-col>
-              <v-col cols="12" v-if="form.GID">
+              <v-col cols="12" class="mb-2" v-if="form.nameE || form.surnameE">
                 <div class="d-flex align-center">
-                  <v-icon size="20" color="purple" class="mr-2">mdi-shield-account</v-icon>
-                  <span class="text-body-2 text-grey-darken-1 mr-2">ໜ້າທີ່:</span>
-                  <span class="font-weight-bold">{{ getGroupDisplay(form.GID) }}</span>
+                  <v-icon size="20" color="info" class="mr-2">mdi-account-details-outline</v-icon>
+                  <span class="text-body-2 text-grey-darken-1 mr-2">ຊື່-ນາມສະກຸນ (Eng):</span>
+                  <span class="font-weight-bold">{{ form.nameE }} {{ form.surnameE }}</span>
                 </div>
               </v-col>
               <v-col cols="12" v-if="form.password && form.password.trim() !== ''">
@@ -272,12 +272,11 @@
             </v-row>
           </div>
 
-          <p class="text-center text-body-1 mb-0">
-            ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການອັບເດດຂໍ້ມູນຜູ້ໃຊ້ນີ້?
+          <p class="text-center text-body-1 mb-0 font-weight-medium">
+            ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການອັບເດດໂປຣໄຟລ໌?
           </p>
         </v-card-text>
 
-        <!-- Actions -->
         <v-card-actions class="pa-4 pt-0">
           <v-btn
             color="grey-darken-1"
@@ -294,7 +293,7 @@
             color="#1565c0"
             variant="flat"
             size="large"
-            @click="confirmUpdateUser"
+            @click="confirmUpdate"
             :loading="updating"
             class="flex-grow-1"
           >
@@ -304,6 +303,25 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Success Snackbar -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="3000"
+      location="top"
+    >
+      {{ snackbar.message }}
+      <template v-slot:actions>
+        <v-btn
+          color="white"
+          variant="text"
+          @click="snackbar.show = false"
+        >
+          ປິດ
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -312,28 +330,24 @@ definePageMeta({
   middleware: "auth",
   layout: "backend",
 });
-import { ref, onMounted, watch } from 'vue';
+
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
-// import CryptoJS from 'crypto-js';
 import { useUserUID } from '~/composables/useUserUID';
 
+const { userData, UID: currentUID } = useUserUID();
+const config = useRuntimeConfig();
+const apiUserURL = `${config.public.strapi.url}api/user/`;
 
-const props = defineProps({
-  userData: {
-    type: Object,
-    required: true,
-  },
-});
-
-const emit = defineEmits(['close', 'updated']);
 const formRef = ref(null);
 const formValid = ref(false);
-const imagePreview = ref('');
+const loading = ref(true);
 const showPassword = ref(false);
 const showConfirmDialog = ref(false);
 const updating = ref(false);
+const imagePreview = ref('');
 const originalImageUrl = ref('');
-const { userData, UID: currentUID, userBnkCode } = useUserUID();
+const originalData = ref(null);
 
 const form = ref({
   UID: null,
@@ -345,26 +359,47 @@ const form = ref({
   surnameE: '',
   bnk_code: '',
   branch_id: '',
-  MID: null,
-  GID: null,
   profile_image: null,
-  is_active: true,
-  is_staff: false,
 });
 
-const members = ref([]);
-const groups = ref([]);
+const snackbar = ref({
+  show: false,
+  message: '',
+  color: 'success'
+});
 
-// API URLs
-const config = useRuntimeConfig();
-const apiMemberURL = `${config.public.strapi.url}api/memberinfo/`;
-const apiGroupURL = `${config.public.strapi.url}api/usergroup_list/`;
-const apiUserURL = `${config.public.strapi.url}api/user/`;
+// Password validation rules
+const passwordRules = [
+  v => !v || v.length === 0 || v.length >= 6 || 'ລະຫັດຜ່ານຕ້ອງມີຢ່າງໜ້ອຍ 6 ຕົວອັກສອນ',
+];
 
-// Handle image change and preview
+// Computed: Bank Code display
+const userBankCode = computed(() => {
+  return userData.value?.MID?.code || form.value.bnk_code || '-';
+});
+
+// Check if there are any changes
+const hasChanges = computed(() => {
+  if (!originalData.value) return false;
+  
+  return (
+    form.value.nameL !== originalData.value.nameL ||
+    form.value.surnameL !== originalData.value.surnameL ||
+    form.value.nameE !== originalData.value.nameE ||
+    form.value.surnameE !== originalData.value.surnameE ||
+    form.value.profile_image !== null ||
+    (form.value.password && form.value.password.trim() !== '')
+  );
+});
+
+// Toggle password visibility
+const togglePassword = () => {
+  showPassword.value = !showPassword.value;
+};
+
+// Handle image change
 const onImageChange = (event) => {
   const file = form.value.profile_image;
-  
   if (file) {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -374,245 +409,216 @@ const onImageChange = (event) => {
   }
 };
 
-// Clear image and restore original
+// Clear image
 const clearImage = () => {
   form.value.profile_image = null;
   imagePreview.value = originalImageUrl.value || '';
 };
 
-// Toggle password visibility
-const togglePassword = () => {
-  showPassword.value = !showPassword.value;
-};
+// Fetch current user data
+const fetchUserData = async () => {
+  if (!currentUID.value) {
+    showSnackbar('ບໍ່ພົບຂໍ້ມູນຜູ້ໃຊ້', 'error');
+    return;
+  }
 
-// Fetch members
-const fetchMembers = async () => {
+  loading.value = true;
   try {
-    const res = await axios.get(apiMemberURL);
-    members.value = res.data.map(m => ({
-      id: m.id || m.MID,
-      bnk_code: m.bnk_code,
-      display_name: `${m.nameL} (${m.code || m.bnk_code}-${m.bnk_code})`,
-    }));
-  } catch (err) {
-    console.error('Error fetching members:', err);
+    const response = await axios.get(`${apiUserURL}${currentUID.value}/`);
+    const data = response.data;
+    
+    form.value = {
+      UID: data.UID,
+      username: data.username || '',
+      password: '',
+      nameL: data.nameL || '',
+      surnameL: data.surnameL || '',
+      nameE: data.nameE || '',
+      surnameE: data.surnameE || '',
+      bnk_code: data.bnk_code || '',
+      branch_id: data.branch_id || '',
+      profile_image: null,
+    };
+
+    // Store original data for comparison
+    originalData.value = {
+      nameL: data.nameL || '',
+      surnameL: data.surnameL || '',
+      nameE: data.nameE || '',
+      surnameE: data.surnameE || '',
+    };
+
+    // Set image preview
+    if (data.profile_image) {
+      originalImageUrl.value = data.profile_image;
+      imagePreview.value = data.profile_image;
+    }
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    showSnackbar('ເກີດຂໍ້ຜິດພາດໃນການໂຫລດຂໍ້ມູນ', 'error');
+  } finally {
+    loading.value = false;
   }
 };
 
-// Fetch groups
-const fetchGroups = async () => {
-  try {
-    const res = await axios.get(apiGroupURL);
-    groups.value = res.data;
-  } catch (err) {
-    console.error('Error fetching groups:', err);
-  }
-};
-
-// Get member display name
-const getMemberDisplay = (bnk_code) => {
-  const member = members.value.find(m => m.bnk_code === bnk_code);
-  return member ? member.display_name : bnk_code;
-};
-
-// Get group display name
-const getGroupDisplay = (gid) => {
-  const group = groups.value.find(g => g.GID === gid);
-  return group ? group.nameL : '-';
-};
-
-// Update MID when bank code is selected
-const updateMID = (selectedCode) => {
-  const selected = members.value.find(m => m.bnk_code === selectedCode);
-  form.value.MID = selected ? selected.id : null;
-};
-
-const confirmUpdateUser = async () => {
+// Confirm and update user
+const confirmUpdate = async () => {
   if (!formValid.value) return;
 
   updating.value = true;
   const formData = new FormData();
 
-  // ตรวจสอบเฉพาะ is_active เปลี่ยนจาก False → True
-  const statusChanged = props.userData.is_active === false && form.value.is_active === true;
-
-  // Append fields
-  for (const key in form.value) {
-    if (key === 'UID') continue;
-    const value = form.value[key];
-
-    if (key === 'profile_image' && value) {
-      formData.append('profile_image', value);
-    } 
-    else if (key === 'is_active') {
-      formData.append('is_active', value ? 'true' : 'false');
-    } 
-    else if (value !== null && value !== '') {
-      formData.append(key, value);
-    }
+  // Only append changed fields
+  if (form.value.password && form.value.password.trim() !== '') {
+    formData.append('password', form.value.password);
+  }
+  
+  if (form.value.nameL !== originalData.value.nameL) {
+    formData.append('nameL', form.value.nameL);
+  }
+  
+  if (form.value.surnameL !== originalData.value.surnameL) {
+    formData.append('surnameL', form.value.surnameL);
+  }
+  
+  if (form.value.nameE !== originalData.value.nameE) {
+    formData.append('nameE', form.value.nameE || '');
+  }
+  
+  if (form.value.surnameE !== originalData.value.surnameE) {
+    formData.append('surnameE', form.value.surnameE || '');
   }
 
-  // ส่ง creator_UID และ user_bnk_code เฉพาะกรณี status เปลี่ยน
-  if (statusChanged) {
-    formData.append('creator_UID', currentUID.value);
-    formData.append('user_bnk_code', userBnkCode.value);
+  if (form.value.profile_image) {
+    formData.append('profile_image', form.value.profile_image);
   }
 
   try {
-    const response = await axios.put(`${apiUserURL}${form.value.UID}/`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const response = await axios.put(
+      `${apiUserURL}${form.value.UID}/`, 
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
 
+    showSnackbar('ອັບເດດໂປຣໄຟລ໌ສຳເລັດ!', 'success');
     showConfirmDialog.value = false;
-    emit('updated');
-    emit('close');
-  } catch (err) {
-    console.error('❌ Error updating user:', err);
-    alert('เกิดข้อผิดพลาด: ' + (err.response?.data?.message || err.message));
-    showConfirmDialog.value = false;
+    
+    // Update localStorage if needed
+    if (userData.value) {
+      userData.value.nameL = form.value.nameL;
+      userData.value.surnameL = form.value.surnameL;
+      userData.value.nameE = form.value.nameE;
+      userData.value.surnameE = form.value.surnameE;
+      if (response.data.user?.profile_image) {
+        userData.value.profile_image = response.data.user.profile_image;
+      }
+      localStorage.setItem('user_data', JSON.stringify(userData.value));
+    }
+
+    // Reload data
+    await fetchUserData();
+    form.value.password = ''; // Clear password field
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    showSnackbar(
+      error.response?.data?.message || 'ເກີດຂໍ້ຜິດພາດໃນການອັບເດດ', 
+      'error'
+    );
   } finally {
     updating.value = false;
   }
 };
 
-// Initialize form with user data
-const initializeForm = async () => {
-  form.value = {
-    UID: props.userData.UID,
-    username: props.userData.username || '',
-    password: '',
-    nameL: props.userData.nameL || '',
-    surnameL: props.userData.surnameL || '',
-    nameE: props.userData.nameE || '',
-    surnameE: props.userData.surnameE || '',
-    bnk_code: props.userData.bnk_code || '',
-    branch_id: props.userData.branch_id || '',
-    MID: props.userData.MID || null,
-    GID: props.userData.GID || null,
-    profile_image: null,
-    is_active: props.userData.is_active ?? true,
-    is_staff: props.userData.is_staff ?? false,
+// Show snackbar helper
+const showSnackbar = (message, color = 'success') => {
+  snackbar.value = {
+    show: true,
+    message,
+    color
   };
-
-  // Set image preview from existing user data
-  if (props.userData.profile_image) {
-    originalImageUrl.value = props.userData.profile_image;
-    imagePreview.value = props.userData.profile_image;
-  } else {
-    originalImageUrl.value = '';
-    imagePreview.value = '';
-  }
 };
 
-// Clear form (reset to original userData)
-const clearForm = () => {
-  initializeForm();
-  showPassword.value = false;
-  showConfirmDialog.value = false;
-  formRef.value?.resetValidation();
-};
-
-// Load initial dropdown data
 onMounted(async () => {
-  await Promise.all([
-    fetchMembers(),
-    fetchGroups(),
-  ]);
-  await initializeForm();
+  await fetchUserData();
 });
-
-// Watch for userData changes
-watch(() => props.userData, async () => {
-  await initializeForm();
-}, { deep: true });
 </script>
 
 <style scoped>
-.user-edit-container {
+.profile-edit-container {
   width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   background: #f5f5f5;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
 .header-section {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
+  justify-content: center;
+  padding: 20px;
   background: linear-gradient(135deg, #1e38ce 0%, #150aac 100%);
   color: white;
 }
 
-.header-section .text-h5 {
-  color: white !important;
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  background: white;
 }
 
 .form-body {
-  padding: 20px;
+  padding: 30px;
   background: white;
 }
 
 .footer-section {
   display: flex;
   justify-content: center;
-  gap: 12px;
-  padding: 16px;
+  padding: 20px;
   background: #f5f5f5;
-  border-top: 1px solid #e0e0e0;
+  border-top: 2px solid #e0e0e0;
 }
 
-.v-row {
-  margin: 0 !important;
+.profile-avatar {
+  border: 5px solid #1565c0;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
 }
 
-.v-col {
-  padding: 4px !important;
+.profile-avatar:hover {
+  transform: scale(1.05);
 }
 
-.v-text-field, .v-select, .v-file-input {
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
+.update-btn {
+  min-width: 200px;
+  font-weight: 600;
+  box-shadow: 0 4px 8px rgba(21, 101, 192, 0.3);
 }
 
-.v-switch {
-  margin: 0 !important;
-  padding: 0 !important;
-  line-height: 1 !important;
-}
-
-.v-text-field :deep(.v-label),
-.v-select :deep(.v-label),
-.v-file-input :deep(.v-label),
-.v-switch :deep(.v-label) {
-  font-size: 0.85rem !important;
-}
-
-.v-avatar {
-  border: 4px solid #1565c0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.v-btn {
-  min-width: 100px;
-  font-weight: 500;
+.v-text-field :deep(.v-field--disabled) {
+  opacity: 0.7;
 }
 
 /* Confirm Dialog Styles */
 .confirm-dialog-card {
-  border-radius: 16px !important;
+  border-radius: 20px !important;
   overflow: hidden;
 }
 
 .confirm-dialog-header {
-  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  background: linear-gradient(135deg, #1e38ce 0%, #150aac 100%);
 }
 
 .confirm-icon-wrapper {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 12px;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.25);
+  padding: 14px;
+  border-radius: 16px;
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
@@ -620,8 +626,27 @@ watch(() => props.userData, async () => {
 }
 
 .user-confirm-box {
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8eaf6 100%);
   border-radius: 12px;
-  border-left: 4px solid #1565c0;
+  border-left: 5px solid #1565c0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.v-row {
+  margin: 0 !important;
+}
+
+.v-col {
+  padding: 6px !important;
+}
+
+@media (max-width: 960px) {
+  .profile-edit-container {
+    border-radius: 0;
+  }
+  
+  .form-body {
+    padding: 20px 15px;
+  }
 }
 </style>
